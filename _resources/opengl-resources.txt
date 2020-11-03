@@ -1,0 +1,9 @@
+
+Open GL tutorial:
+https://antongerdelan.net/opengl/
+
+Web GL tutorial:
+http://learnwebgl.brown37.net/09_lights/lights_combined.html
+
+Transforming normals
+https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/geometry/transforming-normals

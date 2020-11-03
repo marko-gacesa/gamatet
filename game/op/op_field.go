@@ -1,0 +1,379 @@
+// Copyright (c) 2020 by Marko Gaćeša
+
+package op
+
+import (
+	"gamatet/game/block"
+	"gamatet/game/event"
+	"gamatet/game/field"
+	"io"
+)
+
+func NewFieldStop() *FieldStop { return &FieldStop{} }
+
+type FieldStop struct{}
+
+var _ event.Event = (*FieldStop)(nil)
+
+func (e *FieldStop) Do(f *field.Field)   { f.Pause() }
+func (e *FieldStop) Undo(f *field.Field) { f.Unpause() }
+
+func (e *FieldStop) Equals(ev event.Event) bool {
+	_, ok := ev.(*FieldStop)
+	return ok
+}
+
+func (e *FieldStop) Read(io.Reader) error  { return nil }
+func (e *FieldStop) Write(io.Writer) error { return nil }
+
+func NewFieldPause() *FieldPause { return &FieldPause{} }
+
+type FieldPause struct{}
+
+var _ event.Event = (*FieldPause)(nil)
+
+func (e *FieldPause) Do(f *field.Field)   { f.Pause() }
+func (e *FieldPause) Undo(f *field.Field) { f.Unpause() }
+
+func (e *FieldPause) Equals(ev event.Event) bool {
+	_, ok := ev.(*FieldPause)
+	return ok
+}
+
+func (e *FieldPause) Read(io.Reader) error  { return nil }
+func (e *FieldPause) Write(io.Writer) error { return nil }
+
+func NewFieldUnpause() *FieldPause { return &FieldPause{} }
+
+type FieldUnpause struct{}
+
+var _ event.Event = (*FieldUnpause)(nil)
+
+func (e *FieldUnpause) Do(f *field.Field)   { f.Unpause() }
+func (e *FieldUnpause) Undo(f *field.Field) { f.Pause() }
+
+func (e *FieldUnpause) Equals(ev event.Event) bool {
+	_, ok := ev.(*FieldUnpause)
+	return ok
+}
+
+func (e *FieldUnpause) Read(io.Reader) error  { return nil }
+func (e *FieldUnpause) Write(io.Writer) error { return nil }
+
+func NewFieldDestroyRow(row int, blocks []block.Block) *FieldDestroyRow {
+	return &FieldDestroyRow{
+		Row:    byte(row),
+		Blocks: blocks,
+	}
+}
+
+type FieldDestroyRow struct {
+	Row    byte
+	Blocks []block.Block
+}
+
+var _ event.Event = (*FieldDestroyRow)(nil)
+
+func (e *FieldDestroyRow) Do(f *field.Field) {
+	f.ShiftRowsDown(int(e.Row))
+	updateAllPiecesShadow(f)
+}
+
+func (e *FieldDestroyRow) Undo(f *field.Field) {
+	f.UndoShiftRowsDown(int(e.Row), e.Blocks)
+	updateAllPiecesShadow(f)
+}
+
+func (e *FieldDestroyRow) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldDestroyRow)
+	return ok && e.Row == q.Row && block.SliceEqual(e.Blocks, q.Blocks)
+}
+
+func (e *FieldDestroyRow) Write(w io.Writer) error {
+	if _, err := w.Write([]byte{e.Row, byte(len(e.Blocks))}); err != nil {
+		return err
+	}
+	for i := 0; i < len(e.Blocks); i++ {
+		if err := e.Blocks[i].Write(w); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (e *FieldDestroyRow) Read(r io.Reader) error {
+	var buffer [2]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.Row = buffer[0]
+	e.Blocks = make([]block.Block, buffer[1])
+
+	for i := 0; i < len(e.Blocks); i++ {
+		if err := e.Blocks[i].Read(r); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func NewFieldDestroyColumn(col, row, n, height int, b block.Block) *FieldDestroyColumn {
+	return &FieldDestroyColumn{
+		Col:    byte(col),
+		Row:    byte(row),
+		N:      byte(n),
+		Height: byte(height),
+		Block:  b,
+	}
+}
+
+type FieldDestroyColumn struct {
+	Col, Row  byte
+	N, Height byte
+	Block     block.Block
+}
+
+var _ event.Event = (*FieldDestroyColumn)(nil)
+
+func (e *FieldDestroyColumn) Do(f *field.Field) {
+	f.ShiftColumnDownByN(int(e.Col), int(e.Row), int(e.N), int(e.Height))
+	updateAllPiecesShadow(f)
+}
+
+func (e *FieldDestroyColumn) Undo(f *field.Field) {
+	f.UndoShiftColumnByN(int(e.Col), int(e.Row), int(e.N), int(e.Height), e.Block)
+	updateAllPiecesShadow(f)
+}
+
+func (e *FieldDestroyColumn) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldDestroyColumn)
+	return ok && e.Col == q.Col && e.Row == q.Row &&
+		e.N == q.N && e.Height == q.Height && e.Block == q.Block
+}
+
+func (e *FieldDestroyColumn) Write(w io.Writer) error {
+	if _, err := w.Write([]byte{e.Col, e.Row, e.N, e.Height}); err != nil {
+		return err
+	}
+	if err := e.Block.Write(w); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *FieldDestroyColumn) Read(r io.Reader) error {
+	var buffer [4]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.Col = buffer[0]
+	e.Row = buffer[1]
+	e.N = buffer[2]
+	e.Height = buffer[3]
+
+	if err := e.Block.Read(r); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func NewFieldBlockSet(col, row int, op OpType, animType, animParam int, b block.Block) *FieldBlockSet {
+	return &FieldBlockSet{
+		Col:       byte(col),
+		Row:       byte(row),
+		Op:        op,
+		AnimType:  byte(animType),
+		AnimParam: byte(animParam),
+		Block:     b,
+	}
+}
+
+type FieldBlockSet struct {
+	Col, Row  byte
+	Op        OpType // 0=clear (the Block contains the block to be cleared), 1=set (the Block contains the block to be added)
+	AnimType  byte
+	AnimParam byte
+	Block     block.Block
+}
+
+var _ event.Event = (*FieldBlockSet)(nil)
+
+func (e *FieldBlockSet) Do(f *field.Field) {
+	switch e.Op {
+	case OpSet:
+		f.SetXY(int(e.Col), int(e.Row), int(e.AnimType), int(e.AnimParam), e.Block)
+	case OpClear:
+		_ = f.ClearXY(int(e.Col), int(e.Row), int(e.AnimType), int(e.AnimParam))
+	}
+	updateAllPiecesShadow(f)
+}
+
+func (e *FieldBlockSet) Undo(f *field.Field) {
+	switch e.Op {
+	case OpSet:
+		_ = f.ClearXY(int(e.Col), int(e.Row), field.AnimNo, 0)
+	case OpClear:
+		f.SetXY(int(e.Col), int(e.Row), field.AnimNo, 0, e.Block)
+	}
+	updateAllPiecesShadow(f)
+}
+
+func (e *FieldBlockSet) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldBlockSet)
+	return ok && e.Col == q.Col && e.Row == q.Row && e.Op == q.Op && e.Block == q.Block
+}
+
+func (e *FieldBlockSet) Write(w io.Writer) error {
+	if _, err := w.Write([]byte{e.Col, e.Row, byte(e.Op), e.AnimType, e.AnimParam}); err != nil {
+		return err
+	}
+	if err := e.Block.Write(w); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *FieldBlockSet) Read(r io.Reader) error {
+	var buffer [5]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.Col = buffer[0]
+	e.Row = buffer[1]
+	e.Op = OpType(buffer[2])
+	e.AnimType = buffer[3]
+	e.AnimParam = buffer[4]
+
+	if err := e.Block.Read(r); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func NewFieldBlockHardness(col, row, hardness, animType, animParam int) *FieldBlockHardness {
+	return &FieldBlockHardness{
+		Col:       byte(col),
+		Row:       byte(row),
+		Hardness:  int8(hardness),
+		AnimType:  byte(animType),
+		AnimParam: byte(animParam),
+	}
+}
+
+type FieldBlockHardness struct {
+	Col, Row  byte
+	Hardness  int8
+	AnimType  byte
+	AnimParam byte
+}
+
+var _ event.Event = (*FieldBlockHardness)(nil)
+
+func (e *FieldBlockHardness) Do(f *field.Field) {
+	f.HardnessXY(int(e.Col), int(e.Row), int(e.Hardness), int(e.AnimType), int(e.AnimParam))
+}
+
+func (e *FieldBlockHardness) Undo(f *field.Field) {
+	f.HardnessXY(int(e.Col), int(e.Row), -int(e.Hardness), field.AnimNo, 0)
+}
+
+func (e *FieldBlockHardness) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldBlockHardness)
+	return ok && e.Col == q.Col && e.Row == q.Row && e.Hardness == q.Hardness
+}
+
+func (e *FieldBlockHardness) Write(w io.Writer) error {
+	if _, err := w.Write([]byte{e.Col, e.Row, byte(e.Hardness), e.AnimType, e.AnimParam}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *FieldBlockHardness) Read(r io.Reader) error {
+	var buffer [5]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.Col = buffer[0]
+	e.Row = buffer[1]
+	e.Hardness = int8(buffer[2])
+	e.AnimType = buffer[3]
+	e.AnimParam = buffer[4]
+
+	return nil
+}
+
+func NewFieldBlockTransform(col, row int, oldBlock, newBlock block.Block, animType, animParam int) *FieldBlockTransform {
+	return &FieldBlockTransform{
+		Col:       byte(col),
+		Row:       byte(row),
+		OldBlock:  oldBlock,
+		NewBlock:  newBlock,
+		AnimType:  byte(animType),
+		AnimParam: byte(animParam),
+	}
+}
+
+type FieldBlockTransform struct {
+	Col, Row  byte
+	OldBlock  block.Block
+	NewBlock  block.Block
+	AnimType  byte
+	AnimParam byte
+}
+
+var _ event.Event = (*FieldBlockTransform)(nil)
+
+func (e *FieldBlockTransform) Do(f *field.Field) {
+	panic("unimplemented")
+}
+
+func (e *FieldBlockTransform) Undo(f *field.Field) {
+	panic("unimplemented")
+}
+
+func (e *FieldBlockTransform) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldBlockTransform)
+	return ok && e.Col == q.Col && e.Row == q.Row && e.OldBlock == q.OldBlock && e.NewBlock == q.NewBlock
+}
+
+func (e *FieldBlockTransform) Write(w io.Writer) error {
+	if _, err := w.Write([]byte{e.Col, e.Row, e.AnimType, e.AnimParam}); err != nil {
+		return err
+	}
+	if err := e.OldBlock.Write(w); err != nil {
+		return err
+	}
+	if err := e.NewBlock.Write(w); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *FieldBlockTransform) Read(r io.Reader) error {
+	var buffer [4]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.Col = buffer[0]
+	e.Row = buffer[1]
+	e.AnimType = buffer[2]
+	e.AnimParam = buffer[3]
+
+	if err := e.OldBlock.Read(r); err != nil {
+		return err
+	}
+	if err := e.NewBlock.Read(r); err != nil {
+		return err
+	}
+
+	return nil
+}
