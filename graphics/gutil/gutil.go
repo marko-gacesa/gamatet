@@ -13,3 +13,17 @@ func CeilPow2(i int) int {
 }
 
 func IsPow2(i int) bool { return (i & (i - 1)) == 0 }
+
+func Log2(i int) int {
+	var result int
+
+	for {
+		i >>= 1
+		if i == 0 {
+			break
+		}
+		result++
+	}
+
+	return result
+}

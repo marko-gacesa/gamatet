@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2023 by Marko Gaćeša
 
 package texture
 
@@ -72,8 +72,24 @@ func (m *Manager) Bind3D(values []float32, dim int) uint32 {
 	return texID
 }
 
-func (m *Manager) Delete() {
+func (m *Manager) Delete(texID uint32) {
+	idx := texID - gl.TEXTURE0
+	texture := m.textures[idx]
+	if texture == 0 {
+		return
+	}
+	gl.DeleteTextures(1, &texture)
+	m.textures[idx] = 0
+}
 
+func (m *Manager) DeleteAll() {
+	for idx, texture := range m.textures {
+		if texture == 0 {
+			continue
+		}
+		gl.DeleteTextures(1, &texture)
+		m.textures[idx] = 0
+	}
 }
 
 func LoadFile(file string) (image.Image, error) {

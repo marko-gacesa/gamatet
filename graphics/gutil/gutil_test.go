@@ -57,3 +57,26 @@ func TestIsPow2(t *testing.T) {
 		}
 	}
 }
+
+func TestLog2(t *testing.T) {
+	tests := []struct {
+		input int
+		exp   int
+	}{
+		{input: 0, exp: 0},
+		{input: 1, exp: 0},
+		{input: 2, exp: 1},
+		{input: 3, exp: 1},
+		{input: 4, exp: 2},
+		{input: 1023, exp: 9},
+		{input: 1024, exp: 10},
+		{input: 1025, exp: 10},
+	}
+
+	for _, test := range tests {
+		r := Log2(test.input)
+		if r != test.exp {
+			t.Errorf("test failed for input=%d, expected=%d, but got=%d", test.input, test.exp, r)
+		}
+	}
+}

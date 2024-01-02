@@ -17,10 +17,10 @@ const (
 )
 
 var TinyminoColors = []uint32{
+	0xFFD70000, // gold
+	0x7F00FF00, // violet
 	0x7FFF0000, // lime
 	0x007FFF00, // azure
-	0x7F00FF00, // violet
-	0x80008000, // purple
 }
 
 var TetrominoColors = []uint32{
@@ -34,18 +34,18 @@ var TetrominoColors = []uint32{
 }
 
 var PentominoColors = []uint32{
-	0xFFD70000, // gold
+	0x3F00FF00, // indigo
+	0xF5F5DC00, // beige
 	0x964B0000, // brown
 	0xFFC0CB00, // pink
-	0x3F00FF00, // indigo
 	0xFF007F00, // pink-red
 	0x00FF7F00, // spring-green
 	0xFF007F00, // electric-magenta
 	0xC3B09100, // khaki
 	0xFFE5B400, // peach
+	0x80008000, // purple
 	0x00808000, // teal
 	0x80800000, // olive
-	0xF5F5DC00, // beige
 	0x40E0D000, // turquoise
 }
 
@@ -85,7 +85,7 @@ func NewAnyPolyomino(shape int) Piece {
 	} else if shape == 9 || shape == 10 {
 		return &polyomino{polyominoShape: trominoes[shape-9], block: block.Block{Type: block.TypeRock, Color: TinyminoColors[shape-7]}}
 	} else {
-		return &polyomino{polyominoShape: pentominoes[shape-11], block: block.Block{Type: block.TypeRock, Color: PentominoColors[shape%len(PentominoColors)]}}
+		return &polyomino{polyominoShape: pentominoes[shape-11], block: block.Block{Type: block.TypeRock, Color: PentominoColors[(shape-11)%len(PentominoColors)]}}
 	}
 }
 

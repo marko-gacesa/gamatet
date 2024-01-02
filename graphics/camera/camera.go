@@ -10,11 +10,11 @@ type Camera struct {
 	view       mgl32.Mat4
 }
 
-func NewCamera() *Camera {
+func Default() Camera {
 	lookAt := mgl32.LookAtV(mgl32.Vec3{0, 0, 1}, mgl32.Vec3{0, 0, 0}, mgl32.Vec3{0, 1, 0})
 	projection := mgl32.Perspective(60, 16/9, 1, 10)
 	view := projection.Mul4(lookAt)
-	return &Camera{
+	return Camera{
 		lookAt:     lookAt,
 		projection: projection,
 		view:       view,

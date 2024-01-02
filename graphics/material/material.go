@@ -10,6 +10,7 @@ import (
 
 type Material interface {
 	Use()
+	Delete()
 
 	Refresh()
 

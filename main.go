@@ -2,11 +2,20 @@
 
 package main
 
-import _ "image/jpeg"
-import _ "image/png"
+import (
+	"fmt"
+	"gamatet/demo"
+	"gamatet/graphics/render"
 
-import "gamatet/demo"
+	_ "image/jpeg"
+	_ "image/png"
+)
 
 func main() {
 	demo.Single()
+	return
+	if err := render.Loop(); err != nil {
+		fmt.Println(err)
+	}
+	return
 }

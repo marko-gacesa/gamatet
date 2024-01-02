@@ -20,7 +20,7 @@ void main() {
 	float shininess = 6;
 	float strength = 1.2;
 	vec3 ambientColor = vec3(0.3);
-	vec3 lightDirectionColor = vec3(1.0); 
+	vec3 lightDirectionColor = vec3(1.0);
 
 	float diffuse = max(0.0, dot(fragmentNormal, lightDirection));
 	float specular = max(0.0, dot(fragmentNormal, halfVector));
@@ -31,7 +31,7 @@ void main() {
 	vec3 reflectedLight = lightDirectionColor * specular * strength;
 
 	vec3 rgb = min(objectColor.rgb * scatteredLight + reflectedLight, vec3(1.0));
-	
+
 	//outputColor = texture(textureSampler, fragmentTexture) * vec4(rgb, objectColor.a);
 	float gray = texture(textureSampler, fragmentTexture).r;
 	outputColor = gray * vec4(rgb, objectColor.a);

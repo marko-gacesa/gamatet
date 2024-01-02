@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2023 by Marko Gaćeša
 
 package demo
 
@@ -9,11 +9,7 @@ import (
 	"gamatet/game/core"
 	"gamatet/game/field"
 	"gamatet/game/piece"
-	"gamatet/graphics/camera"
-	"gamatet/graphics/geometry"
-	"gamatet/graphics/material"
-	"gamatet/graphics/renderer"
-	"gamatet/graphics/texture"
+	"gamatet/graphics/render"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -71,7 +67,7 @@ func Single() {
 
 			return window
 		}(glfw.GetPrimaryMonitor())
-		//defer window.Destroy()
+		defer window.Destroy()
 	//*/
 
 	//*
@@ -88,24 +84,11 @@ func Single() {
 
 		return window
 	}()
-	//defer window.Destroy()
+	defer window.Destroy()
 	//*/
 
 	window.MakeContextCurrent()
-
-	var windowWidth int
-	var windowHeight int
-	windowWidth, windowHeight = window.GetSize()
 	//window.SetOpacity(0.5)
-
-	func(window *glfw.Window) {
-		w, h := window.GetSize()
-		fmt.Println("Window size", w, "x", h)
-		sx, sy := window.GetContentScale()
-		fmt.Println("Content scale", sx, "x", sy)
-		w, h = window.GetFramebufferSize()
-		fmt.Println("Framebuffer size", w, "x", h)
-	}(window)
 
 	// Initialize Glow
 	if err := gl.Init(); err != nil {
@@ -114,43 +97,6 @@ func Single() {
 
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version", version)
-
-	// calculate distance
-	const fovDeg = 45
-	const fovRad = fovDeg * math.Pi / 180
-
-	contentW := 10
-	contentH := 24
-	aspectRatio := float32(windowWidth) / float32(windowHeight)
-
-	fmt.Printf("fov: %f; aspect ratio %f\n", fovRad, aspectRatio)
-
-	cameraDistance := float32(math.Max(float64(contentW+2)/(2*math.Tan(fovRad/2)), float64(contentH+2)/(2*math.Tan(fovRad/2))))
-
-	fmt.Println("camera distance X", float64(contentW)/(2*math.Tan(fovRad/2)))
-	fmt.Println("camera distance Y", float64(contentH)/(2*math.Tan(fovRad/2)))
-	fmt.Println("camera distance", cameraDistance)
-
-	cam := camera.NewCamera()
-	cam.LookAt(mgl32.Vec3{0, 0, cameraDistance}, mgl32.Vec3{0, 0, 0}, mgl32.Vec3{0, 1, 0})
-	cam.Perspective(fovRad, aspectRatio, cameraDistance-12, cameraDistance+12)
-
-	texture.Instance = texture.Init()
-	geometry.LoadAll()
-
-	img := texture.Tex2D(345)
-	texture.Instance = texture.Init()
-	tex := texture.Instance.Bind(img)
-	matWall := material.NewRock(tex)
-	//matRuby := material.NewRuby()
-	matLava := material.NewLava(tex)
-	matAcid := material.NewAcid(tex)
-
-	fieldRenderer := renderer.NewFieldRender(matWall, matLava, matAcid)
-
-	rend := &renderer.Renderer{}
-	rend.Geometry(geometry.Cube)
-	rend.Camera(cam)
 
 	// Configure global settings
 
@@ -167,20 +113,33 @@ func Single() {
 	// * gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	//   or gl.BlendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
+	const fieldW = 10
+	const fieldH = 22
+	const contentW = 2 * (3 + 1 + fieldW)
+	const contentH = fieldH + 2
+
+	render.GenerateResources()
+	defer render.ReleaseResources()
+
+	rend := render.NewRenderer()
+
+	func() {
+		w, h := window.GetFramebufferSize()
+		rend.CameraSetDistance(w, h, contentW, contentH, 2)
+	}()
+
+	window.SetSizeCallback(func(window *glfw.Window, w int, h int) {
+		fmt.Printf("Size Callback %dx%d\n", w, h)
+	})
+
+	window.SetFramebufferSizeCallback(func(window *glfw.Window, w int, h int) {
+		fmt.Printf("FramebufferSize Callback %dx%d\n", w, h)
+		rend.CameraSetDistance(w, h, contentW, contentH, 2)
+		gl.Viewport(0, 0, int32(w), int32(h))
+	})
+
 	ctx, cancelFunc := context.WithCancel(appctx.Context)
 	defer cancelFunc()
-
-	window.SetSizeCallback(func(w *glfw.Window, width int, height int) {
-		fmt.Printf("Size Callback %dx%d\n", width, height)
-		aspectRatio = float32(width) / float32(height)
-		gl.Viewport(0, 0, int32(width), int32(height))
-		cam.LookAt(mgl32.Vec3{0, 0, cameraDistance}, mgl32.Vec3{0, 0, 0}, mgl32.Vec3{0, 1, 0})
-		cam.Perspective(fovRad, aspectRatio, cameraDistance-12, cameraDistance+12)
-	})
-
-	window.SetFramebufferSizeCallback(func(w *glfw.Window, width int, height int) {
-		fmt.Printf("FramebufferSize Callback\n")
-	})
 
 	window.SetCloseCallback(func(w *glfw.Window) {
 		fmt.Printf("Close Callback\n")
@@ -222,8 +181,8 @@ func Single() {
 	setup := core.Setup{
 		Name: "test game",
 		Config: core.GameConfig{
-			WidthPerPlayer: 10,
-			Height:         22,
+			WidthPerPlayer: fieldW,
+			Height:         fieldH,
 			Level:          6,
 			PlayerZones:    true,
 			FieldConfig: field.Config{
@@ -251,13 +210,13 @@ func Single() {
 		},
 	}
 
-	game := core.MakeSession(setup)
+	game := core.MakeHost(setup)
 
 	setupClient := core.Setup{
 		Name: "test game",
 		Config: core.GameConfig{
-			WidthPerPlayer: 10,
-			Height:         22,
+			WidthPerPlayer: fieldW,
+			Height:         fieldH,
 			Level:          6,
 			PlayerZones:    true,
 			FieldConfig: field.Config{
@@ -377,10 +336,6 @@ out:
 
 		center := mgl32.Ident4()
 
-		///////////////////////
-		//camera = mgl32.LookAtV(mgl32.Vec3{cameraDistance * float32(math.Sin(t)), 0, cameraDistance * float32(math.Cos(t))}, mgl32.Vec3{0, 0, 0}, mgl32.Vec3{0, 1, 0})
-		//projection = mgl32.Perspective(fovRad, aspectRatio, cameraDistance-12, cameraDistance+12)
-		///////////////////////
 		/*
 			angle := t
 			drawBigBlock := func(position mgl32.Mat4, x, y float32) {
@@ -403,23 +358,22 @@ out:
 			drawBigBlock(center, 0.5, -0.5)
 			drawBigBlock(center, 0.5, 0.5)
 			_ = angle
-			//*/
-		///////////////////////
+		//*/
 
-		//left := center.Mul4(mgl32.Translate3D(-6, 0, 0))
-		right := center.Mul4(mgl32.Translate3D(6, 0, 0))
+		left := center.Mul4(mgl32.Translate3D(-float32(contentW)/4, 0, 0))
+		right := center.Mul4(mgl32.Translate3D(float32(contentW)/4, 0, 0))
 
-		/*
-			select {
-			case renderInfo := <-chRenderInfoServer:
-				fieldRenderer.Render(rend, &left, renderInfo)
-				field.ReturnRenderInfo(renderInfo)
-			}
-			//*/
+		//*
+		select {
+		case renderInfo := <-chRenderInfoServer:
+			render.FieldRender{}.Render(rend, &left, renderInfo)
+			field.ReturnRenderInfo(renderInfo)
+		}
+		//*/
 
 		select {
 		case renderInfo := <-chRenderInfoClient:
-			fieldRenderer.Render(rend, &right, renderInfo)
+			render.FieldRender{}.Render(rend, &right, renderInfo)
 			field.ReturnRenderInfo(renderInfo)
 		}
 
@@ -431,6 +385,4 @@ out:
 	fmt.Println("LOOP DONE, waiting")
 
 	wg.Wait()
-
-	window.Destroy()
 }

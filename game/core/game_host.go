@@ -22,12 +22,12 @@ var _ interface {
 	Performer
 	RenderRequester
 	controller.Controller
-} = (*GameServer)(nil)
+} = (*GameHost)(nil)
 
-type GameServer struct {
+type GameHost struct {
 	// fixed setup
-	fields    []serverFieldData
-	inputs    []serverPlayerData
+	fields    []hostFieldData
+	inputs    []hostPlayerData
 	suspendCh chan bool
 
 	// state
@@ -35,7 +35,7 @@ type GameServer struct {
 	paused    bool
 }
 
-type serverFieldData struct {
+type hostFieldData struct {
 	Field       *field.Field
 	Sweeper     sweeper.Sweeper
 	OutCh       chan<- []byte
@@ -46,18 +46,19 @@ type serverFieldData struct {
 	serializer serializer
 }
 
-type serverPlayerData struct {
+type hostPlayerData struct {
 	Name string
 	field.PiecePlace
 	InCh <-chan []byte // player actions, either direct local or from remote players
 }
 
-func MakeSession(setup Setup) *GameServer {
-	var inputs []serverPlayerData
-	fields := make([]serverFieldData, len(setup.Fields))
+func MakeHost(setup Setup) *GameHost {
+	var inputs []hostPlayerData
+	fields := make([]hostFieldData, len(setup.Fields))
 
 	//pieceFeed := piece.NewTetrominoFeed(setup.Config.FeedBagSize, setup.Config.RandomSeed)
-	pieceFeed := piece.NewPentaFeed(setup.Config.FeedBagSize, setup.Config.RandomSeed)
+	//pieceFeed := piece.NewPentaFeed(setup.Config.FeedBagSize, setup.Config.RandomSeed)
+	pieceFeed := piece.NewDebugFeed(setup.Config.RandomSeed)
 
 	for i := range setup.Fields {
 		players := setup.Fields[i].Players
@@ -92,7 +93,7 @@ func MakeSession(setup Setup) *GameServer {
 				panic(fmt.Sprintf("player %d in field %d should not have OutCh", j, i))
 			}
 
-			inputs = append(inputs, serverPlayerData{
+			inputs = append(inputs, hostPlayerData{
 				Name:       players[j].Name,
 				PiecePlace: pp,
 				InCh:       players[j].InCh,
@@ -103,7 +104,7 @@ func MakeSession(setup Setup) *GameServer {
 			panic(fmt.Sprintf("field %d should not have InCh", i))
 		}
 
-		fields[i] = serverFieldData{
+		fields[i] = hostFieldData{
 			Field:       f,
 			Sweeper:     sweeper.NewFullRowSweeper(f),
 			OutCh:       setup.Fields[i].OutCh,
@@ -111,14 +112,14 @@ func MakeSession(setup Setup) *GameServer {
 		}
 	}
 
-	return &GameServer{
+	return &GameHost{
 		fields:    fields,
 		inputs:    inputs,
 		suspendCh: make(chan bool),
 	}
 }
 
-func (g *GameServer) Perform(
+func (g *GameHost) Perform(
 	ctx context.Context,
 ) {
 	ctx, cancelFn := context.WithCancel(ctx)
@@ -158,15 +159,15 @@ func (g *GameServer) Perform(
 		return joinchannel.Channel(ctx, ch)
 	}()
 
-	inputCh := joinchannel.SlicePtr(ctx, g.inputs, func(p *serverPlayerData) <-chan []byte {
+	inputCh := joinchannel.SlicePtr(ctx, g.inputs, func(p *hostPlayerData) <-chan []byte {
 		return p.InCh
 	})
 
-	sweeperTimer := joinchannel.SlicePtr(ctx, g.fields, func(fd *serverFieldData) <-chan time.Time {
+	sweeperTimer := joinchannel.SlicePtr(ctx, g.fields, func(fd *hostFieldData) <-chan time.Time {
 		return fd.Sweeper.Timer()
 	})
 
-	renderReqCh := joinchannel.SlicePtr(ctx, g.fields, func(fd *serverFieldData) <-chan field.RenderRequest {
+	renderReqCh := joinchannel.SlicePtr(ctx, g.fields, func(fd *hostFieldData) <-chan field.RenderRequest {
 		return fd.RenderReqCh
 	})
 
@@ -265,21 +266,21 @@ func (g *GameServer) Perform(
 	}
 }
 
-func (g *GameServer) Suspend(ctx context.Context) {
+func (g *GameHost) Suspend(ctx context.Context) {
 	select {
 	case <-ctx.Done():
 	case g.suspendCh <- true:
 	}
 }
 
-func (g *GameServer) Resume(ctx context.Context) {
+func (g *GameHost) Resume(ctx context.Context) {
 	select {
 	case <-ctx.Done():
 	case g.suspendCh <- false:
 	}
 }
 
-func (g *GameServer) RenderRequest(ctx context.Context, fieldIdx int, t time.Time, ch chan<- *field.RenderInfo) {
+func (g *GameHost) RenderRequest(ctx context.Context, fieldIdx int, t time.Time, ch chan<- *field.RenderInfo) {
 	select {
 	case <-ctx.Done():
 	case g.fields[fieldIdx].RenderReqCh <- field.RenderRequest{
@@ -290,7 +291,7 @@ func (g *GameServer) RenderRequest(ctx context.Context, fieldIdx int, t time.Tim
 	}
 }
 
-func (g *GameServer) stop(ctx context.Context) {
+func (g *GameHost) stop(ctx context.Context) {
 	for fIdx := range g.fields {
 		select {
 		case <-ctx.Done():
@@ -300,7 +301,7 @@ func (g *GameServer) stop(ctx context.Context) {
 	}
 }
 
-func (g *GameServer) pause(ctx context.Context) {
+func (g *GameHost) pause(ctx context.Context) {
 	if g.paused {
 		return
 	}
@@ -318,7 +319,7 @@ func (g *GameServer) pause(ctx context.Context) {
 	}
 }
 
-func (g *GameServer) unpause(ctx context.Context) {
+func (g *GameHost) unpause(ctx context.Context) {
 	if g.suspended || !g.paused {
 		return
 	}
@@ -336,7 +337,7 @@ func (g *GameServer) unpause(ctx context.Context) {
 	}
 }
 
-func (g *GameServer) applyEvents(ctx context.Context) {
+func (g *GameHost) applyEvents(ctx context.Context) {
 	for fIdx := range g.fields {
 		fd := &g.fields[fIdx]
 

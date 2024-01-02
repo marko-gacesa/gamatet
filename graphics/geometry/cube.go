@@ -7,36 +7,34 @@ import (
 	"math"
 )
 
-func makeSideSimple(side mgl32.Mat3, v *[]vertex) {
-	n := side.Mul3x1(mgl32.Vec3{0.0, 0.0, 1.0})
+func CubeSideSimple(model mgl32.Mat3, v *[]vertex) {
+	halfSide(model, func(model, texture mgl32.Mat3) {
+		n := model.Mul3x1(mgl32.Vec3{0.0, 0.0, 1.0})
 
-	p0 := side.Mul3x1(mgl32.Vec3{-0.5, -0.5, 0.5})
-	p1 := side.Mul3x1(mgl32.Vec3{-0.5, 0.5, 0.5})
-	p2 := side.Mul3x1(mgl32.Vec3{0.5, 0.5, 0.5})
-	p3 := side.Mul3x1(mgl32.Vec3{0.5, -0.5, 0.5})
+		p0 := model.Mul3x1(mgl32.Vec3{-0.5, -0.5, 0.5})
+		p1 := model.Mul3x1(mgl32.Vec3{-0.5, 0.5, 0.5})
+		p2 := model.Mul3x1(mgl32.Vec3{0.5, 0.5, 0.5})
 
-	v0 := gen(p0, n, mgl32.Vec3{0, 1, 1})
-	v1 := gen(p1, n, mgl32.Vec3{0, 0, 1})
-	v2 := gen(p2, n, mgl32.Vec3{1, 0, 1})
-	v3 := gen(p3, n, mgl32.Vec3{1, 1, 1})
+		v0 := gen(p0, n, texture.Mul3x1(mgl32.Vec3{0, 1, 1}))
+		v1 := gen(p1, n, texture.Mul3x1(mgl32.Vec3{0, 0, 1}))
+		v2 := gen(p2, n, texture.Mul3x1(mgl32.Vec3{1, 0, 1}))
 
-	// two triangles
-	*v = append(*v, v0, v1, v2)
-	*v = append(*v, v2, v3, v0)
+		*v = append(*v, v0, v1, v2)
+	})
 }
 
-func makeSideDent(model mgl32.Mat3, v *[]vertex) {
+func CubeSideDent(model mgl32.Mat3, v *[]vertex) {
 	quarterSide(model, func(model, texture mgl32.Mat3) {
 		nn := model.Mul3x1(mgl32.Vec3{0.0, 0.0, 1.0}).Normalize()
 		n0 := model.Mul3x1(mgl32.Vec3{0.5, -0.5, 1.0}).Normalize()
 		n1 := model.Mul3x1(mgl32.Vec3{0.5, 0.5, 1.0}).Normalize()
-		nc := model.Mul3x1(mgl32.Vec3{-0.2, 0.0, 1.0}).Normalize()
+		nc := model.Mul3x1(mgl32.Vec3{-0.0, 0.0, 1.0}).Normalize()
 
 		pOuter0 := model.Mul3x1(mgl32.Vec3{-0.5, -0.5, 0.5})
 		pOuter1 := model.Mul3x1(mgl32.Vec3{-0.5, 0.5, 0.5})
 		pInner0 := model.Mul3x1(mgl32.Vec3{-0.3, -0.3, 0.45})
 		pInner1 := model.Mul3x1(mgl32.Vec3{-0.3, 0.3, 0.45})
-		pCenter := model.Mul3x1(mgl32.Vec3{0.0, 0.0, 0.5})
+		pCenter := model.Mul3x1(mgl32.Vec3{0.0, 0.0, 0.45})
 
 		uvOuter0 := texture.Mul3x1(mgl32.Vec3{0, 1, 1})
 		uvOuter1 := texture.Mul3x1(mgl32.Vec3{0, 0, 1})
@@ -57,7 +55,7 @@ func makeSideDent(model mgl32.Mat3, v *[]vertex) {
 	})
 }
 
-func makeSideFrame(side mgl32.Mat3, v *[]vertex) {
+func CubeSideFrame(side mgl32.Mat3, v *[]vertex) {
 	quarterSide(side, func(model, texture mgl32.Mat3) {
 		const halfA = 0.45 // half of the cube's side length (max is 0.5 for the full sized cube)
 		const d = 0.08     // mesh thickness
@@ -98,7 +96,7 @@ func makeSideFrame(side mgl32.Mat3, v *[]vertex) {
 	})
 }
 
-func makeSideRounded(side mgl32.Mat3, v *[]vertex) {
+func CubeSideRounded(side mgl32.Mat3, v *[]vertex) {
 	const rund = 0.16         // 0.16
 	const alpha = math.Pi / 6 // pi/6
 
@@ -153,7 +151,7 @@ func makeSideRounded(side mgl32.Mat3, v *[]vertex) {
 	})
 }
 
-func makeSideTruncated(side mgl32.Mat3, v *[]vertex) {
+func CubeSideTruncated(side mgl32.Mat3, v *[]vertex) {
 	//const edge = 0.2 // pretty
 	const edge = 1 / (2 + math.Sqrt2) // symmetric (Rhombicuboctahedron)
 	const vert = edge * 2 / 3
@@ -207,7 +205,7 @@ func makeSideTruncated(side mgl32.Mat3, v *[]vertex) {
 	})
 }
 
-func makeSideDie(side mgl32.Mat3, v *[]vertex) {
+func CubeSideDie(side mgl32.Mat3, v *[]vertex) {
 	const halfSinPi4 = math.Sqrt2 / 4
 
 	const x2 = halfSinPi4
@@ -291,86 +289,80 @@ func makeSideDie(side mgl32.Mat3, v *[]vertex) {
 	})
 }
 
-func makeSideStar6(side mgl32.Mat3, v *[]vertex) {
-	// should be: height < 0.5
-	// should be: base < 0.5 (for star use base = height / 4)
+func CubeSideHexagonalStar(k float32) func(mgl32.Mat3, *[]vertex) {
+	// k = 0.5 is rhombic dodecahedron
+	if k < 0.01 {
+		k = 0.01
+	} else if k > 1 {
+		k = 1 // cube
+	}
+	return func(side mgl32.Mat3, v *[]vertex) {
+		// should be: height < 0.5
+		// should be: base < 0.5 (for star use base = height / 4)
 
-	const height = 0.5
-	const base = height / 4
+		const height = 0.5
+		base := k * height
 
-	n := mgl32.Vec3{-base, 0, height}.Normalize()
+		n := mgl32.Vec3{-base, 0, height - base}.Normalize()
 
-	p0 := mgl32.Vec3{-base, -base, base}
-	p1 := mgl32.Vec3{-height, 0, 0}
-	p2 := mgl32.Vec3{-base, base, base}
+		p0 := mgl32.Vec3{-base, -base, base}
+		p1 := mgl32.Vec3{-base, base, base}
+		pc := mgl32.Vec3{0, 0, height}
 
-	uv0 := mgl32.Vec3{1, 1, 1}
-	uv1 := mgl32.Vec3{0, 0.5, 1}
-	uv2 := mgl32.Vec3{1, 0, 1}
+		uv0 := mgl32.Vec3{0, 1, 1}
+		uv1 := mgl32.Vec3{0, 0, 1}
+		uvc := mgl32.Vec3{0.5, 0.5, 1}
 
-	quarterSide(side, func(model, texture mgl32.Mat3) {
-		norm := model.Mul3x1(n)
-		*v = append(*v,
-			gen(model.Mul3x1(p0), norm, texture.Mul3x1(uv0)),
-			gen(model.Mul3x1(p1), norm, texture.Mul3x1(uv1)),
-			gen(model.Mul3x1(p2), norm, texture.Mul3x1(uv2)))
-	})
+		quarterSide(side, func(model, texture mgl32.Mat3) {
+			norm := model.Mul3x1(n)
+			*v = append(*v,
+				gen(model.Mul3x1(p0), norm, texture.Mul3x1(uv0)),
+				gen(model.Mul3x1(p1), norm, texture.Mul3x1(uv1)),
+				gen(model.Mul3x1(pc), norm, texture.Mul3x1(uvc)),
+			)
+		})
+	}
 }
 
-func makeSideStar8(side mgl32.Mat3, v *[]vertex) {
-	const a = 0.5   // height = a * math.Sqrt2
-	const b = a / 2 // base = b * math.Sqrt2
+func CubeSideOctagonalStar(k float32) func(mat3 mgl32.Mat3, v *[]vertex) {
+	if k < 0.01 {
+		k = 0.01
+	} else if k > 1 {
+		k = 1 // stellated octahedron
+	}
+	return func(side mgl32.Mat3, v *[]vertex) {
+		const a = 0.5 // height = a * math.Sqrt2
+		b := k * a    // base = b * math.Sqrt2
 
-	p0 := mgl32.Vec3{-a, -a, a}
-	p1 := mgl32.Vec3{-b, 0, 0}
-	p2 := mgl32.Vec3{0, 0, b}
+		p0 := mgl32.Vec3{-a, -a, a}
+		p1 := mgl32.Vec3{-b, 0, 0}
+		p2 := mgl32.Vec3{0, 0, b}
 
-	uv0 := mgl32.Vec3{1, 1, 1}
-	uv1 := mgl32.Vec3{0.5 - b, 0.5, 1}
-	uv2 := mgl32.Vec3{0.5, 0.5, 1}
+		uv0 := mgl32.Vec3{0, 1, 1}
+		uv1 := mgl32.Vec3{(1 - k) * 0.5, 0.5, 1}
+		uv2 := mgl32.Vec3{0.5, 0.5, 1}
 
-	n := p2.Sub(p0).Cross(p1.Sub(p0)).Normalize()
+		n := p2.Sub(p0).Cross(p1.Sub(p0)).Normalize()
 
-	quarterSide(side, func(model, texture mgl32.Mat3) {
-		norm := model.Mul3x1(n)
-		*v = append(*v,
-			gen(model.Mul3x1(p0), norm, texture.Mul3x1(uv0)),
-			gen(model.Mul3x1(p1), norm, texture.Mul3x1(uv1)),
-			gen(model.Mul3x1(p2), norm, texture.Mul3x1(uv2)))
-	})
+		quarterSide(side, func(model, texture mgl32.Mat3) {
+			norm := model.Mul3x1(n)
+			*v = append(*v,
+				gen(model.Mul3x1(p0), norm, texture.Mul3x1(uv0)),
+				gen(model.Mul3x1(p1), norm, texture.Mul3x1(uv1)),
+				gen(model.Mul3x1(p2), norm, texture.Mul3x1(uv2)),
+			)
+		})
+	}
 }
 
-func makeSideStellatedOctahedron(side mgl32.Mat3, v *[]vertex) {
-	const a = 0.5 // / math.Sqrt2
-	const b = a
-
-	p0 := mgl32.Vec3{-a, -a, a}
-	p1 := mgl32.Vec3{-b, 0, 0}
-	p2 := mgl32.Vec3{0, 0, b}
-
-	uv0 := mgl32.Vec3{1, 1, 1}
-	uv1 := mgl32.Vec3{0.5 - b, 0.5, 1}
-	uv2 := mgl32.Vec3{0.5, 0.5, 1}
-
-	n := p2.Sub(p0).Cross(p1.Sub(p0)).Normalize()
-
-	quarterSide(side, func(model, texture mgl32.Mat3) {
-		norm := model.Mul3x1(n)
-		*v = append(*v,
-			gen(model.Mul3x1(p0), norm, texture.Mul3x1(uv0)),
-			gen(model.Mul3x1(p1), norm, texture.Mul3x1(uv1)),
-			gen(model.Mul3x1(p2), norm, texture.Mul3x1(uv2)))
-	})
-}
-
-func halfSide(model mgl32.Mat3, quarterSizePart func(model, texture mgl32.Mat3)) {
+func halfSide(model mgl32.Mat3, halfSizePart func(model, texture mgl32.Mat3)) {
 	for i := 0; i < 2; i++ {
 		angle := float32(i) * math.Pi
 		texture := mgl32.Ident3().
 			Mul3(mgl32.Translate2D(0.5, 0.5)).
 			Mul3(mgl32.HomogRotate2D(angle)).
 			Mul3(mgl32.Translate2D(-0.5, -0.5))
-		modelSidePart := model.Mul3(mgl32.Rotate3DZ(-angle))
+		modelSidePart := model.Mul3(mgl32.Rotate3DZ(angle))
 
 		//  |\ 1: p=-0.5,0.5,0.5 uv=0,0
 		//  | \  center: p=0,0,0.5 uv=0.5,0.5
@@ -378,7 +370,7 @@ func halfSide(model mgl32.Mat3, quarterSizePart func(model, texture mgl32.Mat3))
 		//  |---\ 2: p=0.5,-0.5,0.5 uv=1,1
 		//  0: p=-0.5,-0.5,0 uv=0,1
 
-		quarterSizePart(modelSidePart, texture)
+		halfSizePart(modelSidePart, texture)
 	}
 }
 

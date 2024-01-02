@@ -26,6 +26,7 @@ type PieceRenderInfo struct {
 	Blocks     []block.XYB
 	X, Y       int
 	DimX, DimY int
+	Type       piece.Type
 	Result     anim.Result
 	DrawShadow bool
 	Shadow     piece.Shadow
@@ -173,6 +174,7 @@ func (f *Field) GetRenderInfo(now time.Time) *RenderInfo {
 		pinfo.Y = ctrl.Y
 		pinfo.DimX = dw
 		pinfo.DimY = dh
+		pinfo.Type = ctrl.Piece.Type()
 		pinfo.Result = ctrl.List.Process(now)
 
 		pinfo.Blocks = pinfo.Blocks[:0]

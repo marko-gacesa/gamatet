@@ -8,8 +8,9 @@ import (
 )
 
 type GLBinder interface {
-	GLLoad(vertexCount, vertexSize int, ptr unsafe.Pointer)
-	GLBind()
+	Load(vertexCount, vertexSize int, ptr unsafe.Pointer)
+	Delete()
+	Bind()
 }
 
 type bind struct {
@@ -17,7 +18,7 @@ type bind struct {
 	vbo uint32
 }
 
-func (b *bind) GLLoad(vertexCount, vertexSize int, ptr unsafe.Pointer) {
+func (b *bind) Load(vertexCount, vertexSize int, ptr unsafe.Pointer) {
 	var vao uint32
 	gl.GenVertexArrays(1, &vao)
 	gl.BindVertexArray(vao)
@@ -31,7 +32,12 @@ func (b *bind) GLLoad(vertexCount, vertexSize int, ptr unsafe.Pointer) {
 	b.vbo = vbo
 }
 
-func (b *bind) GLBind() {
+func (b *bind) Delete() {
+	gl.DeleteVertexArrays(1, &b.vao)
+	gl.DeleteBuffers(1, &b.vbo)
+}
+
+func (b *bind) Bind() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, b.vbo)
 	gl.BindVertexArray(b.vao)
 }

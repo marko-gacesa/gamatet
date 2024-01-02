@@ -47,7 +47,8 @@ func MakeInterpreter(setup Setup) *GameInterpreter {
 	fields := make([]interpreterFieldData, len(setup.Fields))
 
 	//pieceFeed := piece.NewTetrominoFeed(setup.Config.FeedBagSize, setup.Config.RandomSeed)
-	pieceFeed := piece.NewPentaFeed(setup.Config.FeedBagSize, setup.Config.RandomSeed)
+	//pieceFeed := piece.NewPentaFeed(setup.Config.FeedBagSize, setup.Config.RandomSeed)
+	pieceFeed := piece.NewDebugFeed(setup.Config.RandomSeed)
 
 	for i := range setup.Fields {
 		players := setup.Fields[i].Players

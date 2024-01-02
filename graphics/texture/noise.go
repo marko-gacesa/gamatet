@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2023 by Marko Gaćeša
 
 package texture
 
@@ -8,67 +8,27 @@ import (
 	"math/rand"
 )
 
-func Clamp(values []float32, min, max float32) {
-	size := len(values)
-	var minV float32
-	var maxV float32
-	minV = math.MaxFloat32
-	maxV = -math.MaxFloat32
-	for i := 0; i < size; i++ {
-		if values[i] < minV {
-			minV = values[i]
-		}
-		if values[i] > maxV {
-			maxV = values[i]
-		}
+func Perlin2D(nDim, mDim int, seed int64) []float32 {
+	if nDim <= 0 || !gutil.IsPow2(nDim) {
+		panic("nDim must be a power of 2")
 	}
 
-	//fmt.Println("minV, maxV", minV, maxV)
-
-	dV := maxV - minV
-	v := max - min
-	for i := 0; i < size; i++ {
-		values[i] = ((values[i]-minV)/dV)*v + min
-	}
-}
-
-func ClampSin(values []float32, min, max float32) {
-	size := len(values)
-	var minV float32
-	var maxV float32
-	minV = math.MaxFloat32
-	maxV = -math.MaxFloat32
-	for i := 0; i < size; i++ {
-		if values[i] < minV {
-			minV = values[i]
-		}
-		if values[i] > maxV {
-			maxV = values[i]
-		}
+	if nDim <= 0 || !gutil.IsPow2(nDim) {
+		panic("mDim must be a power of 2")
 	}
 
-	//fmt.Println("minV, maxV", minV, maxV)
-
-	dV := maxV - minV
-	v := max - min
-	for i := 0; i < size; i++ {
-		values[i] = float32(math.Sin(float64((values[i]-minV)/dV)*2*math.Pi)*0.5+0.5)*v + min
+	if nDim <= mDim {
+		panic("mDim must be smaller than nDim")
 	}
-}
 
-func Perlin2D(nDim, mDimIter1, iterations int, seed int64) []float32 {
 	size := nDim * nDim
-
 	values := make([]float32, size)
 
-	mDimMax := mDimIter1 << (iterations - 1)
-	if nDim < mDimMax || nDim%mDimMax != 0 {
-		panic("invalid parameter combination")
-	}
+	mesh := newMesh2D(mDim, seed)
+	iterations := gutil.Log2(nDim / mDim)
 
-	mesh := NewMesh2D(mDimIter1, seed)
 	for i := 0; i < iterations; i++ {
-		mDim := mesh.dim
+		mDim = mesh.dim
 
 		cellSize := nDim / mDim
 		cellSizeF := float32(cellSize)
@@ -92,7 +52,7 @@ func Perlin2D(nDim, mDimIter1, iterations int, seed int64) []float32 {
 	return values
 }
 
-type Mesh2D struct {
+type mesh2D struct {
 	dim    int
 	amp    float32
 	random *rand.Rand
@@ -100,9 +60,9 @@ type Mesh2D struct {
 	interX [4]gutil.CatmullRom
 }
 
-func NewMesh2D(dim int, seed int64) *Mesh2D {
+func newMesh2D(dim int, seed int64) *mesh2D {
 	random := rand.New(rand.NewSource(seed))
-	m := &Mesh2D{
+	m := &mesh2D{
 		dim:    dim,
 		amp:    1.0,
 		random: random,
@@ -116,7 +76,7 @@ func NewMesh2D(dim int, seed int64) *Mesh2D {
 	return m
 }
 
-func (m *Mesh2D) Double() *Mesh2D {
+func (m *mesh2D) Double() *mesh2D {
 	const ampDiv = 2.0
 	dim := m.dim * 2
 	amp := m.amp / ampDiv
@@ -134,10 +94,10 @@ func (m *Mesh2D) Double() *Mesh2D {
 			}
 		}
 	}
-	return &Mesh2D{dim: dim, amp: amp, random: m.random, values: values}
+	return &mesh2D{dim: dim, amp: amp, random: m.random, values: values}
 }
 
-func (m *Mesh2D) getValue(x, y int) float32 {
+func (m *mesh2D) getValue(x, y int) float32 {
 	dim := m.dim
 	if x >= 0 {
 		x = x % dim
@@ -153,14 +113,92 @@ func (m *Mesh2D) getValue(x, y int) float32 {
 	return m.values[y*m.dim+x]
 }
 
-func (m *Mesh2D) SetMeshCell(x, y int) {
+func (m *mesh2D) SetMeshCell(x, y int) {
 	for i := 0; i < 4; i++ {
 		m.interX[i].Update(m.getValue(x-1, y-1+i), m.getValue(x, y-1+i), m.getValue(x+1, y-1+i), m.getValue(x+2, y-1+i))
 	}
 }
 
-func (m *Mesh2D) Interpolate(x, y float32) float32 {
+func (m *mesh2D) Interpolate(x, y float32) float32 {
 	var interY gutil.CatmullRom
 	interY.Update(m.interX[0].Value(x), m.interX[1].Value(x), m.interX[2].Value(x), m.interX[3].Value(x))
 	return interY.Value(y)
+}
+
+func clamp(values []float32, min, max float32) {
+	size := len(values)
+	var minV float32
+	var maxV float32
+	minV = math.MaxFloat32
+	maxV = -math.MaxFloat32
+	for i := 0; i < size; i++ {
+		if values[i] < minV {
+			minV = values[i]
+		}
+		if values[i] > maxV {
+			maxV = values[i]
+		}
+	}
+
+	//fmt.Println("minV, maxV", minV, maxV)
+
+	dV := maxV - minV
+	v := max - min
+	for i := 0; i < size; i++ {
+		values[i] = ((values[i]-minV)/dV)*v + min
+	}
+}
+
+func clampSin(values []float32, min, max float32) {
+	size := len(values)
+	var minV float32
+	var maxV float32
+	minV = math.MaxFloat32
+	maxV = -math.MaxFloat32
+	for i := 0; i < size; i++ {
+		if values[i] < minV {
+			minV = values[i]
+		}
+		if values[i] > maxV {
+			maxV = values[i]
+		}
+	}
+
+	//fmt.Println("minV, maxV", minV, maxV)
+
+	dV := maxV - minV
+	v := max - min
+	for i := 0; i < size; i++ {
+		values[i] = float32(math.Sin(float64((values[i]-minV)/dV)*2*math.Pi)*0.5+0.5)*v + min
+	}
+}
+
+func symXY(values []float32, size int) {
+	for y := 0; y < size/2; y++ {
+		k := float32(2*y) / float32(size)
+		k = 1 - k*k*(3-2*k)
+		for x := y; x < size-y-1; x++ {
+			x1, y1 := x, y
+			x2, y2 := size-y-1, x
+			x3, y3 := size-x-1, size-y-1
+			x4, y4 := y, size-x-1
+
+			idx1 := y1*size + x1
+			idx2 := y2*size + x2
+			idx3 := y3*size + x3
+			idx4 := y4*size + x4
+
+			v1 := values[idx1]
+			v2 := values[idx2]
+			v3 := values[idx3]
+			v4 := values[idx4]
+
+			v := (v1 + v2 + v3 + v4) / 4
+
+			values[idx1] = k*v + (1-k)*values[idx1]
+			values[idx2] = k*v + (1-k)*values[idx2]
+			values[idx3] = k*v + (1-k)*values[idx3]
+			values[idx4] = k*v + (1-k)*values[idx4]
+		}
+	}
 }

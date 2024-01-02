@@ -1,6 +1,6 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2023 by Marko Gaćeša
 
-package renderer
+package render
 
 import (
 	"github.com/go-gl/mathgl/mgl32"

@@ -150,7 +150,7 @@ func (p *program) uniformTexture(name string, texture uint32) {
 }
 
 func (p *program) Geometry(geometry geometry.Geometry) {
-	geometry.GLBind()
+	geometry.Bind()
 
 	vertexSize := int32(geometry.VertexSize())
 
@@ -168,6 +168,10 @@ func (p *program) Geometry(geometry geometry.Geometry) {
 
 	p.meshPrimitiveCount = int32(geometry.VertexCount())
 	p.meshPrimitiveType = geometry.PrimitiveType()
+}
+
+func (p *program) Delete() {
+	gl.DeleteProgram(p.program)
 }
 
 func compile(vertexShaderSource, fragmentShaderSource string) (uint32, error) {
