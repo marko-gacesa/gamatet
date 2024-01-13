@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package field
 
@@ -219,4 +219,30 @@ func (f *Field) HardnessXY(x, y, delta, animType, animParam int) (blockOld, bloc
 	}
 
 	return
+}
+
+func (f *Field) AddExXY(x, y, animType, animParam int, b block.Block) {
+	if !f.Config.Anim {
+		return
+	}
+
+	switch animType {
+	case AnimDestroy:
+		f.animBlockDestroy(x, y, b)
+
+	case AnimPop:
+		f.addExBlock(x, y, b, anim.NewPopOut(time.Now(), piece.DurationAnimBlockChange))
+
+	case AnimFall, AnimShot:
+		t := time.Now()
+
+		if height := animParam; height > 0 {
+			t.Add(piece.GetFallDuration(height))
+			f.animBullet(x, y, height, block.Acid)
+		}
+
+		f.addExBlock(x, y, b,
+			anim.NewSpin(t, piece.DurationAnimBlockChange),
+			anim.NewPopOut(t, piece.DurationAnimBlockChange))
+	}
 }

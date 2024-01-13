@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package op
 
@@ -376,6 +376,7 @@ func (e *PieceFall) Do(f *field.Field) {
 	height := int(e.Height)
 	ctrl.Y -= height
 	animateDropPiece(ctrl, height, f.Config.Anim)
+	updatePieceShadow(f, ctrl)
 }
 
 func (e *PieceFall) Undo(f *field.Field) {
@@ -383,6 +384,7 @@ func (e *PieceFall) Undo(f *field.Field) {
 	height := int(e.Height)
 	ctrl.Y += height
 	ctrl.List.Clear()
+	updatePieceShadow(f, ctrl)
 }
 
 func (e *PieceFall) Equals(ev event.Event) bool {

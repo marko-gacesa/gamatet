@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package block
 
@@ -17,6 +17,9 @@ const (
 
 	// TypeLava behaves as a TypeRock, but a Piece made of it will collapse after falling.
 	TypeLava
+
+	// TypeWave "quantum tunnels" through blocks to fill the first hole it encounters.
+	TypeWave
 
 	TypeRuby
 
@@ -38,6 +41,7 @@ var (
 	Hard = Block{Type: TypeRock, Hardness: 1, Color: 0x808080FF}
 	Lava = Block{Type: TypeLava, Hardness: 0, Color: 0xFF8000FF}
 	Acid = Block{Type: TypeAcid, Hardness: 0, Color: 0x00FF00FF}
+	Wave = Block{Type: TypeWave, Hardness: 0, Color: 0xFF00C0FF}
 	Wall = Block{Type: TypeWall, Hardness: HardnessMax, Color: 0x808080FF}
 	Ruby = Block{Type: TypeRuby, Hardness: HardnessMax, Color: 0xFF0000FF}
 )

@@ -1,3 +1,5 @@
+// Copyright (c) 2023,2024 by Marko Gaćeša
+
 package geometry
 
 import (

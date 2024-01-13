@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package field
 
@@ -513,6 +513,68 @@ func TestField_GetHeightToTopmostFull(t *testing.T) {
 		}
 
 		result := f.GetHeightToTopmostFull(column, test.y)
+
+		if result != test.expected {
+			t.Errorf("test %q failed: expected height=%d but got height=%d", test.name, test.expected, result)
+		}
+	}
+}
+
+func TestField_GetHeightToTopmostHole(t *testing.T) {
+	const column = 0
+	const height = 8
+
+	tests := []struct {
+		name     string
+		y        int
+		column   []block.Block
+		expected int
+	}{
+		{
+			name:     "no block below",
+			y:        4,
+			expected: 0,
+		},
+		{
+			name:     "block at row 0",
+			y:        4,
+			column:   []block.Block{{Type: block.TypeRock}},
+			expected: 0,
+		},
+		{
+			name:     "block at row 3",
+			y:        4,
+			column:   []block.Block{{Type: block.TypeEmpty}, {Type: block.TypeEmpty}, {Type: block.TypeEmpty}, {Type: block.TypeRock}},
+			expected: 2,
+		},
+		{
+			name:     "blocks at row 1 and 3",
+			y:        4,
+			column:   []block.Block{{Type: block.TypeEmpty}, {Type: block.TypeRock}, {Type: block.TypeEmpty}, {Type: block.TypeRock}},
+			expected: 2,
+		},
+		{
+			name:     "block at row 2",
+			y:        4,
+			column:   []block.Block{{Type: block.TypeEmpty}, {Type: block.TypeEmpty}, {Type: block.TypeRock}},
+			expected: 3,
+		},
+		{
+			name:     "all full below",
+			y:        4,
+			column:   []block.Block{{Type: block.TypeRock}, {Type: block.TypeRock}, {Type: block.TypeRock}, {Type: block.TypeRock}},
+			expected: 0,
+		},
+	}
+
+	for _, test := range tests {
+		f := Make(4, height, 0)
+
+		for row, b := range test.column {
+			f.setXY(column, row, b)
+		}
+
+		result := f.GetHeightToTopmostHole(column, test.y)
 
 		if result != test.expected {
 			t.Errorf("test %q failed: expected height=%d but got height=%d", test.name, test.expected, result)

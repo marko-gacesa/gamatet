@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package piece
 
@@ -76,12 +76,14 @@ func NewDebugFeed(seed int) Feed {
 }
 
 func (f *debug) Get(idx int) Piece {
-	bagIdx := idx / 10
-	idx = idx % 10
+	const total = 12
+
+	bagIdx := idx / total
+	idx = idx % total
 
 	r := random{uint32(f.seed + 857*bagIdx + 13), uint32(f.seed + 328*bagIdx + 17)}
 
-	var m [10]int
+	var m [total]int
 	r.perm(m[:])
 
 	switch m[idx] {
@@ -92,20 +94,24 @@ func (f *debug) Get(idx int) Piece {
 	case 1:
 		return Shooter(5, block.TypeAcid)
 	case 2:
-		return NewPentomino(0, block.Rock)
+		return Shooter(5, block.TypeWave)
 	case 3:
-		return NewTetromino(TetrominoI, block.Rock)
+		return NewPentomino(0, block.Rock)
 	case 4:
-		return NewTetromino(TetrominoO, block.Rock)
+		return NewPentomino(0, block.Wave)
 	case 5:
-		return NewTetromino(TetrominoO, block.Acid)
+		return NewTetromino(TetrominoI, block.Rock)
 	case 6:
-		return NewTetromino(TetrominoO, block.Lava)
+		return NewTetromino(TetrominoO, block.Rock)
 	case 7:
-		return NewPentomino(13, block.Rock)
+		return NewTetromino(TetrominoO, block.Acid)
 	case 8:
-		return NewPentomino(13, block.Acid)
+		return NewTetromino(TetrominoO, block.Lava)
 	case 9:
+		return NewPentomino(13, block.Rock)
+	case 10:
+		return NewPentomino(13, block.Acid)
+	case 11:
 		return NewPentomino(13, block.Lava)
 	}
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package op
 
@@ -372,6 +372,64 @@ func (e *FieldBlockTransform) Read(r io.Reader) error {
 		return err
 	}
 	if err := e.NewBlock.Read(r); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func NewFieldExBlock(col, row int, animType, animParam int, b block.Block) *FieldExBlock {
+	return &FieldExBlock{
+		Col:       byte(col),
+		Row:       byte(row),
+		AnimType:  byte(animType),
+		AnimParam: byte(animParam),
+		Block:     b,
+	}
+}
+
+type FieldExBlock struct {
+	Col, Row  byte
+	AnimType  byte
+	AnimParam byte
+	Block     block.Block
+}
+
+var _ event.Event = (*FieldExBlock)(nil)
+
+func (e *FieldExBlock) Do(f *field.Field) {
+	f.AddExXY(int(e.Col), int(e.Row), int(e.AnimType), int(e.AnimParam), e.Block)
+}
+
+func (e *FieldExBlock) Undo(f *field.Field) {}
+
+func (e *FieldExBlock) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldExBlock)
+	return ok && e.Col == q.Col && e.Row == q.Row && e.Block == q.Block
+}
+
+func (e *FieldExBlock) Write(w io.Writer) error {
+	if _, err := w.Write([]byte{e.Col, e.Row, e.AnimType, e.AnimParam}); err != nil {
+		return err
+	}
+	if err := e.Block.Write(w); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *FieldExBlock) Read(r io.Reader) error {
+	var buffer [4]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.Col = buffer[0]
+	e.Row = buffer[1]
+	e.AnimType = buffer[2]
+	e.AnimParam = buffer[3]
+
+	if err := e.Block.Read(r); err != nil {
 		return err
 	}
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package demo
 
@@ -103,7 +103,8 @@ func Single() {
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
 	gl.Enable(gl.CULL_FACE)
-	gl.CullFace(gl.FRONT)
+	gl.CullFace(gl.BACK)
+	gl.FrontFace(gl.CW)
 	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
 
 	// To render transparent:
@@ -177,19 +178,21 @@ func Single() {
 	}()
 
 	playerInCh, playerOutCh := core.ChPair(ctx)
+	const seed = 101
+	const level = 2
 
 	setup := core.Setup{
 		Name: "test game",
 		Config: core.GameConfig{
 			WidthPerPlayer: fieldW,
 			Height:         fieldH,
-			Level:          6,
+			Level:          level,
 			PlayerZones:    true,
 			FieldConfig: field.Config{
 				PieceCollision: false,
 				Anim:           false,
 			},
-			RandomSeed:  123,
+			RandomSeed:  seed,
 			FeedBagSize: 2,
 		},
 		Fields: []core.FieldSetup{
@@ -217,13 +220,13 @@ func Single() {
 		Config: core.GameConfig{
 			WidthPerPlayer: fieldW,
 			Height:         fieldH,
-			Level:          6,
+			Level:          level,
 			PlayerZones:    true,
 			FieldConfig: field.Config{
 				PieceCollision: false,
 				Anim:           true,
 			},
-			RandomSeed:  123,
+			RandomSeed:  seed,
 			FeedBagSize: 2,
 		},
 		Fields: []core.FieldSetup{
@@ -307,7 +310,7 @@ func Single() {
 		}
 	})
 
-	chRenderInfoServer := make(chan *field.RenderInfo, 1)
+	//chRenderInfoServer := make(chan *field.RenderInfo, 1)
 	chRenderInfoClient := make(chan *field.RenderInfo, 1)
 
 	previousTime := glfw.GetTime()
@@ -329,7 +332,7 @@ out:
 
 		now := time.Now()
 
-		game.RenderRequest(ctx, 0, now, chRenderInfoServer)
+		//game.RenderRequest(ctx, 0, now, chRenderInfoServer)
 		gameClient.RenderRequest(ctx, 0, now, chRenderInfoClient)
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
@@ -360,16 +363,16 @@ out:
 			_ = angle
 		//*/
 
-		left := center.Mul4(mgl32.Translate3D(-float32(contentW)/4, 0, 0))
+		//left := center.Mul4(mgl32.Translate3D(-float32(contentW)/4, 0, 0))
 		right := center.Mul4(mgl32.Translate3D(float32(contentW)/4, 0, 0))
 
-		//*
-		select {
-		case renderInfo := <-chRenderInfoServer:
-			render.FieldRender{}.Render(rend, &left, renderInfo)
-			field.ReturnRenderInfo(renderInfo)
-		}
-		//*/
+		/*
+			select {
+			case renderInfo := <-chRenderInfoServer:
+				render.FieldRender{}.Render(rend, &left, renderInfo)
+				field.ReturnRenderInfo(renderInfo)
+			}
+			//*/
 
 		select {
 		case renderInfo := <-chRenderInfoClient:

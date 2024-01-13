@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package field
 
@@ -215,6 +215,28 @@ func (f *Field) GetHeightToTopmostFull(x, y int) (height int) {
 		if f.blocks[idx].Type != block.TypeEmpty {
 			return height
 		}
+	}
+
+	return 0
+}
+
+// GetHeightToTopmostHole returns height from which the block at location (x, y) can fall,
+// tunnel through some of the existing blocks until it finds the first hole (empty block).
+// So, if height>0, the location (x, y - height) will be empty. If height==0 than falling is not possible.
+func (f *Field) GetHeightToTopmostHole(x, y int) (height int) {
+	height = f.GetHeightToTopmostFull(x, y)
+	if height == 0 {
+		return
+	}
+
+	height++
+
+	w := f.w
+	for idx := (y-height)*w + x; idx >= 0; idx -= w {
+		if f.blocks[idx].Type == block.TypeEmpty {
+			return height
+		}
+		height++
 	}
 
 	return 0

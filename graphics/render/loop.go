@@ -1,4 +1,4 @@
-// Copyright (c) 2023 by Marko Gaćeša
+// Copyright (c) 2023,2024 by Marko Gaćeša
 
 package render
 
@@ -207,11 +207,11 @@ out:
 		//rend.Material(Resources.MatTexUV)
 		//rend.Material(Resources.MatNorm)
 
-		rend.Geometry(Resources.GeomSphere)
+		rend.Geometry(Resources.GeomDie)
 
-		rend.Material(Resources.MatLava)
-		Resources.MatLava.Color(mgl32.Vec4{1, 1, 1, 1})
-		Resources.MatLava.Texture(Resources.TexRock)
+		rend.Material(Resources.MatWave)
+		Resources.MatWave.Color(mgl32.Vec4{1, 1, 1, 1})
+		Resources.MatWave.Texture(Resources.TexRock)
 		drawBigBlock(center, -0.5, -0.5)
 
 		rend.Geometry(Resources.GeomFrame)
@@ -220,13 +220,13 @@ out:
 		Resources.MatRock.Color(mgl32.Vec4{1, 1, 1, 1})
 		drawBigBlock(center, -0.5, 0.5)
 
-		rend.Geometry(Resources.GeomGem)
+		rend.Geometry(Resources.GeomSphere)
 
 		rend.Material(Resources.MatRock)
 		Resources.MatRock.Color(mgl32.Vec4{1, 1, 1, 1})
 		drawBigBlock(center, 0.5, -0.5)
 
-		rend.Geometry(Resources.GeomRoundedCube)
+		rend.Geometry(Resources.GeomGem)
 
 		rend.Material(Resources.MatAcid)
 		Resources.MatAcid.Color(mgl32.Vec4{1, 1, 1, 1})

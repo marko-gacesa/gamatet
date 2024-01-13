@@ -1,4 +1,4 @@
-// Copyright (c) 2023 by Marko Gaćeša
+// Copyright (c) 2023,2024 by Marko Gaćeša
 
 package render
 
@@ -16,6 +16,7 @@ var Resources struct {
 	MatRock  material.Rock
 	MatLava  material.Lava
 	MatAcid  material.Acid
+	MatWave  material.Curl
 
 	GeomCube        geometry.Geometry
 	GeomDentCube    geometry.Geometry
@@ -41,6 +42,7 @@ func GenerateResources() {
 	Resources.MatRock = material.NewRock(Resources.TexRock)
 	Resources.MatLava = material.NewLava(Resources.TexRock)
 	Resources.MatAcid = material.NewAcid(Resources.TexRock)
+	Resources.MatWave = material.NewCurl(Resources.TexRock)
 
 	Resources.GeomCube = geometry.MakeCubeGeometry(geometry.CubeSideSimple)
 	Resources.GeomDentCube = geometry.MakeCubeGeometry(geometry.CubeSideDent)
@@ -79,6 +81,7 @@ func ReleaseResources() {
 	Resources.MatRock.Delete()
 	Resources.MatLava.Delete()
 	Resources.MatAcid.Delete()
+	Resources.MatWave.Delete()
 
 	texture.Instance.DeleteAll()
 }

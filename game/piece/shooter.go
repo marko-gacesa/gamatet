@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package piece
 
@@ -15,10 +15,6 @@ type shooter struct {
 var _ Piece = (*shooter)(nil)
 
 func Shooter(ammo int, bulletType block.Type) Piece {
-	if bulletType != block.TypeLava && bulletType != block.TypeAcid {
-		panic("bullet type is invalid")
-	}
-
 	return &shooter{
 		bulletType: bulletType,
 		ammo:       ammo,
@@ -76,10 +72,16 @@ func (p *shooter) Get(x, y int) (b block.Block) {
 	if p.IsEmpty(x, y) {
 		return
 	}
-	if p.bulletType == block.TypeLava {
+
+	switch p.bulletType {
+	default:
+		fallthrough
+	case block.TypeLava:
 		return block.Lava
-	} else {
+	case block.TypeAcid:
 		return block.Acid
+	case block.TypeWave:
+		return block.Wave
 	}
 }
 
@@ -91,9 +93,14 @@ func (p *shooter) TopEmptyRows() int        { return 0 }
 func (p *shooter) BottomEmptyRows() int     { return 0 }
 
 func (p *shooter) String() string {
-	if p.bulletType == block.TypeLava {
+	switch p.bulletType {
+	default:
+		fallthrough
+	case block.TypeLava:
 		return "LL"
-	} else {
+	case block.TypeAcid:
 		return "AA"
+	case block.TypeWave:
+		return "CC"
 	}
 }

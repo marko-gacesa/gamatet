@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package render
 
@@ -29,10 +29,11 @@ func (f FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.Re
 	// light intensities
 	const (
 		lightIntPiece   = 0.4
-		lightIntLava    = 1.5
-		lightIntAcid    = 1.5
+		lightIntLava    = 1.2
+		lightIntAcid    = 1.2
+		lightIntWave    = 1.5
 		lightIntRuby    = 3
-		lightPowShooter = 2
+		lightPowShooter = 1.5
 	)
 
 	listWall := rendercache.ModelPool.Get()
@@ -40,6 +41,7 @@ func (f FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.Re
 	listRock := rendercache.ModelColorPool.Get()
 	listLava := rendercache.ModelColorPool.Get()
 	listAcid := rendercache.ModelColorPool.Get()
+	listWave := rendercache.ModelColorPool.Get()
 	listRuby := rendercache.ModelPool.Get()
 	listShad := rendercache.ModelColorPool.Get()
 	lights := rendercache.PointLightPool.Get()
@@ -49,6 +51,7 @@ func (f FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.Re
 		rendercache.ModelColorPool.Put(listRock)
 		rendercache.ModelColorPool.Put(listLava)
 		rendercache.ModelColorPool.Put(listAcid)
+		rendercache.ModelColorPool.Put(listWave)
 		rendercache.ModelPool.Put(listRuby)
 		rendercache.ModelColorPool.Put(listShad)
 		rendercache.PointLightPool.Put(lights)
@@ -159,6 +162,9 @@ func (f FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.Re
 			case block.TypeLava:
 				listLava.Add(modelPieceBlock, aniColor)
 				lights.AddWithModel(modelPieceBlock, colorVector(block.Lava.Color).Vec3(), lightIntLava*ligthPower)
+			case block.TypeWave:
+				listWave.Add(modelPieceBlock, aniColor)
+				lights.AddWithModel(modelPieceBlock, colorVector(block.Wave.Color).Vec3(), lightIntWave*ligthPower)
 			default:
 				blockColor := colorVector(pb.Block.Color)
 				color := mulColor(blockColor, aniColor)
@@ -219,6 +225,9 @@ func (f FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.Re
 				case block.TypeLava:
 					blockColor := mgl32.Vec4{scale, scale, scale, 1}
 					listLava.Add(modelPieceBlock, blockColor)
+				case block.TypeWave:
+					blockColor := mgl32.Vec4{scale, scale, scale, 1}
+					listWave.Add(modelPieceBlock, blockColor)
 				default:
 					blockColor := colorVector(pb.Block.Color).Mul(scale)
 					listRock.Add(modelPieceBlock, blockColor)
@@ -275,6 +284,15 @@ func (f FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.Re
 		for i := range listAcid {
 			Resources.MatAcid.Color(listAcid[i].Color)
 			r.Render(&listAcid[i].Model)
+		}
+	}
+
+	if len(listWave) > 0 {
+		r.Geometry(Resources.GeomDie)
+		r.Material(Resources.MatWave)
+		for i := range listWave {
+			Resources.MatWave.Color(listWave[i].Color)
+			r.Render(&listWave[i].Model)
 		}
 	}
 

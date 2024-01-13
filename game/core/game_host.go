@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package core
 
@@ -172,18 +172,31 @@ func (g *GameHost) Perform(
 	})
 
 	/////////////////////////////
-	func() {
-		w := g.fields[0].Field.GetWidth()
-		events := &g.fields[0].events
+	func(f *field.Field, events *event.List) {
+		w := f.GetWidth()
 		for i := 0; i <= 2; i++ {
 			for d := 0; d <= i; d++ {
 				putBlock(events, d, i-d, block.Wall)
 				putBlock(events, w-1-d, i-d, block.Wall)
 			}
+			putBlock(events, i, 3-i, block.Block{
+				Type:     block.TypeRock,
+				Hardness: 1,
+				Color:    0xFFFFFFFF,
+			})
+			putBlock(events, w-1-i, 3-i, block.Block{
+				Type:     block.TypeRock,
+				Hardness: 1,
+				Color:    0xFFFFFFFF,
+			})
+		}
+		for i := 0; i <= 4; i++ {
+			putBlock(events, i, 5, block.Rock)
+			putBlock(events, w-1-i, 9, block.Rock)
 		}
 		//conjureBlock(&g.fields[0].events, 0, 4, block.Ruby)
 		g.applyEvents(ctx)
-	}()
+	}(g.fields[0].Field, &g.fields[0].events)
 	////////////////////////////
 
 	for {

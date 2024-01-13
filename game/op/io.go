@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package op
 
@@ -21,6 +21,7 @@ const (
 	codeFieldBlockSet
 	codeFieldBlockHardness
 	codeFieldBlockTransform
+	codeFieldExBlock
 
 	// piece events
 	codePieceState
@@ -71,6 +72,8 @@ func Write(w io.Writer, e event.Event) (err error) {
 		err = util.Write8(w, codeFieldBlockHardness)
 	case *FieldBlockTransform:
 		err = util.Write8(w, codeFieldBlockTransform)
+	case *FieldExBlock:
+		err = util.Write8(w, codeFieldExBlock)
 
 	default:
 		err = fmt.Errorf("unrecognized event: %T", e)
@@ -107,6 +110,8 @@ func Read(r io.Reader) (event.Event, error) {
 		e = &FieldBlockHardness{}
 	case codeFieldBlockTransform:
 		e = &FieldBlockTransform{}
+	case codeFieldExBlock:
+		e = &FieldExBlock{}
 
 	case codePieceState:
 		e = &PieceState{}
