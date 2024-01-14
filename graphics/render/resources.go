@@ -9,7 +9,10 @@ import (
 )
 
 var Resources struct {
-	TexRock uint32
+	TexRock   uint32
+	TexChain1 uint32
+	TexChain2 uint32
+	TexChain3 uint32
 
 	MatTexUV material.Material
 	MatNorm  material.Material
@@ -32,10 +35,16 @@ var Resources struct {
 func GenerateResources() {
 	texture.Instance = texture.Init()
 
-	//imgR := texture.SymbolCache.Symbol('R')
-	img := texture.GrayTex(345)
+	const seed = 345
 
-	Resources.TexRock = texture.Instance.Bind(img)
+	//imgR := texture.SymbolCache.Symbol('R')
+	rock := texture.GrayTex(seed)
+	link := texture.Link(seed)
+
+	Resources.TexRock = texture.Instance.Bind(rock)
+	Resources.TexChain1 = texture.Instance.Bind(texture.Chain1(link))
+	Resources.TexChain2 = texture.Instance.Bind(texture.Chain2(link))
+	Resources.TexChain3 = texture.Instance.Bind(texture.Chain3(link))
 
 	Resources.MatTexUV = material.TexUV()
 	Resources.MatNorm = material.Normal()

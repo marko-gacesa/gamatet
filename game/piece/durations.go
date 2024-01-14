@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package piece
 
@@ -26,7 +26,7 @@ const (
 	DurationFall = 40 * time.Millisecond
 
 	// DurationFullLine is duration of the pause after a full line is cleared.
-	DurationFullLine = 50 * time.Millisecond
+	DurationFullLine = 75 * time.Millisecond
 
 	// DurationAnimNewPiece is time to animate appearance of a new piece.
 	DurationAnimNewPiece = 100 * time.Millisecond

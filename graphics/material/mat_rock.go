@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package material
 
@@ -21,6 +21,8 @@ uniform sampler2D textureSampler;
 uniform vec4 objectColor;
 uniform vec3 lightDirection;
 uniform Light pointLights[16];
+uniform sampler2D textureSamplerChain;
+uniform int shouldDrawChain;
 
 in vec2 fragmentTexture;
 in vec3 fragmentNormal;
@@ -50,11 +52,20 @@ void main() {
 
 	vec3 ambientColor = vec3(0.1);
 
+	if (shouldDrawChain > 0) {
+		float chain = texture(textureSamplerChain, fragmentTexture).r;
+		if (chain > 0.0) {
+			vec3 rgb = min(chain * (ambientColor + scatteredLight), vec3(1.0));
+			outputColor = vec4(rgb, 1);
+			return;
+		}
+	}
+
 	vec3 rgb = min(objectColor.rgb * (ambientColor + scatteredLight), vec3(1.0));
 
 	float gray = texture(textureSampler, fragmentTexture).r;
 	gray = mix(0.6, 1.0, gray);
-	outputColor = vec4(gray * rgb, 0.5);
+	outputColor = vec4(gray * rgb, 1);
 }` + z
 
 func NewRock(tex uint32) Rock {
@@ -65,6 +76,8 @@ func NewRock(tex uint32) Rock {
 
 	prog.registerUniform(uniLightDirection)
 	prog.registerUniform(uniPointLights)
+	prog.registerUniform(uniTextureChain)
+	prog.registerUniform(uniShouldDrawChain)
 
 	return Rock{
 		program: prog,
@@ -81,6 +94,17 @@ func (p Rock) Refresh() {
 	p.program.Refresh()
 	p.program.uniformVec3(uniLightDirection, mgl32.Vec3{1, 4, 3}.Normalize())
 	p.program.Texture(p.tex)
+	p.program.uniformTexture(uniTextureChain, p.tex)
+	p.program.uniform1i(uniShouldDrawChain, 0)
+}
+
+func (p Rock) ChainTexture(tex uint32) {
+	p.program.uniformTexture(uniTextureChain, tex)
+	p.program.uniform1i(uniShouldDrawChain, 1)
+}
+
+func (p Rock) ClearChain() {
+	p.program.uniform1i(uniShouldDrawChain, 0)
 }
 
 func (p Rock) Lights(lights []gtypes.PointLight) {

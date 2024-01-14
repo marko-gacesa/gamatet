@@ -100,15 +100,21 @@ func (f *debug) Get(idx int) Piece {
 	case 4:
 		return NewPentomino(0, block.Wave)
 	case 5:
-		return NewTetromino(TetrominoI, block.Rock)
+		b := block.Rock
+		b.Hardness = 1
+		return NewTetromino(TetrominoI, b)
 	case 6:
-		return NewTetromino(TetrominoO, block.Rock)
+		b := block.Rock
+		b.Hardness = 2
+		return NewTetromino(TetrominoO, b)
 	case 7:
 		return NewTetromino(TetrominoO, block.Acid)
 	case 8:
 		return NewTetromino(TetrominoO, block.Lava)
 	case 9:
-		return NewPentomino(13, block.Rock)
+		b := block.Rock
+		b.Hardness = 3
+		return NewPentomino(13, b)
 	case 10:
 		return NewPentomino(13, block.Acid)
 	case 11:

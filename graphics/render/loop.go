@@ -214,9 +214,10 @@ out:
 		Resources.MatWave.Texture(Resources.TexRock)
 		drawBigBlock(center, -0.5, -0.5)
 
-		rend.Geometry(Resources.GeomFrame)
+		rend.Geometry(Resources.GeomRoundedCube)
 
 		rend.Material(Resources.MatRock)
+		Resources.MatRock.ChainTexture(Resources.TexChain3)
 		Resources.MatRock.Color(mgl32.Vec4{1, 1, 1, 1})
 		drawBigBlock(center, -0.5, 0.5)
 

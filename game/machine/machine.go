@@ -383,14 +383,20 @@ func _shoot(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 		return
 	}
 
+	var fired bool
+
 	b := ctrl.Piece.Get(0, 0)
 	switch b.Type {
 	case block.TypeLava:
-		_shootLava(f, ctrl, p)
+		fired = _shootLava(f, ctrl, p)
 	case block.TypeAcid:
-		_shootAcid(f, ctrl, p)
+		fired = _shootAcid(f, ctrl, p)
 	case block.TypeWave:
-		_shootWave(f, ctrl, p)
+		fired = _shootWave(f, ctrl, p)
+	}
+
+	if !fired {
+		return
 	}
 
 	if ammo == 1 {
@@ -398,10 +404,11 @@ func _shoot(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 	}
 }
 
-func _shootLava(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
+func _shootLava(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) bool {
 	height, y0, ok := _dropLavaHeight(f, ctrl.X, ctrl.Y)
 	if !ok {
-		return
+		p.Push(op.NewFieldExBlock(ctrl.X, ctrl.Y, field.AnimDestroy, 0, block.Lava))
+		return false
 	}
 
 	b := block.Block{
@@ -411,12 +418,15 @@ func _shootLava(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 
 	p.Push(op.NewPieceActivate(ctrl.Idx, 1))
 	p.Push(op.NewFieldBlockSet(ctrl.X, y0, op.OpSet, field.AnimShot, height, b))
+
+	return true
 }
 
-func _shootAcid(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
+func _shootAcid(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) bool {
 	height, y0, b, ok := _dropAcidHeight(f, ctrl.X, ctrl.Y)
 	if !ok || b.Hardness == block.HardnessMax {
-		return
+		p.Push(op.NewFieldExBlock(ctrl.X, ctrl.Y, field.AnimDestroy, 0, block.Acid))
+		return false
 	}
 
 	p.Push(op.NewPieceActivate(ctrl.Idx, 1))
@@ -426,12 +436,15 @@ func _shootAcid(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 	} else {
 		p.Push(op.NewFieldBlockSet(ctrl.X, y0, op.OpClear, field.AnimShot, height, b))
 	}
+
+	return true
 }
 
-func _shootWave(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
+func _shootWave(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) bool {
 	height, y0, ok := _dropWaveHeight(f, ctrl.X, ctrl.Y)
 	if !ok {
-		return
+		p.Push(op.NewFieldExBlock(ctrl.X, ctrl.Y, field.AnimDestroy, 0, block.Wave))
+		return false
 	}
 
 	b := block.Block{
@@ -441,6 +454,8 @@ func _shootWave(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 
 	p.Push(op.NewPieceActivate(ctrl.Idx, 1))
 	p.Push(op.NewFieldBlockSet(ctrl.X, y0, op.OpSet, field.AnimShot, height, b))
+
+	return true
 }
 
 func _dropLavaHeight(f *field.Field, x, y int) (height, y0 int, ok bool) {

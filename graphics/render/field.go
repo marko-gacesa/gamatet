@@ -39,6 +39,9 @@ func (f FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.Re
 	listWall := rendercache.ModelPool.Get()
 	listBack := rendercache.ModelPool.Get()
 	listRock := rendercache.ModelColorPool.Get()
+	listRock1 := rendercache.ModelColorPool.Get()
+	listRock2 := rendercache.ModelColorPool.Get()
+	listRock3 := rendercache.ModelColorPool.Get()
 	listLava := rendercache.ModelColorPool.Get()
 	listAcid := rendercache.ModelColorPool.Get()
 	listWave := rendercache.ModelColorPool.Get()
@@ -49,6 +52,9 @@ func (f FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.Re
 		rendercache.ModelPool.Put(listWall)
 		rendercache.ModelPool.Put(listBack)
 		rendercache.ModelColorPool.Put(listRock)
+		rendercache.ModelColorPool.Put(listRock1)
+		rendercache.ModelColorPool.Put(listRock2)
+		rendercache.ModelColorPool.Put(listRock3)
 		rendercache.ModelColorPool.Put(listLava)
 		rendercache.ModelColorPool.Put(listAcid)
 		rendercache.ModelColorPool.Put(listWave)
@@ -120,7 +126,16 @@ func (f FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.Re
 		default:
 			blockColor := colorVector(fb.Block.Color)
 			color := mulColor(blockColor, aniColor)
-			listRock.Add(modelFieldBlock, color)
+			switch fb.Hardness {
+			case 0:
+				listRock.Add(modelFieldBlock, color)
+			case 1:
+				listRock1.Add(modelFieldBlock, color)
+			case 2:
+				listRock2.Add(modelFieldBlock, color)
+			default:
+				listRock3.Add(modelFieldBlock, color)
+			}
 		}
 	}
 
@@ -168,8 +183,16 @@ func (f FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.Re
 			default:
 				blockColor := colorVector(pb.Block.Color)
 				color := mulColor(blockColor, aniColor)
-				listRock.Add(modelPieceBlock, color)
-				lights.AddWithModel(modelPieceBlock, blockColor.Vec3(), lightIntPiece)
+				switch pb.Hardness {
+				case 0:
+					listRock.Add(modelPieceBlock, color)
+				case 1:
+					listRock1.Add(modelPieceBlock, color)
+				case 2:
+					listRock2.Add(modelPieceBlock, color)
+				default:
+					listRock3.Add(modelPieceBlock, color)
+				}
 			}
 		}
 	}
@@ -229,8 +252,17 @@ func (f FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.Re
 					blockColor := mgl32.Vec4{scale, scale, scale, 1}
 					listWave.Add(modelPieceBlock, blockColor)
 				default:
-					blockColor := colorVector(pb.Block.Color).Mul(scale)
-					listRock.Add(modelPieceBlock, blockColor)
+					color := colorVector(pb.Block.Color).Mul(scale)
+					switch pb.Hardness {
+					case 0:
+						listRock.Add(modelPieceBlock, color)
+					case 1:
+						listRock1.Add(modelPieceBlock, color)
+					case 2:
+						listRock2.Add(modelPieceBlock, color)
+					default:
+						listRock3.Add(modelPieceBlock, color)
+					}
 				}
 			}
 		}
@@ -259,6 +291,31 @@ func (f FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.Re
 	for i := range listRock {
 		Resources.MatRock.Color(listRock[i].Color)
 		r.Render(&listRock[i].Model)
+	}
+
+	if len(listRock1) > 0 {
+		Resources.MatRock.ChainTexture(Resources.TexChain1)
+		for i := range listRock1 {
+			Resources.MatRock.Color(listRock1[i].Color)
+			r.Render(&listRock1[i].Model)
+		}
+		Resources.MatRock.ClearChain()
+	}
+	if len(listRock2) > 0 {
+		Resources.MatRock.ChainTexture(Resources.TexChain2)
+		for i := range listRock2 {
+			Resources.MatRock.Color(listRock2[i].Color)
+			r.Render(&listRock2[i].Model)
+		}
+		Resources.MatRock.ClearChain()
+	}
+	if len(listRock3) > 0 {
+		Resources.MatRock.ChainTexture(Resources.TexChain3)
+		for i := range listRock3 {
+			Resources.MatRock.Color(listRock3[i].Color)
+			r.Render(&listRock3[i].Model)
+		}
+		Resources.MatRock.ClearChain()
 	}
 
 	if len(listShad) > 0 {

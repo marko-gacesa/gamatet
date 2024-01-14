@@ -179,22 +179,29 @@ func (g *GameHost) Perform(
 				putBlock(events, d, i-d, block.Wall)
 				putBlock(events, w-1-d, i-d, block.Wall)
 			}
-			putBlock(events, i, 3-i, block.Block{
+			putBlock(events, i, 4-i, block.Block{
 				Type:     block.TypeRock,
-				Hardness: 1,
-				Color:    0xFFFFFFFF,
+				Hardness: byte(1 + i),
+				Color:    0x00FFFFFF,
 			})
-			putBlock(events, w-1-i, 3-i, block.Block{
+			putBlock(events, w-1-i, 4-i, block.Block{
 				Type:     block.TypeRock,
-				Hardness: 1,
-				Color:    0xFFFFFFFF,
+				Hardness: byte(1 + i),
+				Color:    0xFFFF00FF,
 			})
 		}
-		for i := 0; i <= 4; i++ {
-			putBlock(events, i, 5, block.Rock)
-			putBlock(events, w-1-i, 9, block.Rock)
-		}
-		//conjureBlock(&g.fields[0].events, 0, 4, block.Ruby)
+		/*
+			for i := 3; i < 7; i++ {
+				for j := 0; j < 18; j++ {
+					putBlock(events, i, j, block.Block{
+						Type:     block.TypeRock,
+						Hardness: byte(i - 3),
+						Color:    0x90FF80FF,
+					})
+				}
+			}
+		*/
+		//conjureBlock(&g.fields[0].events, 0, 6, block.Ruby)
 		g.applyEvents(ctx)
 	}(g.fields[0].Field, &g.fields[0].events)
 	////////////////////////////
