@@ -1,10 +1,12 @@
-// Copyright (c) 2020-2023 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package render
 
 import (
 	"github.com/go-gl/mathgl/mgl32"
 )
+
+var colorWhite = mgl32.Vec4{1, 1, 1, 1}
 
 func colorVector(c uint32) (color mgl32.Vec4) {
 	color[0] = float32(c>>24) / 255

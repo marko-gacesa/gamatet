@@ -1,10 +1,21 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package material
 
-import (
-	"github.com/go-gl/mathgl/mgl32"
-)
+var _ Material = (*Acid)(nil)
+
+func NewAcid(tex uint32) *Acid {
+	p, err := newProgramBlock(defaultVertexShader, acidFragmentShader, tex)
+	if err != nil {
+		panic("failed to make acid material: " + err.Error())
+	}
+
+	return &Acid{programBlock: *p}
+}
+
+type Acid struct {
+	programBlock
+}
 
 const acidFragmentShader = `
 #version 330 core
@@ -34,30 +45,3 @@ void main() {
 
     outputColor = vec4(finalColor, 1.0);
 }` + z
-
-func NewAcid(tex uint32) Acid {
-	prog, err := newProgram(defaultVertexShader, acidFragmentShader)
-	if err != nil {
-		panic("failed to make acid material: " + err.Error())
-	}
-
-	prog.registerUniform(uniLightDirection)
-
-	return Acid{
-		program: prog,
-		tex:     tex,
-	}
-}
-
-type Acid struct {
-	*program
-	tex uint32
-}
-
-func (p Acid) Refresh() {
-	p.program.Refresh()
-	p.program.uniformVec3(uniLightDirection, mgl32.Vec3{1, 4, 3}.Normalize())
-	p.program.Texture(p.tex)
-}
-
-var _ Material = Acid{program: nil}

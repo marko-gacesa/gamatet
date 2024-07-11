@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package core
 
@@ -63,6 +63,7 @@ func MakeInterpreter(setup Setup) *GameInterpreter {
 		for j := range players {
 			ctrl := f.Ctrl(byte(j))
 
+			ctrl.Name = players[j].Name
 			ctrl.Feed = pieceFeed
 			ctrl.Config = players[j].Config
 			ctrl.Level = setup.Config.Level

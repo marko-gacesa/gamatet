@@ -5,21 +5,30 @@ package render
 import (
 	"gamatet/graphics/geometry"
 	"gamatet/graphics/material"
+	"gamatet/graphics/textcanvas"
 	"gamatet/graphics/texture"
+	"github.com/golang/freetype/truetype"
+	"image/color"
 )
 
-var Resources struct {
+type Resources struct {
+	texManager *texture.Manager
+
+	TextCanvas *textcanvas.TextCanvas
+
 	TexRock   uint32
 	TexChain1 uint32
 	TexChain2 uint32
 	TexChain3 uint32
+	TexText   uint32
 
 	MatTexUV material.Material
 	MatNorm  material.Material
-	MatRock  material.Rock
-	MatLava  material.Lava
-	MatAcid  material.Acid
-	MatWave  material.Curl
+	MatRock  *material.Rock
+	MatLava  *material.Lava
+	MatAcid  *material.Acid
+	MatWave  *material.Curl
+	MatText  *material.Text
 
 	GeomCube        geometry.Geometry
 	GeomDentCube    geometry.Geometry
@@ -30,67 +39,107 @@ var Resources struct {
 	GeomStar6       geometry.Geometry
 	GeomStar8       geometry.Geometry
 	GeomSphere      geometry.Geometry
+	GeomChar        map[byte]geometry.Text
+	GeomText        map[string]geometry.Text
 }
 
-func GenerateResources() {
-	texture.Instance = texture.Init()
-
+func GenerateResources(manager *texture.Manager, font *truetype.Font) Resources {
 	const seed = 345
 
-	//imgR := texture.SymbolCache.Symbol('R')
 	rock := texture.GrayTex(seed)
 	link := texture.Link(seed)
 
-	Resources.TexRock = texture.Instance.Bind(rock)
-	Resources.TexChain1 = texture.Instance.Bind(texture.Chain1(link))
-	Resources.TexChain2 = texture.Instance.Bind(texture.Chain2(link))
-	Resources.TexChain3 = texture.Instance.Bind(texture.Chain3(link))
+	face := textcanvas.NewFace(font, 32, 72)
+	canvas := textcanvas.NewTextCanvas(512)
+	geomChar := make(map[byte]geometry.Text)
+	geomText := make(map[string]geometry.Text)
+	for key := byte(33); key < 127; key++ {
+		value := canvas.TextFloat32(string(rune(key)), face, color.RGBA{255, 255, 255, 128}, false)
+		geomChar[key] = geometry.NewTextWithHeightAndScale(value, 1, 0.75)
+	}
+	for _, key := range []string{"ij"} {
+		value := canvas.TextFloat32(key, face, color.RGBA{255, 255, 255, 128}, false)
+		geomText[key] = geometry.NewTextWithHeightAndScale(value, 1, 0.75)
+	}
 
-	Resources.MatTexUV = material.TexUV()
-	Resources.MatNorm = material.Normal()
-	Resources.MatRock = material.NewRock(Resources.TexRock)
-	Resources.MatLava = material.NewLava(Resources.TexRock)
-	Resources.MatAcid = material.NewAcid(Resources.TexRock)
-	Resources.MatWave = material.NewCurl(Resources.TexRock)
+	texRock := texture.Instance.Bind(rock)
+	texText := texture.Instance.Bind(canvas.Image())
 
-	Resources.GeomCube = geometry.MakeCubeGeometry(geometry.CubeSideSimple)
-	Resources.GeomDentCube = geometry.MakeCubeGeometry(geometry.CubeSideDent)
-	Resources.GeomFrame = geometry.MakeCubeGeometry(geometry.CubeSideFrame)
-	Resources.GeomRoundedCube = geometry.MakeCubeGeometry(geometry.CubeSideRounded)
-	Resources.GeomGem = geometry.MakeCubeGeometry(geometry.CubeSideTruncated)
-	Resources.GeomDie = geometry.MakeCubeGeometry(geometry.CubeSideDie)
-	Resources.GeomStar6 = geometry.MakeCubeGeometry(geometry.CubeSideHexagonalStar(0.5))
-	Resources.GeomStar8 = geometry.MakeCubeGeometry(geometry.CubeSideOctagonalStar(1))
-	Resources.GeomSphere = geometry.MakeSphereGeometry(0.55, 16, 8)
+	return Resources{
+		texManager: manager,
+
+		TextCanvas: canvas,
+
+		TexRock:   texRock,
+		TexChain1: texture.Instance.Bind(texture.Chain1(link)),
+		TexChain2: texture.Instance.Bind(texture.Chain2(link)),
+		TexChain3: texture.Instance.Bind(texture.Chain3(link)),
+		TexText:   texText,
+
+		MatTexUV: material.TexUV(),
+		MatNorm:  material.Normal(),
+		MatRock:  material.NewRock(texRock),
+		MatLava:  material.NewLava(texRock),
+		MatAcid:  material.NewAcid(texRock),
+		MatWave:  material.NewCurl(texRock),
+		MatText:  material.NewText(texText),
+
+		GeomCube:        geometry.MakeCubeGeometry(geometry.CubeSideSimple),
+		GeomDentCube:    geometry.MakeCubeGeometry(geometry.CubeSideDent),
+		GeomFrame:       geometry.MakeCubeGeometry(geometry.CubeSideFrame),
+		GeomRoundedCube: geometry.MakeCubeGeometry(geometry.CubeSideRounded),
+		GeomGem:         geometry.MakeCubeGeometry(geometry.CubeSideTruncated),
+		GeomDie:         geometry.MakeCubeGeometry(geometry.CubeSideDie),
+		GeomStar6:       geometry.MakeCubeGeometry(geometry.CubeSideHexagonalStar(0.5)),
+		GeomStar8:       geometry.MakeCubeGeometry(geometry.CubeSideOctagonalStar(1)),
+		GeomSphere:      geometry.MakeSphereGeometry(0.55, 16, 8),
+		GeomChar:        geomChar,
+		GeomText:        geomText,
+	}
 }
 
-func ReleaseResources() {
-	Resources.GeomCube.Delete()
-	Resources.GeomDentCube.Delete()
-	Resources.GeomFrame.Delete()
-	Resources.GeomRoundedCube.Delete()
-	Resources.GeomGem.Delete()
-	Resources.GeomDie.Delete()
-	Resources.GeomStar6.Delete()
-	Resources.GeomStar8.Delete()
-	Resources.GeomSphere.Delete()
+func (r Resources) Release() {
+	r.GeomCube.Delete()
+	r.GeomDentCube.Delete()
+	r.GeomFrame.Delete()
+	r.GeomRoundedCube.Delete()
+	r.GeomGem.Delete()
+	r.GeomDie.Delete()
+	r.GeomStar6.Delete()
+	r.GeomStar8.Delete()
+	r.GeomSphere.Delete()
+	for key, g := range r.GeomChar {
+		g.Delete()
+		delete(r.GeomChar, key)
+	}
+	for key, g := range r.GeomText {
+		g.Delete()
+		delete(r.GeomText, key)
+	}
 
-	Resources.GeomCube = nil
-	Resources.GeomDentCube = nil
-	Resources.GeomFrame = nil
-	Resources.GeomRoundedCube = nil
-	Resources.GeomGem = nil
-	Resources.GeomDie = nil
-	Resources.GeomStar6 = nil
-	Resources.GeomStar8 = nil
-	Resources.GeomSphere = nil
+	r.GeomCube = nil
+	r.GeomDentCube = nil
+	r.GeomFrame = nil
+	r.GeomRoundedCube = nil
+	r.GeomGem = nil
+	r.GeomDie = nil
+	r.GeomStar6 = nil
+	r.GeomStar8 = nil
+	r.GeomSphere = nil
 
-	Resources.MatTexUV.Delete()
-	Resources.MatNorm.Delete()
-	Resources.MatRock.Delete()
-	Resources.MatLava.Delete()
-	Resources.MatAcid.Delete()
-	Resources.MatWave.Delete()
+	r.MatTexUV.Delete()
+	r.MatNorm.Delete()
+	r.MatRock.Delete()
+	r.MatLava.Delete()
+	r.MatAcid.Delete()
+	r.MatWave.Delete()
+	r.MatText.Delete()
 
-	texture.Instance.DeleteAll()
+	texture.Instance.Delete(r.TexRock)
+	texture.Instance.Delete(r.TexChain1)
+	texture.Instance.Delete(r.TexChain2)
+	texture.Instance.Delete(r.TexChain3)
+	texture.Instance.Delete(r.TexText)
+
+	r.TextCanvas.Clear()
 }

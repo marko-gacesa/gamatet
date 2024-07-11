@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package geometry
 
@@ -7,7 +7,7 @@ import (
 	"unsafe"
 )
 
-type GLBinder interface {
+type VertexArray interface {
 	Load(vertexCount, vertexSize int, ptr unsafe.Pointer)
 	Delete()
 	Bind()

@@ -10,6 +10,7 @@ import (
 	"gamatet/game/field"
 	"gamatet/game/piece"
 	"gamatet/graphics/render"
+	"gamatet/graphics/texture"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -119,10 +120,13 @@ func Single() {
 	const contentW = 2 * (3 + 1 + fieldW)
 	const contentH = fieldH + 2
 
-	render.GenerateResources()
-	defer render.ReleaseResources()
+	texture.Instance = texture.Init()
+
+	resources := render.GenerateResources(texture.Instance, render.FontNumerals)
+	defer resources.Release()
 
 	rend := render.NewRenderer()
+	defer rend.Release()
 
 	func() {
 		w, h := window.GetFramebufferSize()
@@ -315,6 +319,11 @@ func Single() {
 
 	previousTime := glfw.GetTime()
 
+	fieldRendererLeft := render.NewFieldRenderer(&resources)
+	fieldRendererRight := render.NewFieldRenderer(&resources)
+	defer fieldRendererLeft.Release()
+	defer fieldRendererRight.Release()
+
 out:
 	for {
 		select {
@@ -369,14 +378,14 @@ out:
 		/*
 			select {
 			case renderInfo := <-chRenderInfoServer:
-				render.FieldRender{}.Render(rend, &left, renderInfo)
+				fieldRendererLeft.Render(rend, &left, renderInfo)
 				field.ReturnRenderInfo(renderInfo)
 			}
 			//*/
 
 		select {
 		case renderInfo := <-chRenderInfoClient:
-			render.FieldRender{}.Render(rend, &right, renderInfo)
+			fieldRendererRight.Render(rend, &right, renderInfo)
 			field.ReturnRenderInfo(renderInfo)
 		}
 

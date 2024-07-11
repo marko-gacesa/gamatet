@@ -5,6 +5,7 @@ package render
 import (
 	"context"
 	"fmt"
+	"gamatet/graphics/texture"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -109,11 +110,15 @@ func Loop() error {
 	const contentW = 2 * (3 + 1 + fieldW)
 	const contentH = fieldH + 2
 
-	GenerateResources()
-	defer ReleaseResources()
+	texture.Instance = texture.Init()
 
-	rend := &Renderer{}
-	rend.Geometry(Resources.GeomCube)
+	resources := GenerateResources(texture.Instance, FontNumerals)
+	defer resources.Release()
+
+	rend := NewRenderer()
+	defer rend.Release()
+
+	rend.Geometry(resources.GeomCube)
 
 	func() {
 		w, h := window.GetFramebufferSize()
@@ -204,33 +209,29 @@ out:
 			rend.Render(&bigBlock)
 		}
 
-		//rend.Material(Resources.MatTexUV)
-		//rend.Material(Resources.MatNorm)
+		rend.Geometry(resources.GeomDie)
 
-		rend.Geometry(Resources.GeomDie)
-
-		rend.Material(Resources.MatWave)
-		Resources.MatWave.Color(mgl32.Vec4{1, 1, 1, 1})
-		Resources.MatWave.Texture(Resources.TexRock)
+		rend.Material(resources.MatWave)
+		resources.MatWave.Color(mgl32.Vec4{1, 1, 1, 1})
 		drawBigBlock(center, -0.5, -0.5)
 
-		rend.Geometry(Resources.GeomRoundedCube)
+		rend.Geometry(resources.GeomRoundedCube)
 
-		rend.Material(Resources.MatRock)
-		Resources.MatRock.ChainTexture(Resources.TexChain3)
-		Resources.MatRock.Color(mgl32.Vec4{1, 1, 1, 1})
+		rend.Material(resources.MatRock)
+		resources.MatRock.ChainTexture(resources.TexChain3)
+		resources.MatRock.Color(mgl32.Vec4{1, 1, 1, 1})
 		drawBigBlock(center, -0.5, 0.5)
 
-		rend.Geometry(Resources.GeomSphere)
+		rend.Geometry(resources.GeomSphere)
 
-		rend.Material(Resources.MatRock)
-		Resources.MatRock.Color(mgl32.Vec4{1, 1, 1, 1})
+		rend.Material(resources.MatTexUV)
+		resources.MatRock.Color(mgl32.Vec4{1, 1, 1, 1})
 		drawBigBlock(center, 0.5, -0.5)
 
-		rend.Geometry(Resources.GeomGem)
+		rend.Geometry(resources.GeomGem)
 
-		rend.Material(Resources.MatAcid)
-		Resources.MatAcid.Color(mgl32.Vec4{1, 1, 1, 1})
+		rend.Material(resources.MatAcid)
+		resources.MatAcid.Color(mgl32.Vec4{1, 1, 1, 1})
 		drawBigBlock(center, 0.5, 0.5)
 		//*/
 		///////////////////////

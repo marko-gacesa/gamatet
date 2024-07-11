@@ -7,7 +7,7 @@ import (
 	"math"
 )
 
-func makeSphereModel(radius float64, wSegs, hSegs int) []vertex {
+func makeSphereModel(radius float64, wSegs, hSegs int) []blockVertex {
 	radius = max(0.001, radius)
 	wSegs = max(3, wSegs)
 	hSegs = max(2, hSegs)
@@ -15,10 +15,10 @@ func makeSphereModel(radius float64, wSegs, hSegs int) []vertex {
 	wDelta := (2 * math.Pi) / float64(wSegs)
 	hDelta := math.Pi / float64(hSegs)
 
-	result := make([]vertex, 0, wSegs*(hSegs-1)*6)
-	cache := make(map[int]vertex, (wSegs+1)*(hSegs+1))
+	result := make([]blockVertex, 0, wSegs*(hSegs-1)*6)
+	cache := make(map[int]blockVertex, (wSegs+1)*(hSegs+1))
 
-	spherePoint := func(i, j int) vertex {
+	spherePoint := func(i, j int) blockVertex {
 		idx := i*(hSegs+1) + j // i is from 0..wSeg, j is from 0..hSeg (in total (wSeg+1)*(hSeg+1) different values)
 		if v, ok := cache[idx]; ok {
 			return v

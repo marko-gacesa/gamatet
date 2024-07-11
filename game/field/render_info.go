@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package field
 
@@ -22,7 +22,10 @@ type BlockRenderInfo struct {
 }
 
 type PieceRenderInfo struct {
-	Empty      bool
+	Empty bool
+
+	PieceTextData
+
 	Blocks     []block.XYB
 	X, Y       int
 	DimX, DimY int
@@ -35,6 +38,13 @@ type PieceRenderInfo struct {
 	Limits    piece.ColumnLimit
 
 	NextBlocks [piece.NextBlockCount][]block.XYB
+}
+
+type PieceTextData struct {
+	Name     string
+	Score    int
+	PieceNum int
+	Level    int
 }
 
 type RenderInfo struct {
@@ -166,6 +176,13 @@ func (f *Field) GetRenderInfo(now time.Time) *RenderInfo {
 
 		pinfo.Empty = false
 		info.PieceCnt++
+
+		pinfo.PieceTextData = PieceTextData{
+			Name:     ctrl.Name,
+			Score:    ctrl.Score,
+			PieceNum: ctrl.PieceCount,
+			Level:    ctrl.Level,
+		}
 
 		dw := p.DimX()
 		dh := p.DimY()

@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package piece
 
@@ -44,6 +44,12 @@ func (s State) IsTerminal() bool {
 type Ctrl struct {
 	// Idx is an index of Ctrl in the field
 	Idx int
+
+	// Name of the player
+	Name string
+
+	// Score is player's score.
+	Score int
 
 	// X and Y are current position of the piece on the board
 	X, Y int

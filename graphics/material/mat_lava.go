@@ -1,10 +1,21 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package material
 
-import (
-	"github.com/go-gl/mathgl/mgl32"
-)
+var _ Material = (*Lava)(nil)
+
+func NewLava(tex uint32) *Lava {
+	p, err := newProgramBlock(defaultVertexShader, lavaFragmentShader, tex)
+	if err != nil {
+		panic("failed to make lava material: " + err.Error())
+	}
+
+	return &Lava{programBlock: *p}
+}
+
+type Lava struct {
+	programBlock
+}
 
 const lavaFragmentShader = `
 #version 330 core
@@ -35,30 +46,3 @@ void main() {
 
     outputColor = vec4(finalColor, 1.0);
 }` + z
-
-func NewLava(tex uint32) Lava {
-	prog, err := newProgram(defaultVertexShader, lavaFragmentShader)
-	if err != nil {
-		panic("failed to make lava material: " + err.Error())
-	}
-
-	prog.registerUniform(uniLightDirection)
-
-	return Lava{
-		program: prog,
-		tex:     tex,
-	}
-}
-
-type Lava struct {
-	*program
-	tex uint32
-}
-
-func (p Lava) Refresh() {
-	p.program.Refresh()
-	p.program.uniformVec3(uniLightDirection, mgl32.Vec3{1, 4, 3}.Normalize())
-	p.program.Texture(p.tex)
-}
-
-var _ Material = Lava{program: nil}

@@ -2,9 +2,20 @@
 
 package material
 
-import (
-	"github.com/go-gl/mathgl/mgl32"
-)
+var _ Material = (*Curl)(nil)
+
+func NewCurl(tex uint32) *Curl {
+	p, err := newProgramBlock(defaultVertexShader, curlFragmentShader, tex)
+	if err != nil {
+		panic("failed to make curl material: " + err.Error())
+	}
+
+	return &Curl{programBlock: *p}
+}
+
+type Curl struct {
+	programBlock
+}
 
 const curlFragmentShader = `
 #version 330 core
@@ -39,30 +50,3 @@ void main() {
 	vec3 color = vec3(intensity, 0, 0.75 * intensity);
     outputColor = vec4(objectColor.rgb * color, 1.0);
 }` + z
-
-func NewCurl(tex uint32) Curl {
-	prog, err := newProgram(defaultVertexShader, curlFragmentShader)
-	if err != nil {
-		panic("failed to make curl material: " + err.Error())
-	}
-
-	prog.registerUniform(uniLightDirection)
-
-	return Curl{
-		program: prog,
-		tex:     tex,
-	}
-}
-
-type Curl struct {
-	*program
-	tex uint32
-}
-
-func (p Curl) Refresh() {
-	p.program.Refresh()
-	p.program.uniformVec3(uniLightDirection, mgl32.Vec3{1, 4, 3}.Normalize())
-	p.program.Texture(p.tex)
-}
-
-var _ Material = Curl{program: nil}

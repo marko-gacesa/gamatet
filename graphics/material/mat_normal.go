@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package material
 
@@ -13,7 +13,6 @@ func Normal() Material {
 
 		in vec3 geometryPosition;
 		in vec3 geometryNormal;
-		in vec2 geometryTexture;
 
 		out vec3 fragmentNormal;
 

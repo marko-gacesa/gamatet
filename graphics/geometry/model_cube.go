@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package geometry
 
@@ -7,7 +7,7 @@ import (
 	"math"
 )
 
-func CubeSideSimple(model mgl32.Mat3, v *[]vertex) {
+func CubeSideSimple(model mgl32.Mat3, v *[]blockVertex) {
 	halfSide(model, func(model, texture mgl32.Mat3) {
 		n := model.Mul3x1(mgl32.Vec3{0.0, 0.0, 1.0})
 
@@ -23,7 +23,7 @@ func CubeSideSimple(model mgl32.Mat3, v *[]vertex) {
 	})
 }
 
-func CubeSideDent(model mgl32.Mat3, v *[]vertex) {
+func CubeSideDent(model mgl32.Mat3, v *[]blockVertex) {
 	quarterSide(model, func(model, texture mgl32.Mat3) {
 		nn := model.Mul3x1(mgl32.Vec3{0.0, 0.0, 1.0}).Normalize()
 		n0 := model.Mul3x1(mgl32.Vec3{0.5, -0.5, 1.0}).Normalize()
@@ -55,7 +55,7 @@ func CubeSideDent(model mgl32.Mat3, v *[]vertex) {
 	})
 }
 
-func CubeSideFrame(side mgl32.Mat3, v *[]vertex) {
+func CubeSideFrame(side mgl32.Mat3, v *[]blockVertex) {
 	quarterSide(side, func(model, texture mgl32.Mat3) {
 		const halfA = 0.45 // half of the cube's side length (max is 0.5 for the full sized cube)
 		const d = 0.08     // mesh thickness
@@ -96,7 +96,7 @@ func CubeSideFrame(side mgl32.Mat3, v *[]vertex) {
 	})
 }
 
-func CubeSideRounded(side mgl32.Mat3, v *[]vertex) {
+func CubeSideRounded(side mgl32.Mat3, v *[]blockVertex) {
 	const rund = 0.16         // 0.16
 	const alpha = math.Pi / 6 // pi/6
 
@@ -151,7 +151,7 @@ func CubeSideRounded(side mgl32.Mat3, v *[]vertex) {
 	})
 }
 
-func CubeSideTruncated(side mgl32.Mat3, v *[]vertex) {
+func CubeSideTruncated(side mgl32.Mat3, v *[]blockVertex) {
 	//const edge = 0.2 // pretty
 	const edge = 1 / (2 + math.Sqrt2) // symmetric (Rhombicuboctahedron)
 	const vert = edge * 2 / 3
@@ -205,7 +205,7 @@ func CubeSideTruncated(side mgl32.Mat3, v *[]vertex) {
 	})
 }
 
-func CubeSideDie(side mgl32.Mat3, v *[]vertex) {
+func CubeSideDie(side mgl32.Mat3, v *[]blockVertex) {
 	const halfSinPi4 = math.Sqrt2 / 4
 
 	const x2 = halfSinPi4
@@ -289,14 +289,14 @@ func CubeSideDie(side mgl32.Mat3, v *[]vertex) {
 	})
 }
 
-func CubeSideHexagonalStar(k float32) func(mgl32.Mat3, *[]vertex) {
+func CubeSideHexagonalStar(k float32) func(mgl32.Mat3, *[]blockVertex) {
 	// k = 0.5 is rhombic dodecahedron
 	if k < 0.01 {
 		k = 0.01
 	} else if k > 1 {
 		k = 1 // cube
 	}
-	return func(side mgl32.Mat3, v *[]vertex) {
+	return func(side mgl32.Mat3, v *[]blockVertex) {
 		// should be: height < 0.5
 		// should be: base < 0.5 (for star use base = height / 4)
 
@@ -324,13 +324,13 @@ func CubeSideHexagonalStar(k float32) func(mgl32.Mat3, *[]vertex) {
 	}
 }
 
-func CubeSideOctagonalStar(k float32) func(mat3 mgl32.Mat3, v *[]vertex) {
+func CubeSideOctagonalStar(k float32) func(mat3 mgl32.Mat3, v *[]blockVertex) {
 	if k < 0.01 {
 		k = 0.01
 	} else if k > 1 {
 		k = 1 // stellated octahedron
 	}
-	return func(side mgl32.Mat3, v *[]vertex) {
+	return func(side mgl32.Mat3, v *[]blockVertex) {
 		const a = 0.5 // height = a * math.Sqrt2
 		b := k * a    // base = b * math.Sqrt2
 
@@ -392,8 +392,8 @@ func quarterSide(model mgl32.Mat3, quarterSizePart func(model, texture mgl32.Mat
 	}
 }
 
-func makeCubeModel(makeSide func(side mgl32.Mat3, v *[]vertex)) []vertex {
-	v := make([]vertex, 0, 64)
+func makeCubeModel(makeSide func(side mgl32.Mat3, v *[]blockVertex)) []blockVertex {
+	v := make([]blockVertex, 0, 64)
 
 	center := mgl32.Ident3()
 	for i := 0; i < 6; i++ {

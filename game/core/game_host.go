@@ -73,6 +73,7 @@ func MakeHost(setup Setup) *GameHost {
 		for j := range players {
 			ctrl := f.Ctrl(byte(j))
 
+			ctrl.Name = players[j].Name
 			ctrl.Feed = pieceFeed
 			ctrl.Config = players[j].Config
 			ctrl.Level = setup.Config.Level

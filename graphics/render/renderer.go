@@ -1,4 +1,4 @@
-// Copyright (c) 2023 by Marko Gaćeša
+// Copyright (c) 2023-2024 by Marko Gaćeša
 
 package render
 
@@ -9,6 +9,8 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+// Renderer is an object that holds the current render state:
+// The camera position, the selected material and the selected geometry.
 type Renderer struct {
 	cam camera.Camera
 	mat material.Material
@@ -18,10 +20,10 @@ type Renderer struct {
 func NewRenderer() *Renderer {
 	r := &Renderer{}
 	r.cam = camera.Default()
-	r.Material(Resources.MatRock)
-	r.Geometry(Resources.GeomCube)
 	return r
 }
+
+func (r *Renderer) Release() {}
 
 func (r *Renderer) CameraSetDistance(displayW, displayH, contentW, contentH, contentZ int) {
 	r.cam.SetDistance(displayW, displayH, contentW, contentH, contentZ)
@@ -45,8 +47,11 @@ func (r *Renderer) CameraPerspective(fovy, aspect, near, far float32) {
 }
 
 func (r *Renderer) Material(mat material.Material) {
+	if r.mat != nil {
+		r.mat.Reset()
+	}
+
 	mat.Use()
-	mat.Refresh()
 	mat.Camera(&r.cam)
 	if r.geo != nil {
 		mat.Geometry(r.geo)

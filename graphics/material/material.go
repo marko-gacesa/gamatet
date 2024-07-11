@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package material
 
@@ -8,11 +8,11 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+// Material is an abstraction of shaders.
 type Material interface {
 	Use()
+	Reset()
 	Delete()
-
-	Refresh()
 
 	Camera(cam *camera.Camera)
 	Model(model *mgl32.Mat4)
@@ -20,19 +20,3 @@ type Material interface {
 
 	Render()
 }
-
-func newSimple(vertexShader, fragmentShader string) Material {
-	prog, err := newProgram(vertexShader, fragmentShader)
-	if err != nil {
-		panic("failed to make material: " + err.Error())
-	}
-
-	s := simple{program: prog}
-	return s
-}
-
-type simple struct {
-	*program
-}
-
-var _ Material = simple{program: nil}

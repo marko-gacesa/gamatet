@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package material
 
@@ -30,9 +30,7 @@ void main() {
 	vec3 scatteredLight = ambientColor + lightDirectionColor * diffuse;
 	vec3 reflectedLight = lightDirectionColor * specular * strength;
 
-	vec3 rgb = min(objectColor.rgb * scatteredLight + reflectedLight, vec3(1.0));
+	vec3 rgb = min(objectColor.rgb * (scatteredLight + reflectedLight), vec3(1.0));
 
-	//outputColor = texture(textureSampler, fragmentTexture) * vec4(rgb, objectColor.a);
-	float gray = texture(textureSampler, fragmentTexture).r;
-	outputColor = gray * vec4(rgb, objectColor.a);
+	outputColor = texture(textureSampler, fragmentTexture) * vec4(rgb, objectColor.a);
 }` + z

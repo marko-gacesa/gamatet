@@ -1,19 +1,16 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package geometry
-
-import "unsafe"
 
 type Geometry interface {
 	VertexSize() int
 	VertexCount() int
-
-	DataPtr() unsafe.Pointer
-	DataOffsetVertex() int
-	DataOffsetNormal() int
-	DataOffsetTextureUV() int
-
 	PrimitiveType() uint32
+	VertexArray
+}
 
-	GLBinder
+type Text interface {
+	Geometry
+	Width() float32
+	Height() float32
 }
