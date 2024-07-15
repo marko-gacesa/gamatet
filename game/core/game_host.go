@@ -202,7 +202,9 @@ func (g *GameHost) Perform(
 				}
 			}
 		*/
-		//conjureBlock(&g.fields[0].events, 0, 6, block.Ruby)
+		conjureBlock(&g.fields[0].events, 0, 6, block.Ruby)
+		conjureBlock(&g.fields[0].events, 1, 5, block.Block{Type: block.TypeRuby, Hardness: 0, Color: 0x0000FFFF})
+		conjureBlock(&g.fields[0].events, 7, 4, block.Iron)
 		g.applyEvents(ctx)
 	}(g.fields[0].Field, &g.fields[0].events)
 	////////////////////////////

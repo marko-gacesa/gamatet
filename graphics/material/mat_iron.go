@@ -1,59 +1,41 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2024 by Marko Gaćeša
 
 package material
 
 import (
 	"gamatet/graphics/gtypes"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
-var _ Material = (*Rock)(nil)
+var _ Material = (*Iron)(nil)
 
-const (
-	MaxLights = 16
-)
-
-func NewRock(tex uint32) *Rock {
-	p, err := newProgramBlock(defaultVertexShader, rockFragmentShader, tex)
+func NewIron(tex uint32) *Iron {
+	p, err := newProgramBlock(defaultVertexShader, ironFragmentShader, tex)
 	if err != nil {
 		panic("failed to make rock material: " + err.Error())
 	}
 
 	const (
-		uniTextureChain    = "textureSamplerChain"
-		uniShouldDrawChain = "shouldDrawChain"
-		uniPointLights     = "pointLights[0].position"
+		uniPointLights = "pointLights[0].position"
 	)
 
-	return &Rock{
-		programBlock:       *p,
-		uniPointLights:     p.uniformLocation(uniPointLights),
-		uniTexChain:        p.uniformLocation(uniTextureChain),
-		uniShouldDrawChain: p.uniformLocation(uniShouldDrawChain),
+	return &Iron{
+		programBlock:   *p,
+		uniPointLights: p.uniformLocation(uniPointLights),
 	}
 }
 
-type Rock struct {
+type Iron struct {
 	programBlock
-	uniPointLights     int32
-	uniTexChain        int32
-	uniShouldDrawChain int32
+	uniPointLights int32
 }
 
-func (p *Rock) Use() {
+func (p *Iron) Use() {
 	p.programBlock.Use()
-	uniform1i(p.uniShouldDrawChain, 0)
+	p.programBlock.Color(mgl32.Vec4{1, 1, 1, 1})
 }
 
-func (p *Rock) ChainTexture(tex uint32) {
-	uniformTexture(p.uniTexChain, tex)
-	uniform1i(p.uniShouldDrawChain, 1)
-}
-
-func (p *Rock) ClearChain() {
-	uniform1i(p.uniShouldDrawChain, 0)
-}
-
-func (p *Rock) Lights(lights []gtypes.PointLight) {
+func (p *Iron) Lights(lights []gtypes.PointLight) {
 	n := int32(len(lights))
 	if n > MaxLights {
 		n = MaxLights
@@ -69,7 +51,7 @@ func (p *Rock) Lights(lights []gtypes.PointLight) {
 	}
 }
 
-const rockFragmentShader = `
+const ironFragmentShader = `
 #version 330
 
 struct Light {
@@ -123,7 +105,17 @@ void main() {
 	}
 
 	vec3 rgb = min(objectColor.rgb * (ambientColor + scatteredLight), vec3(1.0));
-	float gray = texture(textureSampler, fragmentTexture).r;
-	gray = mix(0.6, 1.0, gray);
-	outputColor = vec4(gray * rgb, 1);
+	vec2 uv = fragmentTexture;
+
+	if (uv.x > 0.1 && uv.x < 0.9 && uv.y > 0.1 && uv.y < 0.9) {
+		uv.x = mod(uv.x*0.2, 1.0);
+		uv.y = mod(uv.y*1.2, 1.0);
+		float gray = texture(textureSampler, uv).r;
+		gray = mix(0.8, 1.0, gray);
+		outputColor = vec4(gray * rgb, objectColor.a);
+	} else {
+		float gray = texture(textureSampler, uv).r;
+		gray = mix(0.5, 1.0, gray);
+		outputColor = vec4(gray * rgb, objectColor.a);
+	}
 }` + z

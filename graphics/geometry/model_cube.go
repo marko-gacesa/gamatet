@@ -55,45 +55,47 @@ func CubeSideDent(model mgl32.Mat3, v *[]blockVertex) {
 	})
 }
 
-func CubeSideFrame(side mgl32.Mat3, v *[]blockVertex) {
-	quarterSide(side, func(model, texture mgl32.Mat3) {
-		const halfA = 0.45 // half of the cube's side length (max is 0.5 for the full sized cube)
-		const d = 0.08     // mesh thickness
-		nn := model.Mul3x1(mgl32.Vec3{0.0, 0.0, 1.0})
-		nf := model.Mul3x1(mgl32.Vec3{1.0, 0.0, 0.0})
+func CubeSideFrame(size, thickness float32) func(mgl32.Mat3, *[]blockVertex) {
+	halfA := size / 2 // halfA is the cube's side length (max is 0.5 for the full sized cube)
+	d := thickness
+	return func(side mgl32.Mat3, v *[]blockVertex) {
+		quarterSide(side, func(model, texture mgl32.Mat3) {
+			nn := model.Mul3x1(mgl32.Vec3{0.0, 0.0, 1.0})
+			nf := model.Mul3x1(mgl32.Vec3{1.0, 0.0, 0.0})
 
-		pOuter0 := model.Mul3x1(mgl32.Vec3{-halfA, -halfA, halfA})
-		pOuter1 := model.Mul3x1(mgl32.Vec3{-halfA, halfA, halfA})
-		pInner0 := model.Mul3x1(mgl32.Vec3{-halfA + d, -halfA + d, halfA})
-		pInner1 := model.Mul3x1(mgl32.Vec3{-halfA + d, halfA - d, halfA})
-		pLower0 := model.Mul3x1(mgl32.Vec3{-halfA + d, -halfA + d, halfA - d})
-		pLower1 := model.Mul3x1(mgl32.Vec3{-halfA + d, halfA - d, halfA - d})
+			pOuter0 := model.Mul3x1(mgl32.Vec3{-halfA, -halfA, halfA})
+			pOuter1 := model.Mul3x1(mgl32.Vec3{-halfA, halfA, halfA})
+			pInner0 := model.Mul3x1(mgl32.Vec3{-halfA + d, -halfA + d, halfA})
+			pInner1 := model.Mul3x1(mgl32.Vec3{-halfA + d, halfA - d, halfA})
+			pLower0 := model.Mul3x1(mgl32.Vec3{-halfA + d, -halfA + d, halfA - d})
+			pLower1 := model.Mul3x1(mgl32.Vec3{-halfA + d, halfA - d, halfA - d})
 
-		uvOuter0 := texture.Mul3x1(mgl32.Vec3{0, 1, 1})
-		uvOuter1 := texture.Mul3x1(mgl32.Vec3{0, 0, 1})
-		uvInner0 := texture.Mul3x1(mgl32.Vec3{d, 1 - d, 1})
-		uvInner1 := texture.Mul3x1(mgl32.Vec3{d, d, 1})
-		uvLower0 := texture.Mul3x1(mgl32.Vec3{d + d, 1 - d, 1})
-		uvLower1 := texture.Mul3x1(mgl32.Vec3{d + d, d, 1})
+			uvOuter0 := texture.Mul3x1(mgl32.Vec3{0, 1, 1})
+			uvOuter1 := texture.Mul3x1(mgl32.Vec3{0, 0, 1})
+			uvInner0 := texture.Mul3x1(mgl32.Vec3{d, 1 - d, 1})
+			uvInner1 := texture.Mul3x1(mgl32.Vec3{d, d, 1})
+			uvLower0 := texture.Mul3x1(mgl32.Vec3{d + d, 1 - d, 1})
+			uvLower1 := texture.Mul3x1(mgl32.Vec3{d + d, d, 1})
 
-		vOuter0 := gen(pOuter0, nn, uvOuter0)
-		vInner0 := gen(pInner0, nn, uvInner0)
-		vOuter1 := gen(pOuter1, nn, uvOuter1)
-		vInner1 := gen(pInner1, nn, uvInner1)
+			vOuter0 := gen(pOuter0, nn, uvOuter0)
+			vInner0 := gen(pInner0, nn, uvInner0)
+			vOuter1 := gen(pOuter1, nn, uvOuter1)
+			vInner1 := gen(pInner1, nn, uvInner1)
 
-		// 2 triangles
-		*v = append(*v, vOuter0, vOuter1, vInner1)
-		*v = append(*v, vInner1, vInner0, vOuter0)
+			// 2 triangles
+			*v = append(*v, vOuter0, vOuter1, vInner1)
+			*v = append(*v, vInner1, vInner0, vOuter0)
 
-		vInner0.setN(nf)
-		vLower0 := gen(pLower0, nf, uvLower0)
-		vInner1.setN(nf)
-		vLower1 := gen(pLower1, nf, uvLower1)
+			vInner0.setN(nf)
+			vLower0 := gen(pLower0, nf, uvLower0)
+			vInner1.setN(nf)
+			vLower1 := gen(pLower1, nf, uvLower1)
 
-		// 2 triangles
-		*v = append(*v, vInner0, vInner1, vLower1)
-		*v = append(*v, vLower1, vLower0, vInner0)
-	})
+			// 2 triangles
+			*v = append(*v, vInner0, vInner1, vLower1)
+			*v = append(*v, vLower1, vLower0, vInner0)
+		})
+	}
 }
 
 func CubeSideRounded(side mgl32.Mat3, v *[]blockVertex) {

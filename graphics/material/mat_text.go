@@ -29,5 +29,6 @@ func (t *Text) Use() {
 }
 
 func (t *Text) Reset() {
+	t.programBlock.Reset()
 	gl.Disable(gl.BLEND)
 }

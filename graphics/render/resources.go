@@ -25,14 +25,17 @@ type Resources struct {
 	MatTexUV material.Material
 	MatNorm  material.Material
 	MatRock  *material.Rock
+	MatIron  *material.Iron
 	MatLava  *material.Lava
 	MatAcid  *material.Acid
 	MatWave  *material.Curl
+	MatColor *material.Color
 	MatText  *material.Text
 
 	GeomCube        geometry.Geometry
 	GeomDentCube    geometry.Geometry
 	GeomFrame       geometry.Geometry
+	GeomShadowFrame geometry.Geometry
 	GeomRoundedCube geometry.Geometry
 	GeomGem         geometry.Geometry
 	GeomDie         geometry.Geometry
@@ -57,10 +60,6 @@ func GenerateResources(manager *texture.Manager, font *truetype.Font) Resources 
 		value := canvas.TextFloat32(string(rune(key)), face, color.RGBA{255, 255, 255, 128}, false)
 		geomChar[key] = geometry.NewTextWithHeightAndScale(value, 1, 0.75)
 	}
-	for _, key := range []string{"ij"} {
-		value := canvas.TextFloat32(key, face, color.RGBA{255, 255, 255, 128}, false)
-		geomText[key] = geometry.NewTextWithHeightAndScale(value, 1, 0.75)
-	}
 
 	texRock := texture.Instance.Bind(rock)
 	texText := texture.Instance.Bind(canvas.Image())
@@ -79,18 +78,21 @@ func GenerateResources(manager *texture.Manager, font *truetype.Font) Resources 
 		MatTexUV: material.TexUV(),
 		MatNorm:  material.Normal(),
 		MatRock:  material.NewRock(texRock),
+		MatIron:  material.NewIron(texRock),
 		MatLava:  material.NewLava(texRock),
 		MatAcid:  material.NewAcid(texRock),
 		MatWave:  material.NewCurl(texRock),
+		MatColor: material.NewColor(),
 		MatText:  material.NewText(texText),
 
 		GeomCube:        geometry.MakeCubeGeometry(geometry.CubeSideSimple),
 		GeomDentCube:    geometry.MakeCubeGeometry(geometry.CubeSideDent),
-		GeomFrame:       geometry.MakeCubeGeometry(geometry.CubeSideFrame),
+		GeomFrame:       geometry.MakeCubeGeometry(geometry.CubeSideFrame(1, 0.15)),
+		GeomShadowFrame: geometry.MakeCubeGeometry(geometry.CubeSideFrame(0.9, 0.08)),
 		GeomRoundedCube: geometry.MakeCubeGeometry(geometry.CubeSideRounded),
 		GeomGem:         geometry.MakeCubeGeometry(geometry.CubeSideTruncated),
 		GeomDie:         geometry.MakeCubeGeometry(geometry.CubeSideDie),
-		GeomStar6:       geometry.MakeCubeGeometry(geometry.CubeSideHexagonalStar(0.5)),
+		GeomStar6:       geometry.MakeCubeGeometry(geometry.CubeSideHexagonalStar(0.25)),
 		GeomStar8:       geometry.MakeCubeGeometry(geometry.CubeSideOctagonalStar(1)),
 		GeomSphere:      geometry.MakeSphereGeometry(0.55, 16, 8),
 		GeomChar:        geomChar,
@@ -102,6 +104,7 @@ func (r Resources) Release() {
 	r.GeomCube.Delete()
 	r.GeomDentCube.Delete()
 	r.GeomFrame.Delete()
+	r.GeomShadowFrame.Delete()
 	r.GeomRoundedCube.Delete()
 	r.GeomGem.Delete()
 	r.GeomDie.Delete()
@@ -120,6 +123,7 @@ func (r Resources) Release() {
 	r.GeomCube = nil
 	r.GeomDentCube = nil
 	r.GeomFrame = nil
+	r.GeomShadowFrame = nil
 	r.GeomRoundedCube = nil
 	r.GeomGem = nil
 	r.GeomDie = nil
@@ -130,9 +134,11 @@ func (r Resources) Release() {
 	r.MatTexUV.Delete()
 	r.MatNorm.Delete()
 	r.MatRock.Delete()
+	r.MatIron.Delete()
 	r.MatLava.Delete()
 	r.MatAcid.Delete()
 	r.MatWave.Delete()
+	r.MatColor.Delete()
 	r.MatText.Delete()
 
 	texture.Instance.Delete(r.TexRock)

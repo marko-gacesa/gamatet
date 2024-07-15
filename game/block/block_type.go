@@ -12,24 +12,30 @@ const (
 	// TypeRock is ordinary block type.
 	TypeRock
 
-	// TypeAcid is types of a block that will melt the block below it.
-	TypeAcid
+	// TypeIron is indestructible block type.
+	TypeIron
 
-	// TypeLava behaves as a TypeRock, but a Piece made of it will collapse after falling.
-	TypeLava
-
-	// TypeWave "quantum tunnels" through blocks to fill the first hole it encounters.
-	TypeWave
-
+	// TypeRuby is special block type used as a goal.
 	TypeRuby
 
-	// TypeWall is used for walls around (and inside) the play area.
+	// TypeAcid is types of a block that will melt the block below it. Used only as piece material.
+	TypeAcid
+
+	// TypeLava behaves as a TypeRock, but a Piece made of it will collapse after falling. Used only as piece material.
+	TypeLava
+
+	// TypeWave "quantum tunnels" through blocks to fill the first hole it encounters. Used only as piece material.
+	TypeWave
+
+	// TypeWall is used for walls around (and inside) the play area - indestructible and unmovable.
 	TypeWall Type = 255
 )
 
-func (t Type) IsImmovable() bool {
-	return t == TypeWall
+func (t Type) IsImmovable() bool { return t == TypeWall }
+func (t Type) SupportsExBlock() bool {
+	return t == TypeRock || t == TypeAcid || t == TypeLava || t == TypeWave
 }
+func (t Type) Meltable() bool { return t == TypeRock }
 
 const (
 	// HardnessMax is special, maximum, value for block hardness that can't be reduced.
@@ -43,5 +49,6 @@ var (
 	Acid = Block{Type: TypeAcid, Hardness: 0, Color: 0x00FF00FF}
 	Wave = Block{Type: TypeWave, Hardness: 0, Color: 0xFF00C0FF}
 	Wall = Block{Type: TypeWall, Hardness: HardnessMax, Color: 0x808080FF}
-	Ruby = Block{Type: TypeRuby, Hardness: HardnessMax, Color: 0xFF0000FF}
+	Iron = Block{Type: TypeIron, Hardness: HardnessMax, Color: 0xFFFFFFFF}
+	Ruby = Block{Type: TypeRuby, Hardness: 0, Color: 0xFF0000FF}
 )

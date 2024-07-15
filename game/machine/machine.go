@@ -481,7 +481,8 @@ func _dropAcidHeight(f *field.Field, x, y int) (height, y0 int, b block.Block, o
 
 	y0 = y - height
 	b = f.GetXY(x, y0)
-	ok = true
+
+	ok = b.Type.Meltable()
 
 	return
 }

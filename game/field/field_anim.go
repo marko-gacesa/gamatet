@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package field
 
@@ -36,7 +36,7 @@ func (f *Field) addExBlock(x, y int, b block.Block, anims ...anim.Anim) {
 }
 
 func (f *Field) animBlockDestroy(x, y int, b block.Block) {
-	if !f.Config.Anim {
+	if !f.Config.Anim || !b.Type.SupportsExBlock() {
 		return
 	}
 
