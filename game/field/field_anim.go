@@ -13,11 +13,9 @@ import (
 const (
 	AnimNo      = iota
 	AnimDestroy // block destroy animation, the same as for DestroyColumn and DestroyRow is Op=clear
-	AnimShot    // Shooter block animation (AnimParam holds height)
 	AnimPop     // Pop-out for Op=clear, Pop-in for
-	AnimFall    // Fall from the top
+	AnimFall    // Fall from the top (AnimParam holds height)
 	AnimSpin    // Spin in place
-	AnimRotateZ
 	AnimMeld
 )
 
@@ -47,18 +45,7 @@ func (f *Field) animBlockDestroy(x, y int, b block.Block) {
 		now := time.Now()
 		f.addExBlock(x+dx, y+dy, b,
 			anim.NewTransQuad(now, piece.DurationAnimBlockChange, float32(dx), float32(dy), 2*rnd.Float32()-1),
-			anim.NewSpin(now, piece.DurationAnimBlockChange),
+			anim.NewSpinOnce(now, piece.DurationAnimBlockChange),
 			anim.NewPopOut(now, piece.DurationAnimBlockChange))
 	}
-}
-
-func (f *Field) animBullet(x, y, height int, b block.Block) {
-	if !f.Config.Anim || height == 0 {
-		return
-	}
-
-	now := time.Now()
-	duration := piece.GetFallDuration(height)
-
-	f.addExBlock(x, y, b, anim.NewFall(now, duration, float32(height)))
 }

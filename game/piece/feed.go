@@ -94,31 +94,31 @@ func (f *debug) Get(idx int) Piece {
 	case 1:
 		return Shooter(5, block.TypeAcid)
 	case 2:
-		return Shooter(5, block.TypeWave)
+		return Shooter(5, block.TypeCurl)
 	case 3:
-		return NewPentomino(0, block.Rock)
+		return Shooter(5, block.TypeWave)
 	case 4:
-		return NewPentomino(0, block.Wave)
+		return NewPentomino(0, block.Rock)
 	case 5:
+		return NewPentomino(0, block.Wave)
+	case 6:
 		b := block.Rock
 		b.Hardness = 1
 		return NewTetromino(TetrominoI, b)
-	case 6:
+	case 7:
 		b := block.Rock
 		b.Hardness = 2
 		return NewTetromino(TetrominoO, b)
-	case 7:
-		return NewTetromino(TetrominoO, block.Acid)
 	case 8:
-		return NewTetromino(TetrominoO, block.Lava)
+		return NewTetromino(TetrominoO, block.Acid)
 	case 9:
+		return NewTetromino(TetrominoO, block.Lava)
+	case 10:
 		b := block.Rock
 		b.Hardness = 3
 		return NewPentomino(13, b)
-	case 10:
-		return NewPentomino(13, block.Acid)
 	case 11:
-		return NewPentomino(13, block.Lava)
+		return NewPentomino(13, block.Curl)
 	}
 }
 

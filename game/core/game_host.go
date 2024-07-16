@@ -37,7 +37,7 @@ type GameHost struct {
 
 type hostFieldData struct {
 	Field       *field.Field
-	Sweeper     sweeper.Sweeper
+	Sweepers    []sweeper.Sweeper
 	OutCh       chan<- []byte
 	RenderReqCh chan field.RenderRequest
 
@@ -69,6 +69,9 @@ func MakeHost(setup Setup) *GameHost {
 		f := field.Make(width, height, len(players))
 		f.Idx = i
 		f.Config = setup.Config.FieldConfig
+
+		var sweepers []sweeper.Sweeper
+		sweepers = append(sweepers, sweeper.NewRow(f))
 
 		for j := range players {
 			ctrl := f.Ctrl(byte(j))
@@ -107,7 +110,7 @@ func MakeHost(setup Setup) *GameHost {
 
 		fields[i] = hostFieldData{
 			Field:       f,
-			Sweeper:     sweeper.NewFullRowSweeper(f),
+			Sweepers:    sweepers,
 			OutCh:       setup.Fields[i].OutCh,
 			RenderReqCh: make(chan field.RenderRequest),
 		}
@@ -132,7 +135,9 @@ func (g *GameHost) Perform(
 	defer func() {
 		for _, f := range g.fields {
 			f.Field.StopTimers()
-			f.Sweeper.Pause()
+			for _, s := range f.Sweepers {
+				s.Pause()
+			}
 		}
 	}()
 
@@ -140,7 +145,7 @@ func (g *GameHost) Perform(
 
 	stopCh := ctx.Done()
 
-	ctrlTimer := func() <-chan joinchannel.Result[time.Time, field.PiecePlace] {
+	ctrlTimer := joinchannel.Channel(ctx, func() <-chan joinchannel.Input[time.Time, field.PiecePlace] {
 		ch := make(chan joinchannel.Input[time.Time, field.PiecePlace])
 		go func() {
 			defer close(ch)
@@ -157,16 +162,36 @@ func (g *GameHost) Perform(
 				}
 			}
 		}()
-		return joinchannel.Channel(ctx, ch)
-	}()
+		return ch
+	}())
 
 	inputCh := joinchannel.SlicePtr(ctx, g.inputs, func(p *hostPlayerData) <-chan []byte {
 		return p.InCh
 	})
 
-	sweeperTimer := joinchannel.SlicePtr(ctx, g.fields, func(fd *hostFieldData) <-chan time.Time {
-		return fd.Sweeper.Timer()
-	})
+	type sweeperPusher struct {
+		sweeper sweeper.Sweeper
+		pusher  event.Pusher
+	}
+
+	sweeperTimer := joinchannel.Channel(ctx, func() <-chan joinchannel.Input[time.Time, sweeperPusher] {
+		ch := make(chan joinchannel.Input[time.Time, sweeperPusher])
+		go func() {
+			defer close(ch)
+			for idx := range g.fields {
+				for _, s := range g.fields[idx].Sweepers {
+					ch <- joinchannel.Input[time.Time, sweeperPusher]{
+						ID: sweeperPusher{
+							sweeper: s,
+							pusher:  &g.fields[idx].events,
+						},
+						Ch: s.Timer(),
+					}
+				}
+			}
+		}()
+		return ch
+	}())
 
 	renderReqCh := joinchannel.SlicePtr(ctx, g.fields, func(fd *hostFieldData) <-chan field.RenderRequest {
 		return fd.RenderReqCh
@@ -186,7 +211,7 @@ func (g *GameHost) Perform(
 				Color:    0x00FFFFFF,
 			})
 			putBlock(events, w-1-i, 4-i, block.Block{
-				Type:     block.TypeRock,
+				Type:     block.TypeRuby,
 				Hardness: byte(1 + i),
 				Color:    0xFFFF00FF,
 			})
@@ -194,16 +219,13 @@ func (g *GameHost) Perform(
 		/*
 			for i := 3; i < 7; i++ {
 				for j := 0; j < 18; j++ {
-					putBlock(events, i, j, block.Block{
-						Type:     block.TypeRock,
-						Hardness: byte(i - 3),
-						Color:    0x90FF80FF,
-					})
+					putBlock(events, i, j, block.Block{Type: block.TypeRock, Hardness: byte(i - 3), Color: 0x90FF80FF})
+					//putBlock(events, i, j, block.Iron)
 				}
 			}
-		*/
-		conjureBlock(&g.fields[0].events, 0, 6, block.Ruby)
-		conjureBlock(&g.fields[0].events, 1, 5, block.Block{Type: block.TypeRuby, Hardness: 0, Color: 0x0000FFFF})
+		//*/
+		conjureBlock(&g.fields[0].events, 0, 6, block.Goal)
+		conjureBlock(&g.fields[0].events, 1, 5, block.Block{Type: block.TypeGoal, Hardness: 0, Color: 0x0000FFFF})
 		conjureBlock(&g.fields[0].events, 7, 4, block.Iron)
 		g.applyEvents(ctx)
 	}(g.fields[0].Field, &g.fields[0].events)
@@ -271,9 +293,7 @@ func (g *GameHost) Perform(
 			g.applyEvents(ctx)
 
 		case sw := <-sweeperTimer:
-			events := &g.fields[sw.ID].events
-
-			g.fields[sw.ID].Sweeper.Sweep(events)
+			sw.ID.sweeper.Sweep(sw.ID.pusher)
 			g.applyEvents(ctx)
 
 		case rr := <-renderReqCh:
@@ -333,7 +353,9 @@ func (g *GameHost) pause(ctx context.Context) {
 
 	for fIdx := 0; fIdx < len(g.fields); fIdx++ {
 		g.fields[fIdx].Field.Pause()
-		g.fields[fIdx].Sweeper.Pause()
+		for _, s := range g.fields[fIdx].Sweepers {
+			s.Pause()
+		}
 		select {
 		case <-ctx.Done():
 			return
@@ -351,7 +373,9 @@ func (g *GameHost) unpause(ctx context.Context) {
 
 	for fIdx := 0; fIdx < len(g.fields); fIdx++ {
 		g.fields[fIdx].Field.Unpause()
-		g.fields[fIdx].Sweeper.Unpause()
+		for _, s := range g.fields[fIdx].Sweepers {
+			s.Unpause()
+		}
 		select {
 		case <-ctx.Done():
 			return
@@ -380,8 +404,8 @@ func (g *GameHost) applyEvents(ctx context.Context) {
 		case fd.OutCh <- fd.serializer.Serialize(&fd.events):
 		}
 
-		if g.fields[fIdx].analyzer.HasAdded {
-			g.fields[fIdx].Sweeper.Start()
+		for _, s := range g.fields[fIdx].Sweepers {
+			s.Start(g.fields[fIdx].analyzer)
 		}
 	}
 }

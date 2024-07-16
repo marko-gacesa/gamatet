@@ -47,6 +47,5 @@ void main() {
     tc = tc + vec2(0.5, 0.5);
 
 	float intensity = texture(textureSampler, tc * 0.5).r;
-	vec3 color = vec3(intensity, 0, 0.75 * intensity);
-    outputColor = vec4(objectColor.rgb * color, 1.0);
+    outputColor = vec4(objectColor.rgb * intensity, 1.0);
 }` + z

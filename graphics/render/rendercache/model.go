@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package rendercache
 
@@ -15,23 +15,23 @@ var ModelPool = modelPool{
 	pool: sync.Pool{
 		New: func() any {
 			list := make([]mgl32.Mat4, 0, 256)
-			return models(list)
+			return Models(list)
 		},
 	},
 }
 
-func (b *modelPool) Get() models {
-	list := b.pool.Get().(models)
+func (b *modelPool) Get() Models {
+	list := b.pool.Get().(Models)
 	list = list[:0]
 	return list
 }
 
-func (b *modelPool) Put(list models) {
+func (b *modelPool) Put(list Models) {
 	b.pool.Put(list)
 }
 
-type models []mgl32.Mat4
+type Models []mgl32.Mat4
 
-func (p *models) Add(model mgl32.Mat4) {
+func (p *Models) Add(model mgl32.Mat4) {
 	*p = append(*p, model)
 }

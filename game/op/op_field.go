@@ -332,11 +332,11 @@ type FieldBlockTransform struct {
 var _ event.Event = (*FieldBlockTransform)(nil)
 
 func (e *FieldBlockTransform) Do(f *field.Field) {
-	panic("unimplemented")
+	f.TransformXY(int(e.Col), int(e.Row), int(e.AnimType), int(e.AnimParam), e.OldBlock, e.NewBlock)
 }
 
 func (e *FieldBlockTransform) Undo(f *field.Field) {
-	panic("unimplemented")
+	f.TransformXY(int(e.Col), int(e.Row), field.AnimNo, 0, e.NewBlock, e.OldBlock)
 }
 
 func (e *FieldBlockTransform) Equals(ev event.Event) bool {

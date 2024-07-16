@@ -18,6 +18,8 @@ type Field struct {
 
 	model *mgl32.Mat4
 
+	renderer *render.FieldRender
+
 	renderRequester core.RenderRequester
 	renderInfo      *field.RenderInfo
 	renderInfoCh    chan *field.RenderInfo
@@ -27,11 +29,12 @@ type Field struct {
 
 var _ Object = (*Field)(nil)
 
-func NewField(fIdx int, f *field.Field, model *mgl32.Mat4) *Field {
+func NewField(fIdx int, f *field.Field, model *mgl32.Mat4, resources *render.Resources) *Field {
 	return &Field{
 		fIdx:         fIdx,
 		field:        f,
 		model:        model,
+		renderer:     render.NewFieldRenderer(resources),
 		renderInfoCh: make(chan *field.RenderInfo, 1),
 	}
 }
@@ -51,7 +54,7 @@ func (f *Field) Render(r *render.Renderer) {
 	if f.renderInfo == nil {
 		return
 	}
-	render.FieldRender{}.Render(r, f.model, f.renderInfo)
+	f.renderer.Render(r, f.model, f.renderInfo)
 	field.ReturnRenderInfo(f.renderInfo)
 	f.renderInfo = nil
 }

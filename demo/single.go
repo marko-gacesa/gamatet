@@ -319,9 +319,9 @@ func Single() {
 
 	previousTime := glfw.GetTime()
 
-	fieldRendererLeft := render.NewFieldRenderer(&resources)
+	//fieldRendererLeft := render.NewFieldRenderer(&resources)
 	fieldRendererRight := render.NewFieldRenderer(&resources)
-	defer fieldRendererLeft.Release()
+	//defer fieldRendererLeft.Release()
 	defer fieldRendererRight.Release()
 
 out:

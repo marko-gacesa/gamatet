@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package machine
 
@@ -34,7 +34,7 @@ func TestPieceMeld(t *testing.T) {
 				&op.FieldBlockSet{Col: 0, Row: 3, Op: op.OpSet, Block: block.Rock},
 			},
 		},
-		// lava piece tests
+		// liquid piece tests
 		{
 			name: "lava: empty and wall",
 			x:    0, y: 3, p: piece.NewTetromino(piece.TetrominoO, block.Block{Type: block.TypeLava}),
@@ -62,14 +62,18 @@ func TestPieceMeld(t *testing.T) {
 				&op.FieldBlockSet{Col: 0, Row: 1, Op: op.OpSet, Block: block.Rock},
 			},
 		},
-		// acid piece tests
 		{
 			name: "acid: empty and wall",
 			x:    0, y: 3, p: piece.NewTetromino(piece.TetrominoO, block.Block{Type: block.TypeAcid}),
 			blocks: []block.XYB{
 				{XY: block.XY{X: 1, Y: 1}, Block: block.Wall},
 			},
-			events: []event.Event{},
+			events: []event.Event{
+				&op.FieldExBlock{Col: 1, Row: 1, AnimType: field.AnimFall, AnimParam: 1, Block: block.Acid},
+				&op.FieldExBlock{Col: 0, Row: 0, AnimType: field.AnimFall, AnimParam: 2, Block: block.Acid},
+				&op.FieldExBlock{Col: 1, Row: 1, AnimType: field.AnimFall, AnimParam: 2, Block: block.Acid},
+				&op.FieldExBlock{Col: 0, Row: 0, AnimType: field.AnimFall, AnimParam: 3, Block: block.Acid},
+			},
 		},
 		{
 			name: "acid: single and double block",
@@ -80,9 +84,13 @@ func TestPieceMeld(t *testing.T) {
 				{XY: block.XY{X: 1, Y: 1}, Block: block.Rock},
 			},
 			events: []event.Event{
+				&op.FieldExBlock{Col: 1, Row: 1, AnimType: field.AnimFall, AnimParam: 1, Block: block.Acid},
 				&op.FieldBlockSet{Col: 1, Row: 1, Op: op.OpClear, Block: block.Rock},
+				&op.FieldExBlock{Col: 0, Row: 0, AnimType: field.AnimFall, AnimParam: 2, Block: block.Acid},
 				&op.FieldBlockSet{Col: 0, Row: 0, Op: op.OpClear, Block: block.Rock},
+				&op.FieldExBlock{Col: 1, Row: 0, AnimType: field.AnimFall, AnimParam: 3, Block: block.Acid},
 				&op.FieldBlockSet{Col: 1, Row: 0, Op: op.OpClear, Block: block.Rock},
+				&op.FieldExBlock{Col: 0, Row: 0, AnimType: field.AnimFall, AnimParam: 3, Block: block.Acid},
 			},
 		},
 		{
@@ -95,9 +103,13 @@ func TestPieceMeld(t *testing.T) {
 				{XY: block.XY{X: 1, Y: 1}, Block: block.Rock},
 			},
 			events: []event.Event{
+				&op.FieldExBlock{Col: 1, Row: 1, AnimType: field.AnimFall, AnimParam: 1, Block: block.Acid},
 				&op.FieldBlockSet{Col: 1, Row: 1, Op: op.OpClear, Block: block.Rock},
+				&op.FieldExBlock{Col: 0, Row: 1, AnimType: field.AnimFall, AnimParam: 1, Block: block.Acid},
 				&op.FieldBlockHardness{Col: 0, Row: 1, Hardness: -1},
+				&op.FieldExBlock{Col: 1, Row: 0, AnimType: field.AnimFall, AnimParam: 3, Block: block.Acid},
 				&op.FieldBlockHardness{Col: 1, Row: 0, Hardness: -1},
+				&op.FieldExBlock{Col: 0, Row: 1, AnimType: field.AnimFall, AnimParam: 2, Block: block.Acid},
 				&op.FieldBlockSet{Col: 0, Row: 1, Op: op.OpClear, Block: block.Rock},
 			},
 		},
@@ -116,26 +128,28 @@ func TestPieceMeld(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test.events = append(test.events, nextPieceEvents...)
+		t.Run(test.name, func(t *testing.T) {
+			test.events = append(test.events, nextPieceEvents...)
 
-		f := field.Make(6, 6, 1)
-		ctrl := f.Ctrl(0)
+			f := field.Make(6, 6, 1)
+			ctrl := f.Ctrl(0)
 
-		ctrl.SetXYP(test.x, test.y, test.p)
-		ctrl.Blocks = piece.GetBlocks(test.p, nil)
-		ctrl.State = piece.StateSlide
+			ctrl.SetXYP(test.x, test.y, test.p)
+			ctrl.Blocks = piece.GetBlocks(test.p, nil)
+			ctrl.State = piece.StateSlide
 
-		for _, xyb := range test.blocks {
-			f.SetXY(xyb.X, xyb.Y, field.AnimNo, 0, xyb.Block)
-		}
+			for _, xyb := range test.blocks {
+				f.SetXY(xyb.X, xyb.Y, field.AnimNo, 0, xyb.Block)
+			}
 
-		var events event.Slice
+			var events event.Slice
 
-		HandleTimeout(f, ctrl, &events)
+			HandleTimeout(f, ctrl, &events)
 
-		if diff := cmp.Diff(test.events, ([]event.Event)(events), opts); diff != "" {
-			t.Errorf("test '%s' failed. diff=%s",
-				test.name, diff)
-		}
+			if diff := cmp.Diff(test.events, ([]event.Event)(events), opts); diff != "" {
+				t.Errorf("test '%s' failed. diff=%s",
+					test.name, diff)
+			}
+		})
 	}
 }

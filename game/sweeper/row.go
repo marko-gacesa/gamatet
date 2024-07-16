@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package sweeper
 
@@ -7,69 +7,31 @@ import (
 	"gamatet/game/field"
 	"gamatet/game/op"
 	"gamatet/game/piece"
-	"time"
 )
 
-func NewFullRowSweeper(f *field.Field) Sweeper {
-	l := &fullRowSweeper{}
-	l.field = f
-	l.timer = time.NewTimer(time.Second)
-	l.timer.Stop()
-	return l
+var _ Sweeper = (*Row)(nil)
+
+func NewRow(f *field.Field) *Row {
+	b := newBase(f)
+	return &Row{base: *b}
 }
 
-type fullRowSweeper struct {
-	field  *field.Field
-	timer  *time.Timer
-	active bool
-}
+type Row struct{ base }
 
-func (l *fullRowSweeper) Field() *field.Field {
-	return l.field
-}
-
-func (l *fullRowSweeper) Timer() <-chan time.Time {
-	return l.timer.C
-}
-
-func (l *fullRowSweeper) Start() {
-	if l.active {
-		// timer is already active or nothing to do
-		return
+func (s *Row) Start(analyzer op.Analyzer) {
+	if analyzer.HasAdded {
+		s.base.Start(analyzer)
 	}
-
-	l.active = true
-	l.timer.Reset(time.Microsecond)
-}
-
-func (l *fullRowSweeper) Pause() {
-	if !l.active {
-		return
-	}
-
-	l.timer.Stop()
-	select {
-	default:
-	case <-l.timer.C:
-	}
-}
-
-func (l *fullRowSweeper) Unpause() {
-	if !l.active {
-		return
-	}
-
-	l.timer.Reset(time.Millisecond)
 }
 
 // Sweep removes blocks from the field. Removed blocks are from full rows.
 // It returns number of blocks that are removed as the result of the function call.
-func (l *fullRowSweeper) Sweep(p event.Pusher) {
-	f := l.field
+func (s *Row) Sweep(p event.Pusher) {
+	f := s.field
 
 	result := f.GetDestroyInfo()
 	if result.RowCount == 0 {
-		l.endIteration()
+		s.endIteration()
 		return
 	}
 
@@ -79,7 +41,7 @@ func (l *fullRowSweeper) Sweep(p event.Pusher) {
 	if row > -1 {
 		blocks := f.GetRow(row)
 		p.Push(op.NewFieldDestroyRow(row, blocks))
-		l.endIteration()
+		s.endIteration()
 		return
 	}
 
@@ -110,13 +72,9 @@ func (l *fullRowSweeper) Sweep(p event.Pusher) {
 	// |[0][0][0][2]|    |[0][0][0][1]|      |[0][0][0][0]|    |            |
 
 	if !result.HasHardOrImm() {
-		l.endIteration()
+		s.endIteration()
 		return
 	}
 
-	l.timer.Reset(piece.GetFallDuration(maxHeight) + piece.DurationFullLine)
-}
-
-func (l *fullRowSweeper) endIteration() {
-	l.active = false
+	s.reschedule(piece.GetFallDuration(maxHeight) + piece.DurationFullLine)
 }

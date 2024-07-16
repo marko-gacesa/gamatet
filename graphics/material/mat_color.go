@@ -13,7 +13,7 @@ var _ Material = (*Color)(nil)
 func NewColor() *Color {
 	p, err := newProgram(defaultVertexShader, colorFragmentShader)
 	if err != nil {
-		panic("failed to make ruby material: " + err.Error())
+		panic("failed to make color material: " + err.Error())
 	}
 
 	return &Color{

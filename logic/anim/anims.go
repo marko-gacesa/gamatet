@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package anim
 
@@ -258,16 +258,40 @@ func (*animPopOut) Color() (r, g, b, a float32)     { return }
 // Spin
 
 type animSpin struct {
-	animBase
+	animCyclic
 }
 
-func NewSpin(now time.Time, duration time.Duration) Anim {
-	return &animSpin{animBase{startedAt: now, duration: duration}}
+func NewSpin(now time.Time, period time.Duration) Anim {
+	return &animSpin{animCyclic{startedAt: now, period: period}}
 }
 
 func (*animSpin) Feature() Feature { return Rotate }
 
 func (a *animSpin) Rotate() (rx, ry, rz float32) {
+	t := a.T()
+	t *= 2 * math.Pi
+	rx = 5.1 * t
+	rz = 1.7 * t
+	return
+}
+
+func (*animSpin) Translate() (dx, dy, dz float32) { return }
+func (*animSpin) Scale() (sx, sy, sz float32)     { return }
+func (*animSpin) Color() (r, g, b, a float32)     { return }
+
+// SpinOnce
+
+type animSpinOnce struct {
+	animBase
+}
+
+func NewSpinOnce(now time.Time, duration time.Duration) Anim {
+	return &animSpinOnce{animBase{startedAt: now, duration: duration}}
+}
+
+func (*animSpinOnce) Feature() Feature { return Rotate }
+
+func (a *animSpinOnce) Rotate() (rx, ry, rz float32) {
 	t := float64(a.T())
 	t = t * t * 2 * math.Pi
 	rx = float32(math.Sin(2 * t))
@@ -276,9 +300,9 @@ func (a *animSpin) Rotate() (rx, ry, rz float32) {
 	return
 }
 
-func (*animSpin) Translate() (dx, dy, dz float32) { return }
-func (*animSpin) Scale() (sx, sy, sz float32)     { return }
-func (*animSpin) Color() (r, g, b, a float32)     { return }
+func (*animSpinOnce) Translate() (dx, dy, dz float32) { return }
+func (*animSpinOnce) Scale() (sx, sy, sz float32)     { return }
+func (*animSpinOnce) Color() (r, g, b, a float32)     { return }
 
 // RotateZ
 
@@ -362,10 +386,6 @@ func (q *animFlash) Color() (r, g, b, a float32) {
 
 // Slide
 
-const meldColorR = 0.4
-const meldColorG = 1.5
-const meldColorB = 1.2
-
 type animSlide struct {
 	animBase
 }
@@ -386,6 +406,10 @@ func (q *animSlide) Color() (r, g, b, a float32) {
 }
 
 // Meld
+
+const meldColorR = 0.4
+const meldColorG = 1.5
+const meldColorB = 1.2
 
 type animMeld struct {
 	animBase
@@ -435,3 +459,25 @@ func (q *animRainbow) Color() (r, g, b, a float32) {
 	a = 1.0
 	return
 }
+
+// Pulse
+
+type animPulse struct {
+	animCyclic
+}
+
+func NewPulse(now time.Time, period time.Duration) Anim {
+	return &animPulse{animCyclic{startedAt: now, period: period}}
+}
+
+func (*animPulse) Feature() Feature { return Scale }
+
+func (q *animPulse) Scale() (sx, sy, sz float32) {
+	a := float32(math.Sin(3 * float64(q.T())))
+	a = 0.5 + 0.5*a*a
+	return a, a, a
+}
+
+func (*animPulse) Translate() (dx, dy, dz float32) { return }
+func (*animPulse) Rotate() (rx, ry, rz float32)    { return }
+func (*animPulse) Color() (r, g, b, a float32)     { return }

@@ -106,9 +106,9 @@ func (f *Field) SetXY(x, y, animType, animParam int, b block.Block) {
 
 	if f.Config.Anim {
 		switch animType {
-		case AnimShot, AnimFall:
+		case AnimFall:
 			t := time.Now()
-			var delay time.Duration
+			var duration time.Duration
 
 			if height := animParam; height > 0 {
 				rowFull := true
@@ -121,28 +121,28 @@ func (f *Field) SetXY(x, y, animType, animParam int, b block.Block) {
 					}
 				}
 
-				delay = piece.GetFallDuration(height)
+				duration = piece.GetFallDuration(height)
 
 				if rowFull {
 					// if this block completes a line, add external bullet animation because the block will be destroyed
-					f.animBullet(x, y, height, b)
+					f.addExBlock(x, y, b, anim.NewFall(t, duration, float32(height)))
 				} else {
 					// animate the newly created piece - falling
-					animList.Add(anim.NewFall(t, delay, float32(height)))
+					animList.Add(anim.NewFall(t, duration, float32(height)))
+					// animate the newly created piece - color transition
+					animList.Add(anim.NewMeld(time.Now(), piece.DurationAnimBlockChange))
 				}
 			}
 
-			// animate the newly created piece - color transition
-			animList.Add(anim.NewColorTrans(t.Add(delay), piece.DurationAnimBlockChange, 0xFF7F00FF, 0xFFFFFFFF))
 		case AnimPop:
 			animList.Add(anim.NewPopIn(time.Now(), piece.DurationAnimBlockChange))
 		case AnimMeld:
 			animList.Add(anim.NewMeld(time.Now(), piece.DurationAnimBlockChange))
 		}
 
-		//if b.Type == block.TypeRuby {
-		//	animList.Add(anim.NewRotateZ(time.Now(), 4*time.Second))
-		//}
+		if b.Type == block.TypeGoal {
+			animGoal(animList)
+		}
 	}
 }
 
@@ -157,32 +157,8 @@ func (f *Field) ClearXY(x, y, animType, animParam int) (b block.Block) {
 		switch animType {
 		case AnimDestroy:
 			f.animBlockDestroy(x, y, b)
-
-		/*
-			case AnimShot:
-				if height := animParam; height > 0 {
-					t := time.Now().Add(piece.GetFallDuration(height))
-					f.addExBlock(x, y+height, b,
-						anim.NewFall(t, piece.GetFallDuration(height), float32(-height)),
-						anim.NewPopOut(t, piece.GetFallDuration(height)))
-				}
-
-		*/
-
 		case AnimPop:
 			f.addExBlock(x, y, b, anim.NewPopOut(time.Now(), piece.DurationAnimBlockChange))
-
-		case AnimFall, AnimShot:
-			t := time.Now()
-
-			if height := animParam; height > 0 {
-				t.Add(piece.GetFallDuration(height))
-				f.animBullet(x, y, height, block.Acid)
-			}
-
-			f.addExBlock(x, y, b,
-				anim.NewSpin(t, piece.DurationAnimBlockChange),
-				anim.NewPopOut(t, piece.DurationAnimBlockChange))
 		}
 	}
 
@@ -206,19 +182,33 @@ func (f *Field) HardnessXY(x, y, delta, animType, animParam int) (blockOld, bloc
 		t := time.Now()
 
 		switch animType {
-		case AnimShot:
-			if height := animParam; height > 0 && delta < 0 {
-				t.Add(piece.GetFallDuration(height))
-				f.animBullet(x, y, height, block.Acid)
-			}
-			fallthrough
-
-		case AnimSpin, AnimFall:
-			f.blocks[idx].List.Add(anim.NewSpin(t, piece.DurationAnimBlockChange))
+		case AnimSpin:
+			f.blocks[idx].List.Add(anim.NewSpinOnce(t, piece.DurationAnimBlockChange))
 		}
 	}
 
 	return
+}
+
+func (f *Field) TransformXY(x, y, animType, animParam int, bExp, b block.Block) {
+	if old, _ := f.getXY(x, y); old != bExp {
+		panic("unexpected block in f.TransformXY")
+	}
+
+	animList := f.setXY(x, y, b)
+
+	if f.Config.Anim {
+		switch animType {
+		case AnimPop:
+			animList.Add(anim.NewPopIn(time.Now(), piece.DurationAnimBlockChange))
+		case AnimMeld:
+			animList.Add(anim.NewMeld(time.Now(), piece.DurationAnimBlockChange))
+		}
+
+		if b.Type == block.TypeGoal {
+			animGoal(animList)
+		}
+	}
 }
 
 func (f *Field) AddExXY(x, y, animType, animParam int, b block.Block) {
@@ -233,16 +223,16 @@ func (f *Field) AddExXY(x, y, animType, animParam int, b block.Block) {
 	case AnimPop:
 		f.addExBlock(x, y, b, anim.NewPopOut(time.Now(), piece.DurationAnimBlockChange))
 
-	case AnimFall, AnimShot:
-		t := time.Now()
-
+	case AnimFall:
 		if height := animParam; height > 0 {
-			t.Add(piece.GetFallDuration(height))
-			f.animBullet(x, y, height, block.Acid)
+			duration := piece.GetFallDuration(height)
+			f.addExBlock(x, y, b, anim.NewFall(time.Now(), duration, float32(height)))
 		}
-
-		f.addExBlock(x, y, b,
-			anim.NewSpin(t, piece.DurationAnimBlockChange),
-			anim.NewPopOut(t, piece.DurationAnimBlockChange))
 	}
+}
+
+func animGoal(animList *anim.List) {
+	t := time.Now()
+	animList.Add(anim.NewPulse(t, 3*time.Second))
+	animList.Add(anim.NewSpin(t, 4*time.Second))
 }

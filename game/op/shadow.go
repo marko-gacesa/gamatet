@@ -23,8 +23,10 @@ func updatePieceShadow(f *field.Field, ctrl *piece.Ctrl) {
 	switch p.Type() {
 	case piece.TypeStandard:
 		switch ctrl.Blocks[0].Type {
-		case block.TypeLava, block.TypeAcid:
+		case block.TypeLava, block.TypeAcid, block.TypeBomb:
 			setLiquidPieceShadow(f, ctrl)
+		case block.TypeCurl:
+			setCurlPieceShadow(f, ctrl)
 		case block.TypeWave:
 			setWavePieceShadow(f, ctrl)
 		default:
@@ -95,6 +97,29 @@ func setLiquidPieceShadow(f *field.Field, ctrl *piece.Ctrl) {
 	}
 }
 
+func setCurlPieceShadow(f *field.Field, ctrl *piece.Ctrl) {
+	t := field.NewTemp(f)
+	defer t.Revert()
+
+	for i := len(ctrl.Blocks) - 1; i >= 0; i-- {
+		x := ctrl.X + ctrl.Blocks[i].X
+		y := ctrl.Y + ctrl.Blocks[i].Y
+		height := f.GetHeightToHighestHole(x, y)
+		if height == 0 {
+			continue
+		}
+
+		yh := y - height
+
+		ctrl.Shadow.Blocks = append(ctrl.Shadow.Blocks, block.XYB{
+			XY:    block.XY{X: x, Y: yh},
+			Block: ctrl.Blocks[i].Block,
+		})
+
+		t.Set(x, yh, block.Rock)
+	}
+}
+
 func setWavePieceShadow(f *field.Field, ctrl *piece.Ctrl) {
 	t := field.NewTemp(f)
 	defer t.Revert()
@@ -102,7 +127,7 @@ func setWavePieceShadow(f *field.Field, ctrl *piece.Ctrl) {
 	for i := len(ctrl.Blocks) - 1; i >= 0; i-- {
 		x := ctrl.X + ctrl.Blocks[i].X
 		y := ctrl.Y + ctrl.Blocks[i].Y
-		height := f.GetHeightToTopmostHole(x, y)
+		height := f.GetHeightToLowestHole(x, y)
 		if height == 0 {
 			continue
 		}
@@ -124,8 +149,10 @@ func setShooterPieceShadow(f *field.Field, ctrl *piece.Ctrl) {
 	var height int
 
 	switch ctrl.Blocks[0].Type {
+	case block.TypeCurl:
+		height = f.GetHeightToHighestHole(x, y)
 	case block.TypeWave:
-		height = f.GetHeightToTopmostHole(x, y)
+		height = f.GetHeightToLowestHole(x, y)
 	default:
 		height = f.GetHeightToTopmostEmpty(x, y)
 	}

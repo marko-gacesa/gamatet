@@ -520,9 +520,12 @@ func TestField_GetHeightToTopmostFull(t *testing.T) {
 	}
 }
 
-func TestField_GetHeightToTopmostHole(t *testing.T) {
+func TestField_GetHeightToHighestHole(t *testing.T) {
 	const column = 0
 	const height = 8
+
+	bf := block.Block{Type: block.TypeRock}
+	be := block.Block{Type: block.TypeEmpty}
 
 	tests := []struct {
 		name     string
@@ -538,31 +541,31 @@ func TestField_GetHeightToTopmostHole(t *testing.T) {
 		{
 			name:     "block at row 0",
 			y:        4,
-			column:   []block.Block{{Type: block.TypeRock}},
+			column:   []block.Block{bf},
 			expected: 0,
 		},
 		{
 			name:     "block at row 3",
 			y:        4,
-			column:   []block.Block{{Type: block.TypeEmpty}, {Type: block.TypeEmpty}, {Type: block.TypeEmpty}, {Type: block.TypeRock}},
+			column:   []block.Block{be, be, be, bf},
 			expected: 2,
 		},
 		{
 			name:     "blocks at row 1 and 3",
 			y:        4,
-			column:   []block.Block{{Type: block.TypeEmpty}, {Type: block.TypeRock}, {Type: block.TypeEmpty}, {Type: block.TypeRock}},
+			column:   []block.Block{be, bf, be, bf},
 			expected: 2,
 		},
 		{
 			name:     "block at row 2",
 			y:        4,
-			column:   []block.Block{{Type: block.TypeEmpty}, {Type: block.TypeEmpty}, {Type: block.TypeRock}},
+			column:   []block.Block{be, be, bf},
 			expected: 3,
 		},
 		{
 			name:     "all full below",
 			y:        4,
-			column:   []block.Block{{Type: block.TypeRock}, {Type: block.TypeRock}, {Type: block.TypeRock}, {Type: block.TypeRock}},
+			column:   []block.Block{bf, bf, bf, bf},
 			expected: 0,
 		},
 	}
@@ -574,7 +577,78 @@ func TestField_GetHeightToTopmostHole(t *testing.T) {
 			f.setXY(column, row, b)
 		}
 
-		result := f.GetHeightToTopmostHole(column, test.y)
+		result := f.GetHeightToHighestHole(column, test.y)
+
+		if result != test.expected {
+			t.Errorf("test %q failed: expected height=%d but got height=%d", test.name, test.expected, result)
+		}
+	}
+}
+
+func TestField_GetHeightToLowestHole(t *testing.T) {
+	const column = 2
+	const height = 10
+
+	bf := block.Block{Type: block.TypeRock}
+	be := block.Block{Type: block.TypeEmpty}
+
+	tests := []struct {
+		name     string
+		y        int
+		column   []block.Block
+		expected int
+	}{
+		{
+			name:     "no block below",
+			y:        4,
+			expected: 0,
+		},
+		{
+			name:     "block at row 0",
+			y:        4,
+			column:   []block.Block{bf},
+			expected: 0,
+		},
+		{
+			name:     "block at row 3",
+			y:        4,
+			column:   []block.Block{be, be, be, bf},
+			expected: 4,
+		},
+		{
+			name:     "blocks at row 1 and 3",
+			y:        4,
+			column:   []block.Block{be, bf, be, bf},
+			expected: 4,
+		},
+		{
+			name:     "block at row 0 and 2",
+			y:        4,
+			column:   []block.Block{bf, be, bf},
+			expected: 3,
+		},
+		{
+			name:     "block at row 0, 2, 3, 5",
+			y:        9,
+			column:   []block.Block{bf, be, bf, bf, be, bf},
+			expected: 8,
+		},
+		{
+			name:     "all full below",
+			y:        4,
+			column:   []block.Block{bf, bf, bf, bf},
+			expected: 0,
+		},
+	}
+
+	for _, test := range tests {
+		f := Make(4, height, 0)
+
+		for row, b := range test.column {
+			f.setXY(column, row, b)
+		}
+
+		result := f.GetHeightToLowestHole(column, test.y)
 
 		if result != test.expected {
 			t.Errorf("test %q failed: expected height=%d but got height=%d", test.name, test.expected, result)
@@ -828,75 +902,88 @@ func TestField_GetDestroyInfo2(t *testing.T) {
 			expHasHard: []bool{false, false, false, false},
 			expHasImm:  []bool{true, false, false, false},
 		},
+		{
+			name: "only wall blocks",
+			blocksDef: []block.XYB{
+				// |[W][W][W][W]| => |[W][W][W][W]|
+				{block.XY{0, 0}, bW}, {block.XY{1, 0}, bW}, {block.XY{2, 0}, bW}, {block.XY{3, 0}, bW},
+			},
+			expected:   [][]exp{},
+			expCount:   0,
+			expHasHard: []bool{},
+			expHasImm:  []bool{},
+		},
 	}
 
 	for _, test := range tests {
-		f := Make(w, h, 0)
+		t.Run(test.name, func(t *testing.T) {
+			f := Make(w, h, 0)
 
-		for _, xyb := range test.blocksDef {
-			f.setXY(xyb.X, xyb.Y, xyb.Block)
-		}
-
-		result := f.GetDestroyInfo()
-
-		if result.RowCount != test.expCount {
-			t.Errorf("test %q failed. expected row count=%d, but got row count=%d", test.name, test.expCount, result.RowCount)
-			continue
-		}
-
-		if len(result.HardDec) != len(test.expHardDec) {
-			t.Errorf("test %q failed. expected hardness decrease length=%d, but got length=%d", test.name, len(test.expHardDec), len(result.HardDec))
-			continue
-		}
-
-		for i := 0; i < len(result.HardDec); i++ {
-			hardDec := result.HardDec[i]
-			if hardDec.X != test.expHardDec[i].X || hardDec.Y != test.expHardDec[i].Y {
-				t.Errorf("test %q failed. expected hardness decrease index=%d at (col,row)=(%+v), but got (col, row)=(%+v)", test.name, i, test.expHardDec, hardDec)
-				break
+			for _, xyb := range test.blocksDef {
+				f.setXY(xyb.X, xyb.Y, xyb.Block)
 			}
-		}
 
-		if result.Columns != nil {
-			for column := 0; column < f.w; column++ {
-				if result.Columns[column].HasImm != test.expHasImm[column] {
-					t.Errorf("test %q failed. expected has-immovable=%t, but got has-immovable=%t", test.name, test.expHasImm[column], result.Columns[column].HasImm)
+			result := f.GetDestroyInfo()
+
+			if result.RowCount != test.expCount {
+				t.Errorf("test %q failed. expected row count=%d, but got row count=%d", test.name, test.expCount, result.RowCount)
+				return
+			}
+
+			if len(result.HardDec) != len(test.expHardDec) {
+				t.Errorf("test %q failed. expected hardness decrease length=%d, but got length=%d", test.name, len(test.expHardDec), len(result.HardDec))
+				return
+			}
+
+			for i := 0; i < len(result.HardDec); i++ {
+				hardDec := result.HardDec[i]
+				if hardDec.X != test.expHardDec[i].X || hardDec.Y != test.expHardDec[i].Y {
+					t.Errorf("test %q failed. expected hardness decrease index=%d at (col,row)=(%+v), but got (col, row)=(%+v)", test.name, i, test.expHardDec, hardDec)
+					break
+				}
+			}
+
+			if result.Columns != nil {
+				for column := 0; column < f.w; column++ {
+					if result.Columns[column].HasImm != test.expHasImm[column] {
+						t.Errorf("test %q failed. expected has-immovable=%t, but got has-immovable=%t", test.name, test.expHasImm[column], result.Columns[column].HasImm)
+						continue
+					}
+				}
+			}
+
+			if result.Columns != nil {
+				for column := 0; column < f.w; column++ {
+					if result.Columns[column].HasHard != test.expHasHard[column] {
+						t.Errorf("test %q failed. expected has-hard=%t, but got has-hard=%t", test.name, test.expHasHard[column], result.Columns[column].HasHard)
+						continue
+					}
+				}
+			}
+
+			if result.Columns == nil {
+				return
+			}
+
+			for column := 0; column < len(result.Columns); column++ {
+				r := result.Columns[column].Rows
+				if len(r) != len(test.expected[column]) {
+					t.Errorf("test %q failed. expected result length=%d, but got length=%d", test.name, len(test.expected[column]), len(r))
 					continue
 				}
-			}
-		}
 
-		if result.Columns != nil {
-			for column := 0; column < f.w; column++ {
-				if result.Columns[column].HasHard != test.expHasHard[column] {
-					t.Errorf("test %q failed. expected has-hard=%t, but got has-hard=%t", test.name, test.expHasHard[column], result.Columns[column].HasHard)
-					continue
+				for row := 0; row < len(r); row++ {
+					if r[row].Row != test.expected[column][row].Row {
+						t.Errorf("test %q failed. expected row=%d, but got row=%d at index=%d", test.name, test.expected[column][row].Row, r[row].Row, row)
+					} else if r[row].Height != test.expected[column][row].Height {
+						t.Errorf("test %q failed. expected height=%d, but got height=%d at index=%d", test.name, test.expected[column][row].Height, r[row].Height, row)
+					} else if r[row].N != test.expected[column][row].N {
+						t.Errorf("test %q failed. expected N=%d, but got N=%d at index=%d", test.name, test.expected[column][row].N, r[row].N, row)
+					} else if r[row].Type != test.expected[column][row].Type {
+						t.Errorf("test %q failed. expected type=%d, but got type=%d at index=%d", test.name, test.expected[column][row].Type, r[row].Type, row)
+					}
 				}
 			}
-		}
-
-		if result.Columns == nil {
-			continue
-		}
-
-		for column := 0; column < len(result.Columns); column++ {
-			r := result.Columns[column].Rows
-			if len(r) != len(test.expected[column]) {
-				t.Errorf("test %q failed. expected result length=%d, but got length=%d", test.name, len(test.expected[column]), len(r))
-				continue
-			}
-
-			for row := 0; row < len(r); row++ {
-				if r[row].Row != test.expected[column][row].Row {
-					t.Errorf("test %q failed. expected row=%d, but got row=%d at index=%d", test.name, test.expected[column][row].Row, r[row].Row, row)
-				} else if r[row].Height != test.expected[column][row].Height {
-					t.Errorf("test %q failed. expected height=%d, but got height=%d at index=%d", test.name, test.expected[column][row].Height, r[row].Height, row)
-				} else if r[row].N != test.expected[column][row].N {
-					t.Errorf("test %q failed. expected N=%d, but got N=%d at index=%d", test.name, test.expected[column][row].N, r[row].N, row)
-				} else if r[row].Type != test.expected[column][row].Type {
-					t.Errorf("test %q failed. expected type=%d, but got type=%d at index=%d", test.name, test.expected[column][row].Type, r[row].Type, row)
-				}
-			}
-		}
+		})
 	}
 }

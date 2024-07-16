@@ -76,12 +76,18 @@ func (p *shooter) Get(x, y int) (b block.Block) {
 	switch p.bulletType {
 	default:
 		fallthrough
+	case block.TypeRock:
+		return block.Rock
 	case block.TypeLava:
 		return block.Lava
 	case block.TypeAcid:
 		return block.Acid
+	case block.TypeCurl:
+		return block.Curl
 	case block.TypeWave:
 		return block.Wave
+	case block.TypeBomb:
+		return block.Bomb
 	}
 }
 

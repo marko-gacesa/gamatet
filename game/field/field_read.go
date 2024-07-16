@@ -220,10 +220,10 @@ func (f *Field) GetHeightToTopmostFull(x, y int) (height int) {
 	return 0
 }
 
-// GetHeightToTopmostHole returns height from which the block at location (x, y) can fall,
+// GetHeightToHighestHole returns height from which the block at location (x, y) can fall,
 // tunnel through some of the existing blocks until it finds the first hole (empty block).
 // So, if height>0, the location (x, y - height) will be empty. If height==0 than falling is not possible.
-func (f *Field) GetHeightToTopmostHole(x, y int) (height int) {
+func (f *Field) GetHeightToHighestHole(x, y int) (height int) {
 	height = f.GetHeightToTopmostFull(x, y)
 	if height == 0 {
 		return
@@ -237,6 +237,30 @@ func (f *Field) GetHeightToTopmostHole(x, y int) (height int) {
 			return height
 		}
 		height++
+	}
+
+	return 0
+}
+
+// GetHeightToLowestHole returns height from which the block at location (x, y) can fall,
+// tunnel through all existing blocks until it finds the last hole (empty block).
+// So, if height>0, the location (x, y - height) will be empty. If height==0 than falling is not possible.
+func (f *Field) GetHeightToLowestHole(x, y int) (height int) {
+	height = f.GetHeightToTopmostFull(x, y)
+	if height == 0 {
+		return
+	}
+
+	w := f.w
+
+	yCurr := 0
+	idxTop := (y - height) * w
+
+	for idx := x; idx < idxTop; idx += w {
+		if f.blocks[idx].Type == block.TypeEmpty {
+			return y - yCurr
+		}
+		yCurr++
 	}
 
 	return 0
@@ -259,6 +283,7 @@ func (f *Field) GetDestroyInfo() (info DestroyInfo) {
 	// Proceed from the bottom row up to the top row: Find all rows with all blocks non-empty.
 	for row := 0; row < h; row++ {
 		isFull := true
+		onlyHard := true
 		for col := 0; col < w; col++ {
 			b := f.blocks[blockIdx]
 
@@ -269,11 +294,15 @@ func (f *Field) GetDestroyInfo() (info DestroyInfo) {
 				break
 			}
 
+			if b.Hardness != block.HardnessMax {
+				onlyHard = false
+			}
+
 			blockIdx++
 		}
 
 		// Found a full row
-		if isFull {
+		if isFull && !onlyHard {
 			blockIdx -= w
 
 			info.RowCount++

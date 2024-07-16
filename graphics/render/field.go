@@ -26,6 +26,16 @@ func NewFieldRenderer(globalResources *Resources) *FieldRender {
 func (f *FieldRender) Release() {
 }
 
+var (
+	colorWall = colorVector(block.Wall.Color)
+	colorBack = colorVector(block.Wall.Color).Mul(0.6)
+	colorLava = colorVector(block.Lava.Color)
+	colorAcid = colorVector(block.Acid.Color)
+	colorCurl = colorVector(block.Curl.Color)
+	colorWave = colorVector(block.Wave.Color)
+	colorBomb = colorVector(block.Bomb.Color)
+)
+
 func (f *FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.RenderInfo) {
 	if renderInfo == nil {
 		return
@@ -38,35 +48,54 @@ func (f *FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.R
 		lightIntLava    = 1.2
 		lightIntAcid    = 1.2
 		lightIntWave    = 1.5
-		lightIntRuby    = 3
+		lightIntGoal    = 3
 		lightPowShooter = 1.5
 	)
 
+	var colorsBack [field.MaxWidth]mgl32.Vec4
+	var listsBack [field.MaxWidth]rendercache.Models
+	for i := 0; i < renderInfo.W; i++ {
+		listsBack[i] = rendercache.ModelPool.Get()
+	}
+
 	listWall := rendercache.ModelPool.Get()
-	listBack := rendercache.ModelPool.Get()
 	listRock := rendercache.ModelColorPool.Get()
 	listRock1 := rendercache.ModelColorPool.Get()
 	listRock2 := rendercache.ModelColorPool.Get()
 	listRock3 := rendercache.ModelColorPool.Get()
+	listRuby := rendercache.ModelColorPool.Get()
+	listRuby1 := rendercache.ModelColorPool.Get()
+	listRuby2 := rendercache.ModelColorPool.Get()
+	listRuby3 := rendercache.ModelColorPool.Get()
 	listIron := rendercache.ModelPool.Get()
 	listLava := rendercache.ModelColorPool.Get()
 	listAcid := rendercache.ModelColorPool.Get()
 	listWave := rendercache.ModelColorPool.Get()
-	listRuby := rendercache.ModelColorPool.Get()
+	listGoal := rendercache.ModelColorPool.Get()
+	listFrame := rendercache.ModelPool.Get()
+	listBomb := rendercache.ModelPool.Get()
 	listShad := rendercache.ModelColorPool.Get()
 	lights := rendercache.PointLightPool.Get()
 	defer func() {
+		for i := 0; i < renderInfo.W; i++ {
+			rendercache.ModelPool.Put(listsBack[i])
+		}
 		rendercache.ModelPool.Put(listWall)
-		rendercache.ModelPool.Put(listBack)
 		rendercache.ModelColorPool.Put(listRock)
 		rendercache.ModelColorPool.Put(listRock1)
 		rendercache.ModelColorPool.Put(listRock2)
 		rendercache.ModelColorPool.Put(listRock3)
+		rendercache.ModelColorPool.Put(listRuby)
+		rendercache.ModelColorPool.Put(listRuby1)
+		rendercache.ModelColorPool.Put(listRuby2)
+		rendercache.ModelColorPool.Put(listRuby3)
 		rendercache.ModelPool.Put(listIron)
 		rendercache.ModelColorPool.Put(listLava)
 		rendercache.ModelColorPool.Put(listAcid)
 		rendercache.ModelColorPool.Put(listWave)
-		rendercache.ModelColorPool.Put(listRuby)
+		rendercache.ModelColorPool.Put(listGoal)
+		rendercache.ModelPool.Put(listFrame)
+		rendercache.ModelPool.Put(listBomb)
 		rendercache.ModelColorPool.Put(listShad)
 		rendercache.PointLightPool.Put(lights)
 	}()
@@ -109,10 +138,28 @@ func (f *FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.R
 		listWall.Add(m)
 	}
 
+	// prepare the background
+
 	for x := 0; x < renderInfo.W; x++ {
+		colorCol := colorBack
+		for pIdx := range renderInfo.Pieces {
+			if !renderInfo.Pieces[pIdx].Empty {
+				within := x >= renderInfo.Pieces[pIdx].Limits.Min && x <= renderInfo.Pieces[pIdx].Limits.Max
+				shadow := x >= renderInfo.Pieces[pIdx].Shadow.ColL && x < renderInfo.Pieces[pIdx].Shadow.ColR
+				if within {
+					//colorCol = colorCol.Mul(1.1)
+				}
+				if shadow {
+					colorCol = colorCol.Mul(1.1)
+				}
+			}
+		}
+
+		colorsBack[x] = colorCol
+
 		for y := 0; y < renderInfo.H; y++ {
 			m := modelField.Mul4(mgl32.Translate3D(float32(x), float32(y), float32(-1)))
-			listBack.Add(m)
+			listsBack[x].Add(m)
 		}
 	}
 
@@ -121,9 +168,8 @@ func (f *FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.R
 	for _, fb := range renderInfo.Blocks {
 		aniMatrix, aniColor := animListUpdate(&fb.Result)
 
-		modelFieldBlock := modelField.
-			Mul4(mgl32.Translate3D(float32(fb.X), float32(fb.Y), 0)).
-			Mul4(aniMatrix)
+		modelFieldBlockBase := modelField.Mul4(mgl32.Translate3D(float32(fb.X), float32(fb.Y), 0))
+		modelFieldBlock := modelFieldBlockBase.Mul4(aniMatrix)
 
 		switch fb.Type {
 		case block.TypeWall:
@@ -131,9 +177,38 @@ func (f *FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.R
 		case block.TypeIron:
 			listIron.Add(modelFieldBlock)
 		case block.TypeRuby:
+			blockColor := colorVector(fb.Block.Color)
+			color := mulColor(blockColor, aniColor)
+			switch fb.Hardness {
+			case 0:
+				listRuby.Add(modelFieldBlock, color)
+			case 1:
+				listRuby1.Add(modelFieldBlock, color)
+			case 2:
+				listRuby2.Add(modelFieldBlock, color)
+			default:
+				listRuby3.Add(modelFieldBlock, color)
+			}
+		case block.TypeAcid:
+			listAcid.Add(modelFieldBlock, aniColor)
+			lights.AddWithModel(modelFieldBlock, colorAcid.Vec3(), lightIntAcid*fb.Result.SX)
+		case block.TypeLava:
+			listLava.Add(modelFieldBlock, aniColor)
+			lights.AddWithModel(modelFieldBlock, colorLava.Vec3(), lightIntLava*fb.Result.SX)
+		case block.TypeCurl:
+			listWave.Add(modelFieldBlock, mulColor(colorCurl, aniColor))
+			lights.AddWithModel(modelFieldBlock, colorCurl.Vec3(), lightIntWave*fb.Result.SX)
+		case block.TypeWave:
+			listWave.Add(modelFieldBlock, mulColor(colorWave, aniColor))
+			lights.AddWithModel(modelFieldBlock, colorWave.Vec3(), lightIntWave*fb.Result.SX)
+		case block.TypeBomb:
+			listBomb.Add(modelFieldBlock)
+		case block.TypeGoal:
+			listFrame.Add(modelFieldBlockBase)
 			color := colorVector(fb.Block.Color)
-			listRuby.Add(modelFieldBlock, color)
-			lights.AddWithModel(modelFieldBlock, color.Vec3(), lightIntRuby)
+			modelGoal := modelFieldBlock.Mul4(mgl32.Scale3D(0.6, 0.6, 0.6))
+			listGoal.Add(modelGoal, color)
+			lights.AddWithModel(modelFieldBlock, color.Vec3(), lightIntGoal)
 		default:
 			blockColor := colorVector(fb.Block.Color)
 			color := mulColor(blockColor, aniColor)
@@ -184,13 +259,18 @@ func (f *FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.R
 			switch pb.Block.Type {
 			case block.TypeAcid:
 				listAcid.Add(modelPieceBlock, aniColor)
-				lights.AddWithModel(modelPieceBlock, colorVector(block.Acid.Color).Vec3(), lightIntAcid*lightPower)
+				lights.AddWithModel(modelPieceBlock, colorAcid.Vec3(), lightIntAcid*lightPower)
 			case block.TypeLava:
 				listLava.Add(modelPieceBlock, aniColor)
-				lights.AddWithModel(modelPieceBlock, colorVector(block.Lava.Color).Vec3(), lightIntLava*lightPower)
+				lights.AddWithModel(modelPieceBlock, colorLava.Vec3(), lightIntLava*lightPower)
+			case block.TypeCurl:
+				listWave.Add(modelPieceBlock, mulColor(colorCurl, aniColor))
+				lights.AddWithModel(modelPieceBlock, colorCurl.Vec3(), lightIntWave*lightPower)
 			case block.TypeWave:
-				listWave.Add(modelPieceBlock, aniColor)
-				lights.AddWithModel(modelPieceBlock, colorVector(block.Wave.Color).Vec3(), lightIntWave*lightPower)
+				listWave.Add(modelPieceBlock, mulColor(colorWave, aniColor))
+				lights.AddWithModel(modelPieceBlock, colorWave.Vec3(), lightIntWave*lightPower)
+			case block.TypeBomb:
+				listBomb.Add(modelPieceBlock)
 			default:
 				blockColor := colorVector(pb.Block.Color)
 				color := mulColor(blockColor, aniColor)
@@ -256,8 +336,12 @@ func (f *FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.R
 					listAcid.Add(modelPieceBlock, colorWhite)
 				case block.TypeLava:
 					listLava.Add(modelPieceBlock, colorWhite)
+				case block.TypeCurl:
+					listWave.Add(modelPieceBlock, colorCurl)
 				case block.TypeWave:
-					listWave.Add(modelPieceBlock, colorWhite)
+					listWave.Add(modelPieceBlock, colorWave)
+				case block.TypeBomb:
+					listBomb.Add(modelPieceBlock)
 				default:
 					color := colorVector(pb.Block.Color)
 					switch pb.Hardness {
@@ -281,16 +365,22 @@ func (f *FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.R
 	r.Geometry(f.resources.GeomCube)
 	f.resources.MatRock.Lights(lights)
 
-	f.resources.MatRock.Color(colorVector(block.Wall.Color))
+	f.resources.MatRock.Color(colorWall)
 	for i := range listWall {
 		r.Render(&listWall[i])
 	}
 
 	r.Geometry(f.resources.GeomDentCube)
 
-	f.resources.MatRock.Color(colorVector(block.Wall.Color).Mul(0.6))
-	for i := range listBack {
-		r.Render(&listBack[i])
+	f.resources.MatRock.Color(colorBack)
+	for i := range listsBack {
+		if listsBack[i] == nil {
+			break
+		}
+		f.resources.MatRock.Color(colorsBack[i])
+		for j := range listsBack[i] {
+			r.Render(&listsBack[i][j])
+		}
 	}
 
 	r.Geometry(f.resources.GeomRoundedCube)
@@ -326,10 +416,46 @@ func (f *FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.R
 	}
 
 	if len(listRuby) > 0 {
-		r.Geometry(f.resources.GeomFrame)
-		f.resources.MatRock.Color(colorVector(block.Wall.Color))
+		r.Geometry(f.resources.GeomGem)
 		for i := range listRuby {
+			f.resources.MatRock.Color(listRuby[i].Color)
 			r.Render(&listRuby[i].Model)
+		}
+	}
+
+	if len(listRuby1) > 0 {
+		r.Geometry(f.resources.GeomGem)
+		f.resources.MatRock.ChainTexture(f.resources.TexChain1)
+		for i := range listRuby1 {
+			f.resources.MatRock.Color(listRuby1[i].Color)
+			r.Render(&listRuby1[i].Model)
+		}
+		f.resources.MatRock.ClearChain()
+	}
+	if len(listRuby2) > 0 {
+		r.Geometry(f.resources.GeomGem)
+		f.resources.MatRock.ChainTexture(f.resources.TexChain2)
+		for i := range listRuby2 {
+			f.resources.MatRock.Color(listRuby2[i].Color)
+			r.Render(&listRuby2[i].Model)
+		}
+		f.resources.MatRock.ClearChain()
+	}
+	if len(listRuby3) > 0 {
+		r.Geometry(f.resources.GeomGem)
+		f.resources.MatRock.ChainTexture(f.resources.TexChain3)
+		for i := range listRuby3 {
+			f.resources.MatRock.Color(listRuby3[i].Color)
+			r.Render(&listRuby3[i].Model)
+		}
+		f.resources.MatRock.ClearChain()
+	}
+
+	if len(listFrame) > 0 {
+		r.Geometry(f.resources.GeomFrame)
+		f.resources.MatRock.Color(colorWall)
+		for i := range listFrame {
+			r.Render(&listFrame[i])
 		}
 	}
 
@@ -377,19 +503,25 @@ func (f *FieldRender) Render(r *Renderer, model *mgl32.Mat4, renderInfo *field.R
 		}
 	}
 
-	if len(listRuby) > 0 {
+	if len(listBomb) > 0 {
+		r.Geometry(f.resources.GeomStar6)
+		r.Material(f.resources.MatRock)
+		f.resources.MatRock.Color(colorBomb)
+		transform :=
+			mgl32.HomogRotate3DZ(float32(6.7*t + 0.2)).
+				Mul4(mgl32.HomogRotate3DX(float32(5.1*t + 0.7)))
+		for i := range listBomb {
+			modelBomb := listBomb[i].Mul4(transform)
+			r.Render(&modelBomb)
+		}
+	}
+
+	if len(listGoal) > 0 {
 		r.Geometry(f.resources.GeomStar8)
 		r.Material(f.resources.MatColor)
-		a := float32(math.Sin(3 * t))
-		a = 0.3 + 0.3*a*a
-		transform :=
-			mgl32.Scale3D(a, a, a).
-				Mul4(mgl32.HomogRotate3DZ(float32(6.7*t + 0.2))).
-				Mul4(mgl32.HomogRotate3DX(float32(5.1*t + 0.7)))
-		for i := range listRuby {
-			f.resources.MatColor.Color(listRuby[i].Color)
-			modelRuby := listRuby[i].Model.Mul4(transform)
-			r.Render(&modelRuby)
+		for i := range listGoal {
+			f.resources.MatColor.Color(listGoal[i].Color)
+			r.Render(&listGoal[i].Model)
 		}
 	}
 

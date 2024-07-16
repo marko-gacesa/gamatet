@@ -140,7 +140,7 @@ func HandleActionInput(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, a actio
 		}
 
 		if ctrl.Piece.Type() == piece.TypeStandard {
-			if t := ctrl.Blocks[0].Type; t == block.TypeLava || t == block.TypeAcid || t == block.TypeWave {
+			if t := ctrl.Blocks[0].Type; t.NoSlide() {
 				_meldPiece(f, ctrl, p)
 				_clearPiece(ctrl, p)
 				break
@@ -248,7 +248,7 @@ func _meldPiece(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 
 	if ctrl.Piece.Type() == piece.TypeStandard {
 		switch ctrl.Blocks[0].Type {
-		case block.TypeLava, block.TypeAcid, block.TypeWave:
+		case block.TypeLava, block.TypeAcid, block.TypeBomb, block.TypeCurl, block.TypeWave:
 			_meldLiquidPiece(f, ctrl, p)
 		default:
 			_meldSolidPiece(f, ctrl, p)
@@ -261,10 +261,7 @@ func _meldSolidPiece(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 	blocks := f.GetPieceBlockLocations(ctrl.X, ctrl.Y, ctrl.Piece)
 
 	for i := len(blocks) - 1; i >= 0; i-- {
-		xyb := blocks[i]
-		if e := _setBlockEvent(f, xyb.X, xyb.Y, xyb.Block); e != nil {
-			p.Push(e)
-		}
+		_setBlock(f, p, blocks[i].X, blocks[i].Y, blocks[i].Block)
 	}
 }
 
@@ -278,43 +275,48 @@ func _meldLiquidPiece(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 	// it's important to start from the slice's end
 	for i := len(blocks) - 1; i >= 0; i-- {
 		xyb := blocks[i]
-		var e event.Event
+		var evs event.Slice
+
 		switch xyb.Type {
 		case block.TypeRock:
-			e = _setBlockEvent(f, xyb.X, xyb.Y, xyb.Block)
+			_dropBlock(f, &evs, xyb.X, xyb.Y, xyb.Block)
 		case block.TypeLava:
-			e = _dropLavaEvent(f, xyb.X, xyb.Y)
+			_dropLava(f, &evs, xyb.X, xyb.Y)
 		case block.TypeAcid:
-			e = _dropAcidEvent(f, xyb.X, xyb.Y)
+			_dropAcid(f, &evs, xyb.X, xyb.Y)
+		case block.TypeCurl:
+			_dropCurl(f, &evs, xyb.X, xyb.Y)
 		case block.TypeWave:
-			e = _dropWaveEvent(f, xyb.X, xyb.Y)
+			_dropWave(f, &evs, xyb.X, xyb.Y)
 		default:
 			panic("unsupported block type found in piece")
 		}
 
-		if e == nil {
+		if len(evs) == 0 {
 			continue
 		}
 
-		// push the event
-		p.Push(e)
+		for _, e := range evs {
+			// push the event
+			p.Push(e)
 
-		// apply the event to the field
-		switch v := e.(type) {
-		case *op.FieldBlockSet:
-			if v.Op == op.OpSet {
-				f.SetXY(int(v.Col), int(v.Row), field.AnimNo, 0, v.Block)
-			} else {
-				f.ClearXY(int(v.Col), int(v.Row), field.AnimNo, 0)
+			// apply the event to the field
+			switch v := e.(type) {
+			case *op.FieldBlockSet:
+				if v.Op == op.OpSet {
+					f.SetXY(int(v.Col), int(v.Row), field.AnimNo, 0, v.Block)
+				} else {
+					f.ClearXY(int(v.Col), int(v.Row), field.AnimNo, 0)
+				}
+			case *op.FieldBlockHardness:
+				f.HardnessXY(int(v.Col), int(v.Row), int(v.Hardness), field.AnimNo, 0)
+			case *op.FieldExBlock:
+			default:
+				panic("unsupported event type=" + reflect.TypeOf(e).String() + " for piece meld")
 			}
-		case *op.FieldBlockHardness:
-			f.HardnessXY(int(v.Col), int(v.Row), int(v.Hardness), field.AnimNo, 0)
-		case *op.FieldExBlock:
-		default:
-			panic("unsupported event type=" + reflect.TypeOf(e).String() + " for piece meld")
-		}
 
-		events = append(events, e)
+			events = append(events, e)
+		}
 	}
 
 	// undo the changes to the field
@@ -332,49 +334,90 @@ func _meldLiquidPiece(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 	}
 }
 
-func _setBlockEvent(f *field.Field, x, y int, b block.Block) event.Event {
-	return op.NewFieldBlockSet(x, y, op.OpSet, field.AnimMeld, 0, b)
+func _setBlock(f *field.Field, p event.Pusher, x, y int, b block.Block) {
+	p.Push(op.NewFieldBlockSet(x, y, op.OpSet, field.AnimMeld, 0, b))
 }
 
-func _dropLavaEvent(f *field.Field, x, y int) event.Event {
-	height, y0, ok := _dropLavaHeight(f, x, y)
+func _dropEx(f *field.Field, p event.Pusher, x, y int, b block.Block) {
+	height, y0, ok := _dropHeight(f, x, y)
+	if ok {
+		p.Push(op.NewFieldExBlock(x, y0, field.AnimFall, height, b))
+	}
+}
+
+func _destroyEx(f *field.Field, p event.Pusher, x, y int, b block.Block) {
+	p.Push(op.NewFieldExBlock(x, y, field.AnimDestroy, 0, b))
+}
+
+func _dropBlock(f *field.Field, p event.Pusher, x, y int, b block.Block) bool {
+	height, y0, ok := _dropHeight(f, x, y)
 	if !ok {
-		return nil
+		return false
 	}
 
-	b := block.Block{
-		Type:  block.TypeRock,
-		Color: block.Lava.Color,
-	}
-
-	return op.NewFieldBlockSet(x, y0, op.OpSet, field.AnimFall, height, b)
+	p.Push(op.NewFieldBlockSet(x, y0, op.OpSet, field.AnimFall, height, b))
+	return true
 }
 
-func _dropAcidEvent(f *field.Field, x, y int) event.Event {
-	height, y0, b, ok := _dropAcidHeight(f, x, y)
-	if !ok || b.Hardness == block.HardnessMax {
-		return op.NewFieldExBlock(x, y, field.AnimPop, 0, block.Acid)
+func _dropLava(f *field.Field, p event.Pusher, x, y int) bool {
+	height, y0, ok := _dropHeight(f, x, y)
+	if !ok {
+		return false
+	}
+
+	b := block.Block{Type: block.TypeRock, Color: block.Lava.Color}
+	p.Push(op.NewFieldBlockSet(x, y0, op.OpSet, field.AnimFall, height, b))
+	return true
+}
+
+func _dropAcid(f *field.Field, p event.Pusher, x, y int) bool {
+	height, y0, b, ok := _dropHeightToFull(f, x, y)
+	if !ok {
+		_dropEx(f, p, x, y, block.Acid)
+		return false
+	}
+
+	if h := y - y0; h > 0 {
+		p.Push(op.NewFieldExBlock(x, y0, field.AnimFall, h, block.Acid))
+	}
+
+	if b.Hardness == block.HardnessMax || !b.Type.Destroyable() {
+		return true
 	}
 
 	if b.Hardness > 0 {
-		return op.NewFieldBlockHardness(x, y0, -1, field.AnimFall, height)
+		p.Push(op.NewFieldBlockHardness(x, y0, -1, field.AnimSpin, height))
+	} else {
+		p.Push(op.NewFieldBlockSet(x, y0, op.OpClear, field.AnimPop, 0, b))
 	}
 
-	return op.NewFieldBlockSet(x, y0, op.OpClear, field.AnimFall, height, b)
+	return true
 }
 
-func _dropWaveEvent(f *field.Field, x, y int) event.Event {
-	height, y0, ok := _dropWaveHeight(f, x, y)
+func _dropCurl(f *field.Field, p event.Pusher, x, y int) bool {
+	b := block.Block{Type: block.TypeRock, Color: block.Curl.Color}
+
+	height, y0, ok := _dropHeightToHighestHole(f, x, y)
 	if !ok {
-		return op.NewFieldExBlock(x, y, field.AnimDestroy, 0, block.Wave)
+		_destroyEx(f, p, x, y, b)
+		return false
 	}
 
-	b := block.Block{
-		Type:  block.TypeRock,
-		Color: block.Wave.Color,
+	p.Push(op.NewFieldBlockSet(x, y0, op.OpSet, field.AnimFall, height, b))
+	return true
+}
+
+func _dropWave(f *field.Field, p event.Pusher, x, y int) bool {
+	b := block.Block{Type: block.TypeRock, Color: block.Wave.Color}
+
+	height, y0, ok := _dropHeightToLowestHole(f, x, y)
+	if !ok {
+		_destroyEx(f, p, x, y, b)
+		return false
 	}
 
-	return op.NewFieldBlockSet(x, y0, op.OpSet, field.AnimFall, height, b)
+	p.Push(op.NewFieldBlockSet(x, y0, op.OpSet, field.AnimFall, height, b))
+	return true
 }
 
 func _shoot(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
@@ -383,20 +426,20 @@ func _shoot(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 		return
 	}
 
-	var fired bool
+	p.Push(op.NewPieceActivate(ctrl.Idx, 1))
 
 	b := ctrl.Piece.Get(0, 0)
 	switch b.Type {
-	case block.TypeLava:
-		fired = _shootLava(f, ctrl, p)
+	case block.TypeRock:
+		_shootBlock(f, ctrl, p, b)
 	case block.TypeAcid:
-		fired = _shootAcid(f, ctrl, p)
+		_shootAcid(f, ctrl, p)
+	case block.TypeLava:
+		_shootLava(f, ctrl, p)
+	case block.TypeCurl:
+		_shootCurl(f, ctrl, p)
 	case block.TypeWave:
-		fired = _shootWave(f, ctrl, p)
-	}
-
-	if !fired {
-		return
+		_shootWave(f, ctrl, p)
 	}
 
 	if ammo == 1 {
@@ -404,61 +447,27 @@ func _shoot(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 	}
 }
 
-func _shootLava(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) bool {
-	height, y0, ok := _dropLavaHeight(f, ctrl.X, ctrl.Y)
-	if !ok {
-		p.Push(op.NewFieldExBlock(ctrl.X, ctrl.Y, field.AnimDestroy, 0, block.Lava))
-		return false
-	}
-
-	b := block.Block{
-		Type:  block.TypeRock,
-		Color: block.Lava.Color,
-	}
-
-	p.Push(op.NewPieceActivate(ctrl.Idx, 1))
-	p.Push(op.NewFieldBlockSet(ctrl.X, y0, op.OpSet, field.AnimShot, height, b))
-
-	return true
+func _shootBlock(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, b block.Block) {
+	_dropBlock(f, p, ctrl.X, ctrl.Y, b)
 }
 
-func _shootAcid(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) bool {
-	height, y0, b, ok := _dropAcidHeight(f, ctrl.X, ctrl.Y)
-	if !ok || b.Hardness == block.HardnessMax {
-		p.Push(op.NewFieldExBlock(ctrl.X, ctrl.Y, field.AnimDestroy, 0, block.Acid))
-		return false
-	}
-
-	p.Push(op.NewPieceActivate(ctrl.Idx, 1))
-
-	if b.Hardness > 0 {
-		p.Push(op.NewFieldBlockHardness(ctrl.X, y0, -1, field.AnimShot, height))
-	} else {
-		p.Push(op.NewFieldBlockSet(ctrl.X, y0, op.OpClear, field.AnimShot, height, b))
-	}
-
-	return true
+func _shootAcid(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
+	_dropAcid(f, p, ctrl.X, ctrl.Y)
 }
 
-func _shootWave(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) bool {
-	height, y0, ok := _dropWaveHeight(f, ctrl.X, ctrl.Y)
-	if !ok {
-		p.Push(op.NewFieldExBlock(ctrl.X, ctrl.Y, field.AnimDestroy, 0, block.Wave))
-		return false
-	}
-
-	b := block.Block{
-		Type:  block.TypeRock,
-		Color: block.Wave.Color,
-	}
-
-	p.Push(op.NewPieceActivate(ctrl.Idx, 1))
-	p.Push(op.NewFieldBlockSet(ctrl.X, y0, op.OpSet, field.AnimShot, height, b))
-
-	return true
+func _shootLava(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
+	_dropLava(f, p, ctrl.X, ctrl.Y)
 }
 
-func _dropLavaHeight(f *field.Field, x, y int) (height, y0 int, ok bool) {
+func _shootCurl(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
+	_dropCurl(f, p, ctrl.X, ctrl.Y)
+}
+
+func _shootWave(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
+	_dropWave(f, p, ctrl.X, ctrl.Y)
+}
+
+func _dropHeight(f *field.Field, x, y int) (height, y0 int, ok bool) {
 	height = f.GetHeightToTopmostEmpty(x, y)
 
 	y0 = y - height
@@ -473,7 +482,7 @@ func _dropLavaHeight(f *field.Field, x, y int) (height, y0 int, ok bool) {
 	return
 }
 
-func _dropAcidHeight(f *field.Field, x, y int) (height, y0 int, b block.Block, ok bool) {
+func _dropHeightToFull(f *field.Field, x, y int) (height, y0 int, b block.Block, ok bool) {
 	height = f.GetHeightToTopmostFull(x, y)
 	if height == 0 {
 		return
@@ -481,14 +490,25 @@ func _dropAcidHeight(f *field.Field, x, y int) (height, y0 int, b block.Block, o
 
 	y0 = y - height
 	b = f.GetXY(x, y0)
-
-	ok = b.Type.Meltable()
+	ok = true
 
 	return
 }
 
-func _dropWaveHeight(f *field.Field, x, y int) (height, y0 int, ok bool) {
-	height = f.GetHeightToTopmostHole(x, y)
+func _dropHeightToHighestHole(f *field.Field, x, y int) (height, y0 int, ok bool) {
+	height = f.GetHeightToHighestHole(x, y)
+	if height == 0 {
+		return
+	}
+
+	y0 = y - height
+	ok = true
+
+	return
+}
+
+func _dropHeightToLowestHole(f *field.Field, x, y int) (height, y0 int, ok bool) {
+	height = f.GetHeightToLowestHole(x, y)
 	if height == 0 {
 		return
 	}
