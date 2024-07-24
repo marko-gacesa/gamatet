@@ -4,7 +4,6 @@ package material
 
 import (
 	"gamatet/graphics/gtypes"
-	"github.com/go-gl/mathgl/mgl32"
 )
 
 var _ Material = (*Iron)(nil)
@@ -28,11 +27,6 @@ func NewIron(tex uint32) *Iron {
 type Iron struct {
 	programBlock
 	uniPointLights int32
-}
-
-func (p *Iron) Use() {
-	p.programBlock.Use()
-	p.programBlock.Color(mgl32.Vec4{1, 1, 1, 1})
 }
 
 func (p *Iron) Lights(lights []gtypes.PointLight) {
@@ -108,8 +102,7 @@ void main() {
 	vec2 uv = fragmentTexture;
 
 	if (uv.x > 0.1 && uv.x < 0.9 && uv.y > 0.1 && uv.y < 0.9) {
-		uv.x = mod(uv.x*0.2, 1.0);
-		uv.y = mod(uv.y*1.2, 1.0);
+		uv.x = mod(uv.x*0.15, 1.0);
 		float gray = texture(textureSampler, uv).r;
 		gray = mix(0.8, 1.0, gray);
 		outputColor = vec4(gray * rgb, objectColor.a);

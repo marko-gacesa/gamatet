@@ -47,6 +47,7 @@ func (p *program) attribLocation(name string) uint32 {
 func uniform1i(uni int32, i int)     { gl.Uniform1i(uni, int32(i)) }
 func uniform1f(uni int32, v float32) { gl.Uniform1f(uni, v) }
 
+func uniformVec2(uni int32, v mgl32.Vec2)  { gl.Uniform2fv(uni, 1, &v[0]) }
 func uniformVec3(uni int32, v mgl32.Vec3)  { gl.Uniform3fv(uni, 1, &v[0]) }
 func uniformVec4(uni int32, v mgl32.Vec4)  { gl.Uniform4fv(uni, 1, &v[0]) }
 func uniformMat3(uni int32, v *mgl32.Mat3) { gl.UniformMatrix3fv(uni, 1, false, &v[0]) }

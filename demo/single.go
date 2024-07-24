@@ -10,6 +10,7 @@ import (
 	"gamatet/game/field"
 	"gamatet/game/piece"
 	"gamatet/graphics/render"
+	"gamatet/graphics/scene"
 	"gamatet/graphics/texture"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -314,15 +315,15 @@ func Single() {
 		}
 	})
 
-	//chRenderInfoServer := make(chan *field.RenderInfo, 1)
-	chRenderInfoClient := make(chan *field.RenderInfo, 1)
+	center := mgl32.Ident4()
+	left := center.Mul4(mgl32.Translate3D(-float32(contentW)/4, 0, 0))
+	right := center.Mul4(mgl32.Translate3D(float32(contentW)/4, 0, 0))
 
-	previousTime := glfw.GetTime()
+	objLeftField := scene.NewField(resources, 0, game)
+	defer objLeftField.Release()
 
-	//fieldRendererLeft := render.NewFieldRenderer(&resources)
-	fieldRendererRight := render.NewFieldRenderer(&resources)
-	//defer fieldRendererLeft.Release()
-	defer fieldRendererRight.Release()
+	objRightField := scene.NewField(resources, 0, gameClient)
+	defer objRightField.Release()
 
 out:
 	for {
@@ -332,62 +333,15 @@ out:
 		default:
 		}
 
-		//*
-		t := glfw.GetTime()
-		elapsed := t - previousTime
-		previousTime = t
-		_ = elapsed
-		//*/
-
 		now := time.Now()
 
-		//game.RenderRequest(ctx, 0, now, chRenderInfoServer)
-		gameClient.RenderRequest(ctx, 0, now, chRenderInfoClient)
+		objLeftField.Prepare(ctx, &left, now)
+		objRightField.Prepare(ctx, &right, now)
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		center := mgl32.Ident4()
-
-		/*
-			angle := t
-			drawBigBlock := func(position mgl32.Mat4, x, y float32) {
-				const scale = 8
-				bigBlock := position.
-					Mul4(mgl32.HomogRotate3DZ(float32(angle / 6))).
-					//Mul4(mgl32.HomogRotate3DY(float32(angle / 2.7))).
-					//Mul4(mgl32.HomogRotate3DX(float32(angle / 1.2))).
-					Mul4(mgl32.Scale3D(scale, scale, scale)).
-					Mul4(mgl32.Translate3D(x, y, 0))
-				rend.Render(&bigBlock)
-			}
-			rend.Geometry(geometry.Gem)
-			rend.Material(matAcid)
-			matLava.Color(mgl32.Vec4{1, 1, 1, 1})
-			drawBigBlock(center, -0.5, -0.5)
-			drawBigBlock(center, -0.5, 0.5)
-			//rend.Material(matAcid)
-			matAcid.Color(mgl32.Vec4{1, 1, 1, 1})
-			drawBigBlock(center, 0.5, -0.5)
-			drawBigBlock(center, 0.5, 0.5)
-			_ = angle
-		//*/
-
-		//left := center.Mul4(mgl32.Translate3D(-float32(contentW)/4, 0, 0))
-		right := center.Mul4(mgl32.Translate3D(float32(contentW)/4, 0, 0))
-
-		/*
-			select {
-			case renderInfo := <-chRenderInfoServer:
-				fieldRendererLeft.Render(rend, &left, renderInfo)
-				field.ReturnRenderInfo(renderInfo)
-			}
-			//*/
-
-		select {
-		case renderInfo := <-chRenderInfoClient:
-			fieldRendererRight.Render(rend, &right, renderInfo)
-			field.ReturnRenderInfo(renderInfo)
-		}
+		objLeftField.Render(rend)
+		objRightField.Render(rend)
 
 		// Maintenance
 		window.SwapBuffers()

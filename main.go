@@ -5,8 +5,7 @@ package main
 import (
 	"fmt"
 	"gamatet/demo"
-	"gamatet/graphics/render"
-
+	"gamatet/graphics/loop"
 	_ "image/jpeg"
 	_ "image/png"
 )
@@ -14,7 +13,7 @@ import (
 func main() {
 	demo.Single()
 	return
-	if err := render.Loop(); err != nil {
+	if err := loop.Loop(); err != nil {
 		fmt.Println(err)
 	}
 	return

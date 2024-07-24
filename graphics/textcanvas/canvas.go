@@ -100,7 +100,7 @@ func (c *TextCanvas) Remove(text string, face Face, color color.Color, lrPad boo
 	}
 }
 
-func (c *TextCanvas) TextFloat32(text string, face Face, color color.Color, lrPad bool) [4]float32 {
+func (c *TextCanvas) TextUV(text string, face Face, color color.Color, lrPad bool) RectUV {
 	e := c.store(text, face, color, lrPad)
 	if e == nil {
 		return [4]float32{0, 0, 0, 0}
@@ -115,7 +115,7 @@ func (c *TextCanvas) TextFloat32(text string, face Face, color color.Color, lrPa
 	return [4]float32{x0, y0, x1, y1}
 }
 
-func (c *TextCanvas) Text(text string, face Face, color color.Color, lrPad bool) image.Rectangle {
+func (c *TextCanvas) TextRect(text string, face Face, color color.Color, lrPad bool) image.Rectangle {
 	e := c.store(text, face, color, lrPad)
 	if e == nil {
 		return image.Rectangle{}

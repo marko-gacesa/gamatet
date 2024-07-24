@@ -1,6 +1,6 @@
-// Copyright (c) 2020-2023 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
-package render
+package scene
 
 import (
 	"gamatet/logic/anim"

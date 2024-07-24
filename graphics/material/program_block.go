@@ -59,6 +59,7 @@ func (p *programBlock) Use() {
 	uniform1f(p.uniTime, float32(time.Now().Sub(gtypes.Time).Seconds()))
 	uniformVec3(p.uniLightDir, lightDir)
 	uniformTexture(p.uniTex, p.tex)
+	uniformVec4(p.uniColor, mgl32.Vec4{1, 1, 1, 1})
 }
 
 func (p *programBlock) Color(color mgl32.Vec4) { uniformVec4(p.uniColor, color) }

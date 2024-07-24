@@ -19,7 +19,7 @@ func NewPrepared(size int) *Prepared {
 }
 
 func (p *Prepared) Prepare(text string, face Face, color color.Color, lrPad bool) int {
-	pos := p.canvas.TextFloat32(text, face, color, lrPad)
+	pos := p.canvas.TextUV(text, face, color, lrPad)
 	id := p.nextID
 	p.textMap[id] = pos
 	p.nextID++

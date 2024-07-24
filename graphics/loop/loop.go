@@ -1,10 +1,12 @@
 // Copyright (c) 2023,2024 by Marko Gaćeša
 
-package render
+package loop
 
 import (
 	"context"
 	"fmt"
+	"gamatet/graphics/render"
+	"gamatet/graphics/scene"
 	"gamatet/graphics/texture"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -12,6 +14,7 @@ import (
 	"github.com/marko-gacesa/appctx"
 	"math"
 	"runtime"
+	"time"
 )
 
 func windowResizable(w, h int, title string) (*glfw.Window, error) {
@@ -112,13 +115,11 @@ func Loop() error {
 
 	texture.Instance = texture.Init()
 
-	resources := GenerateResources(texture.Instance, FontNumerals)
+	resources := render.GenerateResources(texture.Instance, render.FontNumerals)
 	defer resources.Release()
 
-	rend := NewRenderer()
+	rend := render.NewRenderer()
 	defer rend.Release()
-
-	rend.Geometry(resources.GeomCube)
 
 	func() {
 		w, h := window.GetFramebufferSize()
@@ -174,7 +175,8 @@ func Loop() error {
 		*/
 	})
 
-	previousTime := glfw.GetTime()
+	center := mgl32.Ident4()
+	demo := scene.NewBlocksDemo(resources)
 
 out:
 	for {
@@ -184,57 +186,13 @@ out:
 		default:
 		}
 
-		//*/
-		t := glfw.GetTime()
-		elapsed := t - previousTime
-		previousTime = t
-		_ = elapsed
-		//*/
+		now := time.Now()
+
+		demo.Prepare(ctx, &center, now)
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		center := mgl32.Ident4()
-
-		///////////////////////
-		//*/
-		angle := t
-		drawBigBlock := func(position mgl32.Mat4, x, y float32) {
-			const scale = 8
-			bigBlock := position.
-				Mul4(mgl32.HomogRotate3DZ(float32(angle / 6))).
-				Mul4(mgl32.HomogRotate3DY(float32(angle / 2.7))).
-				Mul4(mgl32.HomogRotate3DX(float32(angle / 1.2))).
-				Mul4(mgl32.Scale3D(scale, scale, scale)).
-				Mul4(mgl32.Translate3D(x, y, 0))
-			rend.Render(&bigBlock)
-		}
-
-		rend.Geometry(resources.GeomDie)
-
-		rend.Material(resources.MatWave)
-		resources.MatWave.Color(mgl32.Vec4{1, 1, 1, 1})
-		drawBigBlock(center, -0.5, -0.5)
-
-		rend.Geometry(resources.GeomRoundedCube)
-
-		rend.Material(resources.MatRock)
-		resources.MatRock.ChainTexture(resources.TexChain3)
-		resources.MatRock.Color(mgl32.Vec4{1, 1, 1, 1})
-		drawBigBlock(center, -0.5, 0.5)
-
-		rend.Geometry(resources.GeomSphere)
-
-		rend.Material(resources.MatTexUV)
-		resources.MatRock.Color(mgl32.Vec4{1, 1, 1, 1})
-		drawBigBlock(center, 0.5, -0.5)
-
-		rend.Geometry(resources.GeomGem)
-
-		rend.Material(resources.MatAcid)
-		resources.MatAcid.Color(mgl32.Vec4{1, 1, 1, 1})
-		drawBigBlock(center, 0.5, 0.5)
-		//*/
-		///////////////////////
+		demo.Render(rend)
 
 		window.SwapBuffers()
 		glfw.PollEvents()

@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2024 by Marko Gaćeša
 
 package rendercache
 
@@ -8,32 +8,32 @@ import (
 	"sync"
 )
 
-type pointLightsPool struct {
+type PointLightsPool struct {
 	pool sync.Pool
 }
 
-var PointLightPool = pointLightsPool{
+var PointLightPool = PointLightsPool{
 	pool: sync.Pool{
 		New: func() any {
 			list := make([]gtypes.PointLight, 0, 16)
-			return pointLights(list)
+			return PointLights(list)
 		},
 	},
 }
 
-func (b *pointLightsPool) Get() pointLights {
-	list := b.pool.Get().(pointLights)
+func (b *PointLightsPool) Get() PointLights {
+	list := b.pool.Get().(PointLights)
 	list = list[:0]
 	return list
 }
 
-func (b *pointLightsPool) Put(list pointLights) {
+func (b *PointLightsPool) Put(list PointLights) {
 	b.pool.Put(list)
 }
 
-type pointLights []gtypes.PointLight
+type PointLights []gtypes.PointLight
 
-func (p *pointLights) Add(position mgl32.Vec3, color mgl32.Vec3, intensity float32) {
+func (p *PointLights) Add(position mgl32.Vec3, color mgl32.Vec3, intensity float32) {
 	*p = append(*p, gtypes.PointLight{
 		Position:  position,
 		Color:     color,
@@ -41,7 +41,7 @@ func (p *pointLights) Add(position mgl32.Vec3, color mgl32.Vec3, intensity float
 	})
 }
 
-func (p *pointLights) AddWithModel(model mgl32.Mat4, color mgl32.Vec3, intensity float32) {
+func (p *PointLights) AddWithModel(model mgl32.Mat4, color mgl32.Vec3, intensity float32) {
 	*p = append(*p, gtypes.PointLight{
 		Position:  model.Mul4x1(mgl32.Vec4{0, 0, 0, 1}).Vec3(),
 		Color:     color,

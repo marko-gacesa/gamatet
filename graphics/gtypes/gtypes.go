@@ -9,6 +9,12 @@ type ModelColor struct {
 	Color mgl32.Vec4
 }
 
+type ModelColorValue struct {
+	Model mgl32.Mat4
+	Color mgl32.Vec4
+	Value int
+}
+
 type PointLight struct {
 	Position  mgl32.Vec3
 	Color     mgl32.Vec3

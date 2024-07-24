@@ -25,9 +25,9 @@ func Init() *Manager {
 	return &Manager{textures: textures}
 }
 
-// The idea is to use:
-// texName := glhelp.Text.Bind(img)
-// gl.ActiveTexture(texName)
+// Bind binds the provided image as OpenGL texture.
+// The idea is to first bind the texture: `texName := manager.Bind(img)`.
+// And then to activate it: `gl.ActiveTexture(texName)`.
 func (m *Manager) Bind(img image.Image) uint32 {
 	var idx int
 	for idx = 0; idx < len(m.textures); idx++ {

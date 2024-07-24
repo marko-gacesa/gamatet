@@ -14,7 +14,8 @@ import (
 type Resources struct {
 	texManager *texture.Manager
 
-	TextCanvas *textcanvas.TextCanvas
+	TextCanvas  *textcanvas.TextCanvas
+	TextRectMap map[byte]textcanvas.RectUV
 
 	TexRock   uint32
 	TexChain1 uint32
@@ -32,42 +33,43 @@ type Resources struct {
 	MatColor *material.Color
 	MatText  *material.Text
 
+	GeomSquare      geometry.Geometry
+	GeomSquare0     geometry.Geometry
+	GeomSquareBack  geometry.Geometry
 	GeomCube        geometry.Geometry
-	GeomDentCube    geometry.Geometry
+	GeomCubeDent    geometry.Geometry
 	GeomFrame       geometry.Geometry
-	GeomShadowFrame geometry.Geometry
+	GeomFrameThin   geometry.Geometry
 	GeomRoundedCube geometry.Geometry
 	GeomGem         geometry.Geometry
 	GeomDie         geometry.Geometry
 	GeomStar6       geometry.Geometry
 	GeomStar8       geometry.Geometry
 	GeomSphere      geometry.Geometry
-	GeomChar        map[byte]geometry.Text
-	GeomText        map[string]geometry.Text
 }
 
-func GenerateResources(manager *texture.Manager, font *truetype.Font) Resources {
+func GenerateResources(manager *texture.Manager, font *truetype.Font) *Resources {
 	const seed = 345
 
 	rock := texture.GrayTex(seed)
 	link := texture.Link(seed)
 
+	textRectMap := make(map[byte]textcanvas.RectUV)
+
 	face := textcanvas.NewFace(font, 32, 72)
 	canvas := textcanvas.NewTextCanvas(512)
-	geomChar := make(map[byte]geometry.Text)
-	geomText := make(map[string]geometry.Text)
 	for key := byte(33); key < 127; key++ {
-		value := canvas.TextFloat32(string(rune(key)), face, color.RGBA{255, 255, 255, 128}, false)
-		geomChar[key] = geometry.NewTextWithHeightAndScale(value, 1, 0.75)
+		textRectMap[key] = canvas.TextUV(string(rune(key)), face, color.White, false)
 	}
 
 	texRock := texture.Instance.Bind(rock)
 	texText := texture.Instance.Bind(canvas.Image())
 
-	return Resources{
+	return &Resources{
 		texManager: manager,
 
-		TextCanvas: canvas,
+		TextCanvas:  canvas,
+		TextRectMap: textRectMap,
 
 		TexRock:   texRock,
 		TexChain1: texture.Instance.Bind(texture.Chain1(link)),
@@ -85,45 +87,44 @@ func GenerateResources(manager *texture.Manager, font *truetype.Font) Resources 
 		MatColor: material.NewColor(),
 		MatText:  material.NewText(texText),
 
+		GeomSquare:      geometry.NewSquare(),
+		GeomSquare0:     geometry.NewSquare0(),
+		GeomSquareBack:  geometry.MakeSquareGeometry(geometry.CubeSideDent),
 		GeomCube:        geometry.MakeCubeGeometry(geometry.CubeSideSimple),
-		GeomDentCube:    geometry.MakeCubeGeometry(geometry.CubeSideDent),
+		GeomCubeDent:    geometry.MakeCubeGeometry(geometry.CubeSideDent),
 		GeomFrame:       geometry.MakeCubeGeometry(geometry.CubeSideFrame(1, 0.15)),
-		GeomShadowFrame: geometry.MakeCubeGeometry(geometry.CubeSideFrame(0.9, 0.08)),
+		GeomFrameThin:   geometry.MakeCubeGeometry(geometry.CubeSideFrame(0.9, 0.08)),
 		GeomRoundedCube: geometry.MakeCubeGeometry(geometry.CubeSideRounded),
 		GeomGem:         geometry.MakeCubeGeometry(geometry.CubeSideTruncated),
 		GeomDie:         geometry.MakeCubeGeometry(geometry.CubeSideDie),
 		GeomStar6:       geometry.MakeCubeGeometry(geometry.CubeSideHexagonalStar(0.25)),
 		GeomStar8:       geometry.MakeCubeGeometry(geometry.CubeSideOctagonalStar(1)),
 		GeomSphere:      geometry.MakeSphereGeometry(0.55, 16, 8),
-		GeomChar:        geomChar,
-		GeomText:        geomText,
 	}
 }
 
 func (r Resources) Release() {
+	r.GeomSquare.Delete()
+	r.GeomSquare0.Delete()
+	r.GeomSquareBack.Delete()
 	r.GeomCube.Delete()
-	r.GeomDentCube.Delete()
+	r.GeomCubeDent.Delete()
 	r.GeomFrame.Delete()
-	r.GeomShadowFrame.Delete()
+	r.GeomFrameThin.Delete()
 	r.GeomRoundedCube.Delete()
 	r.GeomGem.Delete()
 	r.GeomDie.Delete()
 	r.GeomStar6.Delete()
 	r.GeomStar8.Delete()
 	r.GeomSphere.Delete()
-	for key, g := range r.GeomChar {
-		g.Delete()
-		delete(r.GeomChar, key)
-	}
-	for key, g := range r.GeomText {
-		g.Delete()
-		delete(r.GeomText, key)
-	}
 
+	r.GeomSquare = nil
+	r.GeomSquare0 = nil
+	r.GeomSquareBack = nil
 	r.GeomCube = nil
-	r.GeomDentCube = nil
+	r.GeomCubeDent = nil
 	r.GeomFrame = nil
-	r.GeomShadowFrame = nil
+	r.GeomFrameThin = nil
 	r.GeomRoundedCube = nil
 	r.GeomGem = nil
 	r.GeomDie = nil
@@ -148,4 +149,8 @@ func (r Resources) Release() {
 	texture.Instance.Delete(r.TexText)
 
 	r.TextCanvas.Clear()
+
+	for k := range r.TextRectMap {
+		delete(r.TextRectMap, k)
+	}
 }
