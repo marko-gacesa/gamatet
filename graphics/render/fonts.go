@@ -5,21 +5,14 @@ package render
 import (
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font/gofont/gobold"
-	"golang.org/x/image/font/gofont/goregular"
 )
 
-var FontNumerals *truetype.Font
-var FontNormal *truetype.Font
+var Font *truetype.Font
 
 func init() {
 	var err error
 
-	FontNumerals, err = truetype.Parse(gobold.TTF)
-	if err != nil {
-		panic(err)
-	}
-
-	FontNormal, err = truetype.Parse(goregular.TTF)
+	Font, err = truetype.Parse(gobold.TTF)
 	if err != nil {
 		panic(err)
 	}

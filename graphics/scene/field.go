@@ -27,7 +27,8 @@ var (
 )
 
 type FieldRender struct {
-	resources *render.Resources
+	resources *render.FieldResources
+	text      *render.Text
 
 	renderRequesterFieldIdx int
 	renderRequester         core.RenderRequester
@@ -57,12 +58,14 @@ type FieldRender struct {
 }
 
 func NewField(
-	resources *render.Resources,
+	resources *render.FieldResources,
+	text *render.Text,
 	renderRequesterFieldIdx int,
 	renderRequester core.RenderRequester,
 ) *FieldRender {
 	return &FieldRender{
 		resources:               resources,
+		text:                    text,
 		renderRequesterFieldIdx: renderRequesterFieldIdx,
 		renderRequester:         renderRequester,
 		renderInfoCh:            make(chan *field.RenderInfo),
@@ -538,42 +541,14 @@ func (f *FieldRender) renderAll(r *render.Renderer) {
 	}
 
 	if len(f.listAmmo) > 0 {
-		r.Material(f.resources.MatText)
-		r.Geometry(f.resources.GeomSquare)
 		for i := range f.listAmmo {
-			f.resources.MatText.Color(f.listAmmo[i].Color)
-			f.resources.MatText.TexUV(f.resources.TextRectMap['0'+byte(f.listAmmo[i].Value)])
-			r.Render(&f.listAmmo[i].Model)
+			f.text.Rune(r,
+				f.listAmmo[i].Model,
+				f.listAmmo[i].Color,
+				'0'+rune(f.listAmmo[i].Value))
+
 		}
 	}
-
-	/*
-		r.Material(f.resources.MatText)
-		f.resources.MatText.Color(mgl32.Vec4{0, 0, 0, 1})
-
-		text := "Marko123"
-
-		r.Geometry(f.resources.GeomSquare)
-		r.Material(f.resources.MatText)
-		f.resources.MatText.Color(mgl32.Vec4{0, 1, 1, 0.08})
-		modelText := modelFrame.
-			Mul4(mgl32.Translate3D(-0.3, 5.5, 0.6)).
-			Mul4(mgl32.Scale3D(0.8, 1.0, 1.0))
-		for _, ch := range text {
-			textRect, ok := f.resources.TextRectMap[byte(ch)]
-			if !ok {
-				modelText = modelText.Mul4(mgl32.Translate3D(0.2, 0, 0))
-				continue
-			}
-			f.resources.MatText.TexUV(textRect)
-			w2h := textRect.WidthToHeight()
-			w2h2 := w2h / 2
-			modelText = modelText.Mul4(mgl32.Translate3D(w2h2, 0, 0))
-			modelChar := modelText.Mul4(mgl32.Scale3D(w2h, 1, 1))
-			r.Render(&modelChar)
-			modelText = modelText.Mul4(mgl32.Translate3D(w2h2, 0, 0))
-		}
-	*/
 }
 
 func barycenter(blocks []block.XYB) (float32, float32, float32) {

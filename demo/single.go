@@ -121,11 +121,6 @@ func Single() {
 	const contentW = 2 * (3 + 1 + fieldW)
 	const contentH = fieldH + 2
 
-	texture.Instance = texture.Init()
-
-	resources := render.GenerateResources(texture.Instance, render.FontNumerals)
-	defer resources.Release()
-
 	rend := render.NewRenderer()
 	defer rend.Release()
 
@@ -319,10 +314,17 @@ func Single() {
 	left := center.Mul4(mgl32.Translate3D(-float32(contentW)/4, 0, 0))
 	right := center.Mul4(mgl32.Translate3D(float32(contentW)/4, 0, 0))
 
-	objLeftField := scene.NewField(resources, 0, game)
+	texManager := texture.Init()
+
+	fieldResources := render.GenerateFieldResources(texManager)
+	defer fieldResources.Release()
+
+	textRender := render.MakeText(texManager, render.Font)
+
+	objLeftField := scene.NewField(fieldResources, textRender, 0, game)
 	defer objLeftField.Release()
 
-	objRightField := scene.NewField(resources, 0, gameClient)
+	objRightField := scene.NewField(fieldResources, textRender, 0, gameClient)
 	defer objRightField.Release()
 
 out:

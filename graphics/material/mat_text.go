@@ -3,7 +3,7 @@
 package material
 
 import (
-	"gamatet/graphics/textcanvas"
+	"gamatet/graphics/runeatlas"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -11,7 +11,7 @@ import (
 var _ Material = (*Text)(nil)
 
 func NewText(tex uint32) *Text {
-	p, err := newProgramBlock(textVertexShader, defaultFragmentShader, tex)
+	p, err := newProgramBlock(textVertexShader, textFragmentShader, tex)
 	if err != nil {
 		panic("failed to make text material: " + err.Error())
 	}
@@ -32,6 +32,7 @@ type Text struct {
 
 func (t *Text) Use() {
 	t.programBlock.Use()
+	gl.Disable(gl.DEPTH_TEST)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	uniformVec2(t.uniOffsetUV, mgl32.Vec2{0, 0})
@@ -40,10 +41,16 @@ func (t *Text) Use() {
 
 func (t *Text) Reset() {
 	t.programBlock.Reset()
+	gl.Enable(gl.DEPTH_TEST)
 	gl.Disable(gl.BLEND)
 }
 
-func (t *Text) TexUV(uv textcanvas.RectUV) {
+func (t *Text) Texture(tex uint32) {
+	uniformTexture(t.uniTex, tex)
+	t.tex = tex
+}
+
+func (t *Text) TexUV(uv runeatlas.RectUV) {
 	uniformVec2(t.uniOffsetUV, uv.OffsetUV())
 	uniformVec2(t.uniScaleUV, uv.ScaleUV())
 }
@@ -70,4 +77,43 @@ void main() {
 	fragmentNormal = normalize(normalMatrix * geometryNormal);
 	fragmentPosition = modelMatrix * vec4(geometryPosition, 1);
 	gl_Position = viewMatrix * fragmentPosition;
+}` + z
+
+const textFragmentShader = `
+#version 330
+
+uniform sampler2D textureSampler;
+uniform vec4 objectColor;
+uniform vec3 lightDirection;
+uniform float time;
+
+in vec2 fragmentTexture;
+in vec3 fragmentNormal;
+
+out vec4 outputColor;
+
+void main() {
+	float alpha = texture(textureSampler, fragmentTexture).r;
+	if (alpha < 0.001) {
+		outputColor = vec4(0);
+		return;
+	}
+
+	vec3 halfVector = normalize( vec3(0, 0, 1) + lightDirection );
+	float shininess = 6;
+	float strength = 1.2;
+	vec3 ambientColor = vec3(0.3);
+	vec3 lightDirectionColor = vec3(1.0);
+
+	float diffuse = max(0.0, dot(fragmentNormal, lightDirection));
+	float specular = max(0.0, dot(fragmentNormal, halfVector));
+	if (diffuse == 0.0) specular = 0.0;
+	else specular = pow(specular, shininess); // sharpen the highlight
+
+	vec3 scatteredLight = ambientColor + lightDirectionColor * diffuse;
+	vec3 reflectedLight = lightDirectionColor * specular * strength;
+
+	vec3 rgb = min(objectColor.rgb * (scatteredLight + reflectedLight), vec3(1.0));
+
+	outputColor = vec4(rgb, objectColor.a * alpha);
 }` + z

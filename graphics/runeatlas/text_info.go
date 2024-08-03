@@ -1,4 +1,6 @@
-package textcanvas
+// Copyright (c) 2024 by Marko Gaćeša
+
+package runeatlas
 
 type RectUV [4]float32
 

@@ -5,23 +5,16 @@ package render
 import (
 	"gamatet/graphics/geometry"
 	"gamatet/graphics/material"
-	"gamatet/graphics/textcanvas"
 	"gamatet/graphics/texture"
-	"github.com/golang/freetype/truetype"
-	"image/color"
 )
 
-type Resources struct {
+type FieldResources struct {
 	texManager *texture.Manager
-
-	TextCanvas  *textcanvas.TextCanvas
-	TextRectMap map[byte]textcanvas.RectUV
 
 	TexRock   uint32
 	TexChain1 uint32
 	TexChain2 uint32
 	TexChain3 uint32
-	TexText   uint32
 
 	MatTexUV material.Material
 	MatNorm  material.Material
@@ -31,10 +24,7 @@ type Resources struct {
 	MatAcid  *material.Acid
 	MatWave  *material.Curl
 	MatColor *material.Color
-	MatText  *material.Text
 
-	GeomSquare      geometry.Geometry
-	GeomSquare0     geometry.Geometry
 	GeomSquareBack  geometry.Geometry
 	GeomCube        geometry.Geometry
 	GeomCubeDent    geometry.Geometry
@@ -48,34 +38,21 @@ type Resources struct {
 	GeomSphere      geometry.Geometry
 }
 
-func GenerateResources(manager *texture.Manager, font *truetype.Font) *Resources {
+func GenerateFieldResources(manager *texture.Manager) *FieldResources {
 	const seed = 345
 
-	rock := texture.GrayTex(seed)
-	link := texture.Link(seed)
+	rockImage := texture.GrayTex(seed)
+	linkImage := texture.Link(seed)
 
-	textRectMap := make(map[byte]textcanvas.RectUV)
+	texRock := manager.Bind(rockImage)
 
-	face := textcanvas.NewFace(font, 32, 72)
-	canvas := textcanvas.NewTextCanvas(512)
-	for key := byte(33); key < 127; key++ {
-		textRectMap[key] = canvas.TextUV(string(rune(key)), face, color.White, false)
-	}
-
-	texRock := texture.Instance.Bind(rock)
-	texText := texture.Instance.Bind(canvas.Image())
-
-	return &Resources{
+	return &FieldResources{
 		texManager: manager,
 
-		TextCanvas:  canvas,
-		TextRectMap: textRectMap,
-
 		TexRock:   texRock,
-		TexChain1: texture.Instance.Bind(texture.Chain1(link)),
-		TexChain2: texture.Instance.Bind(texture.Chain2(link)),
-		TexChain3: texture.Instance.Bind(texture.Chain3(link)),
-		TexText:   texText,
+		TexChain1: manager.Bind(texture.Chain1(linkImage)),
+		TexChain2: manager.Bind(texture.Chain2(linkImage)),
+		TexChain3: manager.Bind(texture.Chain3(linkImage)),
 
 		MatTexUV: material.TexUV(),
 		MatNorm:  material.Normal(),
@@ -85,10 +62,7 @@ func GenerateResources(manager *texture.Manager, font *truetype.Font) *Resources
 		MatAcid:  material.NewAcid(texRock),
 		MatWave:  material.NewCurl(texRock),
 		MatColor: material.NewColor(),
-		MatText:  material.NewText(texText),
 
-		GeomSquare:      geometry.NewSquare(),
-		GeomSquare0:     geometry.NewSquare0(),
 		GeomSquareBack:  geometry.MakeSquareGeometry(geometry.CubeSideDent),
 		GeomCube:        geometry.MakeCubeGeometry(geometry.CubeSideSimple),
 		GeomCubeDent:    geometry.MakeCubeGeometry(geometry.CubeSideDent),
@@ -103,9 +77,7 @@ func GenerateResources(manager *texture.Manager, font *truetype.Font) *Resources
 	}
 }
 
-func (r Resources) Release() {
-	r.GeomSquare.Delete()
-	r.GeomSquare0.Delete()
+func (r FieldResources) Release() {
 	r.GeomSquareBack.Delete()
 	r.GeomCube.Delete()
 	r.GeomCubeDent.Delete()
@@ -118,8 +90,6 @@ func (r Resources) Release() {
 	r.GeomStar8.Delete()
 	r.GeomSphere.Delete()
 
-	r.GeomSquare = nil
-	r.GeomSquare0 = nil
 	r.GeomSquareBack = nil
 	r.GeomCube = nil
 	r.GeomCubeDent = nil
@@ -140,17 +110,9 @@ func (r Resources) Release() {
 	r.MatAcid.Delete()
 	r.MatWave.Delete()
 	r.MatColor.Delete()
-	r.MatText.Delete()
 
-	texture.Instance.Delete(r.TexRock)
-	texture.Instance.Delete(r.TexChain1)
-	texture.Instance.Delete(r.TexChain2)
-	texture.Instance.Delete(r.TexChain3)
-	texture.Instance.Delete(r.TexText)
-
-	r.TextCanvas.Clear()
-
-	for k := range r.TextRectMap {
-		delete(r.TextRectMap, k)
-	}
+	r.texManager.Delete(r.TexRock)
+	r.texManager.Delete(r.TexChain1)
+	r.texManager.Delete(r.TexChain2)
+	r.texManager.Delete(r.TexChain3)
 }

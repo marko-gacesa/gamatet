@@ -5,6 +5,7 @@ package loop
 import (
 	"context"
 	"fmt"
+	"gamatet/graphics/gtypes"
 	"gamatet/graphics/render"
 	"gamatet/graphics/scene"
 	"gamatet/graphics/texture"
@@ -15,6 +16,7 @@ import (
 	"math"
 	"runtime"
 	"time"
+	"unicode/utf8"
 )
 
 func windowResizable(w, h int, title string) (*glfw.Window, error) {
@@ -113,11 +115,6 @@ func Loop() error {
 	const contentW = 2 * (3 + 1 + fieldW)
 	const contentH = fieldH + 2
 
-	texture.Instance = texture.Init()
-
-	resources := render.GenerateResources(texture.Instance, render.FontNumerals)
-	defer resources.Release()
-
 	rend := render.NewRenderer()
 	defer rend.Release()
 
@@ -176,7 +173,16 @@ func Loop() error {
 	})
 
 	center := mgl32.Ident4()
-	demo := scene.NewBlocksDemo(resources)
+
+	texManager := texture.Init()
+
+	fieldResources := render.GenerateFieldResources(texManager)
+	defer fieldResources.Release()
+
+	textRenderer := render.MakeText(texManager, render.Font)
+	defer textRenderer.Release()
+
+	demo := scene.NewBlocksDemo(fieldResources)
 
 out:
 	for {
@@ -193,6 +199,26 @@ out:
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		demo.Render(rend)
+
+		text := "AVAWCLT!\nMarko Gaćeša\nМарко Гаћеша 2024."
+
+		var t string
+		letterTotal := int(now.Sub(gtypes.Time).Seconds() * 3)
+		//letterTotal := utf8.RuneCountInString(text)
+		if letterTotal > utf8.RuneCountInString(text) {
+			t = text
+		} else {
+			letterCount := 0
+			for _, r := range text {
+				t += string(r)
+				letterCount++
+				if letterCount > letterTotal {
+					break
+				}
+			}
+		}
+
+		textRenderer.String(rend, center, mgl32.Vec4{1, 1, 0, 1}, t)
 
 		window.SwapBuffers()
 		glfw.PollEvents()

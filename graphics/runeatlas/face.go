@@ -1,21 +1,18 @@
 // Copyright (c) 2024 by Marko Gaćeša
 
-package textcanvas
+package runeatlas
 
 import (
-	"encoding/binary"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
-	"math"
 )
 
 type Face struct {
-	font    *truetype.Font
-	face    font.Face
-	dpi     float64
-	size    float64
-	hashSum []byte
+	font *truetype.Font
+	face font.Face
+	dpi  float64
+	size float64
 	// character height and protrusions
 	baseHeight fixed.Int26_6
 	protTop    fixed.Int26_6
@@ -24,24 +21,12 @@ type Face struct {
 	fullHeight fixed.Int26_6
 }
 
-func NewFace(ttf *truetype.Font, size float64, dpi float64) Face {
+func NewFace(ttf *truetype.Font, size float64, dpi float64) *Face {
 	face := truetype.NewFace(ttf, &truetype.Options{
 		Size:    size,
 		DPI:     dpi,
 		Hinting: font.HintingFull,
 	})
-
-	// Get the font face's hash
-
-	sum := hashFunc()
-	sum.Write([]byte(ttf.Name(truetype.NameIDFontFullName)))
-	var binFloat [8]byte
-	binary.LittleEndian.PutUint64(binFloat[:], math.Float64bits(size))
-	sum.Write(binFloat[:])
-	binary.LittleEndian.PutUint64(binFloat[:], math.Float64bits(dpi))
-	sum.Write(binFloat[:])
-
-	hashSum := sum.Sum(nil)
 
 	// Calculate size of the font's base height
 
@@ -67,12 +52,11 @@ func NewFace(ttf *truetype.Font, size float64, dpi float64) Face {
 	protBottom := boundsProtruded.Max.Y - baseBounds.Max.Y
 	protLeft := -boundsProtruded.Min.X
 
-	return Face{
+	return &Face{
 		font:       ttf,
 		face:       face,
 		dpi:        dpi,
 		size:       size,
-		hashSum:    hashSum,
 		baseHeight: baseHeight,
 		protTop:    protTop,
 		protBottom: protBottom,
@@ -81,21 +65,11 @@ func NewFace(ttf *truetype.Font, size float64, dpi float64) Face {
 	}
 }
 
-func (face *Face) measure(text string) fixed.Rectangle26_6 {
-	var textBounds fixed.Rectangle26_6
-	var xPos fixed.Int26_6
-	for _, r := range text {
-		rBounds, advance, ok := face.face.GlyphBounds(r)
-		if !ok {
-			continue // skip unsupported
-		}
+func (face *Face) measure(r rune) fixed.Rectangle26_6 {
+	bounds, _, _ := face.face.GlyphBounds(r)
+	return bounds
+}
 
-		rBounds.Min.X += xPos
-		rBounds.Max.X += xPos
-		xPos += advance
-
-		textBounds = textBounds.Union(rBounds)
-	}
-
-	return textBounds
+func (face *Face) kern(r0, r1 rune) fixed.Int26_6 {
+	return face.face.Kern(r0, r1)
 }

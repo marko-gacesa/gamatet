@@ -11,13 +11,13 @@ import (
 )
 
 type BlocksDemo struct {
-	resources *render.Resources
+	resources *render.FieldResources
 	model     mgl32.Mat4
 }
 
 var _ Object = (*BlocksDemo)(nil)
 
-func NewBlocksDemo(resources *render.Resources) *BlocksDemo {
+func NewBlocksDemo(resources *render.FieldResources) *BlocksDemo {
 	return &BlocksDemo{
 		resources: resources,
 	}
@@ -43,8 +43,8 @@ func (b *BlocksDemo) Render(r *render.Renderer) {
 	r.Render(&m)
 
 	r.Geometry(b.resources.GeomRoundedCube)
-	r.Material(b.resources.MatText)
-	b.resources.MatText.TexUV(b.resources.TextRectMap['M'])
+	r.Material(b.resources.MatRock)
+	b.resources.MatRock.Color(mgl32.Vec4{0.5, 1, 0.7, 1})
 	m = b.model.Mul4(mgl32.Translate3D(0, -1, 0))
 	r.Render(&m)
 
