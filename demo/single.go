@@ -124,10 +124,10 @@ func Single() {
 	rend := render.NewRenderer()
 	defer rend.Release()
 
-	func() {
-		w, h := window.GetFramebufferSize()
-		rend.CameraSetDistance(w, h, contentW, contentH, 2)
-	}()
+	setupCamera := func(w, h int) {
+		rend.PerspectiveFull(w, h, contentW, contentH, 2)
+	}
+	setupCamera(window.GetFramebufferSize())
 
 	window.SetSizeCallback(func(window *glfw.Window, w int, h int) {
 		fmt.Printf("Size Callback %dx%d\n", w, h)
@@ -135,7 +135,7 @@ func Single() {
 
 	window.SetFramebufferSizeCallback(func(window *glfw.Window, w int, h int) {
 		fmt.Printf("FramebufferSize Callback %dx%d\n", w, h)
-		rend.CameraSetDistance(w, h, contentW, contentH, 2)
+		setupCamera(w, h)
 		gl.Viewport(0, 0, int32(w), int32(h))
 	})
 

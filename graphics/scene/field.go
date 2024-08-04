@@ -287,7 +287,7 @@ func (f *FieldRender) prepareModels(model *mgl32.Mat4, renderInfo *field.RenderI
 		if p.Type == piece.TypeShooter {
 			modelAmmo := modelPiece.
 				Mul4(mgl32.Translate3D(0, 1.1, 0)).
-				Mul4(mgl32.Scale3D(0.5, 0.8, 0.8))
+				Mul4(mgl32.Scale3D(0.8, 0.8, 0.8))
 			f.listAmmo.Add(
 				modelAmmo,
 				colorVector(p.Blocks[0].Color),

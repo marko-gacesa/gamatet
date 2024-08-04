@@ -5,7 +5,6 @@ package loop
 import (
 	"context"
 	"fmt"
-	"gamatet/graphics/gtypes"
 	"gamatet/graphics/render"
 	"gamatet/graphics/scene"
 	"gamatet/graphics/texture"
@@ -16,7 +15,6 @@ import (
 	"math"
 	"runtime"
 	"time"
-	"unicode/utf8"
 )
 
 func windowResizable(w, h int, title string) (*glfw.Window, error) {
@@ -118,10 +116,10 @@ func Loop() error {
 	rend := render.NewRenderer()
 	defer rend.Release()
 
-	func() {
-		w, h := window.GetFramebufferSize()
-		rend.CameraSetDistance(w, h, contentW, contentH, 12)
-	}()
+	setupCamera := func(w, h int) {
+		rend.PerspectiveFull(w, h, contentW, contentH, 12)
+	}
+	setupCamera(window.GetFramebufferSize())
 
 	window.SetSizeCallback(func(window *glfw.Window, w int, h int) {
 		fmt.Printf("Size Callback %dx%d\n", w, h)
@@ -129,7 +127,7 @@ func Loop() error {
 
 	window.SetFramebufferSizeCallback(func(window *glfw.Window, w int, h int) {
 		fmt.Printf("FramebufferSize Callback %dx%d\n", w, h)
-		rend.CameraSetDistance(w, h, contentW, contentH, 12)
+		setupCamera(w, h)
 		gl.Viewport(0, 0, int32(w), int32(h))
 	})
 
@@ -200,25 +198,16 @@ out:
 
 		demo.Render(rend)
 
-		text := "AVAWCLT!\nMarko Gaćeša\nМарко Гаћеша 2024."
-
-		var t string
-		letterTotal := int(now.Sub(gtypes.Time).Seconds() * 3)
-		//letterTotal := utf8.RuneCountInString(text)
-		if letterTotal > utf8.RuneCountInString(text) {
-			t = text
-		} else {
-			letterCount := 0
-			for _, r := range text {
-				t += string(r)
-				letterCount++
-				if letterCount > letterTotal {
-					break
-				}
+		for i := 0; i < contentW; i++ {
+			for j := 0; j < contentH; j++ {
+				textRenderer.Rune(rend,
+					center.Mul4(mgl32.Translate3D(-contentW/2+0.5+float32(i), -contentH/2+0.5+float32(j), 0)),
+					mgl32.Vec4{1, 1, 0, 1}, '0'+rune(i+j)%10)
+				textRenderer.String(rend,
+					center.Mul4(mgl32.Translate3D(-contentW/2+0.5+float32(i), -contentH/2+0.5+float32(j), 0)),
+					mgl32.Vec4{1, 0, 1, 1}, string('0'+rune(i+j)%10))
 			}
 		}
-
-		textRenderer.String(rend, center, mgl32.Vec4{1, 1, 0, 1}, t)
 
 		window.SwapBuffers()
 		glfw.PollEvents()

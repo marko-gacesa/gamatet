@@ -99,21 +99,12 @@ void main() {
 		return;
 	}
 
-	vec3 halfVector = normalize( vec3(0, 0, 1) + lightDirection );
-	float shininess = 6;
-	float strength = 1.2;
 	vec3 ambientColor = vec3(0.3);
 	vec3 lightDirectionColor = vec3(1.0);
 
 	float diffuse = max(0.0, dot(fragmentNormal, lightDirection));
-	float specular = max(0.0, dot(fragmentNormal, halfVector));
-	if (diffuse == 0.0) specular = 0.0;
-	else specular = pow(specular, shininess); // sharpen the highlight
-
 	vec3 scatteredLight = ambientColor + lightDirectionColor * diffuse;
-	vec3 reflectedLight = lightDirectionColor * specular * strength;
-
-	vec3 rgb = min(objectColor.rgb * (scatteredLight + reflectedLight), vec3(1.0));
+	vec3 rgb = min(objectColor.rgb * scatteredLight, vec3(1.0));
 
 	outputColor = vec4(rgb, objectColor.a * alpha);
 }` + z

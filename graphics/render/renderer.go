@@ -25,8 +25,8 @@ func NewRenderer() *Renderer {
 
 func (r *Renderer) Release() {}
 
-func (r *Renderer) CameraSetDistance(displayW, displayH, contentW, contentH, contentZ int) {
-	r.cam.SetDistance(displayW, displayH, contentW, contentH, contentZ)
+func (r *Renderer) PerspectiveFull(displayW, displayH, contentW, contentH, contentZ int) {
+	r.cam.PerspectiveFull(displayW, displayH, contentW, contentH, contentZ)
 	if r.mat != nil {
 		r.mat.Camera(&r.cam)
 	}
@@ -41,6 +41,13 @@ func (r *Renderer) CameraLookAt(eye, center, up mgl32.Vec3) {
 
 func (r *Renderer) CameraPerspective(fovy, aspect, near, far float32) {
 	r.cam.Perspective(fovy, aspect, near, far)
+	if r.mat != nil {
+		r.mat.Camera(&r.cam)
+	}
+}
+
+func (r *Renderer) OrthogonalFull(displayW, displayH, contentW, contentH, contentZ int) {
+	r.cam.OrthogonalFull(displayW, displayH, contentW, contentH, contentZ)
 	if r.mat != nil {
 		r.mat.Camera(&r.cam)
 	}

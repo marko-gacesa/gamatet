@@ -69,7 +69,9 @@ func (t *Text) Rune(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, ch rune) {
 	mat.Color(color)
 	mat.TexUV(runeRect)
 
-	r.Render(&model)
+	w2h := runeRect.WidthToHeight()
+	modelChar := model.Mul4(mgl32.Scale3D(w2h, 1, 1))
+	r.Render(&modelChar)
 }
 
 func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string) {
