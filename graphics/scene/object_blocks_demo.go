@@ -11,15 +11,17 @@ import (
 )
 
 type BlocksDemo struct {
-	resources *render.FieldResources
-	model     mgl32.Mat4
+	resources  *render.FieldResources
+	textRender *render.Text
+	model      mgl32.Mat4
 }
 
 var _ Object = (*BlocksDemo)(nil)
 
-func NewBlocksDemo(resources *render.FieldResources) *BlocksDemo {
+func NewBlocksDemo(resources *render.FieldResources, textRender *render.Text) *BlocksDemo {
 	return &BlocksDemo{
-		resources: resources,
+		resources:  resources,
+		textRender: textRender,
 	}
 }
 
@@ -42,9 +44,8 @@ func (b *BlocksDemo) Render(r *render.Renderer) {
 	m = b.model.Mul4(mgl32.Translate3D(-1, -1, 0))
 	r.Render(&m)
 
-	r.Geometry(b.resources.GeomRoundedCube)
-	r.Material(b.resources.MatRock)
-	b.resources.MatRock.Color(mgl32.Vec4{0.5, 1, 0.7, 1})
+	r.Geometry(b.resources.GeomStar6)
+	r.Material(b.resources.MatWave)
 	m = b.model.Mul4(mgl32.Translate3D(0, -1, 0))
 	r.Render(&m)
 
@@ -80,8 +81,8 @@ func (b *BlocksDemo) Render(r *render.Renderer) {
 	m = b.model.Mul4(mgl32.Translate3D(0, 1, 0))
 	r.Render(&m)
 
-	r.Geometry(b.resources.GeomStar6)
-	r.Material(b.resources.MatWave)
+	r.Geometry(b.resources.GeomRoundedCube)
+	b.textRender.Material(r, mgl32.Vec4{0.5, 1, 0.7, 1}, 'M')
 	m = b.model.Mul4(mgl32.Translate3D(1, 1, 0))
 	r.Render(&m)
 }

@@ -32,16 +32,17 @@ type Text struct {
 
 func (t *Text) Use() {
 	t.programBlock.Use()
-	gl.Disable(gl.DEPTH_TEST)
+
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
 	uniformVec2(t.uniOffsetUV, mgl32.Vec2{0, 0})
 	uniformVec2(t.uniScaleUV, mgl32.Vec2{1, 1})
 }
 
 func (t *Text) Reset() {
 	t.programBlock.Reset()
-	gl.Enable(gl.DEPTH_TEST)
+
 	gl.Disable(gl.BLEND)
 }
 
@@ -95,7 +96,7 @@ out vec4 outputColor;
 void main() {
 	float alpha = texture(textureSampler, fragmentTexture).r;
 	if (alpha < 0.001) {
-		outputColor = vec4(0);
+		outputColor = vec4(0.0);
 		return;
 	}
 

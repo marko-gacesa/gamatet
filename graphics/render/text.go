@@ -7,6 +7,7 @@ import (
 	"gamatet/graphics/material"
 	"gamatet/graphics/runeatlas"
 	"gamatet/graphics/texture"
+	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/golang/freetype/truetype"
 )
@@ -49,10 +50,10 @@ func (t *Text) Release() {
 	t.mat.Delete()
 }
 
-func (t *Text) Rune(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, ch rune) {
+func (t *Text) Material(r *Renderer, color mgl32.Vec4, ch rune) (runeatlas.RectUV, bool) {
 	runeRect, ok := t.atlas.TextUV(ch)
 	if !ok {
-		return
+		return runeatlas.RectUV{}, false
 	}
 
 	if t.atlas.IsDirty() {
@@ -63,15 +64,28 @@ func (t *Text) Rune(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, ch rune) {
 
 	mat := &t.mat
 
-	r.Geometry(t.geom)
 	r.Material(mat)
 	mat.Texture(t.tex)
 	mat.Color(color)
 	mat.TexUV(runeRect)
 
+	return runeRect, true
+}
+
+func (t *Text) Rune(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, ch rune) {
+	runeRect, ok := t.Material(r, color, ch)
+	if !ok {
+		return
+	}
+
+	r.Geometry(t.geom)
+
 	w2h := runeRect.WidthToHeight()
 	modelChar := model.Mul4(mgl32.Scale3D(w2h, 1, 1))
+
+	gl.DepthMask(false)
 	r.Render(&modelChar)
+	gl.DepthMask(true)
 }
 
 func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string) {
@@ -86,6 +100,9 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 		t.tex = t.texManager.Bind(t.atlas.Image())
 		t.atlas.ClearDirty()
 	}
+
+	gl.DepthMask(false)
+	defer gl.DepthMask(true)
 
 	mat := &t.mat
 

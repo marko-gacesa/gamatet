@@ -542,11 +542,7 @@ func (f *FieldRender) renderAll(r *render.Renderer) {
 
 	if len(f.listAmmo) > 0 {
 		for i := range f.listAmmo {
-			f.text.Rune(r,
-				f.listAmmo[i].Model,
-				f.listAmmo[i].Color,
-				'0'+rune(f.listAmmo[i].Value))
-
+			f.text.Rune(r, f.listAmmo[i].Model, f.listAmmo[i].Color, '0'+rune(f.listAmmo[i].Value))
 		}
 	}
 }

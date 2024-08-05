@@ -98,7 +98,8 @@ func Loop() error {
 	gl.Enable(gl.DEPTH_TEST)
 	gl.DepthFunc(gl.LESS)
 	gl.Enable(gl.CULL_FACE)
-	gl.CullFace(gl.FRONT)
+	gl.CullFace(gl.BACK)
+	gl.FrontFace(gl.CW)
 	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
 
 	// To render transparent:
@@ -180,7 +181,7 @@ func Loop() error {
 	textRenderer := render.MakeText(texManager, render.Font)
 	defer textRenderer.Release()
 
-	demo := scene.NewBlocksDemo(fieldResources)
+	demo := scene.NewBlocksDemo(fieldResources, textRenderer)
 
 out:
 	for {
@@ -196,18 +197,15 @@ out:
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		demo.Render(rend)
-
 		for i := 0; i < contentW; i++ {
 			for j := 0; j < contentH; j++ {
 				textRenderer.Rune(rend,
 					center.Mul4(mgl32.Translate3D(-contentW/2+0.5+float32(i), -contentH/2+0.5+float32(j), 0)),
 					mgl32.Vec4{1, 1, 0, 1}, '0'+rune(i+j)%10)
-				textRenderer.String(rend,
-					center.Mul4(mgl32.Translate3D(-contentW/2+0.5+float32(i), -contentH/2+0.5+float32(j), 0)),
-					mgl32.Vec4{1, 0, 1, 1}, string('0'+rune(i+j)%10))
 			}
 		}
+
+		demo.Render(rend)
 
 		window.SwapBuffers()
 		glfw.PollEvents()
