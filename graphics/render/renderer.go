@@ -23,8 +23,6 @@ func NewRenderer() *Renderer {
 	return r
 }
 
-func (r *Renderer) Release() {}
-
 func (r *Renderer) PerspectiveFull(displayW, displayH, contentW, contentH, contentZ int) {
 	r.cam.PerspectiveFull(displayW, displayH, contentW, contentH, contentZ)
 	if r.mat != nil {

@@ -3,10 +3,14 @@
 package rendercache
 
 import (
-	"gamatet/graphics/gtypes"
 	"github.com/go-gl/mathgl/mgl32"
 	"sync"
 )
+
+type modelColor struct {
+	Model mgl32.Mat4
+	Color mgl32.Vec4
+}
 
 type modelColorPool struct {
 	pool sync.Pool
@@ -15,7 +19,7 @@ type modelColorPool struct {
 var ModelColorPool = modelColorPool{
 	pool: sync.Pool{
 		New: func() any {
-			list := make([]gtypes.ModelColor, 0, 256)
+			list := make([]modelColor, 0, 256)
 			return ModelColorList(list)
 		},
 	},
@@ -31,10 +35,10 @@ func (b *modelColorPool) Put(list ModelColorList) {
 	b.pool.Put(list)
 }
 
-type ModelColorList []gtypes.ModelColor
+type ModelColorList []modelColor
 
 func (p *ModelColorList) Add(model mgl32.Mat4, color mgl32.Vec4) {
-	*p = append(*p, gtypes.ModelColor{
+	*p = append(*p, modelColor{
 		Model: model,
 		Color: color,
 	})

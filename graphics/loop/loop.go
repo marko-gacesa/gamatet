@@ -6,11 +6,11 @@ import (
 	"context"
 	"fmt"
 	"gamatet/graphics/render"
-	"gamatet/graphics/scene"
+	"gamatet/graphics/screen"
+	"gamatet/graphics/screen/fieldtest"
 	"gamatet/graphics/texture"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/go-gl/mathgl/mgl32"
 	"github.com/marko-gacesa/appctx"
 	"math"
 	"runtime"
@@ -102,87 +102,97 @@ func Loop() error {
 	gl.FrontFace(gl.CW)
 	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
 
-	// To render transparent:
-	// * gl.Disable(gl.CULL_FACE)
-	// * gl.Disable(gl.DEPTH_TEST)
-	// * gl.Enable(gl.BLEND)
-	// * gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-	//   or gl.BlendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-
-	const fieldW = 10
-	const fieldH = 22
-	const contentW = 2 * (3 + 1 + fieldW)
-	const contentH = fieldH + 2
-
-	rend := render.NewRenderer()
-	defer rend.Release()
-
-	setupCamera := func(w, h int) {
-		rend.PerspectiveFull(w, h, contentW, contentH, 12)
-	}
-	setupCamera(window.GetFramebufferSize())
-
-	window.SetSizeCallback(func(window *glfw.Window, w int, h int) {
-		fmt.Printf("Size Callback %dx%d\n", w, h)
-	})
-
-	window.SetFramebufferSizeCallback(func(window *glfw.Window, w int, h int) {
-		fmt.Printf("FramebufferSize Callback %dx%d\n", w, h)
-		setupCamera(w, h)
-		gl.Viewport(0, 0, int32(w), int32(h))
-	})
+	tex := texture.Init()
 
 	ctx, cancelFunc := context.WithCancel(appctx.Context)
 	defer cancelFunc()
 
+	var scr screen.Screen
+	r := render.NewRenderer()
+
+	window.SetSizeCallback(func(window *glfw.Window, w int, h int) {})
+	window.SetFramebufferSizeCallback(func(window *glfw.Window, w int, h int) {
+		if scr != nil {
+			scr.SetCamera(r, w, h)
+		}
+		gl.Viewport(0, 0, int32(w), int32(h))
+	})
+
 	window.SetCloseCallback(func(w *glfw.Window) {
-		fmt.Printf("Close Callback\n")
 		cancelFunc()
 	})
 
 	window.SetKeyCallback(func(w *glfw.Window, key glfw.Key, scancode int, act glfw.Action, mods glfw.ModifierKey) {
-		//fmt.Println("KEY", key, scancode, action, mods)
-
-		if act != glfw.Press {
-			return
-		}
-
+		//fmt.Printf("KEY key=%d (%c), scan=%04x, act=%d, mods=%06b\n", key, key, scancode, act, mods)
 		if key == glfw.KeyEscape {
 			fmt.Println("ESCAPE")
 			cancelFunc()
 			return
 		}
 
-		/*
-			switch key {
-			case glfw.KeyLeft:
-				playerInCh <- []byte{byte(action.MoveLeft)}
-			case glfw.KeyRight:
-				playerInCh <- []byte{byte(action.MoveRight)}
-			case glfw.KeyUp:
-				playerInCh <- []byte{byte(action.RotateCCW)}
-			case glfw.KeyDown:
-				playerInCh <- []byte{byte(action.MoveDown)}
-			case glfw.KeySpace:
-				playerInCh <- []byte{byte(action.Drop)}
-			case glfw.KeyP, glfw.KeyPause:
-				playerInCh <- []byte{byte(action.Pause)}
-			}
-		*/
+		if scr != nil {
+			scr.KeyAction(key, scancode, act, mods)
+		}
 	})
 
-	center := mgl32.Ident4()
+	// screens:
+	// main
+	//   single player game
+	//   multiplayer game
+	//   settings
+	//   help
+	//   quit
 
-	texManager := texture.Init()
+	//scr = demoblocks.NewDemoBlocks(tex)
+	scr = fieldtest.NewFieldTest(ctx, tex)
+	defer scr.Release()
 
-	fieldResources := render.GenerateFieldResources(texManager)
-	defer fieldResources.Release()
+	func() {
+		w, h := window.GetFramebufferSize()
+		scr.SetCamera(r, w, h)
+	}()
 
-	textRenderer := render.MakeText(texManager, render.Font)
-	defer textRenderer.Release()
+	/////////////
+	/*
+		var route string
+		for {
+			scrGen := getScreenGen(route)
+			if scrGen == nil {
+				break
+			}
 
-	demo := scene.NewBlocksDemo(fieldResources, textRenderer)
+			func(appCtx context.Context, scrGen func(ctx context.Context, tex *texture.Manager)) {
+				ctx, cancelFn := context.WithCancel(appCtx)
+				defer cancelFn()
 
+				scr = scrGen(ctx, tex)
+				defer scr.Release()
+
+			out:
+				for {
+					select {
+					case <-ctx.Done():
+						break out
+					default:
+					}
+
+					now := time.Now()
+
+					scr.Prepare(ctx, now)
+
+					gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+					scr.Render(r)
+
+					window.SwapBuffers()
+					glfw.PollEvents()
+				}
+
+				scr.Shutdown()
+			}(appCtx, scrGen)
+		}
+	*/
+	///////////////
 out:
 	for {
 		select {
@@ -193,23 +203,17 @@ out:
 
 		now := time.Now()
 
-		demo.Prepare(ctx, &center, now)
+		scr.Prepare(ctx, now)
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		for i := 0; i < contentW; i++ {
-			for j := 0; j < contentH; j++ {
-				textRenderer.Rune(rend,
-					center.Mul4(mgl32.Translate3D(-contentW/2+0.5+float32(i), -contentH/2+0.5+float32(j), 0)),
-					mgl32.Vec4{1, 1, 0, 1}, '0'+rune(i+j)%10)
-			}
-		}
-
-		demo.Render(rend)
+		scr.Render(r)
 
 		window.SwapBuffers()
 		glfw.PollEvents()
 	}
+
+	scr.Shutdown()
 
 	return nil
 }

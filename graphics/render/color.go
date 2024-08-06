@@ -1,6 +1,6 @@
 // Copyright (c) 2020-2024 by Marko Gaćeša
 
-package scene
+package render
 
 import (
 	"github.com/go-gl/mathgl/mgl32"

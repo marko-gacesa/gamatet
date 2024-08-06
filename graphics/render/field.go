@@ -1,6 +1,6 @@
 // Copyright (c) 2020-2024 by Marko Gaćeša
 
-package scene
+package render
 
 import (
 	"context"
@@ -8,8 +8,6 @@ import (
 	"gamatet/game/core"
 	"gamatet/game/field"
 	"gamatet/game/piece"
-	"gamatet/graphics/gtypes"
-	"gamatet/graphics/render"
 	"gamatet/graphics/render/rendercache"
 	"github.com/go-gl/mathgl/mgl32"
 	"math"
@@ -26,9 +24,12 @@ var (
 	colorBomb = colorVector(block.Bomb.Color)
 )
 
-type FieldRender struct {
-	resources *render.FieldResources
-	text      *render.Text
+var t0 = time.Now()
+
+type Field struct {
+	model     mgl32.Mat4
+	resources *FieldResources
+	text      *Text
 
 	renderRequesterFieldIdx int
 	renderRequester         core.RenderRequester
@@ -58,12 +59,14 @@ type FieldRender struct {
 }
 
 func NewField(
-	resources *render.FieldResources,
-	text *render.Text,
+	model mgl32.Mat4,
+	resources *FieldResources,
+	text *Text,
 	renderRequesterFieldIdx int,
 	renderRequester core.RenderRequester,
-) *FieldRender {
-	return &FieldRender{
+) *Field {
+	return &Field{
+		model:                   model,
 		resources:               resources,
 		text:                    text,
 		renderRequesterFieldIdx: renderRequesterFieldIdx,
@@ -73,10 +76,7 @@ func NewField(
 	}
 }
 
-func (f *FieldRender) Release() {
-}
-
-func (f *FieldRender) Prepare(ctx context.Context, model *mgl32.Mat4, now time.Time) {
+func (f *Field) Prepare(ctx context.Context, now time.Time) {
 	f.renderRequester.RenderRequest(ctx, f.renderRequesterFieldIdx, now, f.renderInfoCh)
 	go func() {
 		defer func() { f.prepareDoneCh <- struct{}{} }()
@@ -87,24 +87,24 @@ func (f *FieldRender) Prepare(ctx context.Context, model *mgl32.Mat4, now time.T
 				return
 			}
 			f.preRender(renderInfo, now)
-			f.prepareModels(model, renderInfo)
+			f.prepareModels(renderInfo)
 			field.ReturnRenderInfo(f.renderInfo)
 		}
 	}()
 }
 
-func (f *FieldRender) Render(r *render.Renderer) {
+func (f *Field) Render(r *Renderer) {
 	<-f.prepareDoneCh
 	f.renderAll(r)
 	f.postRender()
 }
 
-func (f *FieldRender) preRender(renderInfo *field.RenderInfo, now time.Time) {
+func (f *Field) preRender(renderInfo *field.RenderInfo, now time.Time) {
 	if renderInfo == nil {
 		return
 	}
 
-	f.t = now.Sub(gtypes.Time).Seconds()
+	f.t = now.Sub(t0).Seconds()
 
 	w := renderInfo.W
 	for i := 0; i < w; i++ {
@@ -127,7 +127,7 @@ func (f *FieldRender) preRender(renderInfo *field.RenderInfo, now time.Time) {
 	f.lights = rendercache.PointLightPool.Get()
 }
 
-func (f *FieldRender) postRender() {
+func (f *Field) postRender() {
 	for i, w := 0, f.w; i < w; i++ {
 		rendercache.ModelPool.Put(f.listsBack[i])
 	}
@@ -147,7 +147,9 @@ func (f *FieldRender) postRender() {
 	rendercache.PointLightPool.Put(f.lights)
 }
 
-func (f *FieldRender) prepareModels(model *mgl32.Mat4, renderInfo *field.RenderInfo) {
+func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
+	model := &f.model
+
 	// light intensities
 	const (
 		lightIntLava    = 1.2
@@ -389,7 +391,7 @@ func (f *FieldRender) prepareModels(model *mgl32.Mat4, renderInfo *field.RenderI
 	f.listRuby.OrderByValue()
 }
 
-func (f *FieldRender) renderAll(r *render.Renderer) {
+func (f *Field) renderAll(r *Renderer) {
 	r.Material(f.resources.MatRock)
 	r.Geometry(f.resources.GeomCube)
 	f.resources.MatRock.Lights(f.lights)

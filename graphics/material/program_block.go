@@ -5,9 +5,8 @@ package material
 import (
 	"gamatet/graphics/camera"
 	"gamatet/graphics/geometry"
-	"gamatet/graphics/gtypes"
+	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
-	"time"
 )
 
 var _ Material = (*programBlock)(nil)
@@ -56,7 +55,7 @@ func (p *programBlock) Model(model *mgl32.Mat4)   { uniformModel(p.uniModel, p.u
 
 func (p *programBlock) Use() {
 	p.program.Use()
-	uniform1f(p.uniTime, float32(time.Now().Sub(gtypes.Time).Seconds()))
+	uniform1f(p.uniTime, float32(glfw.GetTime()))
 	uniformVec3(p.uniLightDir, lightDir)
 	uniformTexture(p.uniTex, p.tex)
 	uniformVec4(p.uniColor, mgl32.Vec4{1, 1, 1, 1})
