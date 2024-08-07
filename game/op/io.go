@@ -5,7 +5,7 @@ package op
 import (
 	"fmt"
 	"gamatet/game/event"
-	"gamatet/util"
+	"gamatet/game/serialize"
 	"io"
 )
 
@@ -48,32 +48,32 @@ func Write(w io.Writer, e event.Event) (err error) {
 	switch e.(type) {
 
 	case *PieceState:
-		err = util.Write8(w, codePieceState)
+		err = serialize.Write8(w, codePieceState)
 	case *PieceSet:
-		err = util.Write8(w, codePieceSet)
+		err = serialize.Write8(w, codePieceSet)
 	case *PieceMove:
-		err = util.Write8(w, codePieceMove)
+		err = serialize.Write8(w, codePieceMove)
 	case *PieceTransform:
-		err = util.Write8(w, codePieceTransform)
+		err = serialize.Write8(w, codePieceTransform)
 	case *PieceFall:
-		err = util.Write8(w, codePieceFall)
+		err = serialize.Write8(w, codePieceFall)
 
 	case *FieldPause:
-		err = util.Write8(w, codeFieldPause)
+		err = serialize.Write8(w, codeFieldPause)
 	case *FieldUnpause:
-		err = util.Write8(w, codeFieldUnpause)
+		err = serialize.Write8(w, codeFieldUnpause)
 	case *FieldDestroyRow:
-		err = util.Write8(w, codeFieldDestroyRow)
+		err = serialize.Write8(w, codeFieldDestroyRow)
 	case *FieldDestroyColumn:
-		err = util.Write8(w, codeFieldDestroyColumn)
+		err = serialize.Write8(w, codeFieldDestroyColumn)
 	case *FieldBlockSet:
-		err = util.Write8(w, codeFieldBlockSet)
+		err = serialize.Write8(w, codeFieldBlockSet)
 	case *FieldBlockHardness:
-		err = util.Write8(w, codeFieldBlockHardness)
+		err = serialize.Write8(w, codeFieldBlockHardness)
 	case *FieldBlockTransform:
-		err = util.Write8(w, codeFieldBlockTransform)
+		err = serialize.Write8(w, codeFieldBlockTransform)
 	case *FieldExBlock:
-		err = util.Write8(w, codeFieldExBlock)
+		err = serialize.Write8(w, codeFieldExBlock)
 
 	default:
 		err = fmt.Errorf("unrecognized event: %T", e)
@@ -88,7 +88,7 @@ func Write(w io.Writer, e event.Event) (err error) {
 }
 
 func Read(r io.Reader) (event.Event, error) {
-	code, err := util.Read8(r)
+	code, err := serialize.Read8(r)
 	if err != nil {
 		return nil, err
 	}

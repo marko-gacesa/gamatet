@@ -6,7 +6,7 @@ import (
 	"gamatet/game/event"
 	"gamatet/game/field"
 	"gamatet/game/piece"
-	"gamatet/util"
+	"gamatet/game/serialize"
 	"io"
 )
 
@@ -55,10 +55,10 @@ func (e *PieceState) Write(w io.Writer) error {
 	if _, err := w.Write([]byte{e.PieceIdx, byte(e.OldState), byte(e.NewState)}); err != nil {
 		return err
 	}
-	if err := util.Write32(w, uint32(e.OldParam)); err != nil {
+	if err := serialize.Write32(w, uint32(e.OldParam)); err != nil {
 		return err
 	}
-	if err := util.Write32(w, uint32(e.NewParam)); err != nil {
+	if err := serialize.Write32(w, uint32(e.NewParam)); err != nil {
 		return err
 	}
 	return nil
@@ -76,12 +76,12 @@ func (e *PieceState) Read(r io.Reader) error {
 
 	var err error
 
-	e.OldParam, err = util.ReadInt(r)
+	e.OldParam, err = serialize.ReadInt(r)
 	if err != nil {
 		return err
 	}
 
-	e.NewParam, err = util.ReadInt(r)
+	e.NewParam, err = serialize.ReadInt(r)
 	if err != nil {
 		return err
 	}
@@ -158,7 +158,7 @@ func (e *PieceSet) Write(w io.Writer) error {
 	if err := piece.Write(w, e.Piece); err != nil {
 		return err
 	}
-	if err := util.Write32(w, uint32(e.PieceCount)); err != nil {
+	if err := serialize.Write32(w, uint32(e.PieceCount)); err != nil {
 		return err
 	}
 	return nil
@@ -181,7 +181,7 @@ func (e *PieceSet) Read(r io.Reader) error {
 		return err
 	}
 
-	e.PieceCount, err = util.ReadInt(r)
+	e.PieceCount, err = serialize.ReadInt(r)
 	if err != nil {
 		return err
 	}

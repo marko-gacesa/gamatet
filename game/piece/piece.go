@@ -5,7 +5,7 @@ package piece
 import (
 	"fmt"
 	"gamatet/game/block"
-	"gamatet/util"
+	"gamatet/game/serialize"
 	"io"
 )
 
@@ -91,13 +91,13 @@ func SliceEqual(a, b []Piece) bool {
 func Write(w io.Writer, p Piece) (err error) {
 	switch v := p.(type) {
 	case *polyomino:
-		err = util.Write8(w, 'P')
+		err = serialize.Write8(w, 'P')
 		if err != nil {
 			return
 		}
 		err = v.Write(w)
 	case *shooter:
-		err = util.Write8(w, 'S')
+		err = serialize.Write8(w, 'S')
 		if err != nil {
 			return
 		}
@@ -110,7 +110,7 @@ func Write(w io.Writer, p Piece) (err error) {
 }
 
 func Read(r io.Reader) (p Piece, err error) {
-	code, err := util.Read8(r)
+	code, err := serialize.Read8(r)
 	if err != nil {
 		return
 	}

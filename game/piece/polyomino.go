@@ -5,7 +5,7 @@ package piece
 import (
 	"errors"
 	"gamatet/game/block"
-	"gamatet/util"
+	"gamatet/game/serialize"
 	"io"
 	"strings"
 )
@@ -58,7 +58,7 @@ func (p *polyomino) Write(w io.Writer) error {
 		return err
 	}
 
-	if err := util.Write32(w, uint32(p.data)); err != nil {
+	if err := serialize.Write32(w, uint32(p.data)); err != nil {
 		return err
 	}
 
@@ -88,7 +88,7 @@ func (p *polyomino) Read(r io.Reader) (err error) {
 		return
 	}
 
-	data, err := util.Read32(r)
+	data, err := serialize.Read32(r)
 	if err != nil {
 		return
 	}

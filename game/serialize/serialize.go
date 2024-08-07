@@ -1,6 +1,6 @@
 // Copyright (c) 2020 by Marko Gaćeša
 
-package util
+package serialize
 
 import (
 	"encoding/binary"
