@@ -80,7 +80,7 @@ func (m *Manager) DeleteAll() {
 func LoadFile(file string) (image.Image, error) {
 	imgFile, err := os.Open(file)
 	if err != nil {
-		return nil, fmt.Errorf("texture %q not found on disk: %v", file, err)
+		return nil, fmt.Errorf("texture %q not found on disk: %w", file, err)
 	}
 
 	defer imgFile.Close()

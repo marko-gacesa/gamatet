@@ -40,7 +40,6 @@ func TestMake(t *testing.T) {
 				continue
 			}
 		}
-
 	}
 }
 
@@ -114,7 +113,6 @@ func TestField_getXYPieceIdx(t *testing.T) {
 			t.Errorf("test failed for (%d, %d); expected %d got %d", test.x, test.y, test.exp, r)
 		}
 	}
-
 }
 
 func TestField_isXYEmpty(t *testing.T) {

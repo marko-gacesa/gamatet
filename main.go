@@ -13,5 +13,4 @@ func main() {
 	if err := loop.Loop(); err != nil {
 		fmt.Println(err)
 	}
-	return
 }

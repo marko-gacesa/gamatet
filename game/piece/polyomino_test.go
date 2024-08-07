@@ -163,7 +163,6 @@ func TestPolyomino_Rotate(t *testing.T) {
 			t.Errorf("test %s full CCW rotate failed. expexted blocks=%b, but got %b", test.name, shape.data, piece.data)
 			continue
 		}
-
 	}
 }
 

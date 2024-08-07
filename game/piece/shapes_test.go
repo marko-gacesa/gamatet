@@ -242,8 +242,9 @@ func TestShapes(t *testing.T) {
 
 func _initPolyomino(rots byte, boolData []bool) polyominoShape {
 	n := len(boolData)
-	size := byte(0)
-	dim := 0
+
+	var size byte
+	var dim int
 
 	if rots == 1 {
 		rots = 0

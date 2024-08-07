@@ -5,7 +5,6 @@ package material
 import (
 	"fmt"
 	"github.com/go-gl/gl/v4.1-core/gl"
-	"reflect"
 	"unsafe"
 )
 
@@ -72,7 +71,6 @@ func compileShader(source string, shaderType uint32) (uint32, error) {
 
 func getLogBuffer(length int32) (b []byte, ptr *uint8) {
 	b = make([]byte, int(length))
-	header := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-	ptr = (*uint8)(unsafe.Pointer(header.Data))
+	ptr = unsafe.SliceData(b)
 	return
 }

@@ -313,7 +313,6 @@ func TestField_GetPieceBlockLocations(t *testing.T) {
 		blockLocations := f.GetPieceBlockLocations(test.x, test.y, test.p)
 		if reflect.DeepEqual(blockLocations, test.exp) {
 			t.Errorf("test %q failed; expected=%+v, got=%+v", test.name, test.exp, blockLocations)
-
 		}
 	}
 }
