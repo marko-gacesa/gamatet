@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"gamatet/graphics/render"
 	"gamatet/graphics/screen"
-	"gamatet/graphics/screen/fieldtest"
+	"gamatet/graphics/screen/menu"
 	"gamatet/graphics/texture"
+	"gamatet/internal/config"
+	"gamatet/internal/router"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/marko-gacesa/appctx"
@@ -62,7 +64,7 @@ func getMonitorInfo() {
 	}
 }
 
-func Loop() error {
+func Loop(cfg *config.Config, router router.Router) error {
 	// GLFW event handling must run on the main OS thread
 	runtime.LockOSThread()
 
@@ -131,20 +133,19 @@ func Loop() error {
 		}
 
 		if scr != nil {
-			scr.KeyAction(key, scancode, act, mods)
+			scr.InputKey(key, scancode, act, mods)
 		}
 	})
 
-	// screens:
-	// main
-	//   single player game
-	//   multiplayer game
-	//   settings
-	//   help
-	//   quit
+	window.SetCharCallback(func(w *glfw.Window, char rune) {
+		if scr != nil {
+			scr.InputChar(char)
+		}
+	})
 
 	//scr = demoblocks.NewDemoBlocks(tex)
-	scr = fieldtest.NewFieldTest(ctx, tex)
+	//scr = fieldtest2.NewFieldTest(ctx, tex)
+	scr = menu.NewMenu(ctx, tex, router[""]...)
 	defer scr.Release()
 
 	func() {
@@ -191,7 +192,7 @@ func Loop() error {
 				scr.Shutdown()
 			}(appCtx, scrGen)
 		}
-	*/
+		//*/
 	///////////////
 out:
 	for {

@@ -15,13 +15,19 @@ import (
 )
 
 var (
-	colorWall = colorVector(block.Wall.Color)
-	colorBack = colorVector(block.Wall.Color).Mul(0.6)
-	colorLava = colorVector(block.Lava.Color)
-	colorAcid = colorVector(block.Acid.Color)
-	colorCurl = colorVector(block.Curl.Color)
-	colorWave = colorVector(block.Wave.Color)
-	colorBomb = colorVector(block.Bomb.Color)
+	colorWall      = colorVector(block.Wall.Color)
+	colorBack      = colorVector(block.Wall.Color).Mul(0.6)
+	colorLava      = colorVector(block.Lava.Color)
+	colorAcid      = colorVector(block.Acid.Color)
+	colorCurl      = colorVector(block.Curl.Color)
+	colorWave      = colorVector(block.Wave.Color)
+	colorBomb      = colorVector(block.Bomb.Color)
+	colorBackMulti = []mgl32.Vec4{
+		colorVector(0x0000FFFF).Mul(0.6),
+		colorVector(0xFF0000FF).Mul(0.6),
+		colorVector(0x00FF00FF).Mul(0.6),
+		colorVector(0xFF8080FF).Mul(0.6),
+	}
 )
 
 var t0 = time.Now()
@@ -206,7 +212,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 				within := x >= renderInfo.Pieces[pIdx].Limits.Min && x <= renderInfo.Pieces[pIdx].Limits.Max
 				shadow := x >= renderInfo.Pieces[pIdx].Shadow.ColL && x < renderInfo.Pieces[pIdx].Shadow.ColR
 				if within {
-					//colorCol = colorCol.Mul(1.1)
+					colorCol = colorCol.Add(colorBackMulti[pIdx])
 				}
 				if shadow {
 					colorCol = colorCol.Mul(1.1)

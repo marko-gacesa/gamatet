@@ -10,6 +10,7 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/golang/freetype/truetype"
+	"time"
 )
 
 type Text struct {
@@ -24,6 +25,7 @@ func MakeText(manager *texture.Manager, font *truetype.Font) *Text {
 	fontFace := runeatlas.NewFace(font, 32, 72)
 	runeAtlas := runeatlas.NewRuneAtlas(fontFace, 512)
 
+	runeAtlas.Store('|')
 	for key := '0'; key <= '9'; key++ {
 		runeAtlas.Store(key)
 	}
@@ -114,6 +116,8 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 	modelText := model
 	var chPrev rune
 	for _, ch := range s {
+		var control bool
+
 		switch ch {
 		case ' ':
 			modelText = modelText.Mul4(mgl32.Translate3D(0.2, 0, 0))
@@ -122,6 +126,12 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 			model = model.Mul4(mgl32.Translate3D(0, -1, 0))
 			modelText = model
 			continue
+		case '\x01': // cursor
+			if time.Now().UnixMilli()%500 < 250 {
+				continue
+			}
+			control = true
+			ch = '|'
 		}
 
 		runeRect, ok := t.atlas.TextUV(ch)
@@ -133,6 +143,14 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 		w2h := runeRect.WidthToHeight()
 		k2h := t.atlas.KernToHeight(chPrev, ch)
 
+		if control {
+			modelChar := modelText.Mul4(mgl32.Scale3D(w2h, 1, 1))
+			mat.Color(color.Mul(0.8))
+			r.Render(&modelChar)
+			mat.Color(color)
+			continue
+		}
+
 		w2h2 := w2h / 2
 		modelText = modelText.Mul4(mgl32.Translate3D(w2h2+k2h, 0, 0))
 		modelChar := modelText.Mul4(mgl32.Scale3D(w2h, 1, 1))
@@ -140,5 +158,21 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 		modelText = modelText.Mul4(mgl32.Translate3D(w2h2, 0, 0))
 
 		chPrev = ch
+	}
+}
+
+func (t *Text) Prepare(strs ...string) {
+	for _, s := range strs {
+		for _, ch := range s {
+			if ch > 32 {
+				t.atlas.Store(ch)
+			}
+		}
+	}
+
+	if t.atlas.IsDirty() {
+		t.texManager.Delete(t.tex)
+		t.tex = t.texManager.Bind(t.atlas.Image())
+		t.atlas.ClearDirty()
 	}
 }

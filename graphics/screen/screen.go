@@ -19,7 +19,8 @@ type Screen interface {
 	Release()
 	Shutdown()
 
-	KeyAction(key glfw.Key, scancode int, act glfw.Action, mods glfw.ModifierKey)
+	InputKey(key glfw.Key, scancode int, act glfw.Action, mods glfw.ModifierKey)
+	InputChar(char rune)
 
 	Object
 }

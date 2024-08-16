@@ -13,6 +13,7 @@ require (
 	github.com/marko-gacesa/appctx v0.0.0-20220908091727-0bf8492596d2
 	github.com/marko-gacesa/udpstar v0.0.0-20231130162919-86d574d6bdcb
 	golang.org/x/image v0.14.0
+	golang.org/x/text v0.14.0
 )
 
 require golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 // indirect

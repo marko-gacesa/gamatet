@@ -223,7 +223,7 @@ func (ft *FieldTest) SetCamera(r *render.Renderer, w, h int) {
 	r.PerspectiveFull(w, h, contentW, contentH, 2)
 }
 
-func (ft *FieldTest) KeyAction(key glfw.Key, scancode int, act glfw.Action, mods glfw.ModifierKey) {
+func (ft *FieldTest) InputKey(key glfw.Key, scancode int, act glfw.Action, mods glfw.ModifierKey) {
 	if act != glfw.Press {
 		return
 	}
@@ -243,6 +243,8 @@ func (ft *FieldTest) KeyAction(key glfw.Key, scancode int, act glfw.Action, mods
 		ft.playerInCh <- []byte{byte(action.Pause)}
 	}
 }
+
+func (ft *FieldTest) InputChar(char rune) {}
 
 func (ft *FieldTest) Prepare(ctx context.Context, now time.Time) {
 	ft.fieldLeft.Prepare(ctx, now)

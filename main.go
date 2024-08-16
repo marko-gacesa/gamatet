@@ -3,14 +3,9 @@
 package main
 
 import (
-	"fmt"
-	"gamatet/graphics/loop"
-	_ "image/jpeg"
-	_ "image/png"
+	"gamatet/internal/app"
 )
 
 func main() {
-	if err := loop.Loop(); err != nil {
-		fmt.Println(err)
-	}
+	app.Run()
 }

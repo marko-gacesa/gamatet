@@ -59,9 +59,10 @@ func (d *DemoBlocks) Release() {
 
 func (d *DemoBlocks) Shutdown() {}
 
-func (d *DemoBlocks) KeyAction(key glfw.Key, scancode int, act glfw.Action, mods glfw.ModifierKey) {
+func (d *DemoBlocks) InputKey(key glfw.Key, scancode int, act glfw.Action, mods glfw.ModifierKey) {
 
 }
+func (d *DemoBlocks) InputChar(char rune) {}
 
 func (d *DemoBlocks) Prepare(ctx context.Context, now time.Time) {
 	go func() {
