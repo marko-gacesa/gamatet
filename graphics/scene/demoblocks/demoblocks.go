@@ -5,8 +5,8 @@ package demoblocks
 import (
 	"context"
 	"gamatet/graphics/render"
-	"gamatet/graphics/screen"
 	"gamatet/graphics/texture"
+	"gamatet/logic/screen"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 	"time"
@@ -18,11 +18,13 @@ const (
 )
 
 type DemoBlocks struct {
-	tex  *texture.Manager
-	res  render.FieldResources
-	text render.Text
-	fps  render.FPS
+	renderer *render.Renderer
+	tex      *texture.Manager
+	res      render.FieldResources
+	text     render.Text
+	fps      render.FPS
 
+	stopper    *screen.Stopper
 	chReady    chan struct{}
 	modelBlock [9]mgl32.Mat4
 	modelDigit [contentW * contentH]mgl32.Mat4
@@ -32,36 +34,41 @@ var _ screen.Screen = (*DemoBlocks)(nil)
 
 var t0 = time.Now()
 
-func NewDemoBlocks(tex *texture.Manager) *DemoBlocks {
+func NewDemoBlocks(renderer *render.Renderer, tex *texture.Manager) *DemoBlocks {
 	res := render.GenerateFieldResources(tex)
 	text := render.MakeText(tex, render.Font)
 	fps := render.NewFPS()
 
 	return &DemoBlocks{
+		renderer:   renderer,
 		tex:        tex,
 		res:        *res,
 		text:       *text,
 		fps:        *fps,
+		stopper:    screen.NewStopper(),
 		chReady:    make(chan struct{}),
 		modelBlock: [9]mgl32.Mat4{},
 		modelDigit: [contentW * contentH]mgl32.Mat4{},
 	}
 }
 
-func (d *DemoBlocks) SetCamera(r *render.Renderer, w, h int) {
-	r.PerspectiveFull(w, h, contentW, contentH, 12)
+func (d *DemoBlocks) UpdateView(w, h int) {
+	d.renderer.PerspectiveFull(w, h, contentW, contentH, 12)
 }
+
+func (d *DemoBlocks) Done() <-chan error { return d.stopper.Done() }
 
 func (d *DemoBlocks) Release() {
-	d.res.Release()
 	d.text.Release()
+	d.res.Release()
 }
 
-func (d *DemoBlocks) Shutdown() {}
-
-func (d *DemoBlocks) InputKey(key glfw.Key, scancode int, act glfw.Action, mods glfw.ModifierKey) {
-
+func (d *DemoBlocks) InputKeyPress(key, scancode int) {
+	if glfw.Key(key) == glfw.KeyEscape {
+		d.stopper.Stop()
+	}
 }
+
 func (d *DemoBlocks) InputChar(char rune) {}
 
 func (d *DemoBlocks) Prepare(ctx context.Context, now time.Time) {
@@ -94,8 +101,10 @@ func (d *DemoBlocks) Prepare(ctx context.Context, now time.Time) {
 	}()
 }
 
-func (d *DemoBlocks) Render(r *render.Renderer) {
+func (d *DemoBlocks) Render(ctx context.Context) {
 	<-d.chReady
+
+	r := d.renderer
 
 	center := mgl32.Ident4()
 

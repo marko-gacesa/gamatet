@@ -2,10 +2,6 @@
 
 package material
 
-import (
-	"gamatet/graphics/gtypes"
-)
-
 var _ Material = (*Rock)(nil)
 
 const (
@@ -53,7 +49,7 @@ func (p *Rock) ClearChain() {
 	uniform1i(p.uniShouldDrawChain, 0)
 }
 
-func (p *Rock) Lights(lights []gtypes.PointLight) {
+func (p *Rock) Lights(lights []PointLight) {
 	n := int32(len(lights))
 	if n > MaxLights {
 		n = MaxLights

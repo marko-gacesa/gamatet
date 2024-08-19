@@ -58,18 +58,17 @@ func (t *Text) Material(r *Renderer, color mgl32.Vec4, ch rune) (runeatlas.RectU
 		return runeatlas.RectUV{}, false
 	}
 
-	if t.atlas.IsDirty() {
-		t.texManager.Delete(t.tex)
-		t.tex = t.texManager.Bind(t.atlas.Image())
-		t.atlas.ClearDirty()
-	}
-
 	mat := &t.mat
 
 	r.Material(mat)
 	mat.Texture(t.tex)
 	mat.Color(color)
 	mat.TexUV(runeRect)
+
+	if t.atlas.IsDirty() {
+		t.texManager.ReBind(t.tex, t.atlas.Image())
+		t.atlas.ClearDirty()
+	}
 
 	return runeRect, true
 }
@@ -97,12 +96,6 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 		}
 	}
 
-	if t.atlas.IsDirty() {
-		t.texManager.Delete(t.tex)
-		t.tex = t.texManager.Bind(t.atlas.Image())
-		t.atlas.ClearDirty()
-	}
-
 	gl.DepthMask(false)
 	defer gl.DepthMask(true)
 
@@ -112,6 +105,11 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 	r.Material(mat)
 	mat.Texture(t.tex)
 	mat.Color(color)
+
+	if t.atlas.IsDirty() {
+		t.texManager.ReBind(t.tex, t.atlas.Image())
+		t.atlas.ClearDirty()
+	}
 
 	modelText := model
 	var chPrev rune
@@ -168,11 +166,5 @@ func (t *Text) Prepare(strs ...string) {
 				t.atlas.Store(ch)
 			}
 		}
-	}
-
-	if t.atlas.IsDirty() {
-		t.texManager.Delete(t.tex)
-		t.tex = t.texManager.Bind(t.atlas.Image())
-		t.atlas.ClearDirty()
 	}
 }

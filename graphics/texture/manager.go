@@ -3,11 +3,8 @@
 package texture
 
 import (
-	"fmt"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"image"
-	"image/draw"
-	"os"
 )
 
 type Manager struct {
@@ -28,8 +25,8 @@ func (m *Manager) MaxTextures() int {
 }
 
 // Bind binds the provided image as OpenGL texture.
-// The idea is to first bind the texture: `texName := manager.Bind(img)`.
-// And then to activate it: `gl.ActiveTexture(texName)`.
+// The idea is to first bind the texture: `texID := manager.Bind(img)`.
+// And then to activate it: `gl.ActiveTexture(texID)`.
 func (m *Manager) Bind(img image.Image) uint32 {
 	var idx int
 	for idx = 0; idx < len(m.textures); idx++ {
@@ -43,16 +40,19 @@ func (m *Manager) Bind(img image.Image) uint32 {
 
 	var texID = gl.TEXTURE0 + uint32(idx)
 
-	switch v := img.(type) {
-	case *image.RGBA:
-		m.textures[idx] = new4Channel(v.Rect.Size(), v.Pix, texID)
-	case *image.Gray:
-		m.textures[idx] = new1Channel(v.Rect.Size(), v.Pix, texID)
-	case *image.Alpha:
-		m.textures[idx] = new1Channel(v.Rect.Size(), v.Pix, texID)
-	default:
-		panic("unsupported color model")
-	}
+	texture := genTex()
+	m.textures[idx] = texture
+
+	loadData(texID, texture, img)
+
+	return texID
+}
+
+func (m *Manager) ReBind(texID uint32, img image.Image) uint32 {
+	idx := texID - gl.TEXTURE0
+	texture := m.textures[idx]
+
+	loadData(texID, texture, img)
 
 	return texID
 }
@@ -60,55 +60,43 @@ func (m *Manager) Bind(img image.Image) uint32 {
 func (m *Manager) Delete(texID uint32) {
 	idx := texID - gl.TEXTURE0
 	texture := m.textures[idx]
-	if texture == 0 {
-		return
-	}
+
+	gl.ActiveTexture(texID)
+	gl.BindTexture(gl.TEXTURE_2D, texture)
+
 	gl.DeleteTextures(1, &texture)
+
 	m.textures[idx] = 0
 }
 
-func (m *Manager) DeleteAll() {
-	for idx, texture := range m.textures {
-		if texture == 0 {
-			continue
-		}
-		gl.DeleteTextures(1, &texture)
-		m.textures[idx] = 0
-	}
-}
-
-func LoadFile(file string) (image.Image, error) {
-	imgFile, err := os.Open(file)
-	if err != nil {
-		return nil, fmt.Errorf("texture %q not found on disk: %w", file, err)
-	}
-
-	defer imgFile.Close()
-
-	img, _, err := image.Decode(imgFile)
-	if err != nil {
-		return nil, err
-	}
-
-	rgba := image.NewRGBA(img.Bounds())
-	if rgba.Stride != rgba.Rect.Size().X*4 {
-		return nil, fmt.Errorf("unsupported texture %q stride=%d", file, rgba.Stride)
-	}
-
-	draw.Draw(rgba, rgba.Bounds(), img, image.Point{X: 0, Y: 0}, draw.Src)
-
-	return rgba, nil
-}
-
-func new4Channel(size image.Point, data []byte, textureNumber uint32) uint32 {
+func genTex() uint32 {
 	var texture uint32
 	gl.GenTextures(1, &texture)
-	gl.ActiveTexture(textureNumber) // gl.TEXTURE0
+	return texture
+}
+
+func loadData(texID, texture uint32, img image.Image) {
+	switch v := img.(type) {
+	case *image.RGBA:
+		loadData4Channel(v.Rect.Size(), v.Pix, texID, texture)
+	case *image.Gray:
+		loadData1Channel(v.Rect.Size(), v.Pix, texID, texture)
+	case *image.Alpha:
+		loadData1Channel(v.Rect.Size(), v.Pix, texID, texture)
+	default:
+		panic("unsupported color model")
+	}
+}
+
+func loadData4Channel(size image.Point, data []byte, texID, texture uint32) uint32 {
+	gl.ActiveTexture(texID)
 	gl.BindTexture(gl.TEXTURE_2D, texture)
+
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
 	gl.TexImage2D(
 		gl.TEXTURE_2D,
 		0,
@@ -123,19 +111,19 @@ func new4Channel(size image.Point, data []byte, textureNumber uint32) uint32 {
 	return texture
 }
 
-func new1Channel(size image.Point, data []byte, textureNumber uint32) uint32 {
-	var texture uint32
-	gl.GenTextures(1, &texture)
-	gl.ActiveTexture(textureNumber) // gl.TEXTURE0
+func loadData1Channel(size image.Point, data []byte, texID, texture uint32) uint32 {
+	gl.ActiveTexture(texID)
 	gl.BindTexture(gl.TEXTURE_2D, texture)
+
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT)
+
 	gl.TexImage2D(
 		gl.TEXTURE_2D,
 		0,
-		gl.RED,
+		gl.R8,
 		int32(size.X),
 		int32(size.Y),
 		0,

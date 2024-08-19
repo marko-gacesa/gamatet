@@ -1,6 +1,6 @@
 // Copyright (c) 2020 by Marko Gaćeša
 
-package gtypes
+package material
 
 import "github.com/go-gl/mathgl/mgl32"
 

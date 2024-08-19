@@ -88,40 +88,36 @@ func (t *Text) Decrease() {
 }
 
 func (t *Text) Input(r rune) {
-	switch r {
-	case '\n':
+	switch {
+	case r == '\n': // commit
 		if t.editing {
 			t.commit()
 		} else {
 			t.startEdit()
 		}
 		return
-	case '\b':
+	case r == '\b': // backspace
 		if t.cursor > 0 {
 			t.editor = append(t.editor[:t.cursor-1], t.editor[t.cursor:]...)
 			t.cursor--
 			t.dirty()
 		}
 		return
-	case '\xFF':
+	case r == '\xFF': // delete
 		if t.cursor < len(t.editor) {
 			t.editor = append(t.editor[:t.cursor], t.editor[t.cursor+1:]...)
 			t.dirty()
 		}
 		return
-	}
+	case unicode.IsPrint(r):
+		if len(t.editor) >= t.maxLen {
+			return
+		}
 
-	if unicode.IsControl(r) {
-		return
+		t.editor = append(t.editor[:t.cursor], append([]rune{r}, t.editor[t.cursor:]...)...)
+		t.cursor++
+		t.dirty()
 	}
-
-	if len(t.editor) >= t.maxLen {
-		return
-	}
-
-	t.editor = append(t.editor[:t.cursor], append([]rune{r}, t.editor[t.cursor:]...)...)
-	t.cursor++
-	t.dirty()
 }
 
 func (t *Text) FocusLost() {

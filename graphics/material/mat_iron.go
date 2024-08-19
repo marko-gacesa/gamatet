@@ -2,10 +2,6 @@
 
 package material
 
-import (
-	"gamatet/graphics/gtypes"
-)
-
 var _ Material = (*Iron)(nil)
 
 func NewIron(tex uint32) *Iron {
@@ -29,7 +25,7 @@ type Iron struct {
 	uniPointLights int32
 }
 
-func (p *Iron) Lights(lights []gtypes.PointLight) {
+func (p *Iron) Lights(lights []PointLight) {
 	n := int32(len(lights))
 	if n > MaxLights {
 		n = MaxLights

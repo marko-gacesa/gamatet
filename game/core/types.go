@@ -56,9 +56,9 @@ type PlayerSetup struct {
 	OutCh chan<- []byte
 }
 
-func ChPair(ctx context.Context) (in chan<- []byte, out <-chan []byte) {
-	chIn := make(chan []byte)
-	chOut := make(chan []byte)
+func ChPair[T any](ctx context.Context) (in chan<- T, out <-chan T) {
+	chIn := make(chan T)
+	chOut := make(chan T)
 	go func() {
 		defer close(chOut)
 
