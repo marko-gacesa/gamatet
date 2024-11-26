@@ -4,6 +4,7 @@ package scene
 
 import (
 	"context"
+	"gamatet/game/core"
 	"gamatet/graphics/render"
 	"gamatet/graphics/scene/demoblocks"
 	"gamatet/graphics/scene/fieldtest"
@@ -28,6 +29,8 @@ func (r Resources) Screen(ctx context.Context, data any) screen.Screen {
 	switch v := data.(type) {
 	case *menu.Menu:
 		return NewMenu(r.rend, r.tex, v)
+	case core.GameOneParams:
+		return NewGameOne(r.rend, r.tex, v)
 	case string:
 		switch v {
 		case "test-blocks":

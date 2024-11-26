@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"gamatet/game/action"
-	"gamatet/game/block"
 	"gamatet/game/event"
 	"gamatet/game/field"
 	"gamatet/game/machine"
@@ -56,10 +55,6 @@ func MakeHost(setup Setup) *GameHost {
 	var inputs []hostPlayerData
 	fields := make([]hostFieldData, len(setup.Fields))
 
-	//pieceFeed := piece.NewTetrominoFeed(setup.Config.FeedBagSize, setup.Config.RandomSeed)
-	//pieceFeed := piece.NewPentaFeed(setup.Config.FeedBagSize, setup.Config.RandomSeed)
-	pieceFeed := piece.NewDebugFeed(setup.Config.RandomSeed)
-
 	for i := range setup.Fields {
 		players := setup.Fields[i].Players
 
@@ -77,7 +72,7 @@ func MakeHost(setup Setup) *GameHost {
 			ctrl := f.Ctrl(byte(j))
 
 			ctrl.Name = players[j].Name
-			ctrl.Feed = pieceFeed
+			ctrl.Feed = setup.Config.PieceFeed
 			ctrl.Config = players[j].Config
 			ctrl.Level = setup.Config.Level
 			ctrl.IsShadowShown = true
@@ -198,37 +193,37 @@ func (g *GameHost) Perform(
 	})
 
 	/////////////////////////////
-	func(f *field.Field, events *event.List) {
-		w := f.GetWidth()
-		for i := 0; i <= 2; i++ {
-			for d := 0; d <= i; d++ {
-				putBlock(events, d, i-d, block.Wall)
-				putBlock(events, w-1-d, i-d, block.Wall)
-			}
-			putBlock(events, i, 4-i, block.Block{
-				Type:     block.TypeRock,
-				Hardness: byte(1 + i),
-				Color:    0x00FFFFFF,
-			})
-			putBlock(events, w-1-i, 4-i, block.Block{
-				Type:     block.TypeRuby,
-				Hardness: byte(1 + i),
-				Color:    0xFFFF00FF,
-			})
-		}
-		/*
-			for i := 3; i < 7; i++ {
-				for j := 0; j < 18; j++ {
-					putBlock(events, i, j, block.Block{Type: block.TypeRock, Hardness: byte(i - 3), Color: 0x90FF80FF})
-					//putBlock(events, i, j, block.Iron)
+	/*
+		func(f *field.Field, events *event.List) {
+			w := f.GetWidth()
+			for i := 0; i <= 2; i++ {
+				for d := 0; d <= i; d++ {
+					putBlock(events, d, i-d, block.Wall)
+					putBlock(events, w-1-d, i-d, block.Wall)
 				}
+				putBlock(events, i, 4-i, block.Block{
+					Type:     block.TypeRock,
+					Hardness: byte(1 + i),
+					Color:    0x00FFFFFF,
+				})
+				putBlock(events, w-1-i, 4-i, block.Block{
+					Type:     block.TypeRuby,
+					Hardness: byte(1 + i),
+					Color:    0xFFFF00FF,
+				})
 			}
-		//*/
-		conjureBlock(&g.fields[0].events, 0, 6, block.Goal)
-		conjureBlock(&g.fields[0].events, 1, 5, block.Block{Type: block.TypeGoal, Hardness: 0, Color: 0x0000FFFF})
-		conjureBlock(&g.fields[0].events, 7, 4, block.Iron)
-		g.applyEvents(ctx)
-	}(g.fields[0].Field, &g.fields[0].events)
+			//for i := 3; i < 7; i++ {
+			//	for j := 0; j < 18; j++ {
+			//		putBlock(events, i, j, block.Block{Type: block.TypeRock, Hardness: byte(i - 3), Color: 0x90FF80FF})
+			//		//putBlock(events, i, j, block.Iron)
+			//	}
+			//}
+			conjureBlock(&g.fields[0].events, 0, 6, block.Goal)
+			conjureBlock(&g.fields[0].events, 1, 5, block.Block{Type: block.TypeGoal, Hardness: 0, Color: 0x0000FFFF})
+			conjureBlock(&g.fields[0].events, 7, 4, block.Iron)
+			g.applyEvents(ctx)
+		}(g.fields[0].Field, &g.fields[0].events)
+	*/
 	////////////////////////////
 
 	for {
@@ -332,6 +327,11 @@ func (g *GameHost) RenderRequest(ctx context.Context, fieldIdx int, t time.Time,
 		RenderInfo: ch,
 	}:
 	}
+}
+
+func (g *GameHost) GetSize(idx int) (int, int) {
+	f := g.fields[idx].Field
+	return f.GetWidth(), f.GetHeight()
 }
 
 func (g *GameHost) stop(ctx context.Context) {

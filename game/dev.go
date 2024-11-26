@@ -88,10 +88,12 @@ func NewFieldTest(
 
 	// game setup
 
-	playerInCh, playerOutCh := core.ChPair[[]byte](ctx)
+	playerInCh, playerOutCh := core.ChannelPipe[[]byte](ctx)
 
 	const seed = 101
 	const level = 2
+
+	pieceFeed := piece.NewDebugFeed(seed)
 
 	setupHost := core.Setup{
 		Name: "test game",
@@ -104,8 +106,8 @@ func NewFieldTest(
 				PieceCollision: false,
 				Anim:           false,
 			},
-			RandomSeed:  seed,
-			FeedBagSize: 2,
+			RandomSeed: seed,
+			PieceFeed:  pieceFeed,
 		},
 		Fields: []core.FieldSetup{
 			{
@@ -138,8 +140,8 @@ func NewFieldTest(
 				PieceCollision: false,
 				Anim:           true,
 			},
-			RandomSeed:  seed,
-			FeedBagSize: 2,
+			RandomSeed: seed,
+			PieceFeed:  pieceFeed,
 		},
 		Fields: []core.FieldSetup{
 			{

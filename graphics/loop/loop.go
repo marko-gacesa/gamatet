@@ -77,7 +77,7 @@ func Loop(app *app.App) error {
 	window.SetSizeCallback(func(window *glfw.Window, w int, h int) {})
 	window.SetFramebufferSizeCallback(func(window *glfw.Window, w int, h int) {
 		if scr != nil {
-			scr.UpdateView(w, h)
+			scr.UpdateViewSize(w, h)
 		}
 		gl.Viewport(0, 0, int32(w), int32(h))
 	})
@@ -133,7 +133,7 @@ func Loop(app *app.App) error {
 				scr.Release()
 			}()
 
-			scr.UpdateView(window.GetFramebufferSize())
+			scr.UpdateViewSize(window.GetFramebufferSize())
 
 			for {
 				select {

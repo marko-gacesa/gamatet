@@ -82,7 +82,7 @@ func (m *Menu) Release() {
 	m.text.Release()
 }
 
-func (m *Menu) UpdateView(w, h int) {
+func (m *Menu) UpdateViewSize(w, h int) {
 	m.renderer.OrthogonalFull(w, h, screenContentW, screenContentH, 2)
 }
 

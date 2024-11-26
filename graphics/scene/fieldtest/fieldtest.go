@@ -84,7 +84,7 @@ func (ft *FieldTest) Release() {
 	ft.res.Release()
 }
 
-func (ft *FieldTest) UpdateView(w, h int) {
+func (ft *FieldTest) UpdateViewSize(w, h int) {
 	ft.renderer.PerspectiveFull(w, h, contentW, contentH, 2)
 }
 

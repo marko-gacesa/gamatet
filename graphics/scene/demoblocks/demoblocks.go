@@ -52,7 +52,7 @@ func NewDemoBlocks(renderer *render.Renderer, tex *texture.Manager) *DemoBlocks 
 	}
 }
 
-func (d *DemoBlocks) UpdateView(w, h int) {
+func (d *DemoBlocks) UpdateViewSize(w, h int) {
 	d.renderer.PerspectiveFull(w, h, contentW, contentH, 12)
 }
 

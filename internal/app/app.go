@@ -37,12 +37,16 @@ func (app *App) MakeScreen(ctx context.Context) screen.Screen {
 	switch id {
 	case routeMain:
 		data = app.menuMain()
+	case routeMenuSinglePlayer:
+		data = app.menuSinglePlayer()
 	case "", routeQuit:
 		data = nil
 	case routeTestBlocks:
 		data = "test-blocks"
 	case routeTestField:
 		data = "test-fields"
+	case routeGameSinglePlayNow:
+		data = app.singleSimple(ctx)
 	}
 
 	return app.screener.Screen(ctx, data)

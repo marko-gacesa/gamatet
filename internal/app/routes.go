@@ -7,9 +7,14 @@ type route string
 const (
 	routeMain route = "main"
 	routeQuit route = "quit"
+	routeBack route = ""
+
+	routeMenuSinglePlayer route = "menu-single-player"
 
 	routeTestField  route = "test-field"
 	routeTestBlocks route = "test-blocks"
+
+	routeGameSinglePlayNow route = "game-single-play-now"
 )
 
 type routes struct {

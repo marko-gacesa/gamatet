@@ -17,6 +17,9 @@ type RenderRequester interface {
 	// RenderRequest is a method for requesting render info for a field. Once ready, it will be placed on the channel.
 	// When rendering is completed the RenderInfo should be returned with a call to field.ReturnRenderInfo(renderInfo).
 	RenderRequest(ctx context.Context, fieldIdx int, t time.Time, ch chan<- *field.RenderInfo)
+
+	// GetSize return size of the field
+	GetSize(idx int) (int, int)
 }
 
 type Setup struct {
@@ -31,8 +34,8 @@ type GameConfig struct {
 	Level          int
 	PlayerZones    bool
 	FieldConfig    field.Config
-	RandomSeed     int // used for piece feed and random events
-	FeedBagSize    int
+	RandomSeed     int // used for random events
+	PieceFeed      piece.Feed
 }
 
 type FieldSetup struct {
@@ -56,7 +59,13 @@ type PlayerSetup struct {
 	OutCh chan<- []byte
 }
 
-func ChPair[T any](ctx context.Context) (in chan<- T, out <-chan T) {
+type GameOneParams struct {
+	PlayerInCh chan<- []byte
+	Game       RenderRequester
+	Done       <-chan struct{}
+}
+
+func ChannelPipe[T any](ctx context.Context) (in chan<- T, out <-chan T) {
 	chIn := make(chan T)
 	chOut := make(chan T)
 	go func() {

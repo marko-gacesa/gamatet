@@ -32,6 +32,11 @@ var (
 
 var t0 = time.Now()
 
+func GetExtendedContent(w, h int) (int, int) {
+	return w + 4, // left frame, game info (2), right frame
+		h + 2 // top frame, bottom frame
+}
+
 type Field struct {
 	model     mgl32.Mat4
 	resources *FieldResources

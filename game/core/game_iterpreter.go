@@ -46,10 +46,6 @@ func MakeInterpreter(setup Setup) *GameInterpreter {
 	var inputs []interpreterPlayerData
 	fields := make([]interpreterFieldData, len(setup.Fields))
 
-	//pieceFeed := piece.NewTetrominoFeed(setup.Config.FeedBagSize, setup.Config.RandomSeed)
-	//pieceFeed := piece.NewPentaFeed(setup.Config.FeedBagSize, setup.Config.RandomSeed)
-	pieceFeed := piece.NewDebugFeed(setup.Config.RandomSeed)
-
 	for i := range setup.Fields {
 		players := setup.Fields[i].Players
 
@@ -64,7 +60,7 @@ func MakeInterpreter(setup Setup) *GameInterpreter {
 			ctrl := f.Ctrl(byte(j))
 
 			ctrl.Name = players[j].Name
-			ctrl.Feed = pieceFeed
+			ctrl.Feed = setup.Config.PieceFeed
 			ctrl.Config = players[j].Config
 			ctrl.Level = setup.Config.Level
 			ctrl.IsShadowShown = true
@@ -165,4 +161,9 @@ func (g *GameInterpreter) RenderRequest(ctx context.Context, fieldIdx int, t tim
 		RenderInfo: ch,
 	}:
 	}
+}
+
+func (g *GameInterpreter) GetSize(idx int) (int, int) {
+	f := g.fields[idx].Field
+	return f.GetWidth(), f.GetHeight()
 }

@@ -9,8 +9,8 @@ import (
 
 // Screen abstracts screen rendering.
 type Screen interface {
-	// UpdateView should be called whenever the viewport size has changed.
-	UpdateView(w, h int)
+	// UpdateViewSize should be called whenever the viewport size has changed.
+	UpdateViewSize(w, h int)
 
 	// Done returns a channel that is closed when the screen finished.
 	// If the screen finishes abnormally the error would be placed to the channel.
