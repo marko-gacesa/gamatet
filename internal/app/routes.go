@@ -15,6 +15,7 @@ const (
 	routeTestBlocks route = "test-blocks"
 
 	routeGameSinglePlayNow route = "game-single-play-now"
+	routeGameDoublePlayNow route = "game-double-play-now"
 )
 
 type routes struct {

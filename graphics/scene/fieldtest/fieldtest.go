@@ -23,11 +23,12 @@ const (
 )
 
 type FieldTest struct {
-	renderer *render.Renderer
-	tex      *texture.Manager
-	res      render.FieldResources
-	text     render.Text
-	fps      render.FPS
+	renderer  *render.Renderer
+	tex       *texture.Manager
+	res       render.FieldResources
+	textLeft  render.Text
+	textRight render.Text
+	fps       render.FPS
 
 	stopper *screen.Stopper
 
@@ -46,7 +47,8 @@ var _ screen.Screen = (*FieldTest)(nil)
 
 func NewFieldTest(ctx context.Context, renderer *render.Renderer, tex *texture.Manager) *FieldTest {
 	res := render.GenerateFieldResources(tex)
-	text := render.MakeText(tex, render.Font)
+	textLeft := render.MakeText(tex, render.Font)
+	textRight := render.MakeText(tex, render.Font)
 	fps := render.NewFPS()
 
 	modelCenter := mgl32.Ident4()
@@ -59,7 +61,8 @@ func NewFieldTest(ctx context.Context, renderer *render.Renderer, tex *texture.M
 		renderer:   renderer,
 		tex:        tex,
 		res:        *res,
-		text:       *text,
+		textLeft:   *textLeft,
+		textRight:  *textRight,
 		fps:        *fps,
 		stopper:    screen.NewStopper(),
 		playerInCh: playerInCh,
@@ -70,8 +73,8 @@ func NewFieldTest(ctx context.Context, renderer *render.Renderer, tex *texture.M
 		wg:         wg,
 	}
 
-	ft.fieldLeft = render.NewField(ft.modelLeft, &ft.res, &ft.text, 0, gameHost)
-	ft.fieldRight = render.NewField(ft.modelRight, &ft.res, &ft.text, 0, gameInterpreter)
+	ft.fieldLeft = render.NewField(ft.modelLeft, &ft.res, &ft.textLeft, 0, gameHost)
+	ft.fieldRight = render.NewField(ft.modelRight, &ft.res, &ft.textRight, 0, gameInterpreter)
 
 	return ft
 }
@@ -80,7 +83,8 @@ func (ft *FieldTest) Done() <-chan error { return ft.stopper.Done() }
 
 func (ft *FieldTest) Release() {
 	ft.wg.Wait()
-	ft.text.Release()
+	ft.textLeft.Release()
+	ft.textRight.Release()
 	ft.res.Release()
 }
 
@@ -118,5 +122,5 @@ func (ft *FieldTest) Render(ctx context.Context) {
 	r := ft.renderer
 	ft.fieldLeft.Render(r)
 	ft.fieldRight.Render(r)
-	ft.fps.Render(r, &ft.text, mgl32.Translate3D(-contentW/2+0.5, -contentH/2+1.5, 1.5))
+	ft.fps.Render(r, &ft.textLeft, mgl32.Translate3D(-contentW/2+0.5, -contentH/2+1.5, 1.5))
 }

@@ -9,32 +9,44 @@ import (
 	"gamatet/game/field"
 	"gamatet/game/piece"
 	"gamatet/graphics/render/rendercache"
+	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 	"math"
+	"slices"
 	"time"
 )
 
 var (
-	colorWall      = colorVector(block.Wall.Color)
-	colorBack      = colorVector(block.Wall.Color).Mul(0.6)
-	colorLava      = colorVector(block.Lava.Color)
-	colorAcid      = colorVector(block.Acid.Color)
-	colorCurl      = colorVector(block.Curl.Color)
-	colorWave      = colorVector(block.Wave.Color)
-	colorBomb      = colorVector(block.Bomb.Color)
-	colorBackMulti = []mgl32.Vec4{
-		colorVector(0x0000FFFF).Mul(0.6),
-		colorVector(0xFF0000FF).Mul(0.6),
-		colorVector(0x00FF00FF).Mul(0.6),
-		colorVector(0xFF8080FF).Mul(0.6),
+	colorWall = colorVector(block.Wall.Color)
+	colorBack = colorVector(block.Wall.Color).Mul(0.6)
+	colorLava = colorVector(block.Lava.Color)
+	colorAcid = colorVector(block.Acid.Color)
+	colorCurl = colorVector(block.Curl.Color)
+	colorWave = colorVector(block.Wave.Color)
+	colorBomb = colorVector(block.Bomb.Color)
+
+	colorPlayer = []mgl32.Vec4{
+		colorVector(0x0000FFFF).Mul(0.5),
+		colorVector(0xFF0000FF).Mul(0.5),
+		colorVector(0x00FF00FF).Mul(0.5),
+		colorVector(0xFF8080FF).Mul(0.5),
 	}
 )
 
+const widthPad = 3
+
 var t0 = time.Now()
 
-func GetExtendedContent(w, h int) (int, int) {
-	return w + 4, // left frame, game info (2), right frame
-		h + 2 // top frame, bottom frame
+func GetExtendedContent(w, h, pCount int) (int, int) {
+	w += 2 // left frame, right frame
+	h += 1 // bottom frame
+	switch pCount {
+	case 1:
+		w += widthPad // game info
+	case 2, 3, 4:
+		w += widthPad + widthPad // 2 * game info
+	}
+	return w, h
 }
 
 type Field struct {
@@ -58,15 +70,16 @@ type Field struct {
 	listIron  rendercache.Models
 	listFrame rendercache.Models
 	listBomb  rendercache.Models
-	listRock  rendercache.ModelColorValueList
-	listRuby  rendercache.ModelColorValueList
+	listRock  rendercache.ModelColorValueList[int]
+	listRuby  rendercache.ModelColorValueList[int]
 	listLava  rendercache.ModelColorList
 	listAcid  rendercache.ModelColorList
 	listWave  rendercache.ModelColorList
 	listGoal  rendercache.ModelColorList
 	listShad  rendercache.ModelColorList
-	listAmmo  rendercache.ModelColorValueList
+	listAmmo  rendercache.ModelColorValueList[int]
 	lights    rendercache.PointLights
+	listStr   rendercache.ModelColorValueList[string]
 }
 
 func NewField(
@@ -127,15 +140,16 @@ func (f *Field) preRender(renderInfo *field.RenderInfo, now time.Time) {
 	f.listIron = rendercache.ModelPool.Get()
 	f.listFrame = rendercache.ModelPool.Get()
 	f.listBomb = rendercache.ModelPool.Get()
-	f.listRock = rendercache.ModelColorValuePool.Get()
-	f.listRuby = rendercache.ModelColorValuePool.Get()
+	f.listRock = rendercache.ModelColorIntPool.Get()
+	f.listRuby = rendercache.ModelColorIntPool.Get()
 	f.listLava = rendercache.ModelColorPool.Get()
 	f.listAcid = rendercache.ModelColorPool.Get()
 	f.listWave = rendercache.ModelColorPool.Get()
 	f.listGoal = rendercache.ModelColorPool.Get()
 	f.listShad = rendercache.ModelColorPool.Get()
-	f.listAmmo = rendercache.ModelColorValuePool.Get()
+	f.listAmmo = rendercache.ModelColorIntPool.Get()
 	f.lights = rendercache.PointLightPool.Get()
+	f.listStr = rendercache.ModelColorStringPool.Get()
 }
 
 func (f *Field) postRender() {
@@ -147,15 +161,16 @@ func (f *Field) postRender() {
 	rendercache.ModelPool.Put(f.listIron)
 	rendercache.ModelPool.Put(f.listFrame)
 	rendercache.ModelPool.Put(f.listBomb)
-	rendercache.ModelColorValuePool.Put(f.listRock)
-	rendercache.ModelColorValuePool.Put(f.listRuby)
+	rendercache.ModelColorIntPool.Put(f.listRock)
+	rendercache.ModelColorIntPool.Put(f.listRuby)
 	rendercache.ModelColorPool.Put(f.listLava)
 	rendercache.ModelColorPool.Put(f.listAcid)
 	rendercache.ModelColorPool.Put(f.listWave)
 	rendercache.ModelColorPool.Put(f.listGoal)
 	rendercache.ModelColorPool.Put(f.listShad)
-	rendercache.ModelColorValuePool.Put(f.listAmmo)
+	rendercache.ModelColorIntPool.Put(f.listAmmo)
 	rendercache.PointLightPool.Put(f.lights)
+	rendercache.ModelColorStringPool.Put(f.listStr)
 }
 
 func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
@@ -170,39 +185,62 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		lightPowShooter = 1.5
 	)
 
-	contentWidth := renderInfo.W + 4
-	contentHeight := renderInfo.H + 2
+	var infoPositions [field.MaxPieces]piece.DisplayPosition
+	for i := range renderInfo.Pieces {
+		infoPositions[i] = renderInfo.Pieces[i].Position
+	}
 
-	modelFrame := model.
+	hasLeftPad := slices.Contains(infoPositions[:], piece.DisplayPositionTopLeft) || slices.Contains(infoPositions[:], piece.DisplayPositionBottomLeft)
+	hasRightPad := slices.Contains(infoPositions[:], piece.DisplayPositionTopRight) || slices.Contains(infoPositions[:], piece.DisplayPositionBottomRight)
+
+	contentWidth, contentHeight := renderInfo.W+2, renderInfo.H+1
+	if hasLeftPad {
+		contentWidth += widthPad
+	}
+	if hasRightPad {
+		contentWidth += widthPad
+	}
+
+	var modelFrame, modelField mgl32.Mat4
+
+	modelFrame = model.
 		Mul4(mgl32.Translate3D(-float32(contentWidth)/2+0.5, -float32(contentHeight)/2+0.5, 0))
 
-	modelField := modelFrame.
-		Mul4(mgl32.Translate3D(3, 1, 0))
+	if hasLeftPad {
+		modelField = modelFrame.
+			Mul4(mgl32.Translate3D(1+widthPad, 1, 0))
+	} else {
+		modelField = modelFrame.
+			Mul4(mgl32.Translate3D(1, 1, 0))
+	}
 
-	modelNextBlocks := modelFrame.
-		Mul4(mgl32.Translate3D(1, 1, 1))
+	pulse := float32(0.7 + 0.3*math.Sin(math.Mod(10*f.t, math.Pi)))
 
 	// prepare the field frame
 
 	for x := 0; x < contentWidth; x++ {
-		var m mgl32.Mat4
-
-		m = modelFrame.Mul4(mgl32.Translate3D(float32(x), float32(0), 0))
-		f.listWall.Add(m)
-
-		m = modelFrame.Mul4(mgl32.Translate3D(float32(x), float32(contentHeight-1), 0))
+		m := modelFrame.Mul4(mgl32.Translate3D(float32(x), float32(0), 0))
 		f.listWall.Add(m)
 	}
 
-	for y := 1; y < contentHeight-1; y++ {
+	for y := 1; y < contentHeight; y++ {
 		var m mgl32.Mat4
 
 		m = modelFrame.Mul4(mgl32.Translate3D(float32(0), float32(y), 0))
 		f.listWall.Add(m)
-		m = modelFrame.Mul4(mgl32.Translate3D(float32(1), float32(y), 0))
-		f.listWall.Add(m)
-		m = modelFrame.Mul4(mgl32.Translate3D(float32(2), float32(y), 0))
-		f.listWall.Add(m)
+
+		if hasLeftPad {
+			for i := 0; i < widthPad; i++ {
+				m = modelFrame.Mul4(mgl32.Translate3D(float32(1+i), float32(y), 0))
+				f.listWall.Add(m)
+			}
+		}
+		if hasRightPad {
+			for i := 0; i < widthPad; i++ {
+				m = modelFrame.Mul4(mgl32.Translate3D(float32(contentWidth-2-i), float32(y), 0))
+				f.listWall.Add(m)
+			}
+		}
 
 		m = modelFrame.Mul4(mgl32.Translate3D(float32(contentWidth-1), float32(y), 0))
 		f.listWall.Add(m)
@@ -213,15 +251,20 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 	for x := 0; x < renderInfo.W; x++ {
 		colorCol := colorBack
 		for pIdx := range renderInfo.Pieces {
-			if !renderInfo.Pieces[pIdx].Empty {
-				within := x >= renderInfo.Pieces[pIdx].Limits.Min && x <= renderInfo.Pieces[pIdx].Limits.Max
-				shadow := x >= renderInfo.Pieces[pIdx].Shadow.ColL && x < renderInfo.Pieces[pIdx].Shadow.ColR
-				if within {
-					colorCol = colorCol.Add(colorBackMulti[pIdx])
-				}
-				if shadow {
-					colorCol = colorCol.Mul(1.1)
-				}
+			p := &renderInfo.Pieces[pIdx]
+
+			if p.Position == piece.DisplayPositionOff {
+				continue
+			}
+
+			within := p.IsLimited && x >= p.Limits.Min && x <= p.Limits.Max
+			if within {
+				colorCol = colorCol.Add(colorPlayer[pIdx])
+			}
+
+			shadow := !p.PieceEmpty && x >= renderInfo.Pieces[pIdx].Shadow.ColL && x < renderInfo.Pieces[pIdx].Shadow.ColR
+			if shadow {
+				colorCol = colorCol.Mul(1.1)
 			}
 		}
 
@@ -231,6 +274,21 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 			m := modelField.Mul4(mgl32.Translate3D(float32(x), float32(y), float32(-1)))
 			f.listsBack[x].Add(m)
 		}
+	}
+
+	// pause
+
+	if renderInfo.Game.Paused {
+		const text = "PAUSE"
+
+		w, h := f.text.Dim(text)
+		w, h = w*pulse, h*pulse
+
+		modelPause := modelField.
+			Mul4(mgl32.Translate3D(float32(renderInfo.W)/2.0-w/2-0.5, float32(renderInfo.H)/2-0.5, 0)).
+			Mul4(mgl32.Scale3D(pulse, pulse, 1))
+
+		f.listStr.Add(modelPause, mgl32.Vec4{1, 1, 1, 1}, text)
 	}
 
 	// prepare the field's blocks
@@ -280,7 +338,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 	// prepare the pieces
 
 	for _, p := range renderInfo.Pieces {
-		if p.Empty {
+		if p.PieceEmpty {
 			continue
 		}
 
@@ -336,42 +394,80 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 	// prepare piece shadows
 
-	scale := float32(0.7 + 0.3*math.Sin(math.Mod(10*f.t, math.Pi)))
-
 	for _, p := range renderInfo.Pieces {
-		if p.Empty || !p.DrawShadow {
+		if p.PieceEmpty || !p.DrawShadow {
 			continue
 		}
 
 		for _, pb := range p.Shadow.Blocks {
 			modelPieceShadowBlock := modelField.
 				Mul4(mgl32.Translate3D(float32(pb.X), float32(pb.Y), 0)).
-				Mul4(mgl32.Scale3D(scale, scale, scale))
+				Mul4(mgl32.Scale3D(pulse, pulse, pulse))
 			blockColor := colorVector(pb.Block.Color).Mul(0.7)
 			f.listShad.Add(modelPieceShadowBlock, blockColor)
 		}
 	}
 
-	// prepare next pieces
+	// prepare player info strings and next pieces
 
-	for _, p := range renderInfo.Pieces {
-		if p.Empty {
+	for idx, p := range renderInfo.Pieces {
+		var modelInfo mgl32.Mat4
+		var hDir float32
+
+		colorText := colorPlayer[idx]
+
+		const edgeOffset = 0.75
+
+		switch p.Position {
+		case piece.DisplayPositionTopLeft:
+			modelInfo = modelField.Mul4(mgl32.Translate3D(-(1+widthPad)-0.5, float32(renderInfo.H)-edgeOffset-0.5, 0.5))
+			hDir = -1
+		case piece.DisplayPositionTopRight:
+			modelInfo = modelField.Mul4(mgl32.Translate3D(float32(renderInfo.W)-0.5, float32(renderInfo.H)-edgeOffset-0.5, 0.5))
+			hDir = -1
+		case piece.DisplayPositionBottomLeft:
+			modelInfo = modelField.Mul4(mgl32.Translate3D(-(1+widthPad)-0.5, edgeOffset-1-0.5, 0.5))
+			hDir = 1
+		case piece.DisplayPositionBottomRight:
+			modelInfo = modelField.Mul4(mgl32.Translate3D(float32(renderInfo.W)-0.5, edgeOffset-1-0.5, 0.5))
+			hDir = 1
+		default:
 			continue
 		}
 
-		const dirY = 1
+		//f.listStr.Add(modelInfo, mgl32.Vec4{1, 1, 1, 1}, "X")
+		//f.listRock.Add(
+		//	modelInfo.
+		//		Mul4(mgl32.Translate3D(0, 0, 0.5)).
+		//		Mul4(mgl32.Scale3D(pulse*0.3, pulse*0.2, pulse*0.3)),
+		//	mgl32.Vec4{1, 1, 1, 1}, 0)
+		//f.listRock.Add(
+		//	modelInfo.
+		//		Mul4(mgl32.Translate3D(widthPad+1, 0, 0.5)).
+		//		Mul4(mgl32.Scale3D(pulse*0.3, pulse*0.2, pulse*0.3)),
+		//	mgl32.Vec4{1, 1, 1, 1}, 0)
+
+		f.printValue(&modelInfo, colorText, "PLAYER", p.PieceTextData.Name, hDir)
+		f.printValue(&modelInfo, colorText, "SCORE", p.PieceTextData.Score, hDir)
+		f.printValue(&modelInfo, colorText, "PIECE", p.PieceTextData.PieceNum, hDir)
+
+		modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, 0.5*hDir, 0))
+		f.printText(&modelInfo, mgl32.Vec4{0, 0, 0, 1}, "NEXT", hDir)
+
+		modelNextBlocks := modelInfo.
+			Mul4(mgl32.Translate3D((1.0+widthPad)/2, 0.3*hDir, 0.5))
 
 		var y float32
 		for i, nb := range p.NextBlocks {
 			dim, centerX, centerY := barycenter(nb)
 			dimScale := 0.3/(float32(3*i)+1.0) + 0.2
-			y += dirY * dimScale * dim / 2
+			y += hDir * dimScale * dim / 2
 			modelPieceN := modelNextBlocks.
 				Mul4(mgl32.Translate3D(0, y, 0)).
 				Mul4(mgl32.Scale3D(dimScale, dimScale, dimScale)).
 				Mul4(mgl32.HomogRotate3DX(-0.4)).
 				Mul4(mgl32.HomogRotate3DZ(float32(math.Mod(f.t, 2*math.Pi))))
-			y += dirY * dimScale * (dim/2 + 0.7)
+			y += hDir * dimScale * (dim/2 + 0.7)
 
 			for _, pb := range nb {
 				modelPieceBlock := modelPieceN.
@@ -553,11 +649,69 @@ func (f *Field) renderAll(r *Renderer) {
 		}
 	}
 
-	if len(f.listAmmo) > 0 {
-		for i := range f.listAmmo {
-			f.text.Rune(r, f.listAmmo[i].Model, f.listAmmo[i].Color, '0'+rune(f.listAmmo[i].Value))
-		}
+	for i := range f.listAmmo {
+		f.text.Rune(r, f.listAmmo[i].Model, f.listAmmo[i].Color, '0'+rune(f.listAmmo[i].Value))
 	}
+
+	gl.Disable(gl.DEPTH_TEST)
+
+	for i := range f.listStr {
+		f.text.String(r, f.listStr[i].Model, f.listStr[i].Color, f.listStr[i].Value)
+	}
+
+	gl.Enable(gl.DEPTH_TEST)
+}
+
+func (f *Field) printValue(modelInfo *mgl32.Mat4, colorText mgl32.Vec4, title, value string, hDir float32) {
+	const scaleTitle = 0.5
+	const scaleValue = 0.8
+	const padding = 0.2
+
+	var wt, ht, wv, hv float32
+	wt, ht = f.text.Dim(title)
+	wv, hv = f.text.Dim(value)
+	wt, ht = scaleTitle*wt, scaleTitle*ht
+	wv, hv = scaleValue*wv, scaleValue*hv
+
+	// so that the value is always below the title
+	var yt, yv float32
+	if hDir > 0 {
+		yt = hDir * (hv + ht*0.5)
+		yv = hDir * hv * 0.5
+	} else {
+		yt = hDir * ht * 0.5
+		yv = hDir * (ht + hv*0.5)
+	}
+
+	modelTitle := modelInfo.
+		Mul4(mgl32.Translate3D((1.0+widthPad)/2.0-wt/2, yt, 0)).
+		Mul4(mgl32.Scale3D(scaleTitle, scaleTitle, 1.0))
+	f.listStr.Add(modelTitle, mgl32.Vec4{0, 0, 0, 1}, title)
+
+	modelValue := modelInfo.
+		Mul4(mgl32.Translate3D((1.0+widthPad)/2.0-wv/2, yv, 0)).
+		Mul4(mgl32.Scale3D(scaleValue, scaleValue, 1.0))
+	f.listStr.Add(modelValue, colorText, value)
+
+	*modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, hDir*(ht+hv+padding), 0))
+}
+
+func (f *Field) printText(modelInfo *mgl32.Mat4, colorText mgl32.Vec4, s string, hDir float32) {
+	const scale = 0.6
+	const padding = 0.2
+
+	var w, h float32
+	w, h = f.text.Dim(s)
+	w, h = scale*w, scale*h
+
+	y := hDir * h * 0.5
+
+	modelValue := modelInfo.
+		Mul4(mgl32.Translate3D((1.0+widthPad)/2.0-w/2, y, 0)).
+		Mul4(mgl32.Scale3D(scale, scale, 1.0))
+	f.listStr.Add(modelValue, colorText, s)
+
+	*modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, hDir*(h+padding), 0))
 }
 
 func barycenter(blocks []block.XYB) (float32, float32, float32) {

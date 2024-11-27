@@ -46,7 +46,9 @@ func (app *App) MakeScreen(ctx context.Context) screen.Screen {
 	case routeTestField:
 		data = "test-fields"
 	case routeGameSinglePlayNow:
-		data = app.singleSimple(ctx)
+		data = app.gameOne(ctx)
+	case routeGameDoublePlayNow:
+		data = app.gameDouble(ctx)
 	}
 
 	return app.screener.Screen(ctx, data)

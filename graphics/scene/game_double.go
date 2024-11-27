@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-type GameOne struct {
+type GameDouble struct {
 	renderer *render.Renderer
 	tex      *texture.Manager
 	res      render.FieldResources
@@ -30,7 +30,8 @@ type GameOne struct {
 	viewW    int
 	viewH    int
 
-	playerInCh  chan<- []byte
+	player1InCh chan<- []byte
+	player2InCh chan<- []byte
 	model       mgl32.Mat4
 	game        core.RenderRequester
 	fieldRender *render.Field
@@ -38,13 +39,13 @@ type GameOne struct {
 	waitDoneCh <-chan struct{}
 }
 
-var _ screen.Screen = (*GameOne)(nil)
+var _ screen.Screen = (*GameDouble)(nil)
 
-func NewGameOne(
+func NewGameDouble(
 	renderer *render.Renderer,
 	tex *texture.Manager,
-	params core.GameOneParams,
-) *GameOne {
+	params core.GameDoubleParams,
+) *GameDouble {
 	res := render.GenerateFieldResources(tex)
 	text := render.MakeText(tex, render.Font)
 	fps := render.NewFPS()
@@ -52,13 +53,13 @@ func NewGameOne(
 	fw, fh := params.Game.GetSize(0)
 	w, h := render.GetExtendedContent(fw, fh, 1)
 
-	g := &GameOne{
+	g := &GameDouble{
 		renderer:       renderer,
 		tex:            tex,
 		res:            *res,
 		text:           *text,
 		fps:            *fps,
-		usePerspective: true, // TODO: Read from config
+		usePerspective: false, // TODO: Read from config
 
 		stopper: screen.NewStopper(),
 
@@ -68,7 +69,8 @@ func NewGameOne(
 		viewH:    0,
 
 		// these are set below
-		playerInCh:  nil,
+		player1InCh: nil,
+		player2InCh: nil,
 		model:       mgl32.Mat4{},
 		game:        nil,
 		fieldRender: nil,
@@ -76,7 +78,8 @@ func NewGameOne(
 		waitDoneCh: params.Done,
 	}
 
-	g.playerInCh = params.PlayerInCh
+	g.player1InCh = params.Player1InCh
+	g.player2InCh = params.Player2InCh
 	g.model = mgl32.Ident4()
 	g.game = params.Game
 	g.fieldRender = render.NewField(g.model, &g.res, &g.text, 0, g.game)
@@ -84,15 +87,15 @@ func NewGameOne(
 	return g
 }
 
-func (ft *GameOne) Done() <-chan error { return ft.stopper.Done() }
+func (ft *GameDouble) Done() <-chan error { return ft.stopper.Done() }
 
-func (ft *GameOne) Release() {
+func (ft *GameDouble) Release() {
 	<-ft.waitDoneCh
 	ft.text.Release()
 	ft.res.Release()
 }
 
-func (ft *GameOne) UpdateViewSize(w, h int) {
+func (ft *GameDouble) UpdateViewSize(w, h int) {
 	ft.viewW, ft.viewH = w, h
 	if ft.usePerspective {
 		ft.renderer.PerspectiveFull(w, h, ft.contentW, ft.contentH, 2)
@@ -101,24 +104,35 @@ func (ft *GameOne) UpdateViewSize(w, h int) {
 	}
 }
 
-func (ft *GameOne) InputKeyPress(key, scancode int) {
+func (ft *GameDouble) InputKeyPress(key, scancode int) {
 	switch glfw.Key(key) {
 	case glfw.KeyEscape:
 		//ft.stopper.Stop()
-		ft.playerInCh <- []byte{byte(action.Abort)}
+		ft.player1InCh <- []byte{byte(action.Abort)}
 	case glfw.KeyPause:
-		ft.playerInCh <- []byte{byte(action.Pause)}
+		ft.player1InCh <- []byte{byte(action.Pause)}
 
 	case glfw.KeyLeft:
-		ft.playerInCh <- []byte{byte(action.MoveLeft)}
+		ft.player1InCh <- []byte{byte(action.MoveLeft)}
 	case glfw.KeyRight:
-		ft.playerInCh <- []byte{byte(action.MoveRight)}
+		ft.player1InCh <- []byte{byte(action.MoveRight)}
 	case glfw.KeyUp:
-		ft.playerInCh <- []byte{byte(action.RotateCCW)}
+		ft.player1InCh <- []byte{byte(action.RotateCCW)}
 	case glfw.KeyDown:
-		ft.playerInCh <- []byte{byte(action.MoveDown)}
-	case glfw.KeySpace:
-		ft.playerInCh <- []byte{byte(action.Drop)}
+		ft.player1InCh <- []byte{byte(action.MoveDown)}
+	case glfw.KeyRightControl:
+		ft.player1InCh <- []byte{byte(action.Drop)}
+
+	case glfw.KeyA:
+		ft.player2InCh <- []byte{byte(action.MoveLeft)}
+	case glfw.KeyD:
+		ft.player2InCh <- []byte{byte(action.MoveRight)}
+	case glfw.KeyW:
+		ft.player2InCh <- []byte{byte(action.RotateCCW)}
+	case glfw.KeyS:
+		ft.player2InCh <- []byte{byte(action.MoveDown)}
+	case glfw.KeyLeftControl:
+		ft.player2InCh <- []byte{byte(action.Drop)}
 
 	case glfw.KeyF12:
 		ft.usePerspective = !ft.usePerspective
@@ -130,13 +144,13 @@ func (ft *GameOne) InputKeyPress(key, scancode int) {
 	}
 }
 
-func (ft *GameOne) InputChar(char rune) {}
+func (ft *GameDouble) InputChar(char rune) {}
 
-func (ft *GameOne) Prepare(ctx context.Context, now time.Time) {
+func (ft *GameDouble) Prepare(ctx context.Context, now time.Time) {
 	ft.fieldRender.Prepare(ctx, now)
 }
 
-func (ft *GameOne) Render(ctx context.Context) {
+func (ft *GameDouble) Render(ctx context.Context) {
 	r := ft.renderer
 	ft.fieldRender.Render(r)
 	ft.fps.Render(r, &ft.text, mgl32.Translate3D(float32(-ft.contentW)/2+0.5, float32(-ft.contentH)/2+1.5, 1.5))

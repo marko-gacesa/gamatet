@@ -10,15 +10,16 @@ import (
 	"sync"
 )
 
-func (app *App) singleSimple(ctx context.Context) core.GameOneParams {
-	const fieldW = 10
+func (app *App) gameDouble(ctx context.Context) core.GameDoubleParams {
+	const fieldW = 8
 	const fieldH = 24
 
 	var level = 0
 	const seed = 101
 
 	fieldCh := make(chan []byte)
-	playerInCh, playerOutCh := core.ChannelPipe[[]byte](ctx)
+	player1InCh, player1OutCh := core.ChannelPipe[[]byte](ctx)
+	player2InCh, player2OutCh := core.ChannelPipe[[]byte](ctx)
 
 	setup := core.Setup{
 		Name: "",
@@ -26,7 +27,7 @@ func (app *App) singleSimple(ctx context.Context) core.GameOneParams {
 			WidthPerPlayer: fieldW,
 			Height:         fieldH,
 			Level:          level,
-			PlayerZones:    false,
+			PlayerZones:    true,
 			FieldConfig: field.Config{
 				PieceCollision: false,
 				Anim:           true,
@@ -45,7 +46,16 @@ func (app *App) singleSimple(ctx context.Context) core.GameOneParams {
 							SlideEnabled:        true,
 							MaxWallKick:         2,
 						},
-						InCh: playerOutCh,
+						InCh: player1OutCh,
+					},
+					{
+						Name: "ogi",
+						Config: piece.Config{
+							RotationDirectionCW: false,
+							SlideEnabled:        true,
+							MaxWallKick:         2,
+						},
+						InCh: player2OutCh,
 					},
 				},
 			},
@@ -81,9 +91,10 @@ func (app *App) singleSimple(ctx context.Context) core.GameOneParams {
 		close(chDone)
 	}()
 
-	return core.GameOneParams{
-		PlayerInCh: playerInCh,
-		Game:       g,
-		Done:       chDone,
+	return core.GameDoubleParams{
+		Player1InCh: player1InCh,
+		Player2InCh: player2InCh,
+		Game:        g,
+		Done:        chDone,
 	}
 }

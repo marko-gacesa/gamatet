@@ -65,6 +65,13 @@ type GameOneParams struct {
 	Done       <-chan struct{}
 }
 
+type GameDoubleParams struct {
+	Player1InCh chan<- []byte
+	Player2InCh chan<- []byte
+	Game        RenderRequester
+	Done        <-chan struct{}
+}
+
 func ChannelPipe[T any](ctx context.Context) (in chan<- T, out <-chan T) {
 	chIn := make(chan T)
 	chOut := make(chan T)

@@ -26,6 +26,7 @@ func (app *App) menuMain() *menu.Menu {
 func (app *App) menuSinglePlayer() *menu.Menu {
 	return menu.New("Single Player", []menu.Item{
 		menu.NewCommand("Play Now!", "Start a classic game", app.routeTo(routeGameSinglePlayNow)),
+		menu.NewCommand("Play Double Now!", "Start a double game", app.routeTo(routeGameDoublePlayNow)),
 		menu.NewCommand("Back", "Back to main menu", app.routeTo(routeBack)),
 	}...)
 }

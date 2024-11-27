@@ -8,6 +8,7 @@ import (
 	"gamatet/game/piece"
 	"gamatet/game/serialize"
 	"io"
+	"strconv"
 )
 
 func NewPieceState(pIdx int, oldState, newState piece.State, oldParam, newParam int) *PieceState {
@@ -116,6 +117,7 @@ func (e *PieceSet) Do(f *field.Field) {
 	case OpSet:
 		ctrl.SetXYP(int(e.X), int(e.Y), e.Piece)
 		ctrl.PieceCount = e.PieceCount
+		ctrl.PieceCountStr = strconv.Itoa(e.PieceCount)
 		animateNewPiece(ctrl, f.Config.Anim)
 		ctrl.Blocks = piece.GetBlocks(e.Piece, ctrl.Blocks[:0])
 		for i := 0; i < piece.NextBlockCount; i++ {
@@ -137,6 +139,7 @@ func (e *PieceSet) Undo(f *field.Field) {
 	case OpClear:
 		ctrl.SetXYP(int(e.X), int(e.Y), e.Piece)
 		ctrl.PieceCount = e.PieceCount
+		ctrl.PieceCountStr = strconv.Itoa(e.PieceCount)
 		ctrl.Blocks = piece.GetBlocks(e.Piece, ctrl.Blocks[:0])
 		for i := 0; i < piece.NextBlockCount; i++ {
 			ctrl.NextBlocks[i] = piece.GetBlocks(ctrl.Feed.Get(ctrl.PieceCount+i), ctrl.NextBlocks[i][:0])

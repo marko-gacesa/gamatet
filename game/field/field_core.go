@@ -8,6 +8,8 @@ import (
 	"gamatet/logic/anim"
 )
 
+const MaxPieces = 4
+
 type elem struct {
 	block.Block
 	anim.List
@@ -54,6 +56,10 @@ func Make(dimW, dimH, pieceCount int) (f *Field) {
 		panic("too high")
 	}
 
+	if pieceCount < 0 || pieceCount > MaxPieces {
+		panic("invalid piece count")
+	}
+
 	f = &Field{
 		w:      dimW,
 		h:      dimH,
@@ -62,9 +68,7 @@ func Make(dimW, dimH, pieceCount int) (f *Field) {
 	}
 
 	for i := 0; i < pieceCount; i++ {
-		f.pieces[i] = &piece.Ctrl{}
-		f.pieces[i].Idx = i
-		f.pieces[i].State = piece.StateInit
+		f.pieces[i] = piece.NewCtrl(i)
 	}
 
 	return

@@ -140,8 +140,11 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 			events.Clear()
 
 		case rr := <-renderReqCh:
+			renderInfo := field.ObtainRenderInfo()
 			f := g.fields[rr.ID].Field
-			renderInfo := f.GetRenderInfo(rr.Data.Time)
+			f.FillRenderInfo(renderInfo, field.GameInfo{
+				Paused: g.paused,
+			}, rr.Data.Time)
 			go func(ctx context.Context, ch chan<- *field.RenderInfo) {
 				select {
 				case <-ctx.Done():

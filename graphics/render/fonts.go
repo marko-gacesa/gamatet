@@ -7,7 +7,9 @@ import (
 	"golang.org/x/image/font/gofont/gobold"
 )
 
-var Font *truetype.Font
+var (
+	Font *truetype.Font
+)
 
 func init() {
 	var err error

@@ -49,7 +49,8 @@ type Ctrl struct {
 	Name string
 
 	// Score is player's score.
-	Score int
+	Score    int
+	ScoreStr string
 
 	// X and Y are current position of the piece on the board
 	X, Y int
@@ -76,10 +77,12 @@ type Ctrl struct {
 	ColumnLimit ColumnLimit
 
 	// PieceCount is the index number of the piece since the game start
-	PieceCount int
+	PieceCount    int
+	PieceCountStr string
 
 	// Level is the speed at the player plays
-	Level int
+	Level    int
+	LevelStr string
 
 	// Config contains piece related configuration
 	Config
@@ -94,6 +97,24 @@ type Ctrl struct {
 
 	// PausedState holds state when State=StatePaused
 	PausedState State
+
+	InfoPosition DisplayPosition
+}
+
+func NewCtrl(idx int) *Ctrl {
+	const zeroStr = "0"
+	c := &Ctrl{}
+	c.Idx = idx
+	c.Name = ""
+	c.Score = 0
+	c.ScoreStr = zeroStr
+	c.PieceCount = 0
+	c.PieceCountStr = zeroStr
+	c.Level = 0
+	c.LevelStr = zeroStr
+	c.State = StateInit
+	c.InfoPosition = DisplayPosition(idx + 1)
+	return c
 }
 
 func (c *Ctrl) SetXYP(x, y int, p Piece) {

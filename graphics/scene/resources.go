@@ -31,6 +31,8 @@ func (r Resources) Screen(ctx context.Context, data any) screen.Screen {
 		return NewMenu(r.rend, r.tex, v)
 	case core.GameOneParams:
 		return NewGameOne(r.rend, r.tex, v)
+	case core.GameDoubleParams:
+		return NewGameDouble(r.rend, r.tex, v)
 	case string:
 		switch v {
 		case "test-blocks":

@@ -257,6 +257,14 @@ func (g *GameHost) Perform(
 
 			a := action.Action(data[0])
 
+			if a == action.Abort {
+				if ctrl.State.IsAbortable() {
+					return
+				} else {
+					a = action.Pause
+				}
+			}
+
 			if a == action.Pause {
 				if ctrl.State.IsPausable() {
 					if g.paused {
@@ -266,10 +274,6 @@ func (g *GameHost) Perform(
 					}
 				}
 				continue
-			}
-
-			if a == action.Abort && ctrl.State.IsAbortable() {
-				return
 			}
 
 			if g.paused {
@@ -292,8 +296,11 @@ func (g *GameHost) Perform(
 			g.applyEvents(ctx)
 
 		case rr := <-renderReqCh:
+			renderInfo := field.ObtainRenderInfo()
 			f := g.fields[rr.ID].Field
-			renderInfo := f.GetRenderInfo(rr.Data.Time)
+			f.FillRenderInfo(renderInfo, field.GameInfo{
+				Paused: g.paused,
+			}, rr.Data.Time)
 			go func(ctx context.Context, ch chan<- *field.RenderInfo) {
 				select {
 				case <-ctx.Done():

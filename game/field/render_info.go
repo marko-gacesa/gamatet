@@ -22,9 +22,15 @@ type BlockRenderInfo struct {
 }
 
 type PieceRenderInfo struct {
-	Empty bool
+	Position piece.DisplayPosition
 
 	PieceTextData
+	IsLimited bool
+	Limits    piece.ColumnLimit
+
+	NextBlocks [piece.NextBlockCount][]block.XYB
+
+	PieceEmpty bool
 
 	Blocks     []block.XYB
 	X, Y       int
@@ -34,30 +40,25 @@ type PieceRenderInfo struct {
 	Result     anim.Result
 	DrawShadow bool
 	Shadow     piece.Shadow
-
-	IsLimited bool
-	Limits    piece.ColumnLimit
-
-	NextBlocks [piece.NextBlockCount][]block.XYB
 }
 
 type PieceTextData struct {
 	Name     string
-	Score    int
-	PieceNum int
-	Level    int
+	Score    string
+	PieceNum string
+	Level    string
+}
+
+type GameInfo struct {
+	Paused bool
 }
 
 type RenderInfo struct {
-	W, H int
-
-	Blocks   []BlockRenderInfo
-	BlockCnt int
-
-	Pieces   [4]PieceRenderInfo
-	PieceCnt int
-
+	W, H   int
+	Blocks []BlockRenderInfo
+	Pieces [MaxPieces]PieceRenderInfo
 	Result anim.Result
+	Game   GameInfo
 }
 
 var syncPoolRenderInfo = &sync.Pool{
@@ -74,6 +75,11 @@ var syncPoolRenderInfo = &sync.Pool{
 	},
 }
 
+func ObtainRenderInfo() *RenderInfo {
+	info := syncPoolRenderInfo.Get().(*RenderInfo)
+	return info
+}
+
 func ReturnRenderInfo(info *RenderInfo) {
 	if info == nil {
 		return
@@ -82,108 +88,113 @@ func ReturnRenderInfo(info *RenderInfo) {
 	syncPoolRenderInfo.Put(info)
 }
 
-func (f *Field) GetRenderInfo(now time.Time) *RenderInfo {
+func (f *Field) FillRenderInfo(info *RenderInfo, gameInfo GameInfo, now time.Time) {
 	w := f.w
 	h := f.h
 
-	info := syncPoolRenderInfo.Get().(*RenderInfo)
-
 	// reset the RenderInfo
-
-	info.Blocks = info.Blocks[:0] // empty it, but keep the memory
-	info.BlockCnt = 0
 
 	info.W = w
 	info.H = h
+	info.Blocks = info.Blocks[:0] // empty it, but keep the memory
+	info.Game = gameInfo
 
 	// process all blocks of the Field
 
-	idx := 0
-	for y := 0; y < h; y++ {
-		for x := 0; x < w; x++ {
-			b := &f.blocks[idx]
-			idx++
+	if !gameInfo.Paused {
+		idx := 0
+		for y := 0; y < h; y++ {
+			for x := 0; x < w; x++ {
+				b := &f.blocks[idx]
+				idx++
 
-			if b.Type == block.TypeEmpty {
+				if b.Type == block.TypeEmpty {
+					continue
+				}
+
+				info.Blocks = append(info.Blocks, BlockRenderInfo{
+					XYB: block.XYB{
+						XY:    block.XY{X: x, Y: y},
+						Block: b.Block,
+					},
+					Result: b.List.Process(now),
+				})
+			}
+		}
+
+		// process all external blocks of the Field
+
+		var prev, curr *exElem
+		curr = f.firstEx
+		for curr != nil {
+			next := curr.next
+
+			result := curr.List.Process(now)
+			if result.Feature == 0 {
+				if prev == nil {
+					f.firstEx = next
+				} else {
+					prev.next = next
+				}
+
+				curr.next = nil
+				curr = next
+
 				continue
 			}
 
 			info.Blocks = append(info.Blocks, BlockRenderInfo{
 				XYB: block.XYB{
-					XY:    block.XY{X: x, Y: y},
-					Block: b.Block,
+					XY:    curr.XY,
+					Block: curr.Block,
 				},
-				Result: b.List.Process(now),
+				Result: result,
 			})
-			info.BlockCnt++
-		}
-	}
 
-	// process all external blocks of the Field
-
-	var prev, curr *exElem
-	curr = f.firstEx
-	for curr != nil {
-		next := curr.next
-
-		result := curr.List.Process(now)
-		if result.Feature == 0 {
-			if prev == nil {
-				f.firstEx = next
-			} else {
-				prev.next = next
-			}
-
-			curr.next = nil
+			prev = curr
 			curr = next
-
-			continue
 		}
-
-		info.Blocks = append(info.Blocks, BlockRenderInfo{
-			XYB: block.XYB{
-				XY:    curr.XY,
-				Block: curr.Block,
-			},
-			Result: result,
-		})
-		info.BlockCnt++
-
-		prev = curr
-		curr = next
 	}
 
 	// process each Piece of the Field
 
-	for i := len(f.pieces); i < len(info.Pieces); i++ {
-		info.Pieces[i].Empty = true
+	pieceCount := f.Ctrls()
+
+	for i := pieceCount; i < len(info.Pieces); i++ {
+		info.Pieces[i].Position = piece.DisplayPositionOff
 		info.Pieces[i].IsLimited = false
+		info.Pieces[i].PieceEmpty = true
 	}
 
-	for pIdx := 0; pIdx < len(f.pieces); pIdx++ {
+	for pIdx := 0; pIdx < pieceCount; pIdx++ {
 		ctrl := f.pieces[pIdx]
 
 		pinfo := &info.Pieces[pIdx]
 
+		pinfo.Position = ctrl.InfoPosition
+		pinfo.PieceTextData = PieceTextData{
+			Name:     ctrl.Name,
+			Score:    ctrl.ScoreStr,
+			PieceNum: ctrl.PieceCountStr,
+			Level:    ctrl.LevelStr,
+		}
+
 		pinfo.IsLimited = ctrl.IsColumnLimited
 		pinfo.Limits = ctrl.ColumnLimit
 
+		for i := 0; i < piece.NextBlockCount; i++ {
+			pinfo.NextBlocks[i] = pinfo.NextBlocks[i][:0]
+			pinfo.NextBlocks[i] = append(pinfo.NextBlocks[i], ctrl.NextBlocks[i]...)
+		}
+
 		p := ctrl.Piece
 
-		if p == nil {
-			pinfo.Empty = true
+		if p == nil || gameInfo.Paused {
+			pinfo.PieceEmpty = true
 			continue
 		}
 
-		pinfo.Empty = false
-		info.PieceCnt++
-
-		pinfo.PieceTextData = PieceTextData{
-			Name:     ctrl.Name,
-			Score:    ctrl.Score,
-			PieceNum: ctrl.PieceCount,
-			Level:    ctrl.Level,
-		}
+		pinfo.PieceEmpty = false
 
 		dw := p.DimX()
 		dh := p.DimY()
@@ -201,12 +212,5 @@ func (f *Field) GetRenderInfo(now time.Time) *RenderInfo {
 
 		pinfo.DrawShadow = ctrl.IsShadowShown
 		pinfo.Shadow = ctrl.Shadow
-
-		for i := 0; i < piece.NextBlockCount; i++ {
-			pinfo.NextBlocks[i] = pinfo.NextBlocks[i][:0]
-			pinfo.NextBlocks[i] = append(pinfo.NextBlocks[i], ctrl.NextBlocks[i]...)
-		}
 	}
-
-	return info
 }

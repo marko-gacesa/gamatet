@@ -168,3 +168,46 @@ func (t *Text) Prepare(strs ...string) {
 		}
 	}
 }
+
+func (t *Text) Dim(s string) (float32, float32) {
+	for _, ch := range s {
+		if ch > 32 {
+			t.atlas.Store(ch)
+		}
+	}
+
+	var l, w, h float32
+
+	var chPrev rune
+	for _, ch := range s {
+		switch ch {
+		case ' ':
+			l += 0.2
+			continue
+		case '\n':
+			w = max(w, l)
+			l = 0
+			continue
+		}
+
+		runeRect, ok := t.atlas.TextUV(ch)
+		if !ok {
+			continue
+		}
+
+		w2h := runeRect.WidthToHeight()
+		k2h := t.atlas.KernToHeight(chPrev, ch)
+
+		if l == 0 {
+			h += 1
+		}
+
+		l += w2h + k2h
+
+		chPrev = ch
+	}
+
+	w = max(w, l)
+
+	return w, h
+}
