@@ -41,8 +41,6 @@ type Menu struct {
 	tex      *texture.Manager
 	text     render.Text
 
-	stopper *screen.Stopper
-
 	menu *menu.Menu
 
 	strCache  []string
@@ -70,13 +68,10 @@ func NewMenu(renderer *render.Renderer, tex *texture.Manager, m *menu.Menu) *Men
 		renderer: renderer,
 		tex:      tex,
 		text:     *text,
-		stopper:  screen.NewStopper(),
 		menu:     m,
 		strCache: strCache,
 	}
 }
-
-func (m *Menu) Done() <-chan error { return m.stopper.Done() }
 
 func (m *Menu) Release() {
 	m.text.Release()
@@ -97,13 +92,13 @@ func (m *Menu) InputKeyPress(key, scancode int) {
 	case glfw.KeyRight:
 		m.menu.Increase()
 	case glfw.KeyEnter, glfw.KeyKPEnter:
-		m.menu.Input('\n')
+		m.menu.Input(menu.InputEnter)
 	case glfw.KeyBackspace:
-		m.menu.Input('\b')
+		m.menu.Input(menu.InputBackspace)
 	case glfw.KeyDelete:
-		m.menu.Input('\xFF')
+		m.menu.Input(menu.InputDelete)
 	case glfw.KeyEscape:
-		m.menu.Finish()
+		m.menu.Input(menu.InputEscape)
 	}
 }
 
@@ -114,8 +109,10 @@ func (m *Menu) InputChar(r rune) {
 }
 
 func (m *Menu) Prepare(ctx context.Context, now time.Time) {
-	if m.menu.Finished() {
-		m.stopper.Stop()
+	select {
+	case <-ctx.Done():
+		return
+	default:
 	}
 
 	n := m.menu.Count()

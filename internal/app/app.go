@@ -4,6 +4,7 @@ package app
 
 import (
 	"context"
+	"gamatet/graphics/scene"
 	"gamatet/internal/config"
 	"gamatet/logic/screen"
 )
@@ -30,28 +31,28 @@ func (app *App) SetScreener(screener screen.Screener) {
 	app.screener = screener
 }
 
-func (app *App) MakeScreen(ctx context.Context) screen.Screen {
+func (app *App) MakeScreen(ctx context.Context) (screen.Screen, context.Context) {
 	id := app.screenIDHistory.curr()
 	var data any
 
 	switch id {
-	case routeMain:
-		data = app.menuMain()
-	case routeMenuSinglePlayer:
-		data = app.menuSinglePlayer()
 	case "", routeQuit:
 		data = nil
+	case routeMain:
+		data, ctx = app.menuMain(ctx)
+	case routeMenuSinglePlayer:
+		data, ctx = app.menuSinglePlayer(ctx)
 	case routeTestBlocks:
-		data = "test-blocks"
+		data, ctx = scene.Demo(ctx, scene.DemoBlocks)
 	case routeTestField:
-		data = "test-fields"
+		data, ctx = scene.Demo(ctx, scene.DemoFields)
 	case routeGameSinglePlayNow:
-		data = app.gameOne(ctx)
+		data, ctx = app.gameOne(ctx)
 	case routeGameDoublePlayNow:
-		data = app.gameDouble(ctx)
+		data, ctx = app.gameDouble(ctx)
 	}
 
-	return app.screener.Screen(ctx, data)
+	return app.screener.Screen(ctx, data), ctx
 }
 
 func (app *App) ScreenFinish() {

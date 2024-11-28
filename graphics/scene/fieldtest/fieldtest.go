@@ -11,7 +11,6 @@ import (
 	"gamatet/logic/screen"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
-	"sync"
 	"time"
 )
 
@@ -30,7 +29,7 @@ type FieldTest struct {
 	textRight render.Text
 	fps       render.FPS
 
-	stopper *screen.Stopper
+	stopFn func()
 
 	playerInCh chan<- []byte
 
@@ -40,12 +39,12 @@ type FieldTest struct {
 	fieldLeft  *render.Field
 	fieldRight *render.Field
 
-	wg *sync.WaitGroup
+	waitDoneCh <-chan struct{}
 }
 
 var _ screen.Screen = (*FieldTest)(nil)
 
-func NewFieldTest(ctx context.Context, renderer *render.Renderer, tex *texture.Manager) *FieldTest {
+func NewFieldTest(ctx context.Context, renderer *render.Renderer, tex *texture.Manager, stopFn func()) *FieldTest {
 	res := render.GenerateFieldResources(tex)
 	textLeft := render.MakeText(tex, render.Font)
 	textRight := render.MakeText(tex, render.Font)
@@ -55,7 +54,7 @@ func NewFieldTest(ctx context.Context, renderer *render.Renderer, tex *texture.M
 	modelLeft := modelCenter.Mul4(mgl32.Translate3D(-float32(contentW)/4, 0, 0))
 	modelRight := modelCenter.Mul4(mgl32.Translate3D(float32(contentW)/4, 0, 0))
 
-	gameHost, gameInterpreter, playerInCh, wg := game.NewFieldTest(ctx, fieldW, fieldH)
+	gameHost, gameInterpreter, playerInCh, waitDoneCh := game.NewFieldTest(ctx, fieldW, fieldH)
 
 	ft := &FieldTest{
 		renderer:   renderer,
@@ -64,13 +63,13 @@ func NewFieldTest(ctx context.Context, renderer *render.Renderer, tex *texture.M
 		textLeft:   *textLeft,
 		textRight:  *textRight,
 		fps:        *fps,
-		stopper:    screen.NewStopper(),
+		stopFn:     stopFn,
 		playerInCh: playerInCh,
 		modelLeft:  modelLeft,
 		modelRight: modelRight,
 		fieldLeft:  nil,
 		fieldRight: nil,
-		wg:         wg,
+		waitDoneCh: waitDoneCh,
 	}
 
 	ft.fieldLeft = render.NewField(ft.modelLeft, &ft.res, &ft.textLeft, 0, gameHost)
@@ -79,10 +78,8 @@ func NewFieldTest(ctx context.Context, renderer *render.Renderer, tex *texture.M
 	return ft
 }
 
-func (ft *FieldTest) Done() <-chan error { return ft.stopper.Done() }
-
 func (ft *FieldTest) Release() {
-	ft.wg.Wait()
+	<-ft.waitDoneCh
 	ft.textLeft.Release()
 	ft.textRight.Release()
 	ft.res.Release()
@@ -107,7 +104,8 @@ func (ft *FieldTest) InputKeyPress(key, scancode int) {
 	case glfw.KeyP, glfw.KeyPause:
 		ft.playerInCh <- []byte{byte(action.Pause)}
 	case glfw.KeyEscape:
-		ft.stopper.Stop()
+		ft.playerInCh <- []byte{byte(action.Abort)}
+		//ft.stopFn()
 	}
 }
 

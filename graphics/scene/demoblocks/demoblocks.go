@@ -24,7 +24,7 @@ type DemoBlocks struct {
 	text     render.Text
 	fps      render.FPS
 
-	stopper    *screen.Stopper
+	stopFn     func()
 	chReady    chan struct{}
 	modelBlock [9]mgl32.Mat4
 	modelDigit [contentW * contentH]mgl32.Mat4
@@ -34,7 +34,7 @@ var _ screen.Screen = (*DemoBlocks)(nil)
 
 var t0 = time.Now()
 
-func NewDemoBlocks(renderer *render.Renderer, tex *texture.Manager) *DemoBlocks {
+func NewDemoBlocks(renderer *render.Renderer, tex *texture.Manager, stopFn func()) *DemoBlocks {
 	res := render.GenerateFieldResources(tex)
 	text := render.MakeText(tex, render.Font)
 	fps := render.NewFPS()
@@ -45,7 +45,7 @@ func NewDemoBlocks(renderer *render.Renderer, tex *texture.Manager) *DemoBlocks 
 		res:        *res,
 		text:       *text,
 		fps:        *fps,
-		stopper:    screen.NewStopper(),
+		stopFn:     stopFn,
 		chReady:    make(chan struct{}),
 		modelBlock: [9]mgl32.Mat4{},
 		modelDigit: [contentW * contentH]mgl32.Mat4{},
@@ -56,8 +56,6 @@ func (d *DemoBlocks) UpdateViewSize(w, h int) {
 	d.renderer.PerspectiveFull(w, h, contentW, contentH, 12)
 }
 
-func (d *DemoBlocks) Done() <-chan error { return d.stopper.Done() }
-
 func (d *DemoBlocks) Release() {
 	d.text.Release()
 	d.res.Release()
@@ -65,7 +63,7 @@ func (d *DemoBlocks) Release() {
 
 func (d *DemoBlocks) InputKeyPress(key, scancode int) {
 	if glfw.Key(key) == glfw.KeyEscape {
-		d.stopper.Stop()
+		d.stopFn()
 	}
 }
 

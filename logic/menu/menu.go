@@ -6,14 +6,15 @@ type Menu struct {
 	title      string
 	currentIdx int
 	items      []Item
-	done       bool
+	stopFn     func()
 }
 
-func New(title string, items ...Item) *Menu {
+func New(title string, stopFn func(), items ...Item) *Menu {
 	m := &Menu{}
 
 	m.SetTitle(title)
 	m.SetItems(items...)
+	m.stopFn = stopFn
 
 	return m
 }
@@ -32,14 +33,6 @@ func (m *Menu) SetItems(items ...Item) {
 	}
 
 	m.items = items
-}
-
-func (m *Menu) Finish() {
-	m.done = true
-}
-
-func (m *Menu) Finished() bool {
-	return m.done
 }
 
 func (m *Menu) Title() string {
@@ -88,4 +81,12 @@ func (m *Menu) Focus(idx int) {
 func (m *Menu) Decrease() { m.items[m.currentIdx].Decrease() }
 func (m *Menu) Increase() { m.items[m.currentIdx].Increase() }
 
-func (m *Menu) Input(r rune) { m.items[m.currentIdx].Input(r) }
+func (m *Menu) Input(r rune) {
+	if consumed := m.items[m.currentIdx].Input(r); consumed {
+		return
+	}
+
+	if r == InputEscape {
+		m.stopFn()
+	}
+}

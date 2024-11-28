@@ -21,7 +21,7 @@ func NewFieldTest(
 	ctx context.Context,
 	fieldW int,
 	fieldH int,
-) (*core.GameHost, *core.GameInterpreter, chan<- []byte, *sync.WaitGroup) {
+) (*core.GameHost, *core.GameInterpreter, chan<- []byte, <-chan struct{}) {
 	wg := &sync.WaitGroup{}
 
 	// event transfer between the host and the client
@@ -193,5 +193,11 @@ func NewFieldTest(
 		fmt.Println("GAME: Interpreter stopped")
 	}(ctx)
 
-	return gameHost, gameInterpreter, playerInCh, wg
+	waitDoneCh := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(waitDoneCh)
+	}()
+
+	return gameHost, gameInterpreter, playerInCh, waitDoneCh
 }

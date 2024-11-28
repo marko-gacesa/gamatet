@@ -2,6 +2,13 @@
 
 package menu
 
+const (
+	InputEnter     = '\n'
+	InputBackspace = '\b'
+	InputDelete    = 0xFF
+	InputEscape    = 0x1B
+)
+
 type Item interface {
 	Text() string
 	Description() string
@@ -10,7 +17,7 @@ type Item interface {
 	Increase()
 	Decrease()
 
-	Input(r rune)
+	Input(r rune) bool
 
 	Focus()
 	FocusLost()
@@ -27,9 +34,9 @@ func (b base) Description() string {
 }
 func (b base) Editable() bool { return false }
 
-func (base) Input(rune) {}
-func (base) Focus()     {}
-func (base) FocusLost() {}
+func (base) Input(rune) bool { return false }
+func (base) Focus()          {}
+func (base) FocusLost()      {}
 
 func (base) setParent(*Menu) {}
 

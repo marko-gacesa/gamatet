@@ -19,7 +19,7 @@ type RenderRequester interface {
 	RenderRequest(ctx context.Context, fieldIdx int, t time.Time, ch chan<- *field.RenderInfo)
 
 	// GetSize return size of the field
-	GetSize(idx int) (int, int)
+	GetSize(idx int) (int, int, []piece.DisplayPosition)
 }
 
 type Setup struct {

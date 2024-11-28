@@ -58,8 +58,10 @@ func (i *Integer) Decrease() {
 	}
 }
 
-func (i *Integer) Input(r rune) {
-	if r == '\n' {
+func (i *Integer) Input(r rune) bool {
+	if r == InputEnter {
 		i.Increase()
+		return true
 	}
+	return false
 }

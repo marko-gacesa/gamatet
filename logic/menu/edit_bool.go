@@ -41,8 +41,10 @@ func (b *Bool) Increase() {
 
 func (b *Bool) Decrease() { b.Increase() }
 
-func (b *Bool) Input(r rune) {
-	if r == '\n' {
+func (b *Bool) Input(r rune) bool {
+	if r == InputEnter {
 		b.Increase()
+		return true
 	}
+	return false
 }

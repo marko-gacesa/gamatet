@@ -58,6 +58,8 @@ func Write(w io.Writer, e event.Event) (err error) {
 	case *PieceFall:
 		err = serialize.Write8(w, codePieceFall)
 
+	case *FieldStop:
+		err = serialize.Write8(w, codeFieldStop)
 	case *FieldPause:
 		err = serialize.Write8(w, codeFieldPause)
 	case *FieldUnpause:
@@ -96,6 +98,8 @@ func Read(r io.Reader) (event.Event, error) {
 	var e event.Event
 
 	switch code {
+	case codeFieldStop:
+		e = &FieldStop{}
 	case codeFieldPause:
 		e = &FieldPause{}
 	case codeFieldUnpause:

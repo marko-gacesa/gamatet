@@ -92,16 +92,6 @@ func Loop(app *app.App) error {
 		}
 
 		//fmt.Printf("KEY key=%d (%c), scan=%04x, act=%d, mods=%06b\n", key, key, scancode, act, mods)
-		/*
-			if key == glfw.KeyEscape {
-				fmt.Println("ESCAPE")
-				if fn := cancelScreenFunc; fn != nil {
-					fn()
-				}
-				return
-			}
-		*/
-
 		if scr != nil {
 			scr.InputKeyPress(int(key), scancode)
 		}
@@ -117,19 +107,14 @@ func Loop(app *app.App) error {
 
 	for ctxLoop.Err() == nil {
 		err := func(ctx context.Context) error {
-			// create the screen's context
-			ctx, cancelFn := context.WithCancel(ctxLoop)
-
 			// create the screen
-			scr = app.MakeScreen(ctx)
+			scr, ctx = app.MakeScreen(ctx)
 			if scr == nil { // no screen means exit the app
-				cancelFn()        // first cancel the screen's context
-				cancelLoopCtxFn() // then cancel the loop's context
+				cancelLoopCtxFn()
 				return nil
 			}
 
 			defer func() {
-				cancelFn()
 				scr.Release()
 			}()
 
@@ -138,11 +123,7 @@ func Loop(app *app.App) error {
 			for {
 				select {
 				case <-ctx.Done():
-					// If the context is done (before the screen) that means that the termination came from outside.
 					return ctx.Err()
-				case err := <-scr.Done():
-					// If the screen is done that means that the termination came from the screen itself.
-					return err
 				default:
 				}
 

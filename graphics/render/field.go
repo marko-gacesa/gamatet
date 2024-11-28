@@ -37,14 +37,19 @@ const widthPad = 3
 
 var t0 = time.Now()
 
-func GetExtendedContent(w, h, pCount int) (int, int) {
+func GetExtendedContent(w, h int, infoPos []piece.DisplayPosition) (int, int) {
 	w += 2 // left frame, right frame
 	h += 1 // bottom frame
-	switch pCount {
-	case 1:
-		w += widthPad // game info
-	case 2, 3, 4:
-		w += widthPad + widthPad // 2 * game info
+	var hasLeft, hasRight bool
+	for _, p := range infoPos {
+		hasLeft = hasLeft || p == piece.DisplayPositionTopLeft || p == piece.DisplayPositionBottomLeft
+		hasRight = hasRight || p == piece.DisplayPositionTopRight || p == piece.DisplayPositionBottomRight
+	}
+	if hasLeft {
+		w += widthPad
+	}
+	if hasRight {
+		w += widthPad
 	}
 	return w, h
 }

@@ -3,6 +3,7 @@
 package op
 
 import (
+	"fmt"
 	"gamatet/game/block"
 	"gamatet/game/event"
 	"gamatet/game/field"
@@ -15,8 +16,8 @@ type FieldStop struct{}
 
 var _ event.Event = (*FieldStop)(nil)
 
-func (e *FieldStop) Do(f *field.Field)   { f.Pause() }
-func (e *FieldStop) Undo(f *field.Field) { f.Unpause() }
+func (e *FieldStop) Do(f *field.Field) { fmt.Println("TODO: Need to handle stop") }
+func (e *FieldStop) Undo(*field.Field) {}
 
 func (e *FieldStop) Equals(ev event.Event) bool {
 	_, ok := ev.(*FieldStop)

@@ -257,6 +257,11 @@ func (g *GameHost) Perform(
 
 			a := action.Action(data[0])
 
+			if g.paused && a == action.Drop {
+				g.unpause(ctx)
+				continue
+			}
+
 			if a == action.Abort {
 				if ctrl.State.IsAbortable() {
 					return
@@ -266,12 +271,10 @@ func (g *GameHost) Perform(
 			}
 
 			if a == action.Pause {
-				if ctrl.State.IsPausable() {
-					if g.paused {
-						g.unpause(ctx)
-					} else {
-						g.pause(ctx)
-					}
+				if g.paused {
+					g.unpause(ctx)
+				} else if ctrl.State.IsPausable() {
+					g.pause(ctx)
 				}
 				continue
 			}
@@ -336,9 +339,9 @@ func (g *GameHost) RenderRequest(ctx context.Context, fieldIdx int, t time.Time,
 	}
 }
 
-func (g *GameHost) GetSize(idx int) (int, int) {
+func (g *GameHost) GetSize(idx int) (int, int, []piece.DisplayPosition) {
 	f := g.fields[idx].Field
-	return f.GetWidth(), f.GetHeight()
+	return f.GetWidth(), f.GetHeight(), f.CtrlInfoPositions()
 }
 
 func (g *GameHost) stop(ctx context.Context) {

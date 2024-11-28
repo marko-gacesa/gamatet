@@ -23,8 +23,6 @@ type GameDouble struct {
 
 	usePerspective bool
 
-	stopper *screen.Stopper
-
 	contentW int
 	contentH int
 	viewW    int
@@ -50,8 +48,7 @@ func NewGameDouble(
 	text := render.MakeText(tex, render.Font)
 	fps := render.NewFPS()
 
-	fw, fh := params.Game.GetSize(0)
-	w, h := render.GetExtendedContent(fw, fh, 1)
+	w, h := render.GetExtendedContent(params.Game.GetSize(0))
 
 	g := &GameDouble{
 		renderer:       renderer,
@@ -60,8 +57,6 @@ func NewGameDouble(
 		text:           *text,
 		fps:            *fps,
 		usePerspective: false, // TODO: Read from config
-
-		stopper: screen.NewStopper(),
 
 		contentW: w,
 		contentH: h,
@@ -87,8 +82,6 @@ func NewGameDouble(
 	return g
 }
 
-func (ft *GameDouble) Done() <-chan error { return ft.stopper.Done() }
-
 func (ft *GameDouble) Release() {
 	<-ft.waitDoneCh
 	ft.text.Release()
@@ -107,7 +100,6 @@ func (ft *GameDouble) UpdateViewSize(w, h int) {
 func (ft *GameDouble) InputKeyPress(key, scancode int) {
 	switch glfw.Key(key) {
 	case glfw.KeyEscape:
-		//ft.stopper.Stop()
 		ft.player1InCh <- []byte{byte(action.Abort)}
 	case glfw.KeyPause:
 		ft.player1InCh <- []byte{byte(action.Pause)}

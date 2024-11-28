@@ -33,12 +33,12 @@ func (r Resources) Screen(ctx context.Context, data any) screen.Screen {
 		return NewGameOne(r.rend, r.tex, v)
 	case core.GameDoubleParams:
 		return NewGameDouble(r.rend, r.tex, v)
-	case string:
-		switch v {
-		case "test-blocks":
-			return demoblocks.NewDemoBlocks(r.rend, r.tex)
-		case "test-fields":
-			return fieldtest.NewFieldTest(ctx, r.rend, r.tex)
+	case DemoScreenConfig:
+		switch v.Name {
+		case DemoBlocks:
+			return demoblocks.NewDemoBlocks(r.rend, r.tex, v.Stop)
+		case DemoFields:
+			return fieldtest.NewFieldTest(ctx, r.rend, r.tex, v.Stop)
 		}
 	}
 

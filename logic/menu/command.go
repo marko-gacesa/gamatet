@@ -24,13 +24,14 @@ func (c *Command) Text() string {
 func (c *Command) Increase() {}
 func (c *Command) Decrease() {}
 
-func (c *Command) Input(r rune) {
-	if r != '\n' {
-		return
+func (c *Command) Input(r rune) bool {
+	if r != InputEnter {
+		return false
 	}
 	if fn := c.fn; fn != nil {
 		fn(c.parent, c)
 	}
+	return true
 }
 
 func (c *Command) setParent(menu *Menu) {

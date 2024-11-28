@@ -12,10 +12,6 @@ type Screen interface {
 	// UpdateViewSize should be called whenever the viewport size has changed.
 	UpdateViewSize(w, h int)
 
-	// Done returns a channel that is closed when the screen finished.
-	// If the screen finishes abnormally the error would be placed to the channel.
-	Done() <-chan error
-
 	// Release should be called to release any allocated resources.
 	Release()
 

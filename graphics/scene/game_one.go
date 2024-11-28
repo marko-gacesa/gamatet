@@ -23,8 +23,6 @@ type GameOne struct {
 
 	usePerspective bool
 
-	stopper *screen.Stopper
-
 	contentW int
 	contentH int
 	viewW    int
@@ -49,8 +47,7 @@ func NewGameOne(
 	text := render.MakeText(tex, render.Font)
 	fps := render.NewFPS()
 
-	fw, fh := params.Game.GetSize(0)
-	w, h := render.GetExtendedContent(fw, fh, 1)
+	w, h := render.GetExtendedContent(params.Game.GetSize(0))
 
 	g := &GameOne{
 		renderer:       renderer,
@@ -59,8 +56,6 @@ func NewGameOne(
 		text:           *text,
 		fps:            *fps,
 		usePerspective: true, // TODO: Read from config
-
-		stopper: screen.NewStopper(),
 
 		contentW: w,
 		contentH: h,
@@ -84,8 +79,6 @@ func NewGameOne(
 	return g
 }
 
-func (ft *GameOne) Done() <-chan error { return ft.stopper.Done() }
-
 func (ft *GameOne) Release() {
 	<-ft.waitDoneCh
 	ft.text.Release()
@@ -104,7 +97,6 @@ func (ft *GameOne) UpdateViewSize(w, h int) {
 func (ft *GameOne) InputKeyPress(key, scancode int) {
 	switch glfw.Key(key) {
 	case glfw.KeyEscape:
-		//ft.stopper.Stop()
 		ft.playerInCh <- []byte{byte(action.Abort)}
 	case glfw.KeyPause:
 		ft.playerInCh <- []byte{byte(action.Pause)}

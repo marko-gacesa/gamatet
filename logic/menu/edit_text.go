@@ -87,37 +87,46 @@ func (t *Text) Decrease() {
 	}
 }
 
-func (t *Text) Input(r rune) {
+func (t *Text) Input(r rune) bool {
 	switch {
-	case r == '\n': // commit
+	case r == InputEnter:
 		if t.editing {
 			t.commit()
 		} else {
 			t.startEdit()
 		}
-		return
-	case r == '\b': // backspace
+		return true
+	case r == InputBackspace:
 		if t.cursor > 0 {
 			t.editor = append(t.editor[:t.cursor-1], t.editor[t.cursor:]...)
 			t.cursor--
 			t.dirty()
 		}
-		return
-	case r == '\xFF': // delete
+		return true
+	case r == InputDelete:
 		if t.cursor < len(t.editor) {
 			t.editor = append(t.editor[:t.cursor], t.editor[t.cursor+1:]...)
 			t.dirty()
 		}
-		return
+		return true
+	case r == InputEscape:
+		if t.editing {
+			t.stopEdit()
+			return true
+		}
+		return false
 	case unicode.IsPrint(r):
 		if len(t.editor) >= t.maxLen {
-			return
+			return true
 		}
 
 		t.editor = append(t.editor[:t.cursor], append([]rune{r}, t.editor[t.cursor:]...)...)
 		t.cursor++
 		t.dirty()
+		return true
 	}
+
+	return false
 }
 
 func (t *Text) FocusLost() {
@@ -125,8 +134,7 @@ func (t *Text) FocusLost() {
 		return
 	}
 
-	t.editing = false
-	t.dirty()
+	t.stopEdit()
 }
 
 func (t *Text) startEdit() {
@@ -137,8 +145,12 @@ func (t *Text) startEdit() {
 	t.dirty()
 }
 
-func (t *Text) commit() {
-	*t.value = strings.TrimSpace(string(t.editor))
+func (t *Text) stopEdit() {
 	t.editing = false
 	t.dirty()
+}
+
+func (t *Text) commit() {
+	*t.value = strings.TrimSpace(string(t.editor))
+	t.stopEdit()
 }
