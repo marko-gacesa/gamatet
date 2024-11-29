@@ -3,63 +3,59 @@
 package op
 
 import (
-	"fmt"
+	"bytes"
 	"gamatet/game/block"
 	"gamatet/game/event"
 	"gamatet/game/field"
+	"gamatet/game/piece"
 	"io"
 )
 
-func NewFieldStop() *FieldStop { return &FieldStop{} }
-
+// FieldStop is a signal that not more events will be fired
 type FieldStop struct{}
 
-var _ event.Event = (*FieldStop)(nil)
+var _ event.Event = FieldStop{}
 
-func (e *FieldStop) Do(f *field.Field) { fmt.Println("TODO: Need to handle stop") }
-func (e *FieldStop) Undo(*field.Field) {}
+func (e FieldStop) Do(f *field.Field) { /* TODO: Need to handle stop */ }
+func (e FieldStop) Undo(*field.Field) {}
 
-func (e *FieldStop) Equals(ev event.Event) bool {
-	_, ok := ev.(*FieldStop)
+func (e FieldStop) Equals(ev event.Event) bool {
+	_, ok := ev.(FieldStop)
 	return ok
 }
 
-func (e *FieldStop) Read(io.Reader) error  { return nil }
-func (e *FieldStop) Write(io.Writer) error { return nil }
-
-func NewFieldPause() *FieldPause { return &FieldPause{} }
+func (e FieldStop) Read(io.Reader) error  { return nil }
+func (e FieldStop) Write(io.Writer) error { return nil }
 
 type FieldPause struct{}
 
-var _ event.Event = (*FieldPause)(nil)
+var _ event.Event = FieldPause{}
 
-func (e *FieldPause) Do(f *field.Field)   { f.Pause() }
-func (e *FieldPause) Undo(f *field.Field) { f.Unpause() }
+func (e FieldPause) Do(f *field.Field)   { f.Pause() }
+func (e FieldPause) Undo(f *field.Field) { f.Unpause() }
 
-func (e *FieldPause) Equals(ev event.Event) bool {
-	_, ok := ev.(*FieldPause)
+func (e FieldPause) Equals(ev event.Event) bool {
+	_, ok := ev.(FieldPause)
 	return ok
 }
 
-func (e *FieldPause) Read(io.Reader) error  { return nil }
-func (e *FieldPause) Write(io.Writer) error { return nil }
-
-func NewFieldUnpause() *FieldPause { return &FieldPause{} }
+func (e FieldPause) Read(io.Reader) error  { return nil }
+func (e FieldPause) Write(io.Writer) error { return nil }
 
 type FieldUnpause struct{}
 
-var _ event.Event = (*FieldUnpause)(nil)
+var _ event.Event = FieldUnpause{}
 
-func (e *FieldUnpause) Do(f *field.Field)   { f.Unpause() }
-func (e *FieldUnpause) Undo(f *field.Field) { f.Pause() }
+func (e FieldUnpause) Do(f *field.Field)   { f.Unpause() }
+func (e FieldUnpause) Undo(f *field.Field) { f.Pause() }
 
-func (e *FieldUnpause) Equals(ev event.Event) bool {
+func (e FieldUnpause) Equals(ev event.Event) bool {
 	_, ok := ev.(*FieldUnpause)
 	return ok
 }
 
-func (e *FieldUnpause) Read(io.Reader) error  { return nil }
-func (e *FieldUnpause) Write(io.Writer) error { return nil }
+func (e FieldUnpause) Read(io.Reader) error  { return nil }
+func (e FieldUnpause) Write(io.Writer) error { return nil }
 
 func NewFieldDestroyRow(row int, blocks []block.Block) *FieldDestroyRow {
 	return &FieldDestroyRow{
@@ -431,6 +427,74 @@ func (e *FieldExBlock) Read(r io.Reader) error {
 	e.AnimParam = buffer[3]
 
 	if err := e.Block.Read(r); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func NewFieldLost(f *field.Field) *FieldLost {
+	n := byte(f.Ctrls())
+	ctrlStates := make([]byte, 0, 2*n)
+	for i := byte(0); i < n; i += 2 {
+		state := f.Ctrl(i).State
+		if state == piece.StateLost {
+			continue
+		}
+		ctrlStates = append(ctrlStates, i)
+		ctrlStates = append(ctrlStates, byte(state))
+	}
+
+	return &FieldLost{
+		CtrlStates: ctrlStates,
+	}
+}
+
+type FieldLost struct {
+	CtrlStates []byte
+}
+
+var _ event.Event = (*FieldLost)(nil)
+
+func (e *FieldLost) Do(f *field.Field) {
+	for i := 0; i < len(e.CtrlStates); i += 2 {
+		ctrl := f.Ctrl(e.CtrlStates[i])
+		ctrl.State = piece.StateLost
+		ctrl.RestartTimer(0)
+	}
+}
+
+func (e *FieldLost) Undo(f *field.Field) {
+	for i := 0; i < len(e.CtrlStates); i += 2 {
+		ctrl := f.Ctrl(e.CtrlStates[i])
+		ctrl.State = piece.State(e.CtrlStates[i+1])
+		ctrl.RestartTimer(0)
+	}
+}
+
+func (e *FieldLost) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldLost)
+	return ok && bytes.Equal(e.CtrlStates, q.CtrlStates)
+}
+
+func (e *FieldLost) Write(w io.Writer) error {
+	if _, err := w.Write([]byte{byte(len(e.CtrlStates))}); err != nil {
+		return err
+	}
+	if _, err := w.Write(e.CtrlStates); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *FieldLost) Read(r io.Reader) error {
+	var buffer [1]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.CtrlStates = make([]byte, buffer[0])
+	if _, err := io.ReadFull(r, e.CtrlStates); err != nil {
 		return err
 	}
 

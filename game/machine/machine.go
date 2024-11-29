@@ -185,6 +185,7 @@ func HandleTimeout(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 		}
 		if !success {
 			_changeState(ctrl, p, piece.StateLost) // can't position piece: end game
+			p.Push(op.NewFieldLost(f))
 			break
 		}
 

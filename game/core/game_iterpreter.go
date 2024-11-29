@@ -77,11 +77,11 @@ func MakeInterpreter(setup Setup) *GameInterpreter {
 			}
 
 			if players[j].InCh != nil {
-				panic(fmt.Sprintf("player %d i field %d should not have InCh", j, i))
+				panic(fmt.Sprintf("player=%d@field=%d should not have InCh", j, i))
 			}
 
 			if players[j].OutCh != nil {
-				panic(fmt.Sprintf("player %d i field %d should not have OutCh", j, i))
+				panic(fmt.Sprintf("player=%d@field=%d should not have OutCh", j, i))
 			}
 
 			inputs = append(inputs, interpreterPlayerData{
@@ -91,7 +91,7 @@ func MakeInterpreter(setup Setup) *GameInterpreter {
 		}
 
 		if setup.Fields[i].OutCh != nil {
-			panic(fmt.Sprintf("field %d should not have OutCh", i))
+			panic(fmt.Sprintf("field=%d should not have OutCh", i))
 		}
 
 		fields[i] = interpreterFieldData{

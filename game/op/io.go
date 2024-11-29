@@ -22,6 +22,7 @@ const (
 	codeFieldBlockHardness
 	codeFieldBlockTransform
 	codeFieldExBlock
+	codeFieldLost
 
 	// piece events
 	codePieceState
@@ -46,24 +47,14 @@ var (
 
 func Write(w io.Writer, e event.Event) (err error) {
 	switch e.(type) {
-
-	case *PieceState:
-		err = serialize.Write8(w, codePieceState)
-	case *PieceSet:
-		err = serialize.Write8(w, codePieceSet)
-	case *PieceMove:
-		err = serialize.Write8(w, codePieceMove)
-	case *PieceTransform:
-		err = serialize.Write8(w, codePieceTransform)
-	case *PieceFall:
-		err = serialize.Write8(w, codePieceFall)
-
-	case *FieldStop:
+	case FieldStop:
 		err = serialize.Write8(w, codeFieldStop)
-	case *FieldPause:
+
+	case FieldPause:
 		err = serialize.Write8(w, codeFieldPause)
-	case *FieldUnpause:
+	case FieldUnpause:
 		err = serialize.Write8(w, codeFieldUnpause)
+
 	case *FieldDestroyRow:
 		err = serialize.Write8(w, codeFieldDestroyRow)
 	case *FieldDestroyColumn:
@@ -76,6 +67,19 @@ func Write(w io.Writer, e event.Event) (err error) {
 		err = serialize.Write8(w, codeFieldBlockTransform)
 	case *FieldExBlock:
 		err = serialize.Write8(w, codeFieldExBlock)
+	case *FieldLost:
+		err = serialize.Write8(w, codeFieldLost)
+
+	case *PieceState:
+		err = serialize.Write8(w, codePieceState)
+	case *PieceSet:
+		err = serialize.Write8(w, codePieceSet)
+	case *PieceMove:
+		err = serialize.Write8(w, codePieceMove)
+	case *PieceTransform:
+		err = serialize.Write8(w, codePieceTransform)
+	case *PieceFall:
+		err = serialize.Write8(w, codePieceFall)
 
 	default:
 		err = fmt.Errorf("unrecognized event: %T", e)
@@ -99,11 +103,13 @@ func Read(r io.Reader) (event.Event, error) {
 
 	switch code {
 	case codeFieldStop:
-		e = &FieldStop{}
+		e = FieldStop{}
+
 	case codeFieldPause:
-		e = &FieldPause{}
+		e = FieldPause{}
 	case codeFieldUnpause:
-		e = &FieldUnpause{}
+		e = FieldUnpause{}
+
 	case codeFieldDestroyRow:
 		e = &FieldDestroyRow{}
 	case codeFieldDestroyColumn:
@@ -116,6 +122,8 @@ func Read(r io.Reader) (event.Event, error) {
 		e = &FieldBlockTransform{}
 	case codeFieldExBlock:
 		e = &FieldExBlock{}
+	case codeFieldLost:
+		e = &FieldLost{}
 
 	case codePieceState:
 		e = &PieceState{}

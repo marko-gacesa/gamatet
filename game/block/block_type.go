@@ -71,5 +71,5 @@ var (
 	Wave = Block{Type: TypeWave, Hardness: 0, Color: 0x00C0FFFF}
 	Bomb = Block{Type: TypeBomb, Hardness: 0, Color: 0xF0F0F0FF}
 	Goal = Block{Type: TypeGoal, Hardness: 0, Color: 0xFF0000FF}
-	Wall = Block{Type: TypeWall, Hardness: HardnessMax, Color: 0x808080FF}
+	Wall = Block{Type: TypeWall, Hardness: HardnessMax, Color: 0x606060FF}
 )

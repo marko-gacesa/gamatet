@@ -13,7 +13,7 @@ func (app *App) gameOne(ctx context.Context) (core.GameOneParams, context.Contex
 	const fieldW = 10
 	const fieldH = 24
 
-	var level = 0
+	var level = 7
 	const seed = 101
 
 	ctx, cancelCtx := context.WithCancel(ctx)
@@ -40,7 +40,7 @@ func (app *App) gameOne(ctx context.Context) (core.GameOneParams, context.Contex
 				OutCh: fieldCh,
 				Players: []core.PlayerSetup{
 					{
-						Name: "marko",
+						Name: "",
 						Config: piece.Config{
 							RotationDirectionCW: false,
 							SlideEnabled:        true,

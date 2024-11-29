@@ -89,7 +89,7 @@ func MakeHost(setup Setup) *GameHost {
 			}
 
 			if players[j].OutCh != nil {
-				panic(fmt.Sprintf("player %d in field %d should not have OutCh", j, i))
+				panic(fmt.Sprintf("player=%d@field=%d should not have OutCh", j, i))
 			}
 
 			inputs = append(inputs, hostPlayerData{
@@ -100,7 +100,7 @@ func MakeHost(setup Setup) *GameHost {
 		}
 
 		if setup.Fields[i].InCh != nil {
-			panic(fmt.Sprintf("field %d should not have InCh", i))
+			panic(fmt.Sprintf("field=%d should not have InCh", i))
 		}
 
 		fields[i] = hostFieldData{

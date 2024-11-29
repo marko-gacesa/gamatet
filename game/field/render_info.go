@@ -23,6 +23,7 @@ type BlockRenderInfo struct {
 
 type PieceRenderInfo struct {
 	Position piece.DisplayPosition
+	State    piece.State
 
 	PieceTextData
 	IsLimited bool
@@ -162,6 +163,7 @@ func (f *Field) FillRenderInfo(info *RenderInfo, gameInfo GameInfo, now time.Tim
 
 	for i := pieceCount; i < len(info.Pieces); i++ {
 		info.Pieces[i].Position = piece.DisplayPositionOff
+		info.Pieces[i].State = 0
 		info.Pieces[i].IsLimited = false
 		info.Pieces[i].PieceEmpty = true
 	}
@@ -172,6 +174,7 @@ func (f *Field) FillRenderInfo(info *RenderInfo, gameInfo GameInfo, now time.Tim
 		pinfo := &info.Pieces[pIdx]
 
 		pinfo.Position = ctrl.InfoPosition
+		pinfo.State = ctrl.State
 		pinfo.PieceTextData = PieceTextData{
 			Name:     ctrl.Name,
 			Score:    ctrl.ScoreStr,

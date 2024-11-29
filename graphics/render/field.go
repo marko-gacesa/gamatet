@@ -13,6 +13,7 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 	"math"
 	"slices"
+	"strconv"
 	"time"
 )
 
@@ -25,15 +26,22 @@ var (
 	colorWave = colorVector(block.Wave.Color)
 	colorBomb = colorVector(block.Bomb.Color)
 
-	colorPlayer = []mgl32.Vec4{
-		colorVector(0x0000FFFF).Mul(0.5),
-		colorVector(0xFF0000FF).Mul(0.5),
-		colorVector(0x00FF00FF).Mul(0.5),
-		colorVector(0xFF8080FF).Mul(0.5),
+	colorPlayerBack = []mgl32.Vec4{
+		{0.0, 0.0, 0.4, 1.0},
+		{0.4, 0.0, 0.0, 1.0},
+		{0.0, 0.4, 0.0, 1.0},
+		{0.4, 0.5, 0.0, 1.0},
 	}
+	colorPlayer = []mgl32.Vec4{
+		{0.0, 0.5, 1.0, 0.8},
+		{1.0, 0.2, 0.2, 0.8},
+		{0.0, 1.0, 0.0, 0.8},
+		{1.0, 1.0, 0.0, 0.8},
+	}
+	colorLabel = mgl32.Vec4{1, 1, 1, 0.5}
 )
 
-const widthPad = 3
+const widthPad = 5
 
 var t0 = time.Now()
 
@@ -264,7 +272,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 			within := p.IsLimited && x >= p.Limits.Min && x <= p.Limits.Max
 			if within {
-				colorCol = colorCol.Add(colorPlayer[pIdx])
+				colorCol = colorCol.Add(colorPlayerBack[pIdx])
 			}
 
 			shadow := !p.PieceEmpty && x >= renderInfo.Pieces[pIdx].Shadow.ColL && x < renderInfo.Pieces[pIdx].Shadow.ColR
@@ -452,12 +460,13 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		//		Mul4(mgl32.Scale3D(pulse*0.3, pulse*0.2, pulse*0.3)),
 		//	mgl32.Vec4{1, 1, 1, 1}, 0)
 
-		f.printValue(&modelInfo, colorText, "PLAYER", p.PieceTextData.Name, hDir)
-		f.printValue(&modelInfo, colorText, "SCORE", p.PieceTextData.Score, hDir)
-		f.printValue(&modelInfo, colorText, "PIECE", p.PieceTextData.PieceNum, hDir)
+		f.printValue(&modelInfo, colorLabel, colorText, "PLAYER", p.PieceTextData.Name, hDir)
+		f.printValue(&modelInfo, colorLabel, colorText, "SCORE", p.PieceTextData.Score, hDir)
+		f.printValue(&modelInfo, colorLabel, colorText, "PIECE", p.PieceTextData.PieceNum, hDir)
+		f.printValue(&modelInfo, colorLabel, colorText, "STATE", strconv.Itoa(int(p.State)), hDir)
 
 		modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, 0.5*hDir, 0))
-		f.printText(&modelInfo, mgl32.Vec4{0, 0, 0, 1}, "NEXT", hDir)
+		f.printText(&modelInfo, colorLabel, "NEXT", hDir)
 
 		modelNextBlocks := modelInfo.
 			Mul4(mgl32.Translate3D((1.0+widthPad)/2, 0.3*hDir, 0.5))
@@ -667,7 +676,11 @@ func (f *Field) renderAll(r *Renderer) {
 	gl.Enable(gl.DEPTH_TEST)
 }
 
-func (f *Field) printValue(modelInfo *mgl32.Mat4, colorText mgl32.Vec4, title, value string, hDir float32) {
+func (f *Field) printValue(modelInfo *mgl32.Mat4, colorLabel, colorText mgl32.Vec4, title, value string, hDir float32) {
+	if value == "" {
+		return
+	}
+
 	const scaleTitle = 0.5
 	const scaleValue = 0.8
 	const padding = 0.2
@@ -691,7 +704,7 @@ func (f *Field) printValue(modelInfo *mgl32.Mat4, colorText mgl32.Vec4, title, v
 	modelTitle := modelInfo.
 		Mul4(mgl32.Translate3D((1.0+widthPad)/2.0-wt/2, yt, 0)).
 		Mul4(mgl32.Scale3D(scaleTitle, scaleTitle, 1.0))
-	f.listStr.Add(modelTitle, mgl32.Vec4{0, 0, 0, 1}, title)
+	f.listStr.Add(modelTitle, colorLabel, title)
 
 	modelValue := modelInfo.
 		Mul4(mgl32.Translate3D((1.0+widthPad)/2.0-wv/2, yv, 0)).
