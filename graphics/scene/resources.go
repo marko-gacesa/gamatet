@@ -4,6 +4,7 @@ package scene
 
 import (
 	"context"
+	"gamatet/game"
 	"gamatet/game/core"
 	"gamatet/graphics/render"
 	"gamatet/graphics/scene/demoblocks"
@@ -38,7 +39,8 @@ func (r Resources) Screen(ctx context.Context, data any) screen.Screen {
 		case DemoBlocks:
 			return demoblocks.NewDemoBlocks(r.rend, r.tex, v.Stop)
 		case DemoFields:
-			return fieldtest.NewFieldTest(ctx, r.rend, r.tex, v.Stop)
+			gameHost, gameInterpreter, playerInCh, waitDoneCh := game.NewFieldTest(ctx, 10, 22, v.Stop)
+			return fieldtest.NewFieldTest(r.rend, r.tex, playerInCh, gameHost, gameInterpreter, waitDoneCh)
 		}
 	}
 

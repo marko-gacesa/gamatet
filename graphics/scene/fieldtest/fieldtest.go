@@ -4,21 +4,14 @@ package fieldtest
 
 import (
 	"context"
-	"gamatet/game"
 	"gamatet/game/action"
+	"gamatet/game/core"
 	"gamatet/graphics/render"
 	"gamatet/graphics/texture"
 	"gamatet/logic/screen"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 	"time"
-)
-
-const (
-	fieldW   = 10
-	fieldH   = 22
-	contentW = 2 * (3 + 1 + fieldW)
-	contentH = fieldH + 2
 )
 
 type FieldTest struct {
@@ -29,7 +22,12 @@ type FieldTest struct {
 	textRight render.Text
 	fps       render.FPS
 
-	stopFn func()
+	usePerspective bool
+
+	contentW int
+	contentH int
+	viewW    int
+	viewH    int
 
 	playerInCh chan<- []byte
 
@@ -44,17 +42,27 @@ type FieldTest struct {
 
 var _ screen.Screen = (*FieldTest)(nil)
 
-func NewFieldTest(ctx context.Context, renderer *render.Renderer, tex *texture.Manager, stopFn func()) *FieldTest {
+func NewFieldTest(
+	renderer *render.Renderer,
+	tex *texture.Manager,
+	playerInCh chan<- []byte,
+	gameHost, gameInterpreter core.RenderRequester,
+	waitDoneCh <-chan struct{},
+) *FieldTest {
 	res := render.GenerateFieldResources(tex)
 	textLeft := render.MakeText(tex, render.Font)
 	textRight := render.MakeText(tex, render.Font)
 	fps := render.NewFPS()
 
+	contentWLeft, contentHLeft := render.GetExtendedContent(gameHost.GetSize(0))
+	contentWRight, contentHRight := render.GetExtendedContent(gameInterpreter.GetSize(0))
+
+	contentW := contentWLeft + contentWRight
+	contentH := max(contentHLeft, contentHRight)
+
 	modelCenter := mgl32.Ident4()
 	modelLeft := modelCenter.Mul4(mgl32.Translate3D(-float32(contentW)/4, 0, 0))
 	modelRight := modelCenter.Mul4(mgl32.Translate3D(float32(contentW)/4, 0, 0))
-
-	gameHost, gameInterpreter, playerInCh, waitDoneCh := game.NewFieldTest(ctx, fieldW, fieldH)
 
 	ft := &FieldTest{
 		renderer:   renderer,
@@ -63,7 +71,10 @@ func NewFieldTest(ctx context.Context, renderer *render.Renderer, tex *texture.M
 		textLeft:   *textLeft,
 		textRight:  *textRight,
 		fps:        *fps,
-		stopFn:     stopFn,
+		contentW:   contentW,
+		contentH:   contentH,
+		viewW:      0,
+		viewH:      0,
 		playerInCh: playerInCh,
 		modelLeft:  modelLeft,
 		modelRight: modelRight,
@@ -86,7 +97,12 @@ func (ft *FieldTest) Release() {
 }
 
 func (ft *FieldTest) UpdateViewSize(w, h int) {
-	ft.renderer.PerspectiveFull(w, h, contentW, contentH, 2)
+	ft.viewW, ft.viewH = w, h
+	if ft.usePerspective {
+		ft.renderer.PerspectiveFull(w, h, ft.contentW, ft.contentH, 2)
+	} else {
+		ft.renderer.OrthogonalFull(w, h, ft.contentW, ft.contentH, 2)
+	}
 }
 
 func (ft *FieldTest) InputKeyPress(key, scancode int) {
@@ -105,7 +121,13 @@ func (ft *FieldTest) InputKeyPress(key, scancode int) {
 		ft.playerInCh <- []byte{byte(action.Pause)}
 	case glfw.KeyEscape:
 		ft.playerInCh <- []byte{byte(action.Abort)}
-		//ft.stopFn()
+	case glfw.KeyF12:
+		ft.usePerspective = !ft.usePerspective
+		if ft.usePerspective {
+			ft.renderer.PerspectiveFull(ft.viewW, ft.viewH, ft.contentW, ft.contentH, 2)
+		} else {
+			ft.renderer.OrthogonalFull(ft.viewW, ft.viewH, ft.contentW, ft.contentH, 2)
+		}
 	}
 }
 
@@ -120,5 +142,5 @@ func (ft *FieldTest) Render(ctx context.Context) {
 	r := ft.renderer
 	ft.fieldLeft.Render(r)
 	ft.fieldRight.Render(r)
-	ft.fps.Render(r, &ft.textLeft, mgl32.Translate3D(-contentW/2+0.5, -contentH/2+1.5, 1.5))
+	ft.fps.Render(r, &ft.textLeft, mgl32.Translate3D(float32(-ft.contentW)/2+0.5, -float32(ft.contentH)/2+1.5, 1.5))
 }

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"gamatet/game/event"
 	"gamatet/game/field"
+	"gamatet/game/op"
 	"gamatet/game/piece"
 	"github.com/marko-gacesa/udpstar/joinchannel"
 	"log"
@@ -133,11 +134,19 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 				continue
 			}
 
+			var shouldStop bool
+
 			f := g.fields[fieldEventData.ID].Field
 			events.Range(func(e event.Event) {
+				_, ok := e.(op.FieldStop)
+				shouldStop = shouldStop || ok
 				e.Do(f)
 			})
 			events.Clear()
+
+			if shouldStop {
+				return
+			}
 
 		case rr := <-renderReqCh:
 			renderInfo := field.ObtainRenderInfo()
