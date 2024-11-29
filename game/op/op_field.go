@@ -16,8 +16,8 @@ type FieldStop struct{}
 
 var _ event.Event = FieldStop{}
 
-func (e FieldStop) Do(f *field.Field) { /* TODO: Need to handle stop */ }
-func (e FieldStop) Undo(*field.Field) {}
+func (e FieldStop) Do(f *field.Field) { f.CloseDone() }
+func (e FieldStop) Undo(*field.Field) { /* can't undo */ }
 
 func (e FieldStop) Equals(ev event.Event) bool {
 	_, ok := ev.(FieldStop)

@@ -28,6 +28,8 @@ type Field struct {
 	blocks  []elem
 	pieces  []*piece.Ctrl
 	firstEx *exElem
+	paused  bool
+	doneCh  chan struct{}
 	Config
 }
 
@@ -65,6 +67,7 @@ func Make(dimW, dimH, pieceCount int) (f *Field) {
 		h:      dimH,
 		blocks: make([]elem, dimW*dimH),
 		pieces: make([]*piece.Ctrl, pieceCount),
+		doneCh: make(chan struct{}),
 	}
 
 	for i := 0; i < pieceCount; i++ {
@@ -80,6 +83,14 @@ func (f *Field) Ctrls() int {
 
 func (f *Field) Ctrl(idx byte) *piece.Ctrl {
 	return f.pieces[idx]
+}
+
+func (f *Field) GetDone() <-chan struct{} {
+	return f.doneCh
+}
+
+func (f *Field) CloseDone() {
+	close(f.doneCh)
 }
 
 func (f *Field) StartTimers() {
@@ -100,6 +111,7 @@ func (f *Field) Pause() {
 		ctrl.PausedState = ctrl.State
 		ctrl.State = piece.StatePause
 	}
+	f.paused = true
 }
 
 func (f *Field) Unpause() {
@@ -108,6 +120,7 @@ func (f *Field) Unpause() {
 		ctrl.PausedState = piece.StatePause
 		ctrl.RestartTimer(0)
 	}
+	f.paused = false
 }
 
 func (f *Field) setXY(x, y int, b block.Block) *anim.List {

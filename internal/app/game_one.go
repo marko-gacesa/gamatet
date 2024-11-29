@@ -7,6 +7,7 @@ import (
 	"gamatet/game/core"
 	"gamatet/game/field"
 	"gamatet/game/piece"
+	"github.com/marko-gacesa/udpstar/channel"
 )
 
 func (app *App) gameOne(ctx context.Context) (core.GameOneParams, context.Context) {
@@ -64,10 +65,7 @@ func (app *App) gameOne(ctx context.Context) (core.GameOneParams, context.Contex
 	}(ctx)
 
 	// go-routine to consume all field events
-	go func() {
-		for range fieldCh {
-		}
-	}()
+	go channel.Drain(fieldCh)
 
 	return core.GameOneParams{
 		PlayerInCh: playerInCh,

@@ -8,9 +8,8 @@ import (
 	"fmt"
 	"gamatet/game/event"
 	"gamatet/game/field"
-	"gamatet/game/op"
 	"gamatet/game/piece"
-	"github.com/marko-gacesa/udpstar/joinchannel"
+	"github.com/marko-gacesa/udpstar/channel"
 	"log"
 	"time"
 )
@@ -112,12 +111,16 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 	ctx, cancelFn := context.WithCancel(ctx)
 	defer cancelFn()
 
-	fieldEventCh := joinchannel.SlicePtr(ctx, g.fields, func(fd *interpreterFieldData) <-chan []byte {
+	fieldEventCh := channel.Context(ctx, channel.JoinSlicePtr(g.fields, func(fd *interpreterFieldData) <-chan []byte {
 		return fd.InCh
+	}))
+
+	renderReqCh := channel.JoinSlicePtr(g.fields, func(fd *interpreterFieldData) <-chan field.RenderRequest {
+		return fd.RenderReqCh
 	})
 
-	renderReqCh := joinchannel.SlicePtr(ctx, g.fields, func(fd *interpreterFieldData) <-chan field.RenderRequest {
-		return fd.RenderReqCh
+	fieldsDoneCh := channel.JoinSlicePtr(g.fields, func(fd *interpreterFieldData) <-chan struct{} {
+		return fd.Field.GetDone()
 	})
 
 	var s serializer
@@ -127,6 +130,9 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 		case <-ctx.Done():
 			return
 
+		case <-fieldsDoneCh:
+			return
+
 		case fieldEventData := <-fieldEventCh:
 			var events event.List
 			if err := s.Deserialize(fieldEventData.Data, &events); err != nil {
@@ -134,26 +140,16 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 				continue
 			}
 
-			var shouldStop bool
-
 			f := g.fields[fieldEventData.ID].Field
 			events.Range(func(e event.Event) {
-				_, ok := e.(op.FieldStop)
-				shouldStop = shouldStop || ok
 				e.Do(f)
 			})
 			events.Clear()
 
-			if shouldStop {
-				return
-			}
-
 		case rr := <-renderReqCh:
 			renderInfo := field.ObtainRenderInfo()
 			f := g.fields[rr.ID].Field
-			f.FillRenderInfo(renderInfo, field.GameInfo{
-				Paused: g.paused,
-			}, rr.Data.Time)
+			f.FillRenderInfo(renderInfo, rr.Data.Time)
 			go func(ctx context.Context, ch chan<- *field.RenderInfo) {
 				select {
 				case <-ctx.Done():

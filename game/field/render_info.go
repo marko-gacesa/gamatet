@@ -50,16 +50,12 @@ type PieceTextData struct {
 	Level    string
 }
 
-type GameInfo struct {
-	Paused bool
-}
-
 type RenderInfo struct {
 	W, H   int
+	Paused bool
 	Blocks []BlockRenderInfo
 	Pieces [MaxPieces]PieceRenderInfo
 	Result anim.Result
-	Game   GameInfo
 }
 
 var syncPoolRenderInfo = &sync.Pool{
@@ -89,20 +85,21 @@ func ReturnRenderInfo(info *RenderInfo) {
 	syncPoolRenderInfo.Put(info)
 }
 
-func (f *Field) FillRenderInfo(info *RenderInfo, gameInfo GameInfo, now time.Time) {
+func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 	w := f.w
 	h := f.h
+	paused := f.paused
 
 	// reset the RenderInfo
 
 	info.W = w
 	info.H = h
+	info.Paused = paused
 	info.Blocks = info.Blocks[:0] // empty it, but keep the memory
-	info.Game = gameInfo
 
 	// process all blocks of the Field
 
-	if !gameInfo.Paused {
+	if !paused {
 		idx := 0
 		for y := 0; y < h; y++ {
 			for x := 0; x < w; x++ {
@@ -192,7 +189,7 @@ func (f *Field) FillRenderInfo(info *RenderInfo, gameInfo GameInfo, now time.Tim
 
 		p := ctrl.Piece
 
-		if p == nil || gameInfo.Paused {
+		if p == nil || paused {
 			pinfo.PieceEmpty = true
 			continue
 		}

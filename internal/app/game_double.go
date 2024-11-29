@@ -7,6 +7,7 @@ import (
 	"gamatet/game/core"
 	"gamatet/game/field"
 	"gamatet/game/piece"
+	"github.com/marko-gacesa/udpstar/channel"
 )
 
 func (app *App) gameDouble(ctx context.Context) (core.GameDoubleParams, context.Context) {
@@ -74,10 +75,7 @@ func (app *App) gameDouble(ctx context.Context) (core.GameDoubleParams, context.
 	}(ctx)
 
 	// go-routine to consume all field events
-	go func() {
-		for range fieldCh {
-		}
-	}()
+	go channel.Drain(fieldCh)
 
 	return core.GameDoubleParams{
 		Player1InCh: player1InCh,

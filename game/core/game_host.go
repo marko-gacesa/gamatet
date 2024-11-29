@@ -12,7 +12,7 @@ import (
 	"gamatet/game/op"
 	"gamatet/game/piece"
 	"gamatet/game/sweeper"
-	"github.com/marko-gacesa/udpstar/joinchannel"
+	"github.com/marko-gacesa/udpstar/channel"
 	"github.com/marko-gacesa/udpstar/udpstar/controller"
 	"time"
 )
@@ -140,14 +140,14 @@ func (g *GameHost) Perform(
 
 	stopCh := ctx.Done()
 
-	ctrlTimer := joinchannel.Channel(ctx, func() <-chan joinchannel.Input[time.Time, field.PiecePlace] {
-		ch := make(chan joinchannel.Input[time.Time, field.PiecePlace])
+	ctrlTimer := channel.Join(func() <-chan channel.Input[time.Time, field.PiecePlace] {
+		ch := make(chan channel.Input[time.Time, field.PiecePlace])
 		go func() {
 			defer close(ch)
 			for fIdx, f := range g.fields {
 				ctrlCount := byte(f.Field.Ctrls())
 				for pIdx := byte(0); pIdx < ctrlCount; pIdx++ {
-					ch <- joinchannel.Input[time.Time, field.PiecePlace]{
+					ch <- channel.Input[time.Time, field.PiecePlace]{
 						ID: field.PiecePlace{
 							FieldIdx: byte(fIdx),
 							CtrlIdx:  pIdx,
@@ -160,7 +160,7 @@ func (g *GameHost) Perform(
 		return ch
 	}())
 
-	inputCh := joinchannel.SlicePtr(ctx, g.inputs, func(p *hostPlayerData) <-chan []byte {
+	inputCh := channel.JoinSlicePtr(g.inputs, func(p *hostPlayerData) <-chan []byte {
 		return p.InCh
 	})
 
@@ -169,13 +169,13 @@ func (g *GameHost) Perform(
 		pusher  event.Pusher
 	}
 
-	sweeperTimer := joinchannel.Channel(ctx, func() <-chan joinchannel.Input[time.Time, sweeperPusher] {
-		ch := make(chan joinchannel.Input[time.Time, sweeperPusher])
+	sweeperTimer := channel.Join(func() <-chan channel.Input[time.Time, sweeperPusher] {
+		ch := make(chan channel.Input[time.Time, sweeperPusher])
 		go func() {
 			defer close(ch)
 			for idx := range g.fields {
 				for _, s := range g.fields[idx].Sweepers {
-					ch <- joinchannel.Input[time.Time, sweeperPusher]{
+					ch <- channel.Input[time.Time, sweeperPusher]{
 						ID: sweeperPusher{
 							sweeper: s,
 							pusher:  &g.fields[idx].events,
@@ -188,7 +188,7 @@ func (g *GameHost) Perform(
 		return ch
 	}())
 
-	renderReqCh := joinchannel.SlicePtr(ctx, g.fields, func(fd *hostFieldData) <-chan field.RenderRequest {
+	renderReqCh := channel.JoinSlicePtr(g.fields, func(fd *hostFieldData) <-chan field.RenderRequest {
 		return fd.RenderReqCh
 	})
 
@@ -301,9 +301,7 @@ func (g *GameHost) Perform(
 		case rr := <-renderReqCh:
 			renderInfo := field.ObtainRenderInfo()
 			f := g.fields[rr.ID].Field
-			f.FillRenderInfo(renderInfo, field.GameInfo{
-				Paused: g.paused,
-			}, rr.Data.Time)
+			f.FillRenderInfo(renderInfo, rr.Data.Time)
 			go func(ctx context.Context, ch chan<- *field.RenderInfo) {
 				select {
 				case <-ctx.Done():

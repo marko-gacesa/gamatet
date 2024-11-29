@@ -291,7 +291,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 	// pause
 
-	if renderInfo.Game.Paused {
+	if renderInfo.Paused {
 		const text = "PAUSE"
 
 		w, h := f.text.Dim(text)
