@@ -112,7 +112,7 @@ func (ft *GameDouble) InputKeyPress(key, scancode int) {
 		ft.player1InCh <- []byte{byte(action.RotateCCW)}
 	case glfw.KeyDown:
 		ft.player1InCh <- []byte{byte(action.MoveDown)}
-	case glfw.KeyRightControl:
+	case glfw.KeyRightShift:
 		ft.player1InCh <- []byte{byte(action.Drop)}
 
 	case glfw.KeyA:
@@ -123,7 +123,7 @@ func (ft *GameDouble) InputKeyPress(key, scancode int) {
 		ft.player2InCh <- []byte{byte(action.RotateCCW)}
 	case glfw.KeyS:
 		ft.player2InCh <- []byte{byte(action.MoveDown)}
-	case glfw.KeyLeftControl:
+	case glfw.KeyLeftShift:
 		ft.player2InCh <- []byte{byte(action.Drop)}
 
 	case glfw.KeyF12:

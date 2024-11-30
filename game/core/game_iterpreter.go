@@ -163,11 +163,7 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 func (g *GameInterpreter) RenderRequest(ctx context.Context, fieldIdx int, t time.Time, ch chan<- *field.RenderInfo) {
 	select {
 	case <-ctx.Done():
-	case g.fields[fieldIdx].RenderReqCh <- field.RenderRequest{
-		FieldIdx:   fieldIdx,
-		Time:       t,
-		RenderInfo: ch,
-	}:
+	case g.fields[fieldIdx].RenderReqCh <- field.RenderRequest{FieldIdx: fieldIdx, Time: t, RenderInfo: ch}:
 	}
 }
 

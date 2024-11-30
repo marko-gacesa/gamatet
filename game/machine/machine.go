@@ -184,7 +184,7 @@ func HandleTimeout(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 			}
 		}
 		if !success {
-			_changeState(ctrl, p, piece.StateLost) // can't position piece: end game
+			// can't position piece: end game
 			p.Push(op.NewFieldLost(f))
 			break
 		}
@@ -217,6 +217,9 @@ func HandleTimeout(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 		_changeState(ctrl, p, piece.StateSlide)
 
 	case piece.StateLost, piece.StateWon:
+		if ctrl.Piece != nil {
+			p.Push(op.NewPieceSet(ctrl.Idx, op.OpClear, ctrl.X, ctrl.Y, ctrl.Piece, ctrl.PieceCount))
+		}
 		_changeState(ctrl, p, piece.StateStop)
 
 	case piece.StateStop:

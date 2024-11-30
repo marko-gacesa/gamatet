@@ -26,6 +26,18 @@ const (
 	StateStop
 )
 
+var StateName = map[State]string{
+	StatePause:   "Pause",
+	StateInit:    "Init",
+	StateNew:     "New",
+	StateDescend: "Descend",
+	StateFall:    "Fall",
+	StateSlide:   "Slide",
+	StateWon:     "Won",
+	StateLost:    "Lost",
+	StateStop:    "Stop",
+}
+
 // IsPausable returns if the game can paused in the current state.
 func (s State) IsPausable() bool {
 	return s != StateLost && s != StateWon && s != StateStop

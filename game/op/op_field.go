@@ -435,14 +435,11 @@ func (e *FieldExBlock) Read(r io.Reader) error {
 
 func NewFieldLost(f *field.Field) *FieldLost {
 	n := byte(f.Ctrls())
-	ctrlStates := make([]byte, 0, 2*n)
-	for i := byte(0); i < n; i += 2 {
+	ctrlStates := make([]byte, 2*n)
+	for i := byte(0); i < n; i++ {
 		state := f.Ctrl(i).State
-		if state == piece.StateLost {
-			continue
-		}
-		ctrlStates = append(ctrlStates, i)
-		ctrlStates = append(ctrlStates, byte(state))
+		ctrlStates[i*2] = i
+		ctrlStates[i*2+1] = byte(state)
 	}
 
 	return &FieldLost{
@@ -458,7 +455,8 @@ var _ event.Event = (*FieldLost)(nil)
 
 func (e *FieldLost) Do(f *field.Field) {
 	for i := 0; i < len(e.CtrlStates); i += 2 {
-		ctrl := f.Ctrl(e.CtrlStates[i])
+		ctrlIdx := e.CtrlStates[i]
+		ctrl := f.Ctrl(ctrlIdx)
 		ctrl.State = piece.StateLost
 		ctrl.RestartTimer(0)
 	}
@@ -466,8 +464,10 @@ func (e *FieldLost) Do(f *field.Field) {
 
 func (e *FieldLost) Undo(f *field.Field) {
 	for i := 0; i < len(e.CtrlStates); i += 2 {
-		ctrl := f.Ctrl(e.CtrlStates[i])
-		ctrl.State = piece.State(e.CtrlStates[i+1])
+		ctrlIdx := e.CtrlStates[i]
+		ctrlState := e.CtrlStates[i+1]
+		ctrl := f.Ctrl(ctrlIdx)
+		ctrl.State = piece.State(ctrlState)
 		ctrl.RestartTimer(0)
 	}
 }

@@ -13,7 +13,6 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 	"math"
 	"slices"
-	"strconv"
 	"time"
 )
 
@@ -27,16 +26,16 @@ var (
 	colorBomb = colorVector(block.Bomb.Color)
 
 	colorPlayerBack = []mgl32.Vec4{
-		{0.0, 0.0, 0.4, 1.0},
-		{0.4, 0.0, 0.0, 1.0},
-		{0.0, 0.4, 0.0, 1.0},
-		{0.4, 0.5, 0.0, 1.0},
+		{0.0, 0.1, 0.4, 1.0},
+		{0.4, 0.1, 0.1, 1.0},
+		{0.1, 0.3, 0.1, 1.0},
+		{0.3, 0.3, 0.1, 1.0},
 	}
 	colorPlayer = []mgl32.Vec4{
 		{0.0, 0.5, 1.0, 0.8},
-		{1.0, 0.2, 0.2, 0.8},
-		{0.0, 1.0, 0.0, 0.8},
-		{1.0, 1.0, 0.0, 0.8},
+		{1.0, 0.3, 0.3, 0.8},
+		{0.0, 1.0, 0.2, 0.8},
+		{1.0, 1.0, 0.2, 0.8},
 	}
 	colorLabel = mgl32.Vec4{1, 1, 1, 0.5}
 )
@@ -463,7 +462,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		f.printValue(&modelInfo, colorLabel, colorText, "PLAYER", p.PieceTextData.Name, hDir)
 		f.printValue(&modelInfo, colorLabel, colorText, "SCORE", p.PieceTextData.Score, hDir)
 		f.printValue(&modelInfo, colorLabel, colorText, "PIECE", p.PieceTextData.PieceNum, hDir)
-		f.printValue(&modelInfo, colorLabel, colorText, "STATE", strconv.Itoa(int(p.State)), hDir)
+		f.printValue(&modelInfo, colorLabel, colorText, "STATE", piece.StateName[p.State], hDir)
 
 		modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, 0.5*hDir, 0))
 		f.printText(&modelInfo, colorLabel, "NEXT", hDir)
