@@ -10,9 +10,9 @@ import (
 )
 
 func conjureBlock(p event.Pusher, x, y int, b block.Block) {
-	p.Push(op.NewFieldBlockSet(x, y, op.OpSet, field.AnimPop, 0, b))
+	p.Push(op.NewFieldBlockSet(x, y, op.TypeSet, field.AnimPop, 0, b))
 }
 
 func putBlock(p event.Pusher, x, y int, b block.Block) {
-	p.Push(op.NewFieldBlockSet(x, y, op.OpSet, field.AnimNo, 0, b))
+	p.Push(op.NewFieldBlockSet(x, y, op.TypeSet, field.AnimNo, 0, b))
 }

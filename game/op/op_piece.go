@@ -90,7 +90,9 @@ func (e *PieceState) Read(r io.Reader) error {
 	return nil
 }
 
-func NewPieceSet(pIdx int, op OpType, x, y int, p piece.Piece, pCount int) *PieceSet {
+func (e *PieceState) TypeID() event.Code { return codePieceState }
+
+func NewPieceSet(pIdx int, op Type, x, y int, p piece.Piece, pCount int) *PieceSet {
 	return &PieceSet{
 		PieceIdx:   byte(pIdx),
 		Op:         op,
@@ -103,7 +105,7 @@ func NewPieceSet(pIdx int, op OpType, x, y int, p piece.Piece, pCount int) *Piec
 
 type PieceSet struct {
 	PieceIdx   byte
-	Op         OpType
+	Op         Type
 	X, Y       int8
 	Piece      piece.Piece
 	PieceCount int
@@ -114,7 +116,7 @@ var _ event.Event = (*PieceSet)(nil)
 func (e *PieceSet) Do(f *field.Field) {
 	ctrl := f.Ctrl(e.PieceIdx)
 	switch e.Op {
-	case OpSet:
+	case TypeSet:
 		ctrl.SetXYP(int(e.X), int(e.Y), e.Piece)
 		ctrl.PieceCount = e.PieceCount
 		ctrl.PieceCountStr = strconv.Itoa(e.PieceCount)
@@ -123,7 +125,7 @@ func (e *PieceSet) Do(f *field.Field) {
 		for i := 0; i < piece.NextBlockCount; i++ {
 			ctrl.NextBlocks[i] = piece.GetBlocks(ctrl.Feed.Get(ctrl.PieceCount+i), ctrl.NextBlocks[i][:0])
 		}
-	case OpClear:
+	case TypeClear:
 		ctrl.SetXYP(0, 0, nil)
 		ctrl.Blocks = ctrl.Blocks[:0]
 	}
@@ -133,10 +135,10 @@ func (e *PieceSet) Do(f *field.Field) {
 func (e *PieceSet) Undo(f *field.Field) {
 	ctrl := f.Ctrl(e.PieceIdx)
 	switch e.Op {
-	case OpSet:
+	case TypeSet:
 		ctrl.SetXYP(0, 0, nil)
 		ctrl.Blocks = ctrl.Blocks[:0]
-	case OpClear:
+	case TypeClear:
 		ctrl.SetXYP(int(e.X), int(e.Y), e.Piece)
 		ctrl.PieceCount = e.PieceCount
 		ctrl.PieceCountStr = strconv.Itoa(e.PieceCount)
@@ -174,7 +176,7 @@ func (e *PieceSet) Read(r io.Reader) error {
 	}
 
 	e.PieceIdx = buffer[0]
-	e.Op = OpType(buffer[1])
+	e.Op = Type(buffer[1])
 	e.X = int8(buffer[2])
 	e.Y = int8(buffer[3])
 
@@ -191,6 +193,8 @@ func (e *PieceSet) Read(r io.Reader) error {
 
 	return nil
 }
+
+func (e *PieceSet) TypeID() event.Code { return codePieceSet }
 
 func NewPieceMove(pIdx int, dx, dy int) *PieceMove {
 	return &PieceMove{
@@ -256,6 +260,8 @@ func (e *PieceMove) Read(r io.Reader) error {
 
 	return nil
 }
+
+func (e *PieceMove) TypeID() event.Code { return codePieceMove }
 
 func NewPieceRotate(pIdx int, cw bool) *PieceTransform {
 	var rotate int8
@@ -360,6 +366,8 @@ func (e *PieceTransform) Read(r io.Reader) error {
 	return nil
 }
 
+func (e *PieceTransform) TypeID() event.Code { return codePieceTransform }
+
 func NewPieceFall(pIdx int, height int) *PieceFall {
 	return &PieceFall{
 		PieceIdx: byte(pIdx),
@@ -413,3 +421,5 @@ func (e *PieceFall) Read(r io.Reader) error {
 
 	return nil
 }
+
+func (e *PieceFall) TypeID() event.Code { return codePieceFall }

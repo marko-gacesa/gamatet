@@ -4,7 +4,6 @@ package sweeper
 
 import (
 	"gamatet/game/event"
-	"gamatet/game/op"
 	"time"
 )
 
@@ -13,7 +12,7 @@ type Sweeper interface {
 	Timer() <-chan time.Time
 
 	// Start starts the sweeper. The analyzer is used for conditional start.
-	Start(analyzer op.Analyzer)
+	Start(analyzer *Analyzer)
 
 	// Pause pauses the internal timer of the sweeper.
 	Pause()

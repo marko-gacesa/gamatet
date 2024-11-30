@@ -96,6 +96,7 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 	info.H = h
 	info.Paused = paused
 	info.Blocks = info.Blocks[:0] // empty it, but keep the memory
+	info.Result = f.animList.Process(now)
 
 	// process all blocks of the Field
 

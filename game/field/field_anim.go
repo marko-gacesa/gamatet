@@ -49,3 +49,11 @@ func (f *Field) animBlockDestroy(x, y int, b block.Block) {
 			anim.NewPopOut(now, piece.DurationAnimBlockChange))
 	}
 }
+
+func (f *Field) AnimQuake(intensity byte) {
+	if !f.Config.Anim {
+		return
+	}
+
+	f.Anim(anim.NewQuake(time.Now(), intensity))
+}

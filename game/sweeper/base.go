@@ -4,7 +4,6 @@ package sweeper
 
 import (
 	"gamatet/game/field"
-	"gamatet/game/op"
 	"time"
 )
 
@@ -26,7 +25,7 @@ func (s *base) Timer() <-chan time.Time {
 	return s.timer.C
 }
 
-func (s *base) Start(op.Analyzer) {
+func (s *base) Start(*Analyzer) {
 	if s.active {
 		// timer is already active or nothing to do
 		return

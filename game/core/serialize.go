@@ -9,6 +9,7 @@ import (
 	"gamatet/game/event"
 	"gamatet/game/op"
 	"io"
+	"log"
 	"slices"
 )
 
@@ -20,7 +21,10 @@ type serializer struct {
 func (s *serializer) Serialize(events *event.List) []byte {
 	s.rawBuff.Reset()
 	events.Range(func(e event.Event) {
-		_ = op.Write(&s.rawBuff, e)
+		err := op.Write(&s.rawBuff, e)
+		if err != nil {
+			log.Printf("failed to serialize event %T: %s\n", e, err)
+		}
 	})
 
 	if s.rawBuff.Len() == 0 {

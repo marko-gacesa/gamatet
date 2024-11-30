@@ -189,7 +189,7 @@ func HandleTimeout(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 			break
 		}
 
-		p.Push(op.NewPieceSet(ctrl.Idx, op.OpSet, x, y, newPiece, pieceCount+1))
+		p.Push(op.NewPieceSet(ctrl.Idx, op.TypeSet, x, y, newPiece, pieceCount+1))
 
 		_changeState(ctrl, p, piece.StateDescend)
 
@@ -218,7 +218,7 @@ func HandleTimeout(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 
 	case piece.StateLost, piece.StateWon:
 		if ctrl.Piece != nil {
-			p.Push(op.NewPieceSet(ctrl.Idx, op.OpClear, ctrl.X, ctrl.Y, ctrl.Piece, ctrl.PieceCount))
+			p.Push(op.NewPieceSet(ctrl.Idx, op.TypeClear, ctrl.X, ctrl.Y, ctrl.Piece, ctrl.PieceCount))
 		}
 		_changeState(ctrl, p, piece.StateStop)
 
@@ -241,7 +241,7 @@ func _changeStateWithParam(ctrl *piece.Ctrl, p event.Pusher, newState piece.Stat
 }
 
 func _clearPiece(ctrl *piece.Ctrl, p event.Pusher) {
-	p.Push(op.NewPieceSet(ctrl.Idx, op.OpClear, ctrl.X, ctrl.Y, ctrl.Piece, ctrl.PieceCount))
+	p.Push(op.NewPieceSet(ctrl.Idx, op.TypeClear, ctrl.X, ctrl.Y, ctrl.Piece, ctrl.PieceCount))
 	_changeState(ctrl, p, piece.StateNew)
 }
 
@@ -307,7 +307,7 @@ func _meldLiquidPiece(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 			// apply the event to the field
 			switch v := e.(type) {
 			case *op.FieldBlockSet:
-				if v.Op == op.OpSet {
+				if v.Op == op.TypeSet {
 					f.SetXY(int(v.Col), int(v.Row), field.AnimNo, 0, v.Block)
 				} else {
 					f.ClearXY(int(v.Col), int(v.Row), field.AnimNo, 0)
@@ -327,7 +327,7 @@ func _meldLiquidPiece(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 	for i := len(events) - 1; i >= 0; i-- {
 		switch v := events[i].(type) {
 		case *op.FieldBlockSet:
-			if v.Op == op.OpSet {
+			if v.Op == op.TypeSet {
 				f.ClearXY(int(v.Col), int(v.Row), field.AnimNo, 0)
 			} else {
 				f.SetXY(int(v.Col), int(v.Row), field.AnimNo, 0, v.Block)
@@ -339,7 +339,7 @@ func _meldLiquidPiece(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 }
 
 func _setBlock(f *field.Field, p event.Pusher, x, y int, b block.Block) {
-	p.Push(op.NewFieldBlockSet(x, y, op.OpSet, field.AnimMeld, 0, b))
+	p.Push(op.NewFieldBlockSet(x, y, op.TypeSet, field.AnimMeld, 0, b))
 }
 
 func _dropEx(f *field.Field, p event.Pusher, x, y int, b block.Block) {
@@ -359,7 +359,7 @@ func _dropBlock(f *field.Field, p event.Pusher, x, y int, b block.Block) bool {
 		return false
 	}
 
-	p.Push(op.NewFieldBlockSet(x, y0, op.OpSet, field.AnimFall, height, b))
+	p.Push(op.NewFieldBlockSet(x, y0, op.TypeSet, field.AnimFall, height, b))
 	return true
 }
 
@@ -370,7 +370,7 @@ func _dropLava(f *field.Field, p event.Pusher, x, y int) bool {
 	}
 
 	b := block.Block{Type: block.TypeRock, Color: block.Lava.Color}
-	p.Push(op.NewFieldBlockSet(x, y0, op.OpSet, field.AnimFall, height, b))
+	p.Push(op.NewFieldBlockSet(x, y0, op.TypeSet, field.AnimFall, height, b))
 	return true
 }
 
@@ -392,7 +392,7 @@ func _dropAcid(f *field.Field, p event.Pusher, x, y int) bool {
 	if b.Hardness > 0 {
 		p.Push(op.NewFieldBlockHardness(x, y0, -1, field.AnimSpin, height))
 	} else {
-		p.Push(op.NewFieldBlockSet(x, y0, op.OpClear, field.AnimPop, 0, b))
+		p.Push(op.NewFieldBlockSet(x, y0, op.TypeClear, field.AnimPop, 0, b))
 	}
 
 	return true
@@ -407,7 +407,7 @@ func _dropCurl(f *field.Field, p event.Pusher, x, y int) bool {
 		return false
 	}
 
-	p.Push(op.NewFieldBlockSet(x, y0, op.OpSet, field.AnimFall, height, b))
+	p.Push(op.NewFieldBlockSet(x, y0, op.TypeSet, field.AnimFall, height, b))
 	return true
 }
 
@@ -420,7 +420,7 @@ func _dropWave(f *field.Field, p event.Pusher, x, y int) bool {
 		return false
 	}
 
-	p.Push(op.NewFieldBlockSet(x, y0, op.OpSet, field.AnimFall, height, b))
+	p.Push(op.NewFieldBlockSet(x, y0, op.TypeSet, field.AnimFall, height, b))
 	return true
 }
 

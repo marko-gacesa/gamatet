@@ -41,7 +41,6 @@ type hostFieldData struct {
 	RenderReqCh chan field.RenderRequest
 
 	events     event.List
-	analyzer   op.Analyzer
 	serializer serializer
 }
 
@@ -67,6 +66,7 @@ func MakeHost(setup Setup) *GameHost {
 
 		var sweepers []sweeper.Sweeper
 		sweepers = append(sweepers, sweeper.NewRow(f))
+		sweepers = append(sweepers, sweeper.NewShaker(f))
 
 		for j := range players {
 			ctrl := f.Ctrl(byte(j))
@@ -397,9 +397,10 @@ func (g *GameHost) applyEvents(ctx context.Context) {
 		}
 
 		f := g.fields[fIdx].Field
-		fd.analyzer.Reset()
+		analyzer := &sweeper.Analyzer{Field: f}
+
 		fd.events.Range(func(e event.Event) {
-			fd.analyzer.Analyze(e)
+			analyzer.Analyze(e)
 			e.Do(f)
 		})
 
@@ -409,7 +410,7 @@ func (g *GameHost) applyEvents(ctx context.Context) {
 		}
 
 		for _, s := range g.fields[fIdx].Sweepers {
-			s.Start(g.fields[fIdx].analyzer)
+			s.Start(analyzer)
 		}
 	}
 }

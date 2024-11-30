@@ -186,8 +186,6 @@ func (f *Field) postRender() {
 }
 
 func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
-	model := &f.model
-
 	// light intensities
 	const (
 		lightIntLava    = 1.2
@@ -212,6 +210,9 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 	if hasRightPad {
 		contentWidth += widthPad
 	}
+
+	aniMatrixField, _ := animListUpdate(&renderInfo.Result)
+	model := f.model.Mul4(aniMatrixField)
 
 	var modelFrame, modelField mgl32.Mat4
 

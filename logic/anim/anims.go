@@ -167,6 +167,41 @@ func (*animFall) Rotate() (rx, ry, rz float32) { return }
 func (*animFall) Scale() (sx, sy, sz float32)  { return }
 func (*animFall) Color() (r, g, b, a float32)  { return }
 
+// Quake
+
+type animQuake struct {
+	animBase
+	dur float32
+	mag float32
+}
+
+func NewQuake(now time.Time, intensity byte) Anim {
+	intf := float32(intensity)
+	dur := 1 / intf
+	mag := 0.08 * intf
+
+	d := time.Duration(50 * float32(time.Millisecond) * intf)
+
+	return &animQuake{animBase: animBase{startedAt: now, duration: d}, dur: dur, mag: mag}
+}
+
+func (*animQuake) Feature() Feature { return Translate }
+
+func (a *animQuake) Translate() (dx, dy, dz float32) {
+	//                                 1
+	// 0.08 * intensity * 2 * ( --------------- - 0.5 )^2 * SIN(...)
+	//                          1 + t/intensity
+	f := 1 / (1 + a.t*a.dur)
+	amp := a.mag * 2 * (f*f - 0.5)
+	dx = amp * float32(math.Sin(31*float64(a.t)))
+	dy = amp * float32(math.Sin(27*float64(a.t)))
+	return
+}
+
+func (*animQuake) Rotate() (rx, ry, rz float32) { return }
+func (*animQuake) Scale() (sx, sy, sz float32)  { return }
+func (*animQuake) Color() (r, g, b, a float32)  { return }
+
 // Rotation Z - linear and quadratic
 
 type animZRotLin struct {

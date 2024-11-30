@@ -27,6 +27,8 @@ func (e FieldStop) Equals(ev event.Event) bool {
 func (e FieldStop) Read(io.Reader) error  { return nil }
 func (e FieldStop) Write(io.Writer) error { return nil }
 
+func (e FieldStop) TypeID() event.Code { return codeFieldStop }
+
 type FieldPause struct{}
 
 var _ event.Event = FieldPause{}
@@ -42,6 +44,8 @@ func (e FieldPause) Equals(ev event.Event) bool {
 func (e FieldPause) Read(io.Reader) error  { return nil }
 func (e FieldPause) Write(io.Writer) error { return nil }
 
+func (e FieldPause) TypeID() event.Code { return codeFieldPause }
+
 type FieldUnpause struct{}
 
 var _ event.Event = FieldUnpause{}
@@ -56,6 +60,8 @@ func (e FieldUnpause) Equals(ev event.Event) bool {
 
 func (e FieldUnpause) Read(io.Reader) error  { return nil }
 func (e FieldUnpause) Write(io.Writer) error { return nil }
+
+func (e FieldUnpause) TypeID() event.Code { return codeFieldUnpause }
 
 func NewFieldDestroyRow(row int, blocks []block.Block) *FieldDestroyRow {
 	return &FieldDestroyRow{
@@ -115,6 +121,8 @@ func (e *FieldDestroyRow) Read(r io.Reader) error {
 
 	return nil
 }
+
+func (e *FieldDestroyRow) TypeID() event.Code { return codeFieldDestroyRow }
 
 func NewFieldDestroyColumn(col, row, n, height int, b block.Block) *FieldDestroyColumn {
 	return &FieldDestroyColumn{
@@ -178,7 +186,9 @@ func (e *FieldDestroyColumn) Read(r io.Reader) error {
 	return nil
 }
 
-func NewFieldBlockSet(col, row int, op OpType, animType, animParam int, b block.Block) *FieldBlockSet {
+func (e *FieldDestroyColumn) TypeID() event.Code { return codeFieldDestroyColumn }
+
+func NewFieldBlockSet(col, row int, op Type, animType, animParam int, b block.Block) *FieldBlockSet {
 	return &FieldBlockSet{
 		Col:       byte(col),
 		Row:       byte(row),
@@ -191,7 +201,7 @@ func NewFieldBlockSet(col, row int, op OpType, animType, animParam int, b block.
 
 type FieldBlockSet struct {
 	Col, Row  byte
-	Op        OpType // 0=clear (the Block contains the block to be cleared), 1=set (the Block contains the block to be added)
+	Op        Type // 0=clear (the Block contains the block to be cleared), 1=set (the Block contains the block to be added)
 	AnimType  byte
 	AnimParam byte
 	Block     block.Block
@@ -201,9 +211,9 @@ var _ event.Event = (*FieldBlockSet)(nil)
 
 func (e *FieldBlockSet) Do(f *field.Field) {
 	switch e.Op {
-	case OpSet:
+	case TypeSet:
 		f.SetXY(int(e.Col), int(e.Row), int(e.AnimType), int(e.AnimParam), e.Block)
-	case OpClear:
+	case TypeClear:
 		_ = f.ClearXY(int(e.Col), int(e.Row), int(e.AnimType), int(e.AnimParam))
 	}
 	updateAllPiecesShadow(f)
@@ -211,9 +221,9 @@ func (e *FieldBlockSet) Do(f *field.Field) {
 
 func (e *FieldBlockSet) Undo(f *field.Field) {
 	switch e.Op {
-	case OpSet:
+	case TypeSet:
 		_ = f.ClearXY(int(e.Col), int(e.Row), field.AnimNo, 0)
-	case OpClear:
+	case TypeClear:
 		f.SetXY(int(e.Col), int(e.Row), field.AnimNo, 0, e.Block)
 	}
 	updateAllPiecesShadow(f)
@@ -242,7 +252,7 @@ func (e *FieldBlockSet) Read(r io.Reader) error {
 
 	e.Col = buffer[0]
 	e.Row = buffer[1]
-	e.Op = OpType(buffer[2])
+	e.Op = Type(buffer[2])
 	e.AnimType = buffer[3]
 	e.AnimParam = buffer[4]
 
@@ -252,6 +262,8 @@ func (e *FieldBlockSet) Read(r io.Reader) error {
 
 	return nil
 }
+
+func (e *FieldBlockSet) TypeID() event.Code { return codeFieldBlockSet }
 
 func NewFieldBlockHardness(col, row, hardness, animType, animParam int) *FieldBlockHardness {
 	return &FieldBlockHardness{
@@ -306,6 +318,8 @@ func (e *FieldBlockHardness) Read(r io.Reader) error {
 
 	return nil
 }
+
+func (e *FieldBlockHardness) TypeID() event.Code { return codeFieldBlockHardness }
 
 func NewFieldBlockTransform(col, row int, oldBlock, newBlock block.Block, animType, animParam int) *FieldBlockTransform {
 	return &FieldBlockTransform{
@@ -375,6 +389,8 @@ func (e *FieldBlockTransform) Read(r io.Reader) error {
 	return nil
 }
 
+func (e *FieldBlockTransform) TypeID() event.Code { return codeFieldBlockTransform }
+
 func NewFieldExBlock(col, row int, animType, animParam int, b block.Block) *FieldExBlock {
 	return &FieldExBlock{
 		Col:       byte(col),
@@ -432,6 +448,8 @@ func (e *FieldExBlock) Read(r io.Reader) error {
 
 	return nil
 }
+
+func (e *FieldExBlock) TypeID() event.Code { return codeFieldExBlock }
 
 func NewFieldLost(f *field.Field) *FieldLost {
 	n := byte(f.Ctrls())
@@ -500,3 +518,47 @@ func (e *FieldLost) Read(r io.Reader) error {
 
 	return nil
 }
+
+func (e *FieldLost) TypeID() event.Code { return codeFieldLost }
+
+func NewFieldQuake(intensity byte) *FieldQuake {
+	return &FieldQuake{
+		Intensity: intensity,
+	}
+}
+
+type FieldQuake struct {
+	Intensity byte
+}
+
+var _ event.Event = (*FieldQuake)(nil)
+
+func (e *FieldQuake) Do(f *field.Field) {
+	f.AnimQuake(e.Intensity)
+}
+
+func (e *FieldQuake) Undo(*field.Field) {}
+
+func (e *FieldQuake) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldQuake)
+	return ok && e.Intensity == q.Intensity
+}
+
+func (e *FieldQuake) Write(w io.Writer) error {
+	if _, err := w.Write([]byte{e.Intensity}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *FieldQuake) Read(r io.Reader) error {
+	var buffer [1]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.Intensity = buffer[0]
+	return nil
+}
+
+func (e *FieldQuake) TypeID() event.Code { return codeFieldQuake }

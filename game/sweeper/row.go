@@ -18,8 +18,8 @@ func NewRow(f *field.Field) *Row {
 
 type Row struct{ base }
 
-func (s *Row) Start(analyzer op.Analyzer) {
-	if analyzer.HasAdded {
+func (s *Row) Start(analyzer *Analyzer) {
+	if analyzer.added > 0 {
 		s.base.Start(analyzer)
 	}
 }

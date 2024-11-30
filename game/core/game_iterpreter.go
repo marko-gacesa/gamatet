@@ -136,7 +136,7 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 		case fieldEventData := <-fieldEventCh:
 			var events event.List
 			if err := s.Deserialize(fieldEventData.Data, &events); err != nil {
-				log.Println(err.Error())
+				log.Printf("failed to deserialize events: %s\n", err.Error())
 				continue
 			}
 

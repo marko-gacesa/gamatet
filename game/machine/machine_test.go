@@ -28,10 +28,10 @@ func TestPieceMeld(t *testing.T) {
 				{XY: block.XY{X: 1, Y: 1}, Block: block.Wall},
 			},
 			events: []event.Event{
-				&op.FieldBlockSet{Col: 1, Row: 2, Op: op.OpSet, Block: block.Rock},
-				&op.FieldBlockSet{Col: 0, Row: 2, Op: op.OpSet, Block: block.Rock},
-				&op.FieldBlockSet{Col: 1, Row: 3, Op: op.OpSet, Block: block.Rock},
-				&op.FieldBlockSet{Col: 0, Row: 3, Op: op.OpSet, Block: block.Rock},
+				&op.FieldBlockSet{Col: 1, Row: 2, Op: op.TypeSet, Block: block.Rock},
+				&op.FieldBlockSet{Col: 0, Row: 2, Op: op.TypeSet, Block: block.Rock},
+				&op.FieldBlockSet{Col: 1, Row: 3, Op: op.TypeSet, Block: block.Rock},
+				&op.FieldBlockSet{Col: 0, Row: 3, Op: op.TypeSet, Block: block.Rock},
 			},
 		},
 		// liquid piece tests
@@ -42,10 +42,10 @@ func TestPieceMeld(t *testing.T) {
 				{XY: block.XY{X: 1, Y: 1}, Block: block.Wall},
 			},
 			events: []event.Event{
-				&op.FieldBlockSet{Col: 1, Row: 2, Op: op.OpSet, Block: block.Rock},
-				&op.FieldBlockSet{Col: 0, Row: 0, Op: op.OpSet, Block: block.Rock},
-				&op.FieldBlockSet{Col: 1, Row: 3, Op: op.OpSet, Block: block.Rock},
-				&op.FieldBlockSet{Col: 0, Row: 1, Op: op.OpSet, Block: block.Rock},
+				&op.FieldBlockSet{Col: 1, Row: 2, Op: op.TypeSet, Block: block.Rock},
+				&op.FieldBlockSet{Col: 0, Row: 0, Op: op.TypeSet, Block: block.Rock},
+				&op.FieldBlockSet{Col: 1, Row: 3, Op: op.TypeSet, Block: block.Rock},
+				&op.FieldBlockSet{Col: 0, Row: 1, Op: op.TypeSet, Block: block.Rock},
 			},
 		},
 		{
@@ -56,10 +56,10 @@ func TestPieceMeld(t *testing.T) {
 				{XY: block.XY{X: 1, Y: 1}, Block: block.Rock},
 			},
 			events: []event.Event{
-				&op.FieldBlockSet{Col: 3, Row: 0, Op: op.OpSet, Block: block.Rock},
-				&op.FieldBlockSet{Col: 2, Row: 0, Op: op.OpSet, Block: block.Rock},
-				&op.FieldBlockSet{Col: 1, Row: 2, Op: op.OpSet, Block: block.Rock},
-				&op.FieldBlockSet{Col: 0, Row: 1, Op: op.OpSet, Block: block.Rock},
+				&op.FieldBlockSet{Col: 3, Row: 0, Op: op.TypeSet, Block: block.Rock},
+				&op.FieldBlockSet{Col: 2, Row: 0, Op: op.TypeSet, Block: block.Rock},
+				&op.FieldBlockSet{Col: 1, Row: 2, Op: op.TypeSet, Block: block.Rock},
+				&op.FieldBlockSet{Col: 0, Row: 1, Op: op.TypeSet, Block: block.Rock},
 			},
 		},
 		{
@@ -85,11 +85,11 @@ func TestPieceMeld(t *testing.T) {
 			},
 			events: []event.Event{
 				&op.FieldExBlock{Col: 1, Row: 1, AnimType: field.AnimFall, AnimParam: 1, Block: block.Acid},
-				&op.FieldBlockSet{Col: 1, Row: 1, Op: op.OpClear, Block: block.Rock},
+				&op.FieldBlockSet{Col: 1, Row: 1, Op: op.TypeClear, Block: block.Rock},
 				&op.FieldExBlock{Col: 0, Row: 0, AnimType: field.AnimFall, AnimParam: 2, Block: block.Acid},
-				&op.FieldBlockSet{Col: 0, Row: 0, Op: op.OpClear, Block: block.Rock},
+				&op.FieldBlockSet{Col: 0, Row: 0, Op: op.TypeClear, Block: block.Rock},
 				&op.FieldExBlock{Col: 1, Row: 0, AnimType: field.AnimFall, AnimParam: 3, Block: block.Acid},
-				&op.FieldBlockSet{Col: 1, Row: 0, Op: op.OpClear, Block: block.Rock},
+				&op.FieldBlockSet{Col: 1, Row: 0, Op: op.TypeClear, Block: block.Rock},
 				&op.FieldExBlock{Col: 0, Row: 0, AnimType: field.AnimFall, AnimParam: 3, Block: block.Acid},
 			},
 		},
@@ -104,19 +104,19 @@ func TestPieceMeld(t *testing.T) {
 			},
 			events: []event.Event{
 				&op.FieldExBlock{Col: 1, Row: 1, AnimType: field.AnimFall, AnimParam: 1, Block: block.Acid},
-				&op.FieldBlockSet{Col: 1, Row: 1, Op: op.OpClear, Block: block.Rock},
+				&op.FieldBlockSet{Col: 1, Row: 1, Op: op.TypeClear, Block: block.Rock},
 				&op.FieldExBlock{Col: 0, Row: 1, AnimType: field.AnimFall, AnimParam: 1, Block: block.Acid},
 				&op.FieldBlockHardness{Col: 0, Row: 1, Hardness: -1},
 				&op.FieldExBlock{Col: 1, Row: 0, AnimType: field.AnimFall, AnimParam: 3, Block: block.Acid},
 				&op.FieldBlockHardness{Col: 1, Row: 0, Hardness: -1},
 				&op.FieldExBlock{Col: 0, Row: 1, AnimType: field.AnimFall, AnimParam: 2, Block: block.Acid},
-				&op.FieldBlockSet{Col: 0, Row: 1, Op: op.OpClear, Block: block.Rock},
+				&op.FieldBlockSet{Col: 0, Row: 1, Op: op.TypeClear, Block: block.Rock},
 			},
 		},
 	}
 
 	nextPieceEvents := []event.Event{
-		&op.PieceSet{Op: op.OpClear, X: 0, Y: 3},
+		&op.PieceSet{Op: op.TypeClear, X: 0, Y: 3},
 		&op.PieceState{OldState: piece.StateSlide, NewState: piece.StateNew},
 	}
 

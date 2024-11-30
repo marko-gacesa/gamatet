@@ -10,10 +10,8 @@ import (
 )
 
 const (
-	codeNoOp = iota
-
 	// field events
-	codeFieldStop
+	codeFieldStop event.Code = iota
 	codeFieldPause
 	codeFieldUnpause
 	codeFieldDestroyRow
@@ -23,6 +21,7 @@ const (
 	codeFieldBlockTransform
 	codeFieldExBlock
 	codeFieldLost
+	codeFieldQuake
 
 	// piece events
 	codePieceState
@@ -32,65 +31,26 @@ const (
 	codePieceFall
 )
 
-type OpType byte
+type Type byte
 
 const (
-	OpClear OpType = 0
-	OpSet   OpType = 1
+	TypeClear Type = 0
+	TypeSet   Type = 1
 )
 
 var (
-	FieldStopBytes    = []byte{codeFieldStop}
-	FieldPauseBytes   = []byte{codeFieldPause}
-	FieldUnpauseBytes = []byte{codeFieldUnpause}
+	FieldStopBytes    = []byte{byte(codeFieldStop)}
+	FieldPauseBytes   = []byte{byte(codeFieldPause)}
+	FieldUnpauseBytes = []byte{byte(codeFieldUnpause)}
 )
 
-func Write(w io.Writer, e event.Event) (err error) {
-	switch e.(type) {
-	case FieldStop:
-		err = serialize.Write8(w, codeFieldStop)
-
-	case FieldPause:
-		err = serialize.Write8(w, codeFieldPause)
-	case FieldUnpause:
-		err = serialize.Write8(w, codeFieldUnpause)
-
-	case *FieldDestroyRow:
-		err = serialize.Write8(w, codeFieldDestroyRow)
-	case *FieldDestroyColumn:
-		err = serialize.Write8(w, codeFieldDestroyColumn)
-	case *FieldBlockSet:
-		err = serialize.Write8(w, codeFieldBlockSet)
-	case *FieldBlockHardness:
-		err = serialize.Write8(w, codeFieldBlockHardness)
-	case *FieldBlockTransform:
-		err = serialize.Write8(w, codeFieldBlockTransform)
-	case *FieldExBlock:
-		err = serialize.Write8(w, codeFieldExBlock)
-	case *FieldLost:
-		err = serialize.Write8(w, codeFieldLost)
-
-	case *PieceState:
-		err = serialize.Write8(w, codePieceState)
-	case *PieceSet:
-		err = serialize.Write8(w, codePieceSet)
-	case *PieceMove:
-		err = serialize.Write8(w, codePieceMove)
-	case *PieceTransform:
-		err = serialize.Write8(w, codePieceTransform)
-	case *PieceFall:
-		err = serialize.Write8(w, codePieceFall)
-
-	default:
-		err = fmt.Errorf("unrecognized event: %T", e)
-	}
+func Write(w io.Writer, e event.Event) error {
+	err := serialize.Write8(w, byte(e.TypeID()))
 	if err != nil {
-		return
+		return err
 	}
 
-	err = e.Write(w)
-
-	return
+	return e.Write(w)
 }
 
 func Read(r io.Reader) (event.Event, error) {
@@ -99,6 +59,17 @@ func Read(r io.Reader) (event.Event, error) {
 		return nil, err
 	}
 
+	e := instance(event.Code(code))
+
+	err = e.Read(r)
+	if err != nil {
+		return nil, err
+	}
+
+	return e, nil
+}
+
+func instance(code event.Code) event.Event {
 	var e event.Event
 
 	switch code {
@@ -124,6 +95,8 @@ func Read(r io.Reader) (event.Event, error) {
 		e = &FieldExBlock{}
 	case codeFieldLost:
 		e = &FieldLost{}
+	case codeFieldQuake:
+		e = &FieldQuake{}
 
 	case codePieceState:
 		e = &PieceState{}
@@ -137,13 +110,8 @@ func Read(r io.Reader) (event.Event, error) {
 		e = &PieceFall{}
 
 	default:
-		return nil, fmt.Errorf("unrecognized event code: %d", code)
+		panic(fmt.Sprintf("unrecognized event code=%d", code))
 	}
 
-	err = e.Read(r)
-	if err != nil {
-		return nil, err
-	}
-
-	return e, nil
+	return e
 }

@@ -22,14 +22,15 @@ type exElem struct {
 }
 
 type Field struct {
-	Idx     int
-	w       int
-	h       int
-	blocks  []elem
-	pieces  []*piece.Ctrl
-	firstEx *exElem
-	paused  bool
-	doneCh  chan struct{}
+	Idx      int
+	w        int
+	h        int
+	blocks   []elem
+	pieces   []*piece.Ctrl
+	firstEx  *exElem
+	animList anim.List
+	paused   bool
+	doneCh   chan struct{}
 	Config
 }
 
@@ -121,6 +122,10 @@ func (f *Field) Unpause() {
 		ctrl.RestartTimer(0)
 	}
 	f.paused = false
+}
+
+func (f *Field) Anim(a anim.Anim) {
+	f.animList.Add(a)
 }
 
 func (f *Field) setXY(x, y int, b block.Block) *anim.List {
