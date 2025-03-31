@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package material
 
@@ -31,5 +31,10 @@ func TexUV() Material {
 			outputColor = vec4(fragmentTexture, 1, 1);
 		}` + z
 
-	return newSimple(vertexShader, fragmentShader)
+	m, err := newProgramSimple(vertexShader, fragmentShader)
+	if err != nil {
+		panic("failed to make normal material: " + err.Error())
+	}
+
+	return m
 }

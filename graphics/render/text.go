@@ -21,6 +21,9 @@ type Text struct {
 	mat        material.Text
 }
 
+const spaceAdvance = 0.2
+const cursorBlinkPeriodMillis = 750
+
 func MakeText(manager *texture.Manager, font *truetype.Font) *Text {
 	fontFace := runeatlas.NewFace(font, 32, 72)
 	runeAtlas := runeatlas.NewRuneAtlas(fontFace, 512)
@@ -114,22 +117,25 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 	modelText := model
 	var chPrev rune
 	for _, ch := range s {
-		var control bool
-
-		switch ch {
-		case ' ':
-			modelText = modelText.Mul4(mgl32.Translate3D(0.2, 0, 0))
-			continue
-		case '\n':
-			model = model.Mul4(mgl32.Translate3D(0, -1, 0))
-			modelText = model
-			continue
-		case '\x01': // cursor
-			if time.Now().UnixMilli()%500 < 250 {
-				continue
-			}
-			control = true
+		var cursor bool
+		if ch == '\x01' && time.Now().UnixMilli()%cursorBlinkPeriodMillis < cursorBlinkPeriodMillis/2 {
+			cursor = true
 			ch = '|'
+		}
+
+		if ch <= 32 {
+			switch ch {
+			case ' ':
+				modelText = modelText.Mul4(mgl32.Translate3D(spaceAdvance, 0, 0))
+			case '\n':
+				model = model.Mul4(mgl32.Translate3D(0, -1, 0))
+				modelText = model
+			case '\x02': // invert on
+				mat.InvertOn()
+			case '\x03': // invert off
+				mat.InvertOff()
+			}
+			continue
 		}
 
 		runeRect, ok := t.atlas.TextUV(ch)
@@ -141,7 +147,7 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 		w2h := runeRect.WidthToHeight()
 		k2h := t.atlas.KernToHeight(chPrev, ch)
 
-		if control {
+		if cursor {
 			modelChar := modelText.Mul4(mgl32.Scale3D(w2h, 1, 1))
 			mat.Color(color.Mul(0.8))
 			r.Render(&modelChar)
@@ -180,13 +186,14 @@ func (t *Text) Dim(s string) (float32, float32) {
 
 	var chPrev rune
 	for _, ch := range s {
-		switch ch {
-		case ' ':
-			l += 0.2
-			continue
-		case '\n':
-			w = max(w, l)
-			l = 0
+		if ch <= 32 {
+			switch ch {
+			case ' ':
+				l += spaceAdvance
+			case '\n':
+				w = max(w, l)
+				l = 0
+			}
 			continue
 		}
 

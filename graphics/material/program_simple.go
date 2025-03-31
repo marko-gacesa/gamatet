@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024,2025 by Marko Gaćeša
 
 package material
 
@@ -10,10 +10,10 @@ import (
 
 var _ Material = (*programSimple)(nil)
 
-func newSimple(vertexShader, fragmentShader string) *programSimple {
+func newProgramSimple(vertexShader, fragmentShader string) (*programSimple, error) {
 	p, err := newProgram(vertexShader, fragmentShader)
 	if err != nil {
-		panic("failed to make simple material: " + err.Error())
+		return nil, err
 	}
 
 	return &programSimple{
@@ -24,7 +24,7 @@ func newSimple(vertexShader, fragmentShader string) *programSimple {
 		attribVert:  p.attribLocation("geometryPosition"),
 		attribNorm:  p.attribLocation("geometryNormal"),
 		attribTexUV: p.attribLocation("geometryTexture"),
-	}
+	}, nil
 }
 
 type programSimple struct {
