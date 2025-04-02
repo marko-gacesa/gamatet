@@ -1,9 +1,8 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package render
 
 import (
-	"context"
 	"gamatet/game/block"
 	"gamatet/game/core"
 	"gamatet/game/field"
@@ -13,6 +12,7 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 	"math"
 	"slices"
+	"sync"
 	"time"
 )
 
@@ -69,9 +69,8 @@ type Field struct {
 	renderRequesterFieldIdx int
 	renderRequester         core.RenderRequester
 
-	renderInfo    *field.RenderInfo
-	renderInfoCh  chan *field.RenderInfo
-	prepareDoneCh chan struct{}
+	renderInfo   *field.RenderInfo
+	renderInfoWG sync.WaitGroup
 
 	t          float64 // time
 	w          int     // field width
@@ -107,30 +106,29 @@ func NewField(
 		text:                    text,
 		renderRequesterFieldIdx: renderRequesterFieldIdx,
 		renderRequester:         renderRequester,
-		renderInfoCh:            make(chan *field.RenderInfo),
-		prepareDoneCh:           make(chan struct{}),
 	}
 }
 
-func (f *Field) Prepare(ctx context.Context, now time.Time) {
-	f.renderRequester.RenderRequest(ctx, f.renderRequesterFieldIdx, now, f.renderInfoCh)
+func (f *Field) Prepare(now time.Time) {
+	renderInfoCh := make(chan *field.RenderInfo)
+	f.renderRequester.RenderRequest(f.renderRequesterFieldIdx, now, renderInfoCh)
+	f.renderInfoWG.Add(1)
 	go func() {
-		defer func() { f.prepareDoneCh <- struct{}{} }()
-		select {
-		case <-ctx.Done():
-		case renderInfo := <-f.renderInfoCh:
-			if renderInfo == nil {
-				return
-			}
-			f.preRender(renderInfo, now)
-			f.prepareModels(renderInfo)
-			field.ReturnRenderInfo(f.renderInfo)
+		defer f.renderInfoWG.Done()
+
+		renderInfo := <-renderInfoCh
+		if renderInfo == nil {
+			return
 		}
+
+		f.preRender(renderInfo, now)
+		f.prepareModels(renderInfo)
+		field.ReturnRenderInfo(f.renderInfo)
 	}()
 }
 
 func (f *Field) Render(r *Renderer) {
-	<-f.prepareDoneCh
+	f.renderInfoWG.Wait()
 	f.renderAll(r)
 	f.postRender()
 }

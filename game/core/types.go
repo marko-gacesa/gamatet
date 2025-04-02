@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package core
 
@@ -16,7 +16,7 @@ type Performer interface {
 type RenderRequester interface {
 	// RenderRequest is a method for requesting render info for a field. Once ready, it will be placed on the channel.
 	// When rendering is completed the RenderInfo should be returned with a call to field.ReturnRenderInfo(renderInfo).
-	RenderRequest(ctx context.Context, fieldIdx int, t time.Time, ch chan<- *field.RenderInfo)
+	RenderRequest(fieldIdx int, t time.Time, ch chan<- *field.RenderInfo)
 
 	// GetSize return size of the field
 	GetSize(idx int) (int, int, []piece.DisplayPosition)

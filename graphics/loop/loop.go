@@ -1,4 +1,4 @@
-// Copyright (c) 2023,2024 by Marko Gaćeša
+// Copyright (c) 2023-2025 by Marko Gaćeša
 
 package loop
 
@@ -127,13 +127,11 @@ func Loop(app *app.App) error {
 				default:
 				}
 
-				now := time.Now()
-
-				scr.Prepare(ctx, now)
+				scr.Prepare(time.Now())
 
 				gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-				scr.Render(ctx)
+				scr.Render()
 
 				window.SwapBuffers()
 				glfw.PollEvents()

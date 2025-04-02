@@ -3,7 +3,6 @@
 package scene
 
 import (
-	"context"
 	"gamatet/logic/screen"
 	"time"
 )
@@ -46,14 +45,14 @@ func (m ScreenMap) InputChar(char rune) {
 	}
 }
 
-func (m ScreenMap) Prepare(ctx context.Context, now time.Time) {
+func (m ScreenMap) Prepare(now time.Time) {
 	for _, s := range m {
-		s.Prepare(ctx, now)
+		s.Prepare(now)
 	}
 }
 
-func (m ScreenMap) Render(ctx context.Context) {
+func (m ScreenMap) Render() {
 	for _, s := range m {
-		s.Render(ctx)
+		s.Render()
 	}
 }

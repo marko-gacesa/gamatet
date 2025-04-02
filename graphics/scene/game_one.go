@@ -3,7 +3,6 @@
 package scene
 
 import (
-	"context"
 	"gamatet/game/action"
 	"gamatet/game/core"
 	"gamatet/graphics/render"
@@ -93,11 +92,11 @@ func (ft *GameOne) InputKeyPress(key, scancode int) {
 	}
 }
 
-func (ft *GameOne) Prepare(ctx context.Context, now time.Time) {
-	ft.fieldRender.Prepare(ctx, now)
+func (ft *GameOne) Prepare(now time.Time) {
+	ft.fieldRender.Prepare(now)
 }
 
-func (ft *GameOne) Render(ctx context.Context) {
+func (ft *GameOne) Render() {
 	ft.SetCamera()
 	ft.fieldRender.Render(ft.Renderer())
 }

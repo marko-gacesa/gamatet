@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package screen
 
@@ -22,10 +22,10 @@ type Screen interface {
 	InputChar(char rune)
 
 	// Prepare should be called prior to the Render and can be used asynchronously prepare render data.
-	Prepare(ctx context.Context, now time.Time)
+	Prepare(now time.Time)
 
 	// Render presents data onto the screen.
-	Render(ctx context.Context)
+	Render()
 }
 
 type Screener interface {

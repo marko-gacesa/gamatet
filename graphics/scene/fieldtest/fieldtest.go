@@ -3,7 +3,6 @@
 package fieldtest
 
 import (
-	"context"
 	"gamatet/game/action"
 	"gamatet/game/core"
 	"gamatet/graphics/render"
@@ -99,12 +98,12 @@ func (ft *FieldTest) InputKeyPress(key, scancode int) {
 	}
 }
 
-func (ft *FieldTest) Prepare(ctx context.Context, now time.Time) {
-	ft.fieldLeft.Prepare(ctx, now)
-	ft.fieldRight.Prepare(ctx, now)
+func (ft *FieldTest) Prepare(now time.Time) {
+	ft.fieldLeft.Prepare(now)
+	ft.fieldRight.Prepare(now)
 }
 
-func (ft *FieldTest) Render(ctx context.Context) {
+func (ft *FieldTest) Render() {
 	r := ft.Renderer()
 	ft.fieldLeft.Render(r)
 	ft.fieldRight.Render(r)

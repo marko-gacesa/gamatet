@@ -3,7 +3,6 @@
 package scene
 
 import (
-	"context"
 	"gamatet/graphics/render"
 	"gamatet/graphics/scene/base"
 	"gamatet/graphics/texture"
@@ -107,13 +106,7 @@ func (m *Menu) InputChar(r rune) {
 	}
 }
 
-func (m *Menu) Prepare(ctx context.Context, now time.Time) {
-	select {
-	case <-ctx.Done():
-		return
-	default:
-	}
-
+func (m *Menu) Prepare(now time.Time) {
 	n := m.menu.Count()
 
 	if len(m.strCache) != n {
@@ -145,7 +138,7 @@ func (m *Menu) Prepare(ctx context.Context, now time.Time) {
 	m.text.Prepare(m.strCache...)
 }
 
-func (m *Menu) Render(ctx context.Context) {
+func (m *Menu) Render() {
 	modelIdxStart := 0
 	modelIdxEnd := m.menu.Count()
 	if modelIdxEnd > screenMaxShownItems {

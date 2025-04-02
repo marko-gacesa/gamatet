@@ -3,7 +3,6 @@
 package base
 
 import (
-	"context"
 	"gamatet/graphics/render"
 	"gamatet/graphics/texture"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -36,8 +35,8 @@ func (s Base) Release() {}
 func (s Base) InputKeyPress(key, scancode int) {}
 func (s Base) InputChar(char rune)             {}
 
-func (s Base) Prepare(ctx context.Context, now time.Time) {}
-func (s Base) Render(ctx context.Context)                 {}
+func (s Base) Prepare(time.Time) {}
+func (s Base) Render()           {}
 
 func NewBlockBase(
 	renderer *render.Renderer,

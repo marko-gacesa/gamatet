@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package game
 
@@ -23,7 +23,9 @@ func NewFieldTest(
 	fieldH int,
 	stopFn func(),
 ) (*core.GameHost, *core.GameInterpreter, chan<- []byte, <-chan struct{}) {
-	wg := &sync.WaitGroup{}
+	wgFields := &sync.WaitGroup{}
+	wgEvents := &sync.WaitGroup{}
+	chStopEvents := make(chan struct{})
 
 	// event transfer between the host and the client
 
@@ -33,14 +35,14 @@ func NewFieldTest(
 	r := rand.New(rand.NewSource(123))
 	_ = r
 
-	wg.Add(1)
+	wgEvents.Add(1)
 	go func() {
-		defer wg.Done()
+		defer wgEvents.Done()
 
 		for e := range fieldServerCh {
 			time.Sleep(time.Millisecond * time.Duration(30+r.Intn(100)))
 			select {
-			case <-ctx.Done():
+			case <-chStopEvents:
 				return
 
 			case fieldClientCh <- e:
@@ -165,7 +167,7 @@ func NewFieldTest(
 
 	gameInterpreter := core.MakeInterpreter(setupClient)
 
-	wg.Add(1)
+	wgFields.Add(1)
 	go func(ctx context.Context) {
 		defer func() {
 			r := recover()
@@ -174,14 +176,14 @@ func NewFieldTest(
 			}
 		}()
 		defer close(fieldServerCh)
-		defer wg.Done()
+		defer wgFields.Done()
 
 		gameHost.Perform(ctx)
 
 		fmt.Println("GAME: Host stopped")
 	}(ctx)
 
-	wg.Add(1)
+	wgFields.Add(1)
 	go func(ctx context.Context) {
 		defer func() {
 			r := recover()
@@ -189,7 +191,7 @@ func NewFieldTest(
 				fmt.Printf("PANIC: %v\n%s\n", r, debug.Stack())
 			}
 		}()
-		defer wg.Done()
+		defer wgFields.Done()
 
 		gameInterpreter.Perform(ctx)
 
@@ -198,7 +200,10 @@ func NewFieldTest(
 
 	waitDoneCh := make(chan struct{})
 	go func() {
-		wg.Wait()
+		wgFields.Wait()
+		close(chStopEvents)
+		wgEvents.Wait()
+
 		close(waitDoneCh)
 
 		stopFn()

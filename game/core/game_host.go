@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package core
 
@@ -32,13 +32,16 @@ type GameHost struct {
 	// state
 	suspended bool
 	paused    bool
+
+	renderReqCh chan field.RenderRequest
+
+	doneCh chan struct{}
 }
 
 type hostFieldData struct {
-	Field       *field.Field
-	Sweepers    []sweeper.Sweeper
-	OutCh       chan<- []byte
-	RenderReqCh chan field.RenderRequest
+	Field    *field.Field
+	Sweepers []sweeper.Sweeper
+	OutCh    chan<- []byte
 
 	events     event.List
 	serializer serializer
@@ -104,26 +107,22 @@ func MakeHost(setup Setup) *GameHost {
 		}
 
 		fields[i] = hostFieldData{
-			Field:       f,
-			Sweepers:    sweepers,
-			OutCh:       setup.Fields[i].OutCh,
-			RenderReqCh: make(chan field.RenderRequest),
+			Field:    f,
+			Sweepers: sweepers,
+			OutCh:    setup.Fields[i].OutCh,
 		}
 	}
 
 	return &GameHost{
-		fields:    fields,
-		inputs:    inputs,
-		suspendCh: make(chan bool),
+		fields:      fields,
+		inputs:      inputs,
+		suspendCh:   make(chan bool),
+		renderReqCh: make(chan field.RenderRequest),
+		doneCh:      make(chan struct{}),
 	}
 }
 
-func (g *GameHost) Perform(
-	ctx context.Context,
-) {
-	ctx, cancelFn := context.WithCancel(ctx)
-	defer cancelFn()
-
+func (g *GameHost) Perform(ctx context.Context) {
 	for _, f := range g.fields {
 		f.Field.StartTimers()
 	}
@@ -135,10 +134,6 @@ func (g *GameHost) Perform(
 			}
 		}
 	}()
-
-	defer g.stop(ctx)
-
-	stopCh := ctx.Done()
 
 	ctrlTimer := channel.Join(func() <-chan channel.Input[time.Time, field.PiecePlace] {
 		ch := make(chan channel.Input[time.Time, field.PiecePlace])
@@ -188,10 +183,6 @@ func (g *GameHost) Perform(
 		return ch
 	}())
 
-	renderReqCh := channel.JoinSlicePtr(g.fields, func(fd *hostFieldData) <-chan field.RenderRequest {
-		return fd.RenderReqCh
-	})
-
 	/////////////////////////////
 	/*
 		func(f *field.Field, events *event.List) {
@@ -226,19 +217,23 @@ func (g *GameHost) Perform(
 	*/
 	////////////////////////////
 
+	defer g.sendStop()
+
+	defer close(g.doneCh)
+
 	for {
 		for i := range g.fields {
 			g.fields[i].events.Clear()
 		}
 
 		select {
-		case <-stopCh:
+		case <-ctx.Done():
 			return
 
 		case suspend := <-g.suspendCh:
 			g.suspended = suspend
 			if suspend {
-				g.pause(ctx)
+				g.pause()
 			}
 
 		case inputData := <-inputCh:
@@ -258,7 +253,7 @@ func (g *GameHost) Perform(
 			a := action.Action(data[0])
 
 			if g.paused && a == action.Drop {
-				g.unpause(ctx)
+				g.unpause()
 				continue
 			}
 
@@ -272,9 +267,9 @@ func (g *GameHost) Perform(
 
 			if a == action.Pause {
 				if g.paused {
-					g.unpause(ctx)
+					g.unpause()
 				} else if ctrl.State.IsPausable() {
-					g.pause(ctx)
+					g.pause()
 				}
 				continue
 			}
@@ -284,7 +279,7 @@ func (g *GameHost) Perform(
 			}
 
 			machine.HandleActionInput(f, ctrl, events, a)
-			g.applyEvents(ctx)
+			g.applyEvents()
 
 		case fc := <-ctrlTimer:
 			f := g.fields[fc.ID.FieldIdx].Field
@@ -292,44 +287,40 @@ func (g *GameHost) Perform(
 			events := &g.fields[fc.ID.FieldIdx].events
 
 			machine.HandleTimeout(f, ctrl, events)
-			g.applyEvents(ctx)
+			g.applyEvents()
 
 		case sw := <-sweeperTimer:
 			sw.ID.sweeper.Sweep(sw.ID.pusher)
-			g.applyEvents(ctx)
+			g.applyEvents()
 
-		case rr := <-renderReqCh:
+		case rr := <-g.renderReqCh:
 			renderInfo := field.ObtainRenderInfo()
-			f := g.fields[rr.ID].Field
-			f.FillRenderInfo(renderInfo, rr.Data.Time)
-			go func(ctx context.Context, ch chan<- *field.RenderInfo) {
-				select {
-				case <-ctx.Done():
-				case ch <- renderInfo:
-				}
-			}(ctx, rr.Data.RenderInfo)
+			f := g.fields[rr.FieldIdx].Field
+			f.FillRenderInfo(renderInfo, rr.Time)
+			rr.RenderInfo <- renderInfo
 		}
 	}
 }
 
-func (g *GameHost) Suspend(ctx context.Context) {
+func (g *GameHost) Suspend() {
 	select {
-	case <-ctx.Done():
+	case <-g.doneCh:
 	case g.suspendCh <- true:
 	}
 }
 
-func (g *GameHost) Resume(ctx context.Context) {
+func (g *GameHost) Resume() {
 	select {
-	case <-ctx.Done():
+	case <-g.doneCh:
 	case g.suspendCh <- false:
 	}
 }
 
-func (g *GameHost) RenderRequest(ctx context.Context, fieldIdx int, t time.Time, ch chan<- *field.RenderInfo) {
+func (g *GameHost) RenderRequest(fieldIdx int, t time.Time, ch chan<- *field.RenderInfo) {
 	select {
-	case <-ctx.Done():
-	case g.fields[fieldIdx].RenderReqCh <- field.RenderRequest{FieldIdx: fieldIdx, Time: t, RenderInfo: ch}:
+	case <-g.doneCh:
+		close(ch)
+	case g.renderReqCh <- field.RenderRequest{FieldIdx: fieldIdx, Time: t, RenderInfo: ch}:
 	}
 }
 
@@ -338,17 +329,13 @@ func (g *GameHost) GetSize(idx int) (int, int, []piece.DisplayPosition) {
 	return f.GetWidth(), f.GetHeight(), f.CtrlInfoPositions()
 }
 
-func (g *GameHost) stop(ctx context.Context) {
+func (g *GameHost) sendStop() {
 	for fIdx := range g.fields {
-		select {
-		case <-ctx.Done():
-			return
-		case g.fields[fIdx].OutCh <- op.FieldStopBytes:
-		}
+		g.fields[fIdx].OutCh <- op.FieldStopBytes
 	}
 }
 
-func (g *GameHost) pause(ctx context.Context) {
+func (g *GameHost) pause() {
 	if g.paused {
 		return
 	}
@@ -360,15 +347,12 @@ func (g *GameHost) pause(ctx context.Context) {
 		for _, s := range g.fields[fIdx].Sweepers {
 			s.Pause()
 		}
-		select {
-		case <-ctx.Done():
-			return
-		case g.fields[fIdx].OutCh <- op.FieldPauseBytes:
-		}
+
+		g.fields[fIdx].OutCh <- op.FieldPauseBytes
 	}
 }
 
-func (g *GameHost) unpause(ctx context.Context) {
+func (g *GameHost) unpause() {
 	if g.suspended || !g.paused {
 		return
 	}
@@ -380,15 +364,12 @@ func (g *GameHost) unpause(ctx context.Context) {
 		for _, s := range g.fields[fIdx].Sweepers {
 			s.Unpause()
 		}
-		select {
-		case <-ctx.Done():
-			return
-		case g.fields[fIdx].OutCh <- op.FieldUnpauseBytes:
-		}
+
+		g.fields[fIdx].OutCh <- op.FieldUnpauseBytes
 	}
 }
 
-func (g *GameHost) applyEvents(ctx context.Context) {
+func (g *GameHost) applyEvents() {
 	for fIdx := range g.fields {
 		fd := &g.fields[fIdx]
 
@@ -404,10 +385,7 @@ func (g *GameHost) applyEvents(ctx context.Context) {
 			e.Do(f)
 		})
 
-		select {
-		case <-ctx.Done():
-		case fd.OutCh <- fd.serializer.Serialize(&fd.events):
-		}
+		fd.OutCh <- fd.serializer.Serialize(&fd.events)
 
 		for _, s := range g.fields[fIdx].Sweepers {
 			s.Start(analyzer)

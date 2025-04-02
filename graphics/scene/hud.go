@@ -3,7 +3,6 @@
 package scene
 
 import (
-	"context"
 	"gamatet/graphics/render"
 	"gamatet/graphics/scene/base"
 	"gamatet/graphics/texture"
@@ -34,7 +33,7 @@ func (h *Hud) Release() {
 	h.text.Release()
 }
 
-func (h *Hud) Render(context.Context) {
+func (h *Hud) Render() {
 	v := h.fps.Get()
 	if v == 0 {
 		return

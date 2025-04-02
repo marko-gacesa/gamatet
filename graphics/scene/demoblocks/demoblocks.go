@@ -3,7 +3,6 @@
 package demoblocks
 
 import (
-	"context"
 	"gamatet/graphics/render"
 	"gamatet/graphics/scene/base"
 	"gamatet/graphics/texture"
@@ -63,7 +62,7 @@ func (d *DemoBlocks) InputKeyPress(key, scancode int) {
 	}
 }
 
-func (d *DemoBlocks) Prepare(ctx context.Context, now time.Time) {
+func (d *DemoBlocks) Prepare(now time.Time) {
 	go func() {
 		defer func() { d.chReady <- struct{}{} }()
 
@@ -93,7 +92,7 @@ func (d *DemoBlocks) Prepare(ctx context.Context, now time.Time) {
 	}()
 }
 
-func (d *DemoBlocks) Render(ctx context.Context) {
+func (d *DemoBlocks) Render() {
 	<-d.chReady
 
 	r := d.Renderer()

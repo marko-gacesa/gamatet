@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package core
 
@@ -26,12 +26,15 @@ type GameInterpreter struct {
 
 	// state
 	paused bool
+
+	renderReqCh chan field.RenderRequest
+
+	doneCh chan struct{}
 }
 
 type interpreterFieldData struct {
-	Field       *field.Field
-	InCh        <-chan []byte
-	RenderReqCh chan field.RenderRequest
+	Field *field.Field
+	InCh  <-chan []byte
 
 	// internal caches
 	buffer bytes.Buffer
@@ -95,33 +98,29 @@ func MakeInterpreter(setup Setup) *GameInterpreter {
 		}
 
 		fields[i] = interpreterFieldData{
-			Field:       f,
-			InCh:        setup.Fields[i].InCh,
-			RenderReqCh: make(chan field.RenderRequest),
+			Field: f,
+			InCh:  setup.Fields[i].InCh,
 		}
 	}
 
 	return &GameInterpreter{
-		fields: fields,
-		inputs: inputs,
+		fields:      fields,
+		inputs:      inputs,
+		renderReqCh: make(chan field.RenderRequest),
+		doneCh:      make(chan struct{}),
 	}
 }
 
 func (g *GameInterpreter) Perform(ctx context.Context) {
-	ctx, cancelFn := context.WithCancel(ctx)
-	defer cancelFn()
-
 	fieldEventCh := channel.Context(ctx, channel.JoinSlicePtr(g.fields, func(fd *interpreterFieldData) <-chan []byte {
 		return fd.InCh
 	}))
 
-	renderReqCh := channel.JoinSlicePtr(g.fields, func(fd *interpreterFieldData) <-chan field.RenderRequest {
-		return fd.RenderReqCh
-	})
-
 	fieldsDoneCh := channel.JoinSlicePtr(g.fields, func(fd *interpreterFieldData) <-chan struct{} {
 		return fd.Field.GetDone()
 	})
+
+	defer close(g.doneCh)
 
 	var s serializer
 
@@ -146,24 +145,20 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 			})
 			events.Clear()
 
-		case rr := <-renderReqCh:
+		case rr := <-g.renderReqCh:
 			renderInfo := field.ObtainRenderInfo()
-			f := g.fields[rr.ID].Field
-			f.FillRenderInfo(renderInfo, rr.Data.Time)
-			go func(ctx context.Context, ch chan<- *field.RenderInfo) {
-				select {
-				case <-ctx.Done():
-				case ch <- renderInfo:
-				}
-			}(ctx, rr.Data.RenderInfo)
+			f := g.fields[rr.FieldIdx].Field
+			f.FillRenderInfo(renderInfo, rr.Time)
+			rr.RenderInfo <- renderInfo
 		}
 	}
 }
 
-func (g *GameInterpreter) RenderRequest(ctx context.Context, fieldIdx int, t time.Time, ch chan<- *field.RenderInfo) {
+func (g *GameInterpreter) RenderRequest(fieldIdx int, t time.Time, ch chan<- *field.RenderInfo) {
 	select {
-	case <-ctx.Done():
-	case g.fields[fieldIdx].RenderReqCh <- field.RenderRequest{FieldIdx: fieldIdx, Time: t, RenderInfo: ch}:
+	case <-g.doneCh:
+		close(ch)
+	case g.renderReqCh <- field.RenderRequest{FieldIdx: fieldIdx, Time: t, RenderInfo: ch}:
 	}
 }
 
