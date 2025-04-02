@@ -1,10 +1,11 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package demoblocks
 
 import (
 	"context"
 	"gamatet/graphics/render"
+	"gamatet/graphics/scene/base"
 	"gamatet/graphics/texture"
 	"gamatet/logic/screen"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -18,11 +19,10 @@ const (
 )
 
 type DemoBlocks struct {
-	renderer *render.Renderer
-	tex      *texture.Manager
-	res      render.FieldResources
-	text     render.Text
-	fps      render.FPS
+	base.BlockBase
+	res       render.FieldResources
+	text      render.Text
+	textBlock render.TextBlock
 
 	stopFn     func()
 	chReady    chan struct{}
@@ -37,14 +37,13 @@ var t0 = time.Now()
 func NewDemoBlocks(renderer *render.Renderer, tex *texture.Manager, stopFn func()) *DemoBlocks {
 	res := render.GenerateFieldResources(tex)
 	text := render.MakeText(tex, render.Font)
-	fps := render.NewFPS()
+	textBlock := render.MakeTextBlock(tex, render.Font)
 
 	return &DemoBlocks{
-		renderer:   renderer,
-		tex:        tex,
+		BlockBase:  base.NewBlockBaseWithZ(renderer, tex, contentW, contentH, 10, true),
 		res:        *res,
 		text:       *text,
-		fps:        *fps,
+		textBlock:  *textBlock,
 		stopFn:     stopFn,
 		chReady:    make(chan struct{}),
 		modelBlock: [9]mgl32.Mat4{},
@@ -52,11 +51,8 @@ func NewDemoBlocks(renderer *render.Renderer, tex *texture.Manager, stopFn func(
 	}
 }
 
-func (d *DemoBlocks) UpdateViewSize(w, h int) {
-	d.renderer.PerspectiveFull(w, h, contentW, contentH, 12)
-}
-
 func (d *DemoBlocks) Release() {
+	d.textBlock.Release()
 	d.text.Release()
 	d.res.Release()
 }
@@ -66,8 +62,6 @@ func (d *DemoBlocks) InputKeyPress(key, scancode int) {
 		d.stopFn()
 	}
 }
-
-func (d *DemoBlocks) InputChar(char rune) {}
 
 func (d *DemoBlocks) Prepare(ctx context.Context, now time.Time) {
 	go func() {
@@ -102,9 +96,7 @@ func (d *DemoBlocks) Prepare(ctx context.Context, now time.Time) {
 func (d *DemoBlocks) Render(ctx context.Context) {
 	<-d.chReady
 
-	r := d.renderer
-
-	center := mgl32.Ident4()
+	r := d.Renderer()
 
 	for i := 0; i < contentW; i++ {
 		for j := 0; j < contentH; j++ {
@@ -150,6 +142,4 @@ func (d *DemoBlocks) Render(ctx context.Context) {
 	r.Geometry(d.res.GeomRoundedCube)
 	d.text.Material(r, mgl32.Vec4{0.5, 1, 0.7, 1}, 'M')
 	r.Render(&d.modelBlock[8])
-
-	d.fps.Render(r, &d.text, center.Mul4(mgl32.Translate3D(-contentW/2+0.5, -contentH/2+0.5, 0)))
 }

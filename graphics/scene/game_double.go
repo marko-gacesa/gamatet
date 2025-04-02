@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package scene
 
@@ -7,6 +7,7 @@ import (
 	"gamatet/game/action"
 	"gamatet/game/core"
 	"gamatet/graphics/render"
+	"gamatet/graphics/scene/base"
 	"gamatet/graphics/texture"
 	"gamatet/logic/screen"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -15,18 +16,10 @@ import (
 )
 
 type GameDouble struct {
-	renderer *render.Renderer
-	tex      *texture.Manager
-	res      render.FieldResources
-	text     render.Text
-	fps      render.FPS
-
-	usePerspective bool
-
-	contentW int
-	contentH int
-	viewW    int
-	viewH    int
+	base.BlockBase
+	res  render.FieldResources
+	text render.Text
+	fps  render.FPS
 
 	player1InCh chan<- []byte
 	player2InCh chan<- []byte
@@ -51,17 +44,10 @@ func NewGameDouble(
 	w, h := render.GetExtendedContent(params.Game.GetSize(0))
 
 	g := &GameDouble{
-		renderer:       renderer,
-		tex:            tex,
-		res:            *res,
-		text:           *text,
-		fps:            *fps,
-		usePerspective: false, // TODO: Read from config
-
-		contentW: w,
-		contentH: h,
-		viewW:    0,
-		viewH:    0,
+		BlockBase: base.NewBlockBase(renderer, tex, w, h, true),
+		res:       *res,
+		text:      *text,
+		fps:       *fps,
 
 		// these are set below
 		player1InCh: nil,
@@ -86,15 +72,6 @@ func (ft *GameDouble) Release() {
 	<-ft.waitDoneCh
 	ft.text.Release()
 	ft.res.Release()
-}
-
-func (ft *GameDouble) UpdateViewSize(w, h int) {
-	ft.viewW, ft.viewH = w, h
-	if ft.usePerspective {
-		ft.renderer.PerspectiveFull(w, h, ft.contentW, ft.contentH, 2)
-	} else {
-		ft.renderer.OrthogonalFull(w, h, ft.contentW, ft.contentH, 2)
-	}
 }
 
 func (ft *GameDouble) InputKeyPress(key, scancode int) {
@@ -125,25 +102,14 @@ func (ft *GameDouble) InputKeyPress(key, scancode int) {
 		ft.player2InCh <- []byte{byte(action.MoveDown)}
 	case glfw.KeyLeftShift:
 		ft.player2InCh <- []byte{byte(action.Drop)}
-
-	case glfw.KeyF12:
-		ft.usePerspective = !ft.usePerspective
-		if ft.usePerspective {
-			ft.renderer.PerspectiveFull(ft.viewW, ft.viewH, ft.contentW, ft.contentH, 2)
-		} else {
-			ft.renderer.OrthogonalFull(ft.viewW, ft.viewH, ft.contentW, ft.contentH, 2)
-		}
 	}
 }
-
-func (ft *GameDouble) InputChar(char rune) {}
 
 func (ft *GameDouble) Prepare(ctx context.Context, now time.Time) {
 	ft.fieldRender.Prepare(ctx, now)
 }
 
-func (ft *GameDouble) Render(ctx context.Context) {
-	r := ft.renderer
+func (ft *GameDouble) Render(context.Context) {
+	r := ft.Renderer()
 	ft.fieldRender.Render(r)
-	ft.fps.Render(r, &ft.text, mgl32.Translate3D(float32(-ft.contentW)/2+0.5, float32(-ft.contentH)/2+1.5, 1.5))
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package runeatlas
 
@@ -12,6 +12,7 @@ import (
 	"image/draw"
 	"image/png"
 	"os"
+	"sync"
 )
 
 type RuneAtlas struct {
@@ -24,6 +25,10 @@ type RuneAtlas struct {
 
 	pos    fixed.Point26_6
 	glyphs map[rune]image.Rectangle
+
+	// mx is to make the RuneAtlas thread safe.
+	// Also, because calls to font.Face (for glyph measurement) are not thread safe.
+	mx *sync.Mutex
 }
 
 const (
@@ -42,6 +47,7 @@ func NewRuneAtlas(face *Face, size int) *RuneAtlas {
 		face:     face,
 		pos:      fixed.Point26_6{},
 		glyphs:   map[rune]image.Rectangle{},
+		mx:       &sync.Mutex{},
 	}
 	return c
 }
@@ -57,6 +63,9 @@ func (a *RuneAtlas) Save(path string) error {
 	}
 	defer f.Close()
 
+	a.mx.Lock()
+	defer a.mx.Unlock()
+
 	return png.Encode(f, a.image)
 }
 
@@ -69,6 +78,9 @@ func (a *RuneAtlas) ClearDirty() {
 }
 
 func (a *RuneAtlas) KernToHeight(r0, r1 rune) float32 {
+	a.mx.Lock()
+	defer a.mx.Unlock()
+
 	if r0 == 0 || r1 == 0 {
 		return 0
 	}
@@ -77,6 +89,9 @@ func (a *RuneAtlas) KernToHeight(r0, r1 rune) float32 {
 }
 
 func (a *RuneAtlas) Clear() {
+	a.mx.Lock()
+	defer a.mx.Unlock()
+
 	a.clear()
 	a.hasHoles = false
 	a.isDirty = true
@@ -87,6 +102,9 @@ func (a *RuneAtlas) Clear() {
 }
 
 func (a *RuneAtlas) Remove(r rune) {
+	a.mx.Lock()
+	defer a.mx.Unlock()
+
 	if _, ok := a.glyphs[r]; !ok {
 		return
 	}
@@ -110,6 +128,9 @@ func (a *RuneAtlas) TextUV(r rune) (RectUV, bool) {
 }
 
 func (a *RuneAtlas) Store(r rune) (image.Rectangle, bool) {
+	a.mx.Lock()
+	defer a.mx.Unlock()
+
 	rect, ok := a.glyphs[r]
 	if ok {
 		return rect, true
@@ -150,7 +171,7 @@ func (a *RuneAtlas) redrawAll() bool {
 }
 
 func (a *RuneAtlas) draw(r rune) (image.Rectangle, bool) {
-	rectText, _, _ := a.face.face.GlyphBounds(r)
+	rectText := a.face.measure(r)
 
 	height := a.face.fullHeight
 	textDrawPoint := fixed.Point26_6{X: -rectText.Min.X, Y: a.face.protTop + a.face.baseHeight}

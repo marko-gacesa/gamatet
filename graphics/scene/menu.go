@@ -5,6 +5,7 @@ package scene
 import (
 	"context"
 	"gamatet/graphics/render"
+	"gamatet/graphics/scene/base"
 	"gamatet/graphics/texture"
 	"gamatet/logic/menu"
 	"gamatet/logic/screen"
@@ -37,9 +38,8 @@ func init() {
 }
 
 type Menu struct {
-	renderer *render.Renderer
-	tex      *texture.Manager
-	text     render.Text
+	base.Base
+	text render.Text
 
 	menu *menu.Menu
 
@@ -65,8 +65,7 @@ func NewMenu(renderer *render.Renderer, tex *texture.Manager, m *menu.Menu) *Men
 	strCache := make([]string, 2*n+1)
 
 	return &Menu{
-		renderer: renderer,
-		tex:      tex,
+		Base:     base.NewBase(renderer, tex),
 		text:     *text,
 		menu:     m,
 		strCache: strCache,
@@ -78,7 +77,7 @@ func (m *Menu) Release() {
 }
 
 func (m *Menu) UpdateViewSize(w, h int) {
-	m.renderer.OrthogonalFull(w, h, screenContentW, screenContentH, 2)
+	m.Renderer().OrthogonalFull(w, h, screenContentW, screenContentH, 2)
 }
 
 func (m *Menu) InputKeyPress(key, scancode int) {
@@ -165,7 +164,7 @@ func (m *Menu) Render(ctx context.Context) {
 		idxSelected = screenMaxShownItems - 1
 	}
 
-	r := m.renderer
+	r := m.Renderer()
 
 	for modelIdx, idx := modelIdxStart, 0; modelIdx < modelIdxEnd; modelIdx, idx = modelIdx+1, idx+1 {
 		var color mgl32.Vec4

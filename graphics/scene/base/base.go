@@ -1,0 +1,114 @@
+// Copyright (c) 2025 by Marko Gaćeša
+
+package base
+
+import (
+	"context"
+	"gamatet/graphics/render"
+	"gamatet/graphics/texture"
+	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/mathgl/mgl32"
+	"time"
+)
+
+func NewBase(
+	renderer *render.Renderer,
+	tex *texture.Manager,
+) Base {
+	return Base{
+		renderer: renderer,
+		tex:      tex,
+	}
+}
+
+type Base struct {
+	renderer *render.Renderer
+	tex      *texture.Manager
+}
+
+func (s Base) Renderer() *render.Renderer { return s.renderer }
+func (s Base) TexMgr() *texture.Manager   { return s.tex }
+
+func (s Base) UpdateViewSize(w, h int) {}
+
+func (s Base) Release() {}
+
+func (s Base) InputKeyPress(key, scancode int) {}
+func (s Base) InputChar(char rune)             {}
+
+func (s Base) Prepare(ctx context.Context, now time.Time) {}
+func (s Base) Render(ctx context.Context)                 {}
+
+func NewBlockBase(
+	renderer *render.Renderer,
+	tex *texture.Manager,
+	contentW, contentH int,
+	usePerspective bool,
+) BlockBase {
+	return NewBlockBaseWithZ(renderer, tex, contentW, contentH, 2, usePerspective)
+}
+
+func NewBlockBaseWithZ(
+	renderer *render.Renderer,
+	tex *texture.Manager,
+	contentW, contentH, contentZ int,
+	usePerspective bool,
+) BlockBase {
+	return BlockBase{
+		Base:           NewBase(renderer, tex),
+		usePerspective: usePerspective,
+		contentW:       contentW,
+		contentH:       contentH,
+		contentZ:       contentZ,
+		viewW:          0,
+		viewH:          0,
+	}
+}
+
+type BlockBase struct {
+	Base
+
+	usePerspective bool
+
+	contentW int
+	contentH int
+	contentZ int
+	viewW    int
+	viewH    int
+}
+
+func (b *BlockBase) InputKeyPress(key, scancode int) {
+	if glfw.Key(key) == glfw.KeyF12 {
+		b.usePerspective = !b.usePerspective
+		b.SetCamera()
+	}
+}
+
+func (b *BlockBase) SetCamera() {
+	if b.usePerspective {
+		b.Renderer().PerspectiveFull(b.viewW, b.viewH, b.contentW, b.contentH, b.contentZ)
+	} else {
+		b.Renderer().OrthogonalFull(b.viewW, b.viewH, b.contentW, b.contentH, b.contentZ)
+	}
+}
+
+func (b *BlockBase) UpdateViewSize(w, h int) {
+	b.viewW, b.viewH = w, h
+	b.SetCamera()
+}
+
+func (b *BlockBase) TopLeft() mgl32.Mat4 {
+	return mgl32.Translate3D(float32(-b.contentW)/2, float32(b.contentH)/2, 0)
+}
+
+func (b *BlockBase) TopRight() mgl32.Mat4 {
+	return mgl32.Translate3D(float32(b.contentW)/2, float32(b.contentH)/2, 0)
+}
+
+func (b *BlockBase) BottomLeft() mgl32.Mat4 {
+	return mgl32.Translate3D(float32(-b.contentW)/2, float32(-b.contentH)/2, 0)
+}
+
+func (b *BlockBase) BottomRight() mgl32.Mat4 {
+	return mgl32.Translate3D(float32(b.contentW)/2, float32(-b.contentH)/2, 0)
+}

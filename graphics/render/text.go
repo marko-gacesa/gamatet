@@ -7,7 +7,6 @@ import (
 	"gamatet/graphics/material"
 	"gamatet/graphics/runeatlas"
 	"gamatet/graphics/texture"
-	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/golang/freetype/truetype"
 	"time"
@@ -87,9 +86,7 @@ func (t *Text) Rune(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, ch rune) {
 	w2h := runeRect.WidthToHeight()
 	modelChar := model.Mul4(mgl32.Scale3D(w2h, 1, 1))
 
-	gl.DepthMask(false)
 	r.Render(&modelChar)
-	gl.DepthMask(true)
 }
 
 func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string) {
@@ -98,9 +95,6 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 			t.atlas.Store(ch)
 		}
 	}
-
-	gl.DepthMask(false)
-	defer gl.DepthMask(true)
 
 	mat := &t.mat
 

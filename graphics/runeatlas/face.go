@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package runeatlas
 
@@ -40,7 +40,7 @@ func NewFace(ttf *truetype.Font, size float64, dpi float64) *Face {
 	// because the text is written to that side anyway.
 
 	var boundsProtruded fixed.Rectangle26_6
-	for _, r := range "ğđjÅŠßq" {
+	for _, r := range "\u2588ğđjÅŠßq" {
 		rBounds, _, ok := face.GlyphBounds(r)
 		if !ok {
 			continue
@@ -71,5 +71,6 @@ func (face *Face) measure(r rune) fixed.Rectangle26_6 {
 }
 
 func (face *Face) kern(r0, r1 rune) fixed.Int26_6 {
-	return face.face.Kern(r0, r1)
+	kern := face.face.Kern(r0, r1)
+	return kern
 }

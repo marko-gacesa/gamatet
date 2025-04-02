@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package scene
 
@@ -7,6 +7,7 @@ import (
 	"gamatet/game/action"
 	"gamatet/game/core"
 	"gamatet/graphics/render"
+	"gamatet/graphics/scene/base"
 	"gamatet/graphics/texture"
 	"gamatet/logic/screen"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -15,18 +16,10 @@ import (
 )
 
 type GameOne struct {
-	renderer *render.Renderer
-	tex      *texture.Manager
-	res      render.FieldResources
-	text     render.Text
-	fps      render.FPS
-
-	usePerspective bool
-
-	contentW int
-	contentH int
-	viewW    int
-	viewH    int
+	base.BlockBase
+	res  render.FieldResources
+	text render.Text
+	fps  render.FPS
 
 	playerInCh  chan<- []byte
 	model       mgl32.Mat4
@@ -50,17 +43,10 @@ func NewGameOne(
 	w, h := render.GetExtendedContent(params.Game.GetSize(0))
 
 	g := &GameOne{
-		renderer:       renderer,
-		tex:            tex,
-		res:            *res,
-		text:           *text,
-		fps:            *fps,
-		usePerspective: true, // TODO: Read from config
-
-		contentW: w,
-		contentH: h,
-		viewW:    0,
-		viewH:    0,
+		BlockBase: base.NewBlockBase(renderer, tex, w, h, false),
+		res:       *res,
+		text:      *text,
+		fps:       *fps,
 
 		// these are set below
 		playerInCh:  nil,
@@ -85,16 +71,9 @@ func (ft *GameOne) Release() {
 	ft.res.Release()
 }
 
-func (ft *GameOne) UpdateViewSize(w, h int) {
-	ft.viewW, ft.viewH = w, h
-	if ft.usePerspective {
-		ft.renderer.PerspectiveFull(w, h, ft.contentW, ft.contentH, 2)
-	} else {
-		ft.renderer.OrthogonalFull(w, h, ft.contentW, ft.contentH, 2)
-	}
-}
-
 func (ft *GameOne) InputKeyPress(key, scancode int) {
+	ft.BlockBase.InputKeyPress(key, scancode)
+
 	switch glfw.Key(key) {
 	case glfw.KeyEscape:
 		ft.playerInCh <- []byte{byte(action.Abort)}
@@ -111,25 +90,14 @@ func (ft *GameOne) InputKeyPress(key, scancode int) {
 		ft.playerInCh <- []byte{byte(action.MoveDown)}
 	case glfw.KeySpace:
 		ft.playerInCh <- []byte{byte(action.Drop)}
-
-	case glfw.KeyF12:
-		ft.usePerspective = !ft.usePerspective
-		if ft.usePerspective {
-			ft.renderer.PerspectiveFull(ft.viewW, ft.viewH, ft.contentW, ft.contentH, 2)
-		} else {
-			ft.renderer.OrthogonalFull(ft.viewW, ft.viewH, ft.contentW, ft.contentH, 2)
-		}
 	}
 }
-
-func (ft *GameOne) InputChar(char rune) {}
 
 func (ft *GameOne) Prepare(ctx context.Context, now time.Time) {
 	ft.fieldRender.Prepare(ctx, now)
 }
 
 func (ft *GameOne) Render(ctx context.Context) {
-	r := ft.renderer
-	ft.fieldRender.Render(r)
-	ft.fps.Render(r, &ft.text, mgl32.Translate3D(float32(-ft.contentW)/2+0.5, float32(-ft.contentH)/2+1.5, 1.5))
+	ft.SetCamera()
+	ft.fieldRender.Render(ft.Renderer())
 }

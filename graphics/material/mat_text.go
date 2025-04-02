@@ -47,6 +47,9 @@ func (t *Text) Use() {
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
+	gl.Disable(gl.DEPTH_TEST)
+	//gl.DepthMask(false) // disable writing to depth buffer
+
 	uniform1f(t.uniTime, float32(glfw.GetTime()))
 	uniformVec4(t.uniColor, mgl32.Vec4{1, 1, 1, 1})
 	uniformTexture(t.uniTex, t.tex)
@@ -57,6 +60,9 @@ func (t *Text) Use() {
 
 func (t *Text) Reset() {
 	t.programSimple.Reset()
+
+	//gl.DepthMask(true) // enable writing to depth buffer
+	gl.Enable(gl.DEPTH_TEST)
 
 	gl.Disable(gl.BLEND)
 }

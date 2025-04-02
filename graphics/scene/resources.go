@@ -31,7 +31,11 @@ func (r Resources) Screen(ctx context.Context, data any) screen.Screen {
 	case *menu.Menu:
 		return NewMenu(r.rend, r.tex, v)
 	case core.GameOneParams:
-		return NewGameOne(r.rend, r.tex, v)
+		//return NewGameOne(r.rend, r.tex, v)
+		m := ScreenMap{}
+		m["g"] = NewGameOne(r.rend, r.tex, v)
+		m["h"] = NewHud(r.rend, r.tex)
+		return m
 	case core.GameDoubleParams:
 		return NewGameDouble(r.rend, r.tex, v)
 	case DemoScreenConfig:
