@@ -116,6 +116,7 @@ func Loop(app *app.App) error {
 
 			defer func() {
 				scr.Release()
+				runtime.GC()
 			}()
 
 			scr.UpdateViewSize(window.GetFramebufferSize())

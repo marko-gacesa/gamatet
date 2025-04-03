@@ -112,11 +112,11 @@ func MakeInterpreter(setup Setup) *GameInterpreter {
 }
 
 func (g *GameInterpreter) Perform(ctx context.Context) {
-	fieldEventCh := channel.Context(ctx, channel.JoinSlicePtr(g.fields, func(fd *interpreterFieldData) <-chan []byte {
+	fieldEventCh := channel.Context(ctx, channel.JoinSlicePtr(g.doneCh, g.fields, func(fd *interpreterFieldData) <-chan []byte {
 		return fd.InCh
 	}))
 
-	fieldsDoneCh := channel.JoinSlicePtr(g.fields, func(fd *interpreterFieldData) <-chan struct{} {
+	fieldsDoneCh := channel.JoinSlicePtr(g.doneCh, g.fields, func(fd *interpreterFieldData) <-chan struct{} {
 		return fd.Field.GetDone()
 	})
 

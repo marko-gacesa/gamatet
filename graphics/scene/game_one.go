@@ -73,23 +73,25 @@ func (ft *GameOne) Release() {
 func (ft *GameOne) InputKeyPress(key, scancode int) {
 	ft.BlockBase.InputKeyPress(key, scancode)
 
+	var cmd []byte
 	switch glfw.Key(key) {
 	case glfw.KeyEscape:
-		ft.playerInCh <- []byte{byte(action.Abort)}
+		cmd = []byte{byte(action.Abort)}
 	case glfw.KeyPause:
-		ft.playerInCh <- []byte{byte(action.Pause)}
-
+		cmd = []byte{byte(action.Pause)}
 	case glfw.KeyLeft:
-		ft.playerInCh <- []byte{byte(action.MoveLeft)}
+		cmd = []byte{byte(action.MoveLeft)}
 	case glfw.KeyRight:
-		ft.playerInCh <- []byte{byte(action.MoveRight)}
+		cmd = []byte{byte(action.MoveRight)}
 	case glfw.KeyUp:
-		ft.playerInCh <- []byte{byte(action.RotateCCW)}
+		cmd = []byte{byte(action.RotateCCW)}
 	case glfw.KeyDown:
-		ft.playerInCh <- []byte{byte(action.MoveDown)}
+		cmd = []byte{byte(action.MoveDown)}
 	case glfw.KeySpace:
-		ft.playerInCh <- []byte{byte(action.Drop)}
+		cmd = []byte{byte(action.Drop)}
 	}
+
+	base.SendAction(cmd, ft.waitDoneCh, ft.playerInCh)
 }
 
 func (ft *GameOne) Prepare(now time.Time) {

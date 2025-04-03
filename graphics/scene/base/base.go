@@ -111,3 +111,14 @@ func (b *BlockBase) BottomLeft() mgl32.Mat4 {
 func (b *BlockBase) BottomRight() mgl32.Mat4 {
 	return mgl32.Translate3D(float32(b.contentW)/2, float32(-b.contentH)/2, 0)
 }
+
+func SendAction(cmd []byte, doneCh <-chan struct{}, cmdCh chan<- []byte) {
+	if len(cmd) == 0 {
+		return
+	}
+
+	select {
+	case <-doneCh:
+	case cmdCh <- cmd:
+	}
+}

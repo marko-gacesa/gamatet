@@ -80,22 +80,25 @@ func (ft *FieldTest) Release() {
 }
 
 func (ft *FieldTest) InputKeyPress(key, scancode int) {
+	var cmd []byte
 	switch glfw.Key(key) {
 	case glfw.KeyLeft:
-		ft.playerInCh <- []byte{byte(action.MoveLeft)}
+		cmd = []byte{byte(action.MoveLeft)}
 	case glfw.KeyRight:
-		ft.playerInCh <- []byte{byte(action.MoveRight)}
+		cmd = []byte{byte(action.MoveRight)}
 	case glfw.KeyUp:
-		ft.playerInCh <- []byte{byte(action.RotateCCW)}
+		cmd = []byte{byte(action.RotateCCW)}
 	case glfw.KeyDown:
-		ft.playerInCh <- []byte{byte(action.MoveDown)}
+		cmd = []byte{byte(action.MoveDown)}
 	case glfw.KeySpace:
-		ft.playerInCh <- []byte{byte(action.Drop)}
+		cmd = []byte{byte(action.Drop)}
 	case glfw.KeyP, glfw.KeyPause:
-		ft.playerInCh <- []byte{byte(action.Pause)}
+		cmd = []byte{byte(action.Pause)}
 	case glfw.KeyEscape:
-		ft.playerInCh <- []byte{byte(action.Abort)}
+		cmd = []byte{byte(action.Abort)}
 	}
+
+	base.SendAction(cmd, ft.waitDoneCh, ft.playerInCh)
 }
 
 func (ft *FieldTest) Prepare(now time.Time) {

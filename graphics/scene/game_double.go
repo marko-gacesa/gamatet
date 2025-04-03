@@ -74,34 +74,39 @@ func (ft *GameDouble) Release() {
 }
 
 func (ft *GameDouble) InputKeyPress(key, scancode int) {
+	var cmd1, cmd2 []byte
+
 	switch glfw.Key(key) {
 	case glfw.KeyEscape:
-		ft.player1InCh <- []byte{byte(action.Abort)}
+		cmd1 = []byte{byte(action.Abort)}
 	case glfw.KeyPause:
-		ft.player1InCh <- []byte{byte(action.Pause)}
+		cmd1 = []byte{byte(action.Pause)}
 
 	case glfw.KeyLeft:
-		ft.player1InCh <- []byte{byte(action.MoveLeft)}
+		cmd1 = []byte{byte(action.MoveLeft)}
 	case glfw.KeyRight:
-		ft.player1InCh <- []byte{byte(action.MoveRight)}
+		cmd1 = []byte{byte(action.MoveRight)}
 	case glfw.KeyUp:
-		ft.player1InCh <- []byte{byte(action.RotateCCW)}
+		cmd1 = []byte{byte(action.RotateCCW)}
 	case glfw.KeyDown:
-		ft.player1InCh <- []byte{byte(action.MoveDown)}
+		cmd1 = []byte{byte(action.MoveDown)}
 	case glfw.KeyRightShift:
-		ft.player1InCh <- []byte{byte(action.Drop)}
+		cmd1 = []byte{byte(action.Drop)}
 
 	case glfw.KeyA:
-		ft.player2InCh <- []byte{byte(action.MoveLeft)}
+		cmd2 = []byte{byte(action.MoveLeft)}
 	case glfw.KeyD:
-		ft.player2InCh <- []byte{byte(action.MoveRight)}
+		cmd2 = []byte{byte(action.MoveRight)}
 	case glfw.KeyW:
-		ft.player2InCh <- []byte{byte(action.RotateCCW)}
+		cmd2 = []byte{byte(action.RotateCCW)}
 	case glfw.KeyS:
-		ft.player2InCh <- []byte{byte(action.MoveDown)}
+		cmd2 = []byte{byte(action.MoveDown)}
 	case glfw.KeyLeftShift:
-		ft.player2InCh <- []byte{byte(action.Drop)}
+		cmd2 = []byte{byte(action.Drop)}
 	}
+
+	base.SendAction(cmd1, ft.waitDoneCh, ft.player1InCh)
+	base.SendAction(cmd2, ft.waitDoneCh, ft.player2InCh)
 }
 
 func (ft *GameDouble) Prepare(now time.Time) {

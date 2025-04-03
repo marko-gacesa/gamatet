@@ -135,7 +135,7 @@ func (g *GameHost) Perform(ctx context.Context) {
 		}
 	}()
 
-	ctrlTimer := channel.Join(func() <-chan channel.Input[time.Time, field.PiecePlace] {
+	ctrlTimer := channel.Join(g.doneCh, func() <-chan channel.Input[time.Time, field.PiecePlace] {
 		ch := make(chan channel.Input[time.Time, field.PiecePlace])
 		go func() {
 			defer close(ch)
@@ -155,7 +155,7 @@ func (g *GameHost) Perform(ctx context.Context) {
 		return ch
 	}())
 
-	inputCh := channel.JoinSlicePtr(g.inputs, func(p *hostPlayerData) <-chan []byte {
+	inputCh := channel.JoinSlicePtr(g.doneCh, g.inputs, func(p *hostPlayerData) <-chan []byte {
 		return p.InCh
 	})
 
@@ -164,7 +164,7 @@ func (g *GameHost) Perform(ctx context.Context) {
 		pusher  event.Pusher
 	}
 
-	sweeperTimer := channel.Join(func() <-chan channel.Input[time.Time, sweeperPusher] {
+	sweeperTimer := channel.Join(g.doneCh, func() <-chan channel.Input[time.Time, sweeperPusher] {
 		ch := make(chan channel.Input[time.Time, sweeperPusher])
 		go func() {
 			defer close(ch)
