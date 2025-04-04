@@ -1,38 +1,38 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024,2025 by Marko Gaćeša
 
 package menu
 
 import "strconv"
 
+var _ Item = (*Integer)(nil)
+
+// Integer is a menu item that manages an integer variable.
 type Integer struct {
-	editable
-	value    *int
+	base
+	old      int
+	ptr      *int
 	valueMin int
 	valueMax int
 }
 
-func NewInteger(v *int, vmin, vmax int, label, description string) *Integer {
-	if v == nil {
+// NewInteger creates new Integer menu item.
+func NewInteger(ptr *int, vmin, vmax int, label, description string, options ...func(Item)) *Integer {
+	if ptr == nil {
 		panic("need non-nil pointer")
 	}
 	if vmin > vmax {
 		panic("invalid integer limits provided")
 	}
-	if *v < vmin {
-		*v = vmin
-	}
-	if *v > vmax {
-		*v = vmax
-	}
-	return &Integer{
-		editable: editable{
-			base:  base{description: description},
-			label: label,
-		},
-		value:    v,
+	i := &Integer{
+		base:     makeBase(label, description),
+		old:      *ptr,
+		ptr:      ptr,
 		valueMin: vmin,
 		valueMax: vmax,
 	}
+	i.fix()
+	applyOptions(i, options...)
+	return i
 }
 
 func (i *Integer) Text() string {
@@ -40,27 +40,40 @@ func (i *Integer) Text() string {
 		return i.current
 	}
 
-	i.current = i.label + ": " + strconv.Itoa(*i.value)
+	i.current = i.label + ": " + strconv.Itoa(*i.ptr)
 	return i.current
 }
 
-func (i *Integer) Increase() {
-	if *i.value < i.valueMax {
-		*i.value++
-		i.dirty()
+func (i *Integer) fix() {
+	if *i.ptr < i.valueMin {
+		*i.ptr = i.valueMin
+		i.markDirty()
+	}
+	if *i.ptr > i.valueMax {
+		*i.ptr = i.valueMax
+		i.markDirty()
 	}
 }
 
-func (i *Integer) Decrease() {
-	if *i.value > i.valueMin {
-		*i.value--
-		i.dirty()
+func (i *Integer) increase() {
+	if *i.ptr < i.valueMax {
+		*i.ptr++
+		i.old = *i.ptr
+		i.markDirty()
 	}
 }
 
-func (i *Integer) Input(r rune) bool {
+func (i *Integer) decrease() {
+	if *i.ptr > i.valueMin {
+		*i.ptr--
+		i.old = *i.ptr
+		i.markDirty()
+	}
+}
+
+func (i *Integer) input(r rune) bool {
 	if r == InputEnter {
-		i.Increase()
+		i.increase()
 		return true
 	}
 	return false

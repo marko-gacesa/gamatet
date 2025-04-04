@@ -1,23 +1,26 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024,2025 by Marko Gaćeša
 
 package menu
 
+var _ Item = (*Bool)(nil)
+
+// Bool is a menu item that manages a boolean variable.
 type Bool struct {
-	editable
-	value *bool
+	base
+	ptr *bool
 }
 
-func NewBool(b *bool, label, description string) *Bool {
-	if b == nil {
+// NewBool creates new Bool menu item.
+func NewBool(ptr *bool, label, description string, options ...func(Item)) *Bool {
+	if ptr == nil {
 		panic("need non-nil pointer")
 	}
-	return &Bool{
-		editable: editable{
-			base:  base{description: description},
-			label: label,
-		},
-		value: b,
+	b := &Bool{
+		base: makeBase(label, description),
+		ptr:  ptr,
 	}
+	applyOptions(b, options...)
+	return b
 }
 
 func (b *Bool) Text() string {
@@ -25,7 +28,7 @@ func (b *Bool) Text() string {
 		return b.current
 	}
 
-	if *b.value {
+	if *b.ptr {
 		b.current = b.label + ": " + "ON"
 	} else {
 		b.current = b.label + ": " + "OFF"
@@ -34,16 +37,16 @@ func (b *Bool) Text() string {
 	return b.current
 }
 
-func (b *Bool) Increase() {
-	*b.value = !*b.value
-	b.dirty()
+func (b *Bool) increase() {
+	*b.ptr = !*b.ptr
+	b.markDirty()
 }
 
-func (b *Bool) Decrease() { b.Increase() }
+func (b *Bool) decrease() { b.increase() }
 
-func (b *Bool) Input(r rune) bool {
+func (b *Bool) input(r rune) bool {
 	if r == InputEnter {
-		b.Increase()
+		b.increase()
 		return true
 	}
 	return false

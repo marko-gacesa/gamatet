@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024,2025 by Marko Gaćeša
 
 package menu
 
@@ -13,41 +13,91 @@ type Item interface {
 	Text() string
 	Description() string
 
-	Editable() bool
-	Increase()
-	Decrease()
+	SetLabel(s string)
+	SetDescription(s string)
 
-	Input(r rune) bool
+	IsDisabled() bool
+	isVisible() bool
 
-	Focus()
-	FocusLost()
+	fix()
+	increase()
+	decrease()
+	input(r rune) bool
 
-	setParent(menu *Menu)
+	focus()
+	focusLost()
+
+	updateDisabled()
+	updateVisible()
+
+	markDirty()
+	isDirty() bool
+
+	b() *base
+}
+
+func makeBase(label, description string) base {
+	return base{
+		label:       label,
+		description: description,
+		visible:     true,
+	}
 }
 
 type base struct {
+	label       string
 	description string
+	current     string
+
+	canceler bool
+	disabled bool
+	visible  bool
+
+	disabledFn func() bool
+	visibleFn  func() bool
 }
 
-func (b base) Description() string {
-	return b.description
+func (b *base) Text() string        { return b.label }
+func (b *base) Description() string { return b.description }
+
+func (b *base) SetLabel(l string)       { b.label = l }
+func (b *base) SetDescription(l string) { b.description = l }
+
+func (b *base) IsDisabled() bool {
+	return b.disabled
 }
-func (b base) Editable() bool { return false }
+func (b *base) isVisible() bool { return b.visible }
 
-func (base) Input(rune) bool { return false }
-func (base) Focus()          {}
-func (base) FocusLost()      {}
+func (*base) focus()     {}
+func (*base) focusLost() {}
 
-func (base) setParent(*Menu) {}
+func (*base) fix()      {}
+func (*base) increase() {}
+func (*base) decrease() {}
 
-type editable struct {
-	base
-	label   string
-	current string
+func (b *base) updateDisabled() {
+	if b.disabledFn != nil {
+		b.disabled = b.disabledFn()
+		return
+	}
+	b.disabled = false
 }
 
-func (e *editable) dirty() {
-	e.current = ""
+func (b *base) updateVisible() {
+	if b.visibleFn != nil {
+		b.visible = b.visibleFn()
+		return
+	}
+	b.visible = true
 }
 
-func (editable) Editable() bool { return true }
+func (b *base) markDirty() { b.current = "" }
+func (b *base) isDirty() bool {
+	return b.current == ""
+}
+
+func (b *base) b() *base { return b }
+
+func (b *base) String() string {
+	return b.label
+}

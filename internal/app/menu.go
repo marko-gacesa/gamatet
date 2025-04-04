@@ -1,35 +1,34 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024,2025 by Marko Gaćeša
 
 package app
 
 import (
-	"context"
 	"gamatet/logic/menu"
 )
 
-func (app *App) routeTo(route route, cancelFn context.CancelFunc) func(*menu.Menu, *menu.Command) {
-	return func(m *menu.Menu, cmd *menu.Command) {
-		app.screenIDNext = route
-		cancelFn()
-		cmd.ClearFunction()
+func (app *App) menuStopper(stopFn func()) func() {
+	return func() {
+		if app.screenIDNext != "" {
+			stopFn()
+		}
 	}
 }
 
-func (app *App) menuMain(ctx context.Context) (*menu.Menu, context.Context) {
-	ctx, cancelCtx := context.WithCancel(ctx)
-	return menu.New("Gamatet", cancelCtx, []menu.Item{
-		menu.NewCommand("Single player", "Start demo fields", app.routeTo(routeMenuSinglePlayer, cancelCtx)),
-		menu.NewCommand("Fields demo", "Start demo fields", app.routeTo(routeTestField, cancelCtx)),
-		menu.NewCommand("Blocks", "Blocks demo", app.routeTo(routeTestBlocks, cancelCtx)),
-		menu.NewCommand("Exit", "Exit application", app.routeTo(routeQuit, cancelCtx)),
-	}...), ctx
+func (app *App) menuMain(stopFn func()) *menu.Menu {
+	return menu.New("Gamatet", app.menuStopper(stopFn), []menu.Item{
+		menu.NewCancel(&app.screenIDNext, routeBack),
+		menu.NewCommand(&app.screenIDNext, routeMenuSinglePlayer, "Single player", "Start demo fields"),
+		menu.NewCommand(&app.screenIDNext, routeTestField, "Fields demo", "Start demo fields"),
+		menu.NewCommand(&app.screenIDNext, routeTestBlocks, "Blocks", "Blocks demo"),
+		menu.NewCommand(&app.screenIDNext, routeQuit, "Exit", "Exit application"),
+	}...)
 }
 
-func (app *App) menuSinglePlayer(ctx context.Context) (*menu.Menu, context.Context) {
-	ctx, cancelCtx := context.WithCancel(ctx)
-	return menu.New("Single Player", cancelCtx, []menu.Item{
-		menu.NewCommand("Play Now!", "Start a classic game", app.routeTo(routeGameSinglePlayNow, cancelCtx)),
-		menu.NewCommand("Play Double Now!", "Start a double game", app.routeTo(routeGameDoublePlayNow, cancelCtx)),
-		menu.NewCommand("Back", "Back to main menu", app.routeTo(routeBack, cancelCtx)),
-	}...), ctx
+func (app *App) menuSinglePlayer(stopFn func()) *menu.Menu {
+	return menu.New("Single Player", app.menuStopper(stopFn), []menu.Item{
+		menu.NewCancel(&app.screenIDNext, routeBack),
+		menu.NewCommand(&app.screenIDNext, routeGameSinglePlayNow, "Play Now!", "Start a classic game"),
+		menu.NewCommand(&app.screenIDNext, routeGameDoublePlayNow, "Play Double Now!", "Start a double game"),
+		menu.NewCommand(&app.screenIDNext, routeBack, "Back", "Back to main menu"),
+	}...)
 }

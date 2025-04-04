@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024,2025 by Marko Gaćeša
 
 package app
 
@@ -7,7 +7,7 @@ type route string
 const (
 	routeMain route = "main"
 	routeQuit route = "quit"
-	routeBack route = ""
+	routeBack route = "back"
 
 	routeMenuSinglePlayer route = "menu-single-player"
 

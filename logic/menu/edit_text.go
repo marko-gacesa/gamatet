@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024,2025 by Marko Gaćeša
 
 package menu
 
@@ -7,150 +7,73 @@ import (
 	"golang.org/x/text/unicode/norm"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
-const cursor = "\x01"
+var _ Item = (*Text)(nil)
 
+// Text is menu item that assigns a value to a string variable.
 type Text struct {
-	editable
-	value   *string
-	editing bool
-	editor  []rune
-	cursor  int
-	maxLen  int
+	textBase
+	ptr *string
 }
 
-func NewText(s *string, label, description string, maxLen int) *Text {
-	if s == nil {
+// NewText creates new Text menu item.
+func NewText(ptr *string, maxLen int, label, description string, options ...func(Item)) *Text {
+	if ptr == nil {
 		panic("need non-nil pointer")
 	}
-	return &Text{
-		editable: editable{
-			base:  base{description: description},
-			label: label,
-		},
-		value:  s,
-		maxLen: maxLen,
+	t := &Text{
+		textBase: makeTextBase(maxLen, label, description),
+		ptr:      ptr,
 	}
+	t.textBase.converter = t
+	t.fix()
+	applyOptions(t, options...)
+	return t
 }
 
-func (t *Text) Text() string {
-	if t.current != "" {
-		return t.current
+func (t *Text) fix() {
+	valid := true
+	for i, r := range *t.ptr {
+		if i >= t.maxLen || !t.allowed(r) {
+			valid = false
+			break
+		}
 	}
-
-	if !t.editing {
-		t.current = t.label + ": " + *t.value
-	} else {
-		t.current = t.label + ": " + string(t.editor[:t.cursor]) + cursor + string(t.editor[t.cursor:])
-	}
-
-	return t.current
-}
-
-func (t *Text) Increase() {
-	if !t.editing {
-		t.startEdit()
+	if valid {
 		return
 	}
 
-	c := t.cursor
-	n := len(t.editor)
-	if c < n {
-		c++
-	} else {
-		c = n
-	}
-
-	if c != t.cursor {
-		t.cursor = c
-		t.dirty()
-	}
-}
-
-func (t *Text) Decrease() {
-	if !t.editing {
-		t.startEdit()
-		return
-	}
-
-	c := t.cursor
-	if c > 0 {
-		c--
-	} else {
-		c = 0
-	}
-
-	if c != t.cursor {
-		t.cursor = c
-		t.dirty()
-	}
-}
-
-func (t *Text) Input(r rune) bool {
-	switch {
-	case r == InputEnter:
-		if t.editing {
-			t.commit()
-		} else {
-			t.startEdit()
+	var sb strings.Builder
+	var l int
+	for _, r := range *t.ptr {
+		if t.allowed(r) {
+			sb.WriteRune(r)
+			l++
 		}
-		return true
-	case r == InputBackspace:
-		if t.cursor > 0 {
-			t.editor = append(t.editor[:t.cursor-1], t.editor[t.cursor:]...)
-			t.cursor--
-			t.dirty()
+		if l == t.maxLen {
+			break
 		}
-		return true
-	case r == InputDelete:
-		if t.cursor < len(t.editor) {
-			t.editor = append(t.editor[:t.cursor], t.editor[t.cursor+1:]...)
-			t.dirty()
-		}
-		return true
-	case r == InputEscape:
-		if t.editing {
-			t.stopEdit()
-			return true
-		}
-		return false
-	case unicode.IsPrint(r):
-		if len(t.editor) >= t.maxLen {
-			return true
-		}
-
-		t.editor = append(t.editor[:t.cursor], append([]rune{r}, t.editor[t.cursor:]...)...)
-		t.cursor++
-		t.dirty()
-		return true
 	}
 
-	return false
+	*t.ptr = sb.String()
+	t.markDirty()
 }
 
-func (t *Text) FocusLost() {
-	if !t.editing {
-		return
-	}
-
-	t.stopEdit()
+func (t *Text) getValueAsStr() string {
+	s, _, _ := transform.String(norm.NFC, *t.ptr)
+	return s
 }
 
-func (t *Text) startEdit() {
-	s, _, _ := transform.String(norm.NFC, *t.value)
-	t.editor = []rune(s)
-	t.cursor = len(t.editor)
-	t.editing = true
-	t.dirty()
+func (t *Text) setValueFromStr(s string) {
+	*t.ptr = s
 }
 
-func (t *Text) stopEdit() {
-	t.editing = false
-	t.dirty()
+func (*Text) allowed(r rune) bool {
+	return utf8.ValidRune(r) && unicode.IsPrint(r)
 }
 
-func (t *Text) commit() {
-	*t.value = strings.TrimSpace(string(t.editor))
-	t.stopEdit()
+func (*Text) allowedInsert(rune, []rune, int) bool {
+	return true
 }

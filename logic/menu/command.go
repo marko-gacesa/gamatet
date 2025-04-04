@@ -1,51 +1,35 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024,2025 by Marko Gaćeša
 
 package menu
 
-type Command struct {
+var _ Item = (*Command[string])(nil)
+
+// Command is a menu item that activates when the enter key is pressed while the item is active.
+type Command[T any] struct {
 	base
-	text   string
-	parent *Menu
-	fn     func(*Menu, *Command)
+	ptr   *T
+	value T
 }
 
-func NewCommand(text, description string, fn func(*Menu, *Command)) *Command {
-	return &Command{
-		base: base{description: description},
-		text: text,
-		fn:   fn,
+// NewCommand creates a new Command menu item that activates when the enter key is pressed while the item is active.
+// The activation means write of the provided value to the provided pointer.
+func NewCommand[T any](ptr *T, value T, label, description string, options ...func(Item)) *Command[T] {
+	if ptr == nil {
+		panic("need non-nil pointer")
 	}
+	cmd := &Command[T]{
+		base:  makeBase(label, description),
+		ptr:   ptr,
+		value: value,
+	}
+	applyOptions(cmd, options...)
+	return cmd
 }
 
-func (c *Command) Text() string {
-	return c.text
-}
-
-func (c *Command) Increase() {}
-func (c *Command) Decrease() {}
-
-func (c *Command) Input(r rune) bool {
+func (c *Command[T]) input(r rune) bool {
 	if r != InputEnter {
 		return false
 	}
-	if fn := c.fn; fn != nil {
-		fn(c.parent, c)
-	}
+	*c.ptr = c.value
 	return true
-}
-
-func (c *Command) setParent(menu *Menu) {
-	c.parent = menu
-}
-
-func (c *Command) SetText(text string) {
-	c.text = text
-}
-
-func (c *Command) SetDescription(desc string) {
-	c.description = desc
-}
-
-func (c *Command) ClearFunction() {
-	c.fn = nil
 }

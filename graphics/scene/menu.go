@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024,2025 by Marko Gaćeša
 
 package scene
 
@@ -10,25 +10,30 @@ import (
 	"gamatet/logic/screen"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
+	"math"
 	"time"
 	"unicode"
 )
 
 const (
-	screenContentW      = 24
-	screenContentH      = 16
-	screenMaxShownItems = 8
+	screenContentW      = 32
+	screenContentH      = 20
+	screenMaxShownItems = 16
+	currItemMarker      = '●' //'◦'
 )
 
 var (
-	screenModelItem [screenMaxShownItems]mgl32.Mat4
-	screenModelDesc mgl32.Mat4
+	screenModelItem   [screenMaxShownItems]mgl32.Mat4
+	screenModelMarker [screenMaxShownItems]mgl32.Mat4
+	screenModelDesc   mgl32.Mat4
 )
 
 func init() {
 	for i := 0; i < screenMaxShownItems; i++ {
-		screenModelItem[i] = mgl32.Ident4().
+		screenModelMarker[i] = mgl32.Ident4().
 			Mul4(mgl32.Translate3D(-screenContentW/2+1, float32(screenMaxShownItems-screenContentH/2+1-i), 0))
+		screenModelItem[i] = screenModelMarker[i].
+			Mul4(mgl32.Translate3D(0.4, 0, 0))
 	}
 
 	screenModelDesc = mgl32.Ident4().
@@ -45,20 +50,25 @@ type Menu struct {
 	strCache  []string
 	strCache2 []string
 
-	offset int
+	offset        int
+	selectedColor mgl32.Vec4
 }
 
 var _ screen.Screen = (*Menu)(nil)
 
 var (
-	colorSelected    = mgl32.Vec4{0.8, 0.7, 0.6, 1}
-	colorItem        = colorSelected.Mul(0.8)
-	colorDescription = colorSelected.Mul(0.6)
-	colorTitle       = colorSelected.Mul(0.4)
+	colorItemSelected         = mgl32.Vec4{0.8, 0.7, 0.6, 1}
+	colorItem                 = colorItemSelected.Mul(0.8)
+	colorItemDisabledSelected = mgl32.Vec4{0.4, 0.4, 0.4, 1}
+	colorItemDisabled         = colorItemDisabledSelected.Mul(0.8)
+	colorDescription          = colorItemSelected.Mul(0.6)
+	colorTitle                = colorItemSelected.Mul(0.4)
 )
 
 func NewMenu(renderer *render.Renderer, tex *texture.Manager, m *menu.Menu) *Menu {
 	text := render.MakeText(tex, render.Font)
+
+	text.Prepare(string(currItemMarker))
 
 	n := m.Count()
 	strCache := make([]string, 2*n+1)
@@ -107,6 +117,10 @@ func (m *Menu) InputChar(r rune) {
 }
 
 func (m *Menu) Prepare(now time.Time) {
+	t64 := math.Sin(4 * glfw.GetTime())
+	t := float32(t64 * t64)
+	m.selectedColor = colorItem.Mul(t).Add(colorItemSelected.Mul(1 - t))
+
 	n := m.menu.Count()
 
 	if len(m.strCache) != n {
@@ -157,25 +171,51 @@ func (m *Menu) Render() {
 		idxSelected = screenMaxShownItems - 1
 	}
 
+	for modelIdxEnd-modelIdxStart+m.offset > m.menu.Count() && m.offset > 0 {
+		if idxSelected > 0 {
+			idxSelected--
+		}
+		m.offset--
+	}
+
 	r := m.Renderer()
 
 	for modelIdx, idx := modelIdxStart, 0; modelIdx < modelIdxEnd; modelIdx, idx = modelIdx+1, idx+1 {
+		item := m.menu.Item(idx + m.offset)
+		text := item.Text()
+		disabled := item.IsDisabled()
+
+		model := screenModelItem[modelIdx]
+
 		var color mgl32.Vec4
-		text := m.menu.Item(idx + m.offset).Text()
 		if idxSelected == idx {
-			color = colorSelected
+			if disabled {
+				color = colorItemDisabledSelected
+			} else {
+				color = colorItemSelected
+			}
+			m.text.Rune(r, screenModelMarker[modelIdx], m.selectedColor, currItemMarker)
 		} else {
-			color = colorItem
+			if disabled {
+				color = colorItemDisabled
+			} else {
+				color = colorItem
+			}
 		}
 
-		m.text.String(r, screenModelItem[modelIdx], color, text)
+		m.text.String(r, model, color, text)
 	}
 
-	desc := m.menu.Current().Description()
+	desc := m.menu.Description()
 	m.text.String(r, screenModelDesc, colorDescription, desc)
 
+	screenModeTitle := screenModelItem[screenMaxShownItems-1]
+	if modelIdxEnd != modelIdxStart {
+		screenModeTitle = screenModelMarker[modelIdxStart]
+	}
+
 	if title := m.menu.Title(); title != "" {
-		modelTitle := screenModelItem[modelIdxStart].
+		modelTitle := screenModeTitle.
 			Mul4(mgl32.Translate3D(-0.5, 1.4, 0)).
 			Mul4(mgl32.Scale3D(1.5, 1.5, 1))
 		m.text.String(r, modelTitle, colorTitle, title)

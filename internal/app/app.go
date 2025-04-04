@@ -39,9 +39,13 @@ func (app *App) MakeScreen(ctx context.Context) (screen.Screen, context.Context)
 	case "", routeQuit:
 		data = nil
 	case routeMain:
-		data, ctx = app.menuMain(ctx)
+		var cancelCtx context.CancelFunc
+		ctx, cancelCtx = context.WithCancel(ctx)
+		data = app.menuMain(cancelCtx)
 	case routeMenuSinglePlayer:
-		data, ctx = app.menuSinglePlayer(ctx)
+		var cancelCtx context.CancelFunc
+		ctx, cancelCtx = context.WithCancel(ctx)
+		data = app.menuSinglePlayer(cancelCtx)
 	case routeTestBlocks:
 		data, ctx = scene.Demo(ctx, scene.DemoBlocks)
 	case routeTestField:
@@ -56,10 +60,10 @@ func (app *App) MakeScreen(ctx context.Context) (screen.Screen, context.Context)
 }
 
 func (app *App) ScreenFinish() {
-	if app.screenIDNext != "" {
+	if app.screenIDNext == routeBack || app.screenIDNext == "" {
+		app.screenIDHistory.pop()
+	} else if app.screenIDNext != "" {
 		app.screenIDHistory.push(app.screenIDNext)
 		app.screenIDNext = ""
-	} else {
-		app.screenIDHistory.pop()
 	}
 }

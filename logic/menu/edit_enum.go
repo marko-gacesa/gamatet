@@ -1,33 +1,38 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024,2025 by Marko Gaćeša
 
 package menu
 
-import "fmt"
+import (
+	"fmt"
+	"slices"
+)
 
+var _ Item = (*Enum[int])(nil)
+
+// Enum is a menu item that manages a variable of any type.
+// The variable can have only one value from the provided list.
 type Enum[T comparable] struct {
-	editable
-	value  *T
+	base
+	ptr    *T
 	values []T
 }
 
-func NewEnum[T comparable](v *T, values []T, label, description string) *Enum[T] {
-	if v == nil {
+// NewEnum creates new Enum menu item.
+func NewEnum[T comparable](ptr *T, values []T, label, description string, options ...func(Item)) *Enum[T] {
+	if ptr == nil {
 		panic("need non-nil pointer")
 	}
 	if len(values) == 0 {
 		panic("no enum values provided")
 	}
-	if index(*v, values) < 0 {
-		*v = values[0]
-	}
-	return &Enum[T]{
-		editable: editable{
-			base:  base{description: description},
-			label: label,
-		},
-		value:  v,
+	e := &Enum[T]{
+		base:   makeBase(label, description),
+		ptr:    ptr,
 		values: values,
 	}
+	e.fix()
+	applyOptions(e, options...)
+	return e
 }
 
 func (e *Enum[T]) Text() string {
@@ -35,38 +40,44 @@ func (e *Enum[T]) Text() string {
 		return e.current
 	}
 
-	e.current = fmt.Sprintf("%s: %v", e.label, *e.value)
+	e.current = fmt.Sprintf("%s: ‹%v›", e.label, *e.ptr)
 	return e.current
 }
 
-func (e *Enum[T]) Increase() {
-	idx := index(*e.value, e.values)
-	if idx < 0 {
-		*e.value = e.values[0]
-	} else {
-		n := len(e.values)
-		*e.value = e.values[(idx+1)%n]
+func (e *Enum[T]) fix() {
+	if slices.Index(e.values, *e.ptr) >= 0 {
+		return
 	}
-	e.dirty()
+	*e.ptr = e.values[0]
+	e.markDirty()
 }
 
-func (e *Enum[T]) Decrease() {
-	idx := index(*e.value, e.values)
+func (e *Enum[T]) increase() {
+	idx := slices.Index(e.values, *e.ptr)
 	if idx < 0 {
-		*e.value = e.values[0]
+		*e.ptr = e.values[0]
 	} else {
 		n := len(e.values)
-		*e.value = e.values[(idx-1+n)%n]
+		*e.ptr = e.values[(idx+1)%n]
 	}
-	e.dirty()
+	e.markDirty()
 }
 
-func index[T comparable](v T, values []T) int {
-	for i := 0; i < len(values); i++ {
-		if v == values[i] {
-			return i
-		}
+func (e *Enum[T]) decrease() {
+	idx := slices.Index(e.values, *e.ptr)
+	if idx < 0 {
+		*e.ptr = e.values[0]
+	} else {
+		n := len(e.values)
+		*e.ptr = e.values[(idx-1+n)%n]
 	}
+	e.markDirty()
+}
 
-	return -1
+func (e *Enum[T]) input(r rune) bool {
+	if r == InputEnter {
+		e.increase()
+		return true
+	}
+	return false
 }
