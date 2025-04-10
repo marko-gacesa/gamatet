@@ -7,6 +7,8 @@ import (
 	"gamatet/graphics/scene"
 	"gamatet/internal/config"
 	"gamatet/logic/screen"
+	"log/slog"
+	"os"
 )
 
 type App struct {
@@ -17,6 +19,8 @@ type App struct {
 	screenIDNext    route
 
 	screener screen.Screener
+
+	logger *slog.Logger
 }
 
 func NewApp(cfg config.Config, cfgPath string) *App {
@@ -24,11 +28,20 @@ func NewApp(cfg config.Config, cfgPath string) *App {
 		cfg:             cfg,
 		cfgPath:         cfgPath,
 		screenIDHistory: (&routes{}).push(routeMain),
+		logger: slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			AddSource:   false,
+			Level:       slog.LevelDebug,
+			ReplaceAttr: nil,
+		})),
 	}
 }
 
 func (app *App) SetScreener(screener screen.Screener) {
 	app.screener = screener
+}
+
+func (app *App) Log() *slog.Logger {
+	return app.logger
 }
 
 func (app *App) MakeScreen(ctx context.Context) (screen.Screen, context.Context) {

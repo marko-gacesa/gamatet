@@ -4,6 +4,7 @@ package app
 
 import (
 	"gamatet/logic/menu"
+	"gamatet/logic/values"
 )
 
 func (app *App) menuStopper(stopFn func()) func() {
@@ -15,7 +16,7 @@ func (app *App) menuStopper(stopFn func()) func() {
 }
 
 func (app *App) menuMain(stopFn func()) *menu.Menu {
-	return menu.New("Gamatet", app.menuStopper(stopFn), []menu.Item{
+	return menu.New(values.ProgramName, app.menuStopper(stopFn), []menu.Item{
 		menu.NewCancel(&app.screenIDNext, routeBack),
 		menu.NewCommand(&app.screenIDNext, routeMenuSinglePlayer, "Single player", "Start demo fields"),
 		menu.NewCommand(&app.screenIDNext, routeTestField, "Fields demo", "Start demo fields"),

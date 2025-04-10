@@ -9,17 +9,15 @@ import (
 	"gamatet/graphics/scene"
 	"gamatet/internal/app"
 	"gamatet/logic/screen"
+	"gamatet/logic/values"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/marko-gacesa/appctx"
-	"math"
 	"runtime"
 	"time"
 )
 
-func Loop(app *app.App) error {
-	// GLFW event handling must run on the main OS thread
-	runtime.LockOSThread()
+func Loop(globalCtx context.Context, app *app.App) error {
+	runtime.LockOSThread() // GLFW event handling must run on the main OS thread
 
 	if err := glfw.Init(); err != nil {
 		return fmt.Errorf("failed to initialize glfw: %w", err)
@@ -34,8 +32,8 @@ func Loop(app *app.App) error {
 	var window *glfw.Window
 
 	if err := func() (err error) {
-		//window, err = windowFullscreen("GaMaTeT", glfw.GetPrimaryMonitor())
-		window, err = windowResizable(900, 600, "GaMaTeT")
+		//window, err = windowFullscreen(values.ProgramName, nil)
+		window, err = windowResizable(900, 600, values.ProgramName)
 		return
 	}(); err != nil {
 		return fmt.Errorf("failed to create window: %w", err)
@@ -50,8 +48,10 @@ func Loop(app *app.App) error {
 		return fmt.Errorf("failed to initialize OpenGL bindings: %w", err)
 	}
 
+	log := app.Log()
+
 	version := gl.GoStr(gl.GetString(gl.VERSION))
-	fmt.Println("OpenGL version", version)
+	log.Info("OpenGL initialized", "version", version)
 
 	// Configure global settings
 
@@ -64,7 +64,7 @@ func Loop(app *app.App) error {
 
 	// Main resources
 
-	ctxLoop, cancelLoopCtxFn := context.WithCancel(appctx.Context)
+	ctxLoop, cancelLoopCtxFn := context.WithCancel(globalCtx)
 	defer cancelLoopCtxFn()
 
 	resources := scene.InitResources()
@@ -91,7 +91,6 @@ func Loop(app *app.App) error {
 			return
 		}
 
-		//fmt.Printf("KEY key=%d (%c), scan=%04x, act=%d, mods=%06b\n", key, key, scancode, act, mods)
 		if scr != nil {
 			scr.InputKeyPress(int(key), scancode)
 		}
@@ -160,12 +159,14 @@ func windowResizable(w, h int, title string) (*glfw.Window, error) {
 }
 
 func windowFullscreen(title string, monitor *glfw.Monitor) (*glfw.Window, error) {
-	// https://www.glfw.org/docs/latest/window_guide.html#window_windowed_full_screen
+	if monitor == nil {
+		monitor = glfw.GetPrimaryMonitor()
+	}
 
 	videoMode := monitor.GetVideoMode()
-	fmt.Printf("Current Video Mode: %dx%d@%dHz %dx%dx%d\n",
-		videoMode.Width, videoMode.Height, videoMode.RefreshRate,
-		videoMode.RedBits, videoMode.GreenBits, videoMode.BlueBits)
+	//fmt.Printf("Current Video Mode: %dx%d@%dHz %dx%dx%d\n",
+	//	videoMode.Width, videoMode.Height, videoMode.RefreshRate,
+	//	videoMode.RedBits, videoMode.GreenBits, videoMode.BlueBits)
 
 	glfw.WindowHint(glfw.RedBits, videoMode.RedBits)
 	glfw.WindowHint(glfw.GreenBits, videoMode.GreenBits)
@@ -178,17 +179,4 @@ func windowFullscreen(title string, monitor *glfw.Monitor) (*glfw.Window, error)
 	}
 
 	return window, nil
-}
-
-func getMonitorInfo() {
-	for _, monitor := range glfw.GetMonitors() {
-		sizeW, sizeH := monitor.GetPhysicalSize()
-		workX, workY, workW, workH := monitor.GetWorkarea()
-		d := math.Sqrt(float64(sizeW*sizeW+sizeH*sizeH)) / 25.4
-		fmt.Printf("Monitor: %s (size=%dmm x %dmm D=%.2f\") area: X=%d Y=%d W=%d H=%d\n", monitor.GetName(), sizeW, sizeH, d, workX, workY, workW, workH)
-
-		for _, videoMode := range monitor.GetVideoModes() {
-			fmt.Printf("\tVideo mode: %dx%d@%dHz %dx%dx%d\n", videoMode.Width, videoMode.Height, videoMode.RefreshRate, videoMode.RedBits, videoMode.GreenBits, videoMode.BlueBits)
-		}
-	}
 }

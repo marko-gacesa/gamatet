@@ -1,21 +1,27 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package main
 
 import (
-	"fmt"
 	"gamatet/graphics/loop"
 	"gamatet/internal/app"
 	"gamatet/internal/config"
+	"gamatet/logic/appctx"
+	"os"
 )
 
 func main() {
+	appCtx := appctx.Context
+
 	cfg, cfgPath := config.Load()
 
-	app := app.NewApp(cfg, cfgPath)
+	pid := os.Getpid()
 
-	err := loop.Loop(app)
+	app := app.NewApp(cfg, cfgPath)
+	app.Log().Info("Starting", "pid", pid, "cfgPath", cfgPath)
+
+	err := loop.Loop(appCtx, app)
 	if err != nil {
-		fmt.Printf("error: %s\n", err.Error())
+		app.Log().Error("Stopped", "error", err)
 	}
 }
