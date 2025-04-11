@@ -3,7 +3,6 @@
 package screen
 
 import (
-	"context"
 	"time"
 )
 
@@ -29,5 +28,5 @@ type Screen interface {
 }
 
 type Screener interface {
-	Screen(ctx context.Context, data any) Screen
+	Screen(ctx Context, data any) Screen
 }

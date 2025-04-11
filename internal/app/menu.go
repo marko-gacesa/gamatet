@@ -4,19 +4,20 @@ package app
 
 import (
 	"gamatet/logic/menu"
+	"gamatet/logic/screen"
 	"gamatet/logic/values"
 )
 
-func (app *App) menuStopper(stopFn func()) func() {
+func (app *App) menuStopper(ctx screen.Context) func() {
 	return func() {
 		if app.screenIDNext != "" {
-			stopFn()
+			ctx.Stop()
 		}
 	}
 }
 
-func (app *App) menuMain(stopFn func()) *menu.Menu {
-	return menu.New(values.ProgramName, app.menuStopper(stopFn), []menu.Item{
+func (app *App) menuMain(ctx screen.Context) *menu.Menu {
+	return menu.New(values.ProgramName, app.menuStopper(ctx), []menu.Item{
 		menu.NewCancel(&app.screenIDNext, routeBack),
 		menu.NewCommand(&app.screenIDNext, routeMenuSinglePlayer, "Single player", "Start demo fields"),
 		menu.NewCommand(&app.screenIDNext, routeTestField, "Fields demo", "Start demo fields"),
@@ -25,8 +26,8 @@ func (app *App) menuMain(stopFn func()) *menu.Menu {
 	}...)
 }
 
-func (app *App) menuSinglePlayer(stopFn func()) *menu.Menu {
-	return menu.New("Single Player", app.menuStopper(stopFn), []menu.Item{
+func (app *App) menuSinglePlayer(ctx screen.Context) *menu.Menu {
+	return menu.New("Single Player", app.menuStopper(ctx), []menu.Item{
 		menu.NewCancel(&app.screenIDNext, routeBack),
 		menu.NewCommand(&app.screenIDNext, routeGameSinglePlayNow, "Play Now!", "Start a classic game"),
 		menu.NewCommand(&app.screenIDNext, routeGameDoublePlayNow, "Play Double Now!", "Start a double game"),

@@ -44,32 +44,30 @@ func (app *App) Log() *slog.Logger {
 	return app.logger
 }
 
-func (app *App) MakeScreen(ctx context.Context) (screen.Screen, context.Context) {
+func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan struct{}) {
 	id := app.screenIDHistory.curr()
 	var data any
+
+	ctx := screen.NewContext(parentCtx)
 
 	switch id {
 	case "", routeQuit:
 		data = nil
 	case routeMain:
-		var cancelCtx context.CancelFunc
-		ctx, cancelCtx = context.WithCancel(ctx)
-		data = app.menuMain(cancelCtx)
+		data = app.menuMain(ctx)
 	case routeMenuSinglePlayer:
-		var cancelCtx context.CancelFunc
-		ctx, cancelCtx = context.WithCancel(ctx)
-		data = app.menuSinglePlayer(cancelCtx)
+		data = app.menuSinglePlayer(ctx)
 	case routeTestBlocks:
-		data, ctx = scene.Demo(ctx, scene.DemoBlocks)
+		data = scene.Demo(scene.DemoBlocks)
 	case routeTestField:
-		data, ctx = scene.Demo(ctx, scene.DemoFields)
+		data = scene.Demo(scene.DemoFields)
 	case routeGameSinglePlayNow:
-		data, ctx = app.gameOne(ctx)
+		data = app.gameOne(ctx)
 	case routeGameDoublePlayNow:
-		data, ctx = app.gameDouble(ctx)
+		data = app.gameDouble(ctx)
 	}
 
-	return app.screener.Screen(ctx, data), ctx
+	return app.screener.Screen(ctx, data), ctx.Done()
 }
 
 func (app *App) ScreenFinish() {

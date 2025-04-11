@@ -3,7 +3,6 @@
 package scene
 
 import (
-	"context"
 	"gamatet/game"
 	"gamatet/game/core"
 	"gamatet/graphics/render"
@@ -26,7 +25,7 @@ func InitResources() *Resources {
 	}
 }
 
-func (r Resources) Screen(ctx context.Context, data any) screen.Screen {
+func (r Resources) Screen(ctx screen.Context, data any) screen.Screen {
 	switch v := data.(type) {
 	case *menu.Menu:
 		return NewMenu(r.rend, r.tex, v)
@@ -41,9 +40,9 @@ func (r Resources) Screen(ctx context.Context, data any) screen.Screen {
 	case DemoScreenConfig:
 		switch v.Name {
 		case DemoBlocks:
-			return demoblocks.NewDemoBlocks(r.rend, r.tex, v.Stop)
+			return demoblocks.NewDemoBlocks(r.rend, r.tex, ctx.Stop)
 		case DemoFields:
-			gameHost, gameInterpreter, playerInCh, waitDoneCh := game.NewFieldTest(ctx, 10, 22, v.Stop)
+			gameHost, gameInterpreter, playerInCh, waitDoneCh := game.NewFieldTest(ctx, 10, 22, ctx.Stop)
 			return fieldtest.NewFieldTest(r.rend, r.tex, playerInCh, gameHost, gameInterpreter, waitDoneCh)
 		}
 	}

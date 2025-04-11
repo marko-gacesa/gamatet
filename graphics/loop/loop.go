@@ -4,7 +4,6 @@ package loop
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"gamatet/graphics/scene"
 	"gamatet/internal/app"
@@ -105,12 +104,14 @@ func Loop(globalCtx context.Context, app *app.App) error {
 	// Application loop
 
 	for ctxLoop.Err() == nil {
-		err := func(ctx context.Context) error {
+		func(ctx context.Context) {
+			var done <-chan struct{}
+
 			// create the screen
-			scr, ctx = app.MakeScreen(ctx)
+			scr, done = app.MakeScreen(ctx)
 			if scr == nil { // no screen means exit the app
 				cancelLoopCtxFn()
-				return nil
+				return
 			}
 
 			defer func() {
@@ -120,13 +121,7 @@ func Loop(globalCtx context.Context, app *app.App) error {
 
 			scr.UpdateViewSize(window.GetFramebufferSize())
 
-			for {
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				default:
-				}
-
+			for isActive(done) {
 				scr.Prepare(time.Now())
 
 				gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
@@ -137,9 +132,6 @@ func Loop(globalCtx context.Context, app *app.App) error {
 				glfw.PollEvents()
 			}
 		}(ctxLoop)
-		if err != nil && !errors.Is(err, context.Canceled) {
-			return err
-		}
 
 		app.ScreenFinish()
 	}
@@ -179,4 +171,13 @@ func windowFullscreen(title string, monitor *glfw.Monitor) (*glfw.Window, error)
 	}
 
 	return window, nil
+}
+
+func isActive(ch <-chan struct{}) bool {
+	select {
+	case _, ok := <-ch:
+		return ok
+	default:
+		return true
+	}
 }

@@ -1,21 +1,16 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024,2025 by Marko Gaćeša
 
 package scene
 
-import "context"
+const DemoBlocks DemoName = "demo-blocks"
+const DemoFields DemoName = "demo-fields"
 
-const DemoBlocks = "demo-blocks"
-const DemoFields = "demo-fields"
+type DemoName string
 
 type DemoScreenConfig struct {
-	Name string
-	Stop context.CancelFunc
+	Name DemoName
 }
 
-func Demo(ctx context.Context, name string) (DemoScreenConfig, context.Context) {
-	ctx, cancelCtx := context.WithCancel(ctx)
-	return DemoScreenConfig{
-		Name: name,
-		Stop: cancelCtx,
-	}, ctx
+func Demo(name DemoName) DemoScreenConfig {
+	return DemoScreenConfig{Name: name}
 }
