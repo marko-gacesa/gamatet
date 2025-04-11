@@ -11,6 +11,7 @@ import (
 	"gamatet/logic/values"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"math"
 	"runtime"
 	"time"
 )
@@ -51,6 +52,35 @@ func Loop(globalCtx context.Context, app *app.App) error {
 
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	log.Info("OpenGL initialized", "version", version)
+
+	func() {
+		w, h := window.GetFramebufferSize()
+		log.Info("Framebuffer size", "width", w, "height", h)
+
+		w, h = window.GetSize()
+		log.Info("Window size", "width", w, "height", h)
+
+		var videoMode *glfw.VidMode
+
+		monitor := window.GetMonitor()
+		if monitor != nil {
+			sizeW, sizeH := monitor.GetPhysicalSize()
+			d := math.Sqrt(float64(sizeW*sizeW+sizeH*sizeH)) / 25.4
+			log.Info("Monitor info",
+				"name", monitor.GetName(),
+				"width[mm]", sizeW, "height[mm]", sizeH,
+				"diagonal[inch]", fmt.Sprintf("%.2f", d))
+
+			videoMode = monitor.GetVideoMode()
+		}
+
+		if videoMode != nil {
+			log.Info("Video mode",
+				"resolution", fmt.Sprintf("%dx%d", videoMode.Width, videoMode.Height),
+				"refresh", fmt.Sprintf("%dHz", videoMode.RefreshRate),
+				"color", fmt.Sprintf("%dx%dx%d", videoMode.RedBits, videoMode.GreenBits, videoMode.BlueBits))
+		}
+	}()
 
 	// Configure global settings
 
@@ -156,9 +186,6 @@ func windowFullscreen(title string, monitor *glfw.Monitor) (*glfw.Window, error)
 	}
 
 	videoMode := monitor.GetVideoMode()
-	//fmt.Printf("Current Video Mode: %dx%d@%dHz %dx%dx%d\n",
-	//	videoMode.Width, videoMode.Height, videoMode.RefreshRate,
-	//	videoMode.RedBits, videoMode.GreenBits, videoMode.BlueBits)
 
 	glfw.WindowHint(glfw.RedBits, videoMode.RedBits)
 	glfw.WindowHint(glfw.GreenBits, videoMode.GreenBits)

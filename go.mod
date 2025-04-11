@@ -11,6 +11,6 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/google/go-cmp v0.7.0
 	github.com/marko-gacesa/udpstar v0.0.0-20231130162919-86d574d6bdcb
-	golang.org/x/image v0.22.0
-	golang.org/x/text v0.23.0
+	golang.org/x/image v0.26.0
+	golang.org/x/text v0.24.0
 )
