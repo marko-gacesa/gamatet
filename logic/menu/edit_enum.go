@@ -1,10 +1,11 @@
-// Copyright (c) 2024,2025 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package menu
 
 import (
 	"fmt"
 	"slices"
+	"strings"
 )
 
 var _ Item = (*Enum[int])(nil)
@@ -13,12 +14,13 @@ var _ Item = (*Enum[int])(nil)
 // The variable can have only one value from the provided list.
 type Enum[T comparable] struct {
 	base
-	ptr    *T
-	values []T
+	ptr     *T
+	values  []T
+	nameMap map[T]string
 }
 
 // NewEnum creates new Enum menu item.
-func NewEnum[T comparable](ptr *T, values []T, label, description string, options ...func(Item)) *Enum[T] {
+func NewEnum[T comparable](ptr *T, values []T, nameMap map[T]string, label, description string, options ...func(Item)) *Enum[T] {
 	if ptr == nil {
 		panic("need non-nil pointer")
 	}
@@ -26,9 +28,10 @@ func NewEnum[T comparable](ptr *T, values []T, label, description string, option
 		panic("no enum values provided")
 	}
 	e := &Enum[T]{
-		base:   makeBase(label, description),
-		ptr:    ptr,
-		values: values,
+		base:    makeBase(label, description),
+		ptr:     ptr,
+		values:  values,
+		nameMap: nameMap,
 	}
 	e.fix()
 	applyOptions(e, options...)
@@ -40,7 +43,28 @@ func (e *Enum[T]) Text() string {
 		return e.current
 	}
 
-	e.current = fmt.Sprintf("%s: ‹%v›", e.label, *e.ptr)
+	var text string
+	if e.nameMap != nil {
+		text = e.nameMap[*e.ptr]
+	} else {
+		text = fmt.Sprintf("%v", *e.ptr)
+	}
+
+	n := len(e.values)
+	idx := slices.Index(e.values, *e.ptr)
+
+	sb := strings.Builder{}
+	sb.WriteString(e.getLabel())
+	sb.WriteString(": ")
+	if idx > 0 {
+		sb.WriteString("‹ ")
+	}
+	sb.WriteString(text)
+	if idx < n-1 {
+		sb.WriteString(" ›")
+	}
+
+	e.current = sb.String()
 	return e.current
 }
 

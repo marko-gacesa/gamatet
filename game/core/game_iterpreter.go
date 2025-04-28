@@ -83,10 +83,6 @@ func MakeInterpreter(setup Setup) *GameInterpreter {
 				panic(fmt.Sprintf("player=%d@field=%d should not have InCh", j, i))
 			}
 
-			if players[j].OutCh != nil {
-				panic(fmt.Sprintf("player=%d@field=%d should not have OutCh", j, i))
-			}
-
 			inputs = append(inputs, interpreterPlayerData{
 				Name:       players[j].Name,
 				PiecePlace: pp,

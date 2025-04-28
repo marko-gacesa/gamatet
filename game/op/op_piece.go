@@ -34,7 +34,7 @@ func (e *PieceState) Do(f *field.Field) {
 	ctrl.State = e.NewState
 	ctrl.RestartTimer(e.NewParam)
 
-	if e.NewState == piece.StateSlide && ctrl.SlideEnabled {
+	if e.NewState == piece.StateSlide && !ctrl.SlideDisabled {
 		animateSlidePiece(ctrl, f.Config.Anim)
 	}
 }

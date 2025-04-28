@@ -10,6 +10,8 @@ import (
 
 const MaxLevel = 15
 
+const MaxWallKick = 2
+
 const NextBlockCount = 3
 
 type State byte
@@ -190,14 +192,14 @@ type Config struct {
 	// Value false means the rotation is counterclockwise and performed with RotateCCW().
 	RotationDirectionCW bool
 
-	// SlideEnabled enables slide mode after a piece drop.
+	// SlideDisabled enables slide mode after a piece drop.
 	// It enables piece move, left or right, while the piece is falling
-	SlideEnabled bool
+	SlideDisabled bool
 
-	// MaxWallKick enables wall kick feature.
+	// WallKick enables wall kick feature.
 	// On piece rotate command when a piece is next to a wall and rotation is not possible because of the wall,
 	// the game will try to move the piece max WallKick places to the left or right to try to place the rotated piece.
-	MaxWallKick int
+	WallKick int
 }
 
 type Shadow struct {

@@ -1,11 +1,10 @@
-// Copyright (c) 2024,2025 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package menu
 
 import (
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
-	"strings"
 	"unicode"
 	"unicode/utf8"
 )
@@ -19,12 +18,12 @@ type Text struct {
 }
 
 // NewText creates new Text menu item.
-func NewText(ptr *string, maxLen int, label, description string, options ...func(Item)) *Text {
+func NewText(ptr *string, maxLen, maxSize int, label, description string, options ...func(Item)) *Text {
 	if ptr == nil {
 		panic("need non-nil pointer")
 	}
 	t := &Text{
-		textBase: makeTextBase(maxLen, label, description),
+		textBase: makeTextBase(maxLen, maxSize, label, description),
 		ptr:      ptr,
 	}
 	t.textBase.converter = t
@@ -34,31 +33,16 @@ func NewText(ptr *string, maxLen int, label, description string, options ...func
 }
 
 func (t *Text) fix() {
-	valid := true
+	runeLen := 0
 	for i, r := range *t.ptr {
-		if i >= t.maxLen || !t.allowed(r) {
-			valid = false
-			break
+		runeLen++
+		byteLen := i + utf8.RuneLen(r)
+		if runeLen > t.maxLen || byteLen > t.maxSize || !t.allowed(r) {
+			*t.ptr = (*t.ptr)[:i]
+			t.markDirty()
+			return
 		}
 	}
-	if valid {
-		return
-	}
-
-	var sb strings.Builder
-	var l int
-	for _, r := range *t.ptr {
-		if t.allowed(r) {
-			sb.WriteRune(r)
-			l++
-		}
-		if l == t.maxLen {
-			break
-		}
-	}
-
-	*t.ptr = sb.String()
-	t.markDirty()
 }
 
 func (t *Text) getValueAsStr() string {

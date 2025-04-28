@@ -182,7 +182,7 @@ func TestField_CanRotatePiece_WallKick(t *testing.T) {
 		f := Make(dimW, dimH, 1)
 
 		ctrl := f.Ctrl(0)
-		ctrl.Config.MaxWallKick = test.wallKick
+		ctrl.Config.WallKick = test.wallKick
 
 		var colMin, colMax int
 

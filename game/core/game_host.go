@@ -91,10 +91,6 @@ func MakeHost(setup Setup) *GameHost {
 				CtrlIdx:  byte(j),
 			}
 
-			if players[j].OutCh != nil {
-				panic(fmt.Sprintf("player=%d@field=%d should not have OutCh", j, i))
-			}
-
 			inputs = append(inputs, hostPlayerData{
 				Name:       players[j].Name,
 				PiecePlace: pp,

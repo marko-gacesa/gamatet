@@ -113,7 +113,7 @@ func (b *BlockBase) BottomRight() mgl32.Mat4 {
 }
 
 func SendAction(cmd []byte, doneCh <-chan struct{}, cmdCh chan<- []byte) {
-	if len(cmd) == 0 {
+	if len(cmd) == 0 || cmdCh == nil {
 		return
 	}
 

@@ -78,8 +78,8 @@ func (f *Field) CanRotatePiece(cw bool, pIdx int, liftAll bool) (success bool, i
 	dim := rotated.DimX()
 
 	pieceWallKick := c.Piece.WallKick()
-	if c.Config.MaxWallKick < pieceWallKick {
-		pieceWallKick = c.Config.MaxWallKick
+	if c.Config.WallKick < pieceWallKick {
+		pieceWallKick = c.Config.WallKick
 	}
 
 	for wallKick := 1; wallKick <= pieceWallKick; wallKick++ {

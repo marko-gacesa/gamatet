@@ -14,6 +14,18 @@ func WithVisible(fn func() bool) func(Item) {
 	}
 }
 
+func WithLabelFn(fn func() string) func(Item) {
+	return func(item Item) {
+		item.b().labelFn = fn
+	}
+}
+
+func WithDescriptionFn(fn func() string) func(Item) {
+	return func(item Item) {
+		item.b().descriptionFn = fn
+	}
+}
+
 func applyOptions(item Item, options ...func(Item)) {
 	for _, opt := range options {
 		opt(item)

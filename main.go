@@ -3,6 +3,7 @@
 package main
 
 import (
+	"context"
 	"gamatet/graphics/loop"
 	"gamatet/internal/app"
 	"gamatet/internal/config"
@@ -11,17 +12,23 @@ import (
 )
 
 func main() {
-	appCtx := appctx.Context
+	globalCtx := appctx.Context
 
 	cfg, cfgPath := config.Load()
 
 	pid := os.Getpid()
 
-	app := app.NewApp(cfg, cfgPath)
+	appCtx, appCtxStop := context.WithCancel(globalCtx)
+
+	app := app.NewApp(appCtx, cfg, cfgPath)
 	app.Log().Info("Starting", "pid", pid, "cfgPath", cfgPath)
 
 	err := loop.Loop(appCtx, app)
 	if err != nil {
 		app.Log().Error("Stopped", "error", err)
 	}
+
+	appCtxStop()
+
+	app.WaitDone()
 }

@@ -1,25 +1,41 @@
-// Copyright (c) 2024,2025 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package app
 
 import (
+	"gamatet/internal/values"
 	"gamatet/logic/menu"
 	"gamatet/logic/screen"
-	"gamatet/logic/values"
 )
 
-func (app *App) menuStopper(ctx screen.Context) func() {
-	return func() {
+const (
+	itemTextPrefixBack    = "← "
+	itemTextPrefixForward = "→ "
+)
+
+func (app *App) menuStopper(ctx screen.Context) func(*menu.Menu) {
+	return func(*menu.Menu) {
 		if app.screenIDNext != "" {
 			ctx.Stop()
 		}
 	}
 }
 
+func (app *App) menuItemEscape() *menu.Hidden[route] {
+	return menu.NewHidden(menu.InputEscape, &app.screenIDNext, routeBack)
+}
+
+func (app *App) menuItemBack() *menu.Command[route] {
+	return menu.NewCommand(&app.screenIDNext, routeBack, itemTextPrefixBack+"Back", "")
+}
+
 func (app *App) menuMain(ctx screen.Context) *menu.Menu {
 	return menu.New(values.ProgramName, app.menuStopper(ctx), []menu.Item{
-		menu.NewCancel(&app.screenIDNext, routeBack),
-		menu.NewCommand(&app.screenIDNext, routeMenuSinglePlayer, "Single player", "Start demo fields"),
+		app.menuItemEscape(),
+		menu.NewCommand(&app.screenIDNext, routeMenuSinglePlayer, "Single player", ""),
+		menu.NewCommand(&app.screenIDNext, routeMenuLocalCreate, "Multiplayer local", "Multiplayer game on this machine"),
+		menu.NewCommand(&app.screenIDNext, routeMenuLANMain, "Multiplayer LAN game", "Multiplayer game on the local area network"),
+		menu.NewStatic("Multiplayer direct IP", "Multiplayer game that requires IP address of players", nil),
 		menu.NewCommand(&app.screenIDNext, routeTestField, "Fields demo", "Start demo fields"),
 		menu.NewCommand(&app.screenIDNext, routeTestBlocks, "Blocks", "Blocks demo"),
 		menu.NewCommand(&app.screenIDNext, routeQuit, "Exit", "Exit application"),
@@ -28,9 +44,9 @@ func (app *App) menuMain(ctx screen.Context) *menu.Menu {
 
 func (app *App) menuSinglePlayer(ctx screen.Context) *menu.Menu {
 	return menu.New("Single Player", app.menuStopper(ctx), []menu.Item{
-		menu.NewCancel(&app.screenIDNext, routeBack),
+		app.menuItemEscape(),
 		menu.NewCommand(&app.screenIDNext, routeGameSinglePlayNow, "Play Now!", "Start a classic game"),
 		menu.NewCommand(&app.screenIDNext, routeGameDoublePlayNow, "Play Double Now!", "Start a double game"),
-		menu.NewCommand(&app.screenIDNext, routeBack, "Back", "Back to main menu"),
+		app.menuItemBack(),
 	}...)
 }

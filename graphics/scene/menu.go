@@ -1,4 +1,4 @@
-// Copyright (c) 2024,2025 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package scene
 
@@ -46,6 +46,7 @@ type Menu struct {
 	text render.Text
 
 	menu *menu.Menu
+	iter menu.Iter
 
 	strCache  []string
 	strCache2 []string
@@ -62,7 +63,7 @@ var (
 	colorItemDisabledSelected = mgl32.Vec4{0.4, 0.4, 0.4, 1}
 	colorItemDisabled         = colorItemDisabledSelected.Mul(0.8)
 	colorDescription          = colorItemSelected.Mul(0.6)
-	colorTitle                = colorItemSelected.Mul(0.4)
+	colorTitle                = colorItemSelected.Mul(0.55)
 )
 
 func NewMenu(renderer *render.Renderer, tex *texture.Manager, m *menu.Menu) *Menu {
@@ -70,8 +71,11 @@ func NewMenu(renderer *render.Renderer, tex *texture.Manager, m *menu.Menu) *Men
 
 	text.Prepare(string(currItemMarker))
 
-	n := m.Count()
-	strCache := make([]string, 2*n+1)
+	iter := menu.Iter{}
+	m.Iteration(&iter)
+
+	n := len(iter.Items)
+	strCache := make([]string, 2+n)
 
 	return &Menu{
 		Base:     base.NewBase(renderer, tex),
@@ -121,18 +125,19 @@ func (m *Menu) Prepare(now time.Time) {
 	t := float32(t64 * t64)
 	m.selectedColor = colorItem.Mul(t).Add(colorItemSelected.Mul(1 - t))
 
-	n := m.menu.Count()
+	m.menu.Iteration(&m.iter)
 
-	if len(m.strCache) != n {
-		m.strCache = make([]string, 2*n+1)
+	n := len(m.iter.Items)
+
+	if len(m.strCache) != 2+n {
+		m.strCache = make([]string, 2+n)
 	}
 
-	m.strCache[0] = m.menu.Title()
+	m.strCache[0] = m.iter.Title
+	m.strCache[1] = m.iter.Description
+
 	for i := 0; i < n; i++ {
-		text := m.menu.Item(i).Text()
-		desc := m.menu.Item(i).Description()
-		m.strCache[2*i+1] = text
-		m.strCache[2*i+2] = desc
+		m.strCache[2+i] = m.iter.Items[i]
 	}
 
 	if len(m.strCache2) != len(m.strCache) {
@@ -153,8 +158,10 @@ func (m *Menu) Prepare(now time.Time) {
 }
 
 func (m *Menu) Render() {
+	count := len(m.iter.Items)
+
 	modelIdxStart := 0
-	modelIdxEnd := m.menu.Count()
+	modelIdxEnd := count
 	if modelIdxEnd > screenMaxShownItems {
 		modelIdxEnd = screenMaxShownItems
 	} else if modelIdxEnd < screenMaxShownItems {
@@ -162,7 +169,7 @@ func (m *Menu) Render() {
 		modelIdxEnd = screenMaxShownItems
 	}
 
-	idxSelected := m.menu.CurrentIdx() - m.offset
+	idxSelected := m.iter.Current - m.offset
 	if idxSelected < 0 {
 		m.offset += idxSelected
 		idxSelected = 0
@@ -171,7 +178,7 @@ func (m *Menu) Render() {
 		idxSelected = screenMaxShownItems - 1
 	}
 
-	for modelIdxEnd-modelIdxStart+m.offset > m.menu.Count() && m.offset > 0 {
+	for modelIdxEnd-modelIdxStart+m.offset > count && m.offset > 0 {
 		if idxSelected > 0 {
 			idxSelected--
 		}
@@ -181,9 +188,9 @@ func (m *Menu) Render() {
 	r := m.Renderer()
 
 	for modelIdx, idx := modelIdxStart, 0; modelIdx < modelIdxEnd; modelIdx, idx = modelIdx+1, idx+1 {
-		item := m.menu.Item(idx + m.offset)
-		text := item.Text()
-		disabled := item.IsDisabled()
+		itemIdx := idx + m.offset
+		text := m.iter.Items[itemIdx]
+		disabled := m.iter.IsDisabled[itemIdx]
 
 		model := screenModelItem[modelIdx]
 
@@ -206,18 +213,15 @@ func (m *Menu) Render() {
 		m.text.String(r, model, color, text)
 	}
 
-	desc := m.menu.Description()
-	m.text.String(r, screenModelDesc, colorDescription, desc)
+	m.text.String(r, screenModelDesc, colorDescription, m.iter.Description)
 
 	screenModeTitle := screenModelItem[screenMaxShownItems-1]
 	if modelIdxEnd != modelIdxStart {
 		screenModeTitle = screenModelMarker[modelIdxStart]
 	}
 
-	if title := m.menu.Title(); title != "" {
-		modelTitle := screenModeTitle.
-			Mul4(mgl32.Translate3D(-0.5, 1.4, 0)).
-			Mul4(mgl32.Scale3D(1.5, 1.5, 1))
-		m.text.String(r, modelTitle, colorTitle, title)
-	}
+	modelTitle := screenModeTitle.
+		Mul4(mgl32.Translate3D(-0.5, 1.4, 0)).
+		Mul4(mgl32.Scale3D(1.5, 1.5, 1))
+	m.text.String(r, modelTitle, colorTitle, m.iter.Title)
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/golang/freetype/truetype"
+	"math"
 	"time"
 )
 
@@ -114,6 +115,8 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 	gl.DepthMask(false)      // disable writing to depth buffer
 	defer gl.DepthMask(true) // enable writing to depth buffer
 
+	var xAdvance float32
+
 	modelText := model
 	var chPrev rune
 	for _, ch := range s {
@@ -127,9 +130,16 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 			switch ch {
 			case ' ':
 				modelText = modelText.Mul4(mgl32.Translate3D(spaceAdvance, 0, 0))
+				xAdvance += spaceAdvance
 			case '\n':
 				model = model.Mul4(mgl32.Translate3D(0, -1, 0))
 				modelText = model
+				xAdvance = 0
+			case '\t':
+				const tab = 1.0
+				tabAdv := tab - float32(math.Mod(float64(xAdvance), tab))
+				xAdvance += tabAdv
+				modelText = modelText.Mul4(mgl32.Translate3D(tabAdv, 0, 0))
 			case '\x02': // invert on
 				mat.InvertOn()
 			case '\x03': // invert off
@@ -162,6 +172,8 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 		modelText = modelText.Mul4(mgl32.Translate3D(w2h2, 0, 0))
 
 		chPrev = ch
+
+		xAdvance += w2h + k2h
 	}
 }
 

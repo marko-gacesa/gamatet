@@ -18,8 +18,11 @@ func (app *App) gameDouble(ctx screen.Context) core.GameDoubleParams {
 	const seed = 101
 
 	fieldCh := make(chan []byte)
-	player1InCh, player1OutCh := core.ChannelPipe[[]byte](ctx)
-	player2InCh, player2OutCh := core.ChannelPipe[[]byte](ctx)
+
+	player1Pipe := core.MakeChannelPipe[[]byte](ctx)
+	player2Pipe := core.MakeChannelPipe[[]byte](ctx)
+	player1InCh, player1OutCh := player1Pipe.In, player1Pipe.Out
+	player2InCh, player2OutCh := player2Pipe.In, player2Pipe.Out
 
 	setup := core.Setup{
 		Name: "",
@@ -43,8 +46,8 @@ func (app *App) gameDouble(ctx screen.Context) core.GameDoubleParams {
 						Name: "marko",
 						Config: piece.Config{
 							RotationDirectionCW: false,
-							SlideEnabled:        true,
-							MaxWallKick:         2,
+							SlideDisabled:       false,
+							WallKick:            2,
 						},
 						InCh: player1OutCh,
 					},
@@ -52,8 +55,8 @@ func (app *App) gameDouble(ctx screen.Context) core.GameDoubleParams {
 						Name: "ogi",
 						Config: piece.Config{
 							RotationDirectionCW: false,
-							SlideEnabled:        true,
-							MaxWallKick:         2,
+							SlideDisabled:       false,
+							WallKick:            2,
 						},
 						InCh: player2OutCh,
 					},

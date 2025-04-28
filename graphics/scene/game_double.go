@@ -71,6 +71,9 @@ func (ft *GameDouble) Release() {
 	<-ft.waitDoneCh
 	ft.text.Release()
 	ft.res.Release()
+
+	close(ft.player1InCh)
+	close(ft.player2InCh)
 }
 
 func (ft *GameDouble) InputKeyPress(key, scancode int) {

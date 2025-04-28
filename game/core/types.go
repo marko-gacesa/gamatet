@@ -6,6 +6,7 @@ import (
 	"context"
 	"gamatet/game/field"
 	"gamatet/game/piece"
+	"gamatet/game/setup"
 	"time"
 )
 
@@ -54,9 +55,6 @@ type PlayerSetup struct {
 
 	// InCh is used for direct player input. Actions are read from the channel.
 	InCh <-chan []byte
-
-	// OutCh is used for clients to send actions to the server. Servers don't use this.
-	OutCh chan<- []byte
 }
 
 type GameOneParams struct {
@@ -72,7 +70,19 @@ type GameDoubleParams struct {
 	Done        <-chan struct{}
 }
 
-func ChannelPipe[T any](ctx context.Context) (in chan<- T, out <-chan T) {
+type GameParams struct {
+	PlayerInCh [setup.MaxLocalPlayers]chan<- []byte
+	FieldCount byte
+	Game       RenderRequester
+	Done       <-chan struct{}
+}
+
+type ChannelPipe[T any] struct {
+	In  chan<- T
+	Out <-chan T
+}
+
+func MakeChannelPipe[T any](ctx context.Context) ChannelPipe[T] {
 	chIn := make(chan T)
 	chOut := make(chan T)
 	go func() {
@@ -82,11 +92,17 @@ func ChannelPipe[T any](ctx context.Context) (in chan<- T, out <-chan T) {
 			select {
 			case <-ctx.Done():
 				return
-			case data := <-chIn:
+			case data, ok := <-chIn:
+				if !ok {
+					return
+				}
 				chOut <- data
 			}
 		}
 	}()
 
-	return chIn, chOut
+	return ChannelPipe[T]{
+		In:  chIn,
+		Out: chOut,
+	}
 }

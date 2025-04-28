@@ -1,4 +1,4 @@
-// Copyright (c) 2024,2025 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package menu
 
@@ -29,9 +29,9 @@ func (b *Bool) Text() string {
 	}
 
 	if *b.ptr {
-		b.current = b.label + ": " + "ON"
+		b.current = b.getLabel() + ": " + "ON"
 	} else {
-		b.current = b.label + ": " + "OFF"
+		b.current = b.getLabel() + ": " + "OFF"
 	}
 
 	return b.current

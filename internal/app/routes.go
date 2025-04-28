@@ -1,4 +1,4 @@
-// Copyright (c) 2024,2025 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package app
 
@@ -11,11 +11,23 @@ const (
 
 	routeMenuSinglePlayer route = "menu-single-player"
 
+	routeMenuLocalCreate route = "menu-local-create"
+
+	routeMenuLANMain         route = "menu-lan-main"
+	routeMenuLANServerCreate route = "menu-lan-server-create"
+	routeMenuLANServerLobby  route = "menu-lan-server-lobby"
+	routeMenuLANClientJoin   route = "menu-lan-client-join"
+	routeMenuLANClientLobby  route = "menu-lan-client-lobby"
+
 	routeTestField  route = "test-field"
 	routeTestBlocks route = "test-blocks"
 
+	routeGame              route = "game"
 	routeGameSinglePlayNow route = "game-single-play-now"
 	routeGameDoublePlayNow route = "game-double-play-now"
+
+	routeGameUDPServer route = "game-udp-server"
+	routeGameUDPClient route = "game-udp-client"
 )
 
 type routes struct {

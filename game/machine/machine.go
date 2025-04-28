@@ -68,7 +68,7 @@ func HandleActionInput(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, a actio
 	switch a {
 	case action.MoveLeft, action.MoveRight:
 		if ctrl.State != piece.StateDescend &&
-			(ctrl.State != piece.StateSlide && ctrl.State != piece.StateFall || !ctrl.SlideEnabled) {
+			(ctrl.State != piece.StateSlide && ctrl.State != piece.StateFall || ctrl.SlideDisabled) {
 			return
 		}
 

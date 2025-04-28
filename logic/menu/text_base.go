@@ -1,4 +1,4 @@
-// Copyright (c) 2024,2025 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package menu
 
@@ -19,6 +19,7 @@ type textBase struct {
 	editor    []rune
 	cursor    int
 	maxLen    int
+	maxSize   int
 	converter valueConverter
 }
 
@@ -29,10 +30,11 @@ type valueConverter interface {
 	allowedInsert(rune, []rune, int) bool
 }
 
-func makeTextBase(maxLen int, label, description string) textBase {
+func makeTextBase(maxLen, maxSize int, label, description string) textBase {
 	return textBase{
-		base:   makeBase(label, description),
-		maxLen: maxLen,
+		base:    makeBase(label, description),
+		maxLen:  maxLen,
+		maxSize: maxSize,
 	}
 }
 
@@ -42,7 +44,7 @@ func (t *textBase) Text() string {
 	}
 
 	sb := strings.Builder{}
-	sb.WriteString(t.label)
+	sb.WriteString(t.getLabel())
 	sb.WriteString(": ")
 	if !t.editing {
 		sb.WriteString(t.converter.getValueAsStr())

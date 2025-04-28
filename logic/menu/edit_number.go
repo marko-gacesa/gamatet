@@ -1,4 +1,4 @@
-// Copyright (c) 2024,2025 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package menu
 
@@ -22,7 +22,7 @@ func NewNumber(ptr *int64, vmin, vmax int64, label, description string, options 
 		panic("need non-nil pointer")
 	}
 	t := &Number{
-		textBase: makeTextBase(20, label, description),
+		textBase: makeTextBase(20, 20, label, description),
 		ptr:      ptr,
 		valueMin: vmin,
 		valueMax: vmax,
@@ -58,5 +58,5 @@ func (*Number) allowed(r rune) bool {
 }
 
 func (n *Number) allowedInsert(r rune, _ []rune, cursor int) bool {
-	return r != '-' || r == '-' && cursor == 0 && n.valueMin < 0
+	return r == '-' && cursor == 0 && n.valueMin < 0 || r >= '0' && r <= '9'
 }

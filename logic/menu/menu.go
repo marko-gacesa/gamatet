@@ -1,31 +1,39 @@
-// Copyright (c) 2024,2025 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package menu
 
+import "sync"
+
 type Menu struct {
+	mx sync.Mutex
+
 	title string
 
 	itemsAll     []Item
 	itemsVisible []Item
 	currentIdx   int
 
-	mutateCallback func()
+	mutateCallback func(m *Menu)
 }
 
 // New creates new Menu. Menu requires some items
 // The mutateCallback will be called whenever the state of any item has been changed.
-func New(title string, mutateCallback func(), items ...Item) *Menu {
-	if len(items) == 0 {
-		panic("no menu items provided")
-	}
-
+func New(title string, mutateCallback func(m *Menu), items ...Item) *Menu {
 	m := &Menu{
 		title:          title,
-		itemsAll:       items,
-		itemsVisible:   make([]Item, 0, len(items)),
-		currentIdx:     0,
 		mutateCallback: mutateCallback,
 	}
+
+	m.SetItems(items...)
+
+	return m
+}
+
+func (m *Menu) SetItems(items ...Item) {
+	m.mx.Lock()
+
+	m.itemsAll = items
+	m.itemsVisible = make([]Item, 0, len(items))
 
 	for _, item := range m.itemsAll {
 		b := item.b()
@@ -36,26 +44,47 @@ func New(title string, mutateCallback func(), items ...Item) *Menu {
 		}
 	}
 
-	return m
-}
-
-func (m *Menu) Title() string {
-	return m.title
-}
-func (m *Menu) Description() string {
-	if len(m.itemsVisible) == 0 {
-		return ""
+	if m.currentIdx >= len(m.itemsVisible) {
+		m.currentIdx = 0
 	}
 
-	return m.itemsVisible[m.currentIdx].Description()
+	m.mx.Unlock()
 }
 
-func (m *Menu) Count() int        { return len(m.itemsVisible) }
-func (m *Menu) Item(idx int) Item { return m.itemsVisible[idx] }
-func (m *Menu) Current() Item     { return m.itemsVisible[m.currentIdx] }
-func (m *Menu) CurrentIdx() int   { return m.currentIdx }
+func (m *Menu) Iteration(iter *Iter) {
+	m.mx.Lock()
+	defer m.mx.Unlock()
+
+	m.updateItems()
+
+	iter.Title = m.title
+	iter.Description = ""
+	iter.Current = 0
+	iter.Items = iter.Items[:0]
+	iter.IsDisabled = iter.IsDisabled[:0]
+
+	count := len(m.itemsVisible)
+
+	if count == 0 {
+		return
+	}
+
+	currentIdx := m.currentIdx
+	desc := m.itemsVisible[currentIdx].Description()
+
+	iter.Description = desc
+	iter.Current = currentIdx
+
+	for _, item := range m.itemsVisible {
+		iter.Items = append(iter.Items, item.Text())
+		iter.IsDisabled = append(iter.IsDisabled, item.IsDisabled())
+	}
+}
 
 func (m *Menu) Previous() {
+	m.mx.Lock()
+	defer m.mx.Unlock()
+
 	n := len(m.itemsVisible)
 	if n < 2 {
 		return
@@ -67,6 +96,9 @@ func (m *Menu) Previous() {
 }
 
 func (m *Menu) Next() {
+	m.mx.Lock()
+	defer m.mx.Unlock()
+
 	n := len(m.itemsVisible)
 	if n < 2 {
 		return
@@ -78,64 +110,80 @@ func (m *Menu) Next() {
 }
 
 func (m *Menu) Decrease() {
-	if len(m.itemsVisible) == 0 {
-		m.cancel()
-		return
-	}
+	shouldCallback := func() bool {
+		m.mx.Lock()
+		defer m.mx.Unlock()
 
-	item := m.itemsVisible[m.currentIdx]
-	if item.IsDisabled() {
-		return
-	}
-	item.decrease()
-	if item.isDirty() {
-		m.updateItems()
+		if len(m.itemsVisible) == 0 {
+			return false
+		}
+
+		item := m.itemsVisible[m.currentIdx]
+		if item.IsDisabled() {
+			return false
+		}
+		item.decrease()
+		if item.isDirty() {
+			m.updateItems()
+			return true
+		}
+
+		return false
+	}()
+	if shouldCallback {
+		m.callback()
 	}
 }
 
 func (m *Menu) Increase() {
-	if len(m.itemsVisible) == 0 {
-		m.cancel()
-		return
-	}
+	shouldCallback := func() bool {
+		m.mx.Lock()
+		defer m.mx.Unlock()
 
-	item := m.itemsVisible[m.currentIdx]
-	if item.IsDisabled() {
-		return
-	}
-	item.increase()
-	if item.isDirty() {
-		m.updateItems()
+		if len(m.itemsVisible) == 0 {
+			return false
+		}
+
+		item := m.itemsVisible[m.currentIdx]
+		if item.IsDisabled() {
+			return false
+		}
+		item.increase()
+		if item.isDirty() {
+			m.updateItems()
+			return true
+		}
+
+		return false
+	}()
+	if shouldCallback {
+		m.callback()
 	}
 }
 
 func (m *Menu) Input(r rune) {
-	if len(m.itemsVisible) == 0 {
-		m.cancel()
-		return
-	}
+	shouldCallback := func() bool {
+		m.mx.Lock()
+		defer m.mx.Unlock()
 
-	item := m.itemsVisible[m.currentIdx]
-	if !item.IsDisabled() && item.input(r) && item.isDirty() {
-		m.updateItems()
-		return
-	}
-
-	if r == InputEscape {
-		m.cancel()
-	}
-}
-
-func (m *Menu) cancel() {
-	var canceled bool
-	for _, it := range m.itemsAll {
-		if it.b().canceler {
-			it.input(InputEscape)
-			canceled = true
+		if len(m.itemsVisible) > 0 {
+			if item := m.itemsVisible[m.currentIdx]; !item.IsDisabled() && item.input(r) && item.isDirty() {
+				m.updateItems()
+				return true
+			}
 		}
-	}
-	if canceled {
-		m.updateItems()
+
+		for _, item := range m.itemsAll {
+			if item.b().global && item.input(r) {
+				m.updateItems()
+				return true
+			}
+		}
+
+		return false
+	}()
+	if shouldCallback {
+		m.callback()
 	}
 }
 
@@ -153,7 +201,6 @@ func (m *Menu) updateItems() {
 		b := item.b()
 
 		item.fix()
-		b.markDirty()
 
 		wasVisible := b.visible
 		b.updateDisabled()
@@ -178,8 +225,10 @@ func (m *Menu) updateItems() {
 	if m.currentIdx < 0 || m.currentIdx >= len(m.itemsVisible) {
 		m.currentIdx = 0
 	}
+}
 
+func (m *Menu) callback() {
 	if m.mutateCallback != nil {
-		m.mutateCallback()
+		m.mutateCallback(m)
 	}
 }

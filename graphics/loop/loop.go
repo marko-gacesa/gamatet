@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"gamatet/graphics/scene"
 	"gamatet/internal/app"
+	"gamatet/internal/values"
 	"gamatet/logic/screen"
-	"gamatet/logic/values"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"math"
@@ -145,8 +145,21 @@ func Loop(globalCtx context.Context, app *app.App) error {
 			}
 
 			defer func() {
+				memstats1 := &runtime.MemStats{}
+				runtime.ReadMemStats(memstats1)
+
 				scr.Release()
 				runtime.GC()
+
+				memstats2 := &runtime.MemStats{}
+				runtime.ReadMemStats(memstats2)
+
+				app.Log().Info("Screen done",
+					"memory.before.inuse", memstats1.HeapInuse,
+					"memory.before.alloc", memstats1.HeapAlloc,
+					"memory.after.inuse", memstats2.HeapInuse,
+					"memory.after.alloc", memstats2.HeapAlloc,
+					"goroutines", runtime.NumGoroutine())
 			}()
 
 			scr.UpdateViewSize(window.GetFramebufferSize())

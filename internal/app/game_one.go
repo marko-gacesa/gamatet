@@ -18,7 +18,8 @@ func (app *App) gameOne(ctx screen.Context) core.GameOneParams {
 	const seed = 101
 
 	fieldCh := make(chan []byte)
-	playerInCh, playerOutCh := core.ChannelPipe[[]byte](ctx)
+	playerPipe := core.MakeChannelPipe[[]byte](ctx)
+	playerInCh, playerOutCh := playerPipe.In, playerPipe.Out
 
 	setup := core.Setup{
 		Name: "",
@@ -42,8 +43,8 @@ func (app *App) gameOne(ctx screen.Context) core.GameOneParams {
 						Name: "",
 						Config: piece.Config{
 							RotationDirectionCW: false,
-							SlideEnabled:        true,
-							MaxWallKick:         2,
+							SlideDisabled:       false,
+							WallKick:            2,
 						},
 						InCh: playerOutCh,
 					},

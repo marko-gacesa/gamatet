@@ -68,6 +68,8 @@ func (ft *GameOne) Release() {
 	<-ft.waitDoneCh
 	ft.text.Release()
 	ft.res.Release()
+
+	close(ft.playerInCh)
 }
 
 func (ft *GameOne) InputKeyPress(key, scancode int) {

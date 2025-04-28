@@ -29,8 +29,12 @@ func (r Resources) Screen(ctx screen.Context, data any) screen.Screen {
 	switch v := data.(type) {
 	case *menu.Menu:
 		return NewMenu(r.rend, r.tex, v)
+	case core.GameParams:
+		m := ScreenMap{}
+		m["g"] = NewGameMulti(r.rend, r.tex, v)
+		m["h"] = NewHud(r.rend, r.tex)
+		return m
 	case core.GameOneParams:
-		//return NewGameOne(r.rend, r.tex, v)
 		m := ScreenMap{}
 		m["g"] = NewGameOne(r.rend, r.tex, v)
 		m["h"] = NewHud(r.rend, r.tex)

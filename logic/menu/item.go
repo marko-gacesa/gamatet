@@ -1,4 +1,4 @@
-// Copyright (c) 2024,2025 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package menu
 
@@ -12,9 +12,6 @@ const (
 type Item interface {
 	Text() string
 	Description() string
-
-	SetLabel(s string)
-	SetDescription(s string)
 
 	IsDisabled() bool
 	isVisible() bool
@@ -49,19 +46,32 @@ type base struct {
 	description string
 	current     string
 
-	canceler bool
+	global   bool
 	disabled bool
 	visible  bool
 
-	disabledFn func() bool
-	visibleFn  func() bool
+	disabledFn    func() bool
+	visibleFn     func() bool
+	labelFn       func() string
+	descriptionFn func() string
 }
 
-func (b *base) Text() string        { return b.label }
-func (b *base) Description() string { return b.description }
+func (b *base) Text() string        { return b.getLabel() }
+func (b *base) Description() string { return b.getDescription() }
 
-func (b *base) SetLabel(l string)       { b.label = l }
-func (b *base) SetDescription(l string) { b.description = l }
+func (b *base) getLabel() string {
+	if b.labelFn != nil {
+		return b.labelFn()
+	}
+	return b.label
+}
+
+func (b *base) getDescription() string {
+	if b.descriptionFn != nil {
+		return b.descriptionFn()
+	}
+	return b.description
+}
 
 func (b *base) IsDisabled() bool {
 	return b.disabled

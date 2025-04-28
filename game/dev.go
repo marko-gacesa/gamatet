@@ -93,7 +93,8 @@ func NewFieldTest(
 
 	// game setup
 
-	playerInCh, playerOutCh := core.ChannelPipe[[]byte](ctx)
+	pipe := core.MakeChannelPipe[[]byte](ctx)
+	playerInCh, playerOutCh := pipe.In, pipe.Out
 
 	const seed = 101
 	const level = 2
@@ -122,8 +123,8 @@ func NewFieldTest(
 						Name: "marko",
 						Config: piece.Config{
 							RotationDirectionCW: false,
-							SlideEnabled:        true,
-							MaxWallKick:         2,
+							SlideDisabled:       false,
+							WallKick:            2,
 						},
 						InCh: playerOutCh,
 					},
@@ -156,8 +157,8 @@ func NewFieldTest(
 						Name: "marko",
 						Config: piece.Config{
 							RotationDirectionCW: false,
-							SlideEnabled:        true,
-							MaxWallKick:         2,
+							SlideDisabled:       false,
+							WallKick:            2,
 						},
 					},
 				},
