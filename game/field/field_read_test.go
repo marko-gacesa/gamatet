@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package field
 
@@ -82,10 +82,10 @@ func TestField_CanRotatePiece(t *testing.T) {
 
 	p0 := piece.NewStandardTetromino(piece.TetrominoJ)
 	p1 := piece.NewStandardTetromino(piece.TetrominoT)
-	p0x := p0.LeftEmptyColumns()
-	p0y := p0.TopEmptyRows()
-	p1x := p1.LeftEmptyColumns()
-	p1y := p1.TopEmptyRows()
+	p0x := int(p0.LeftEmptyColumns())
+	p0y := int(p0.TopEmptyRows())
+	p1x := int(p1.LeftEmptyColumns())
+	p1y := int(p1.TopEmptyRows())
 
 	f.Ctrl(0).SetXYP(3-p0x, 2+p0y, p0)
 	f.Ctrl(1).SetXYP(2-p1x, 4+p1y, p1)
@@ -152,7 +152,7 @@ func TestField_CanRotatePiece_WallKick(t *testing.T) {
 		wall     byte // 'L'=left, 'R'=right
 		p        piece.Piece
 		colPad   int
-		wallKick int
+		wallKick byte
 		success  bool
 		dx       int
 	}{
@@ -234,10 +234,10 @@ func TestField_GetDropHeight(t *testing.T) {
 
 	p0 := piece.NewStandardTetromino(piece.TetrominoO)
 	p1 := piece.NewStandardTetromino(piece.TetrominoI)
-	p0x := p0.LeftEmptyColumns()
-	p0y := p0.TopEmptyRows()
-	p1x := p1.LeftEmptyColumns()
-	p1y := p1.TopEmptyRows()
+	p0x := int(p0.LeftEmptyColumns())
+	p0y := int(p0.TopEmptyRows())
+	p1x := int(p1.LeftEmptyColumns())
+	p1y := int(p1.TopEmptyRows())
 
 	f.Ctrl(0).SetXYP(0-p0x, 3+p0y, p0)
 	f.Ctrl(1).SetXYP(0-p1x, 4+p1y, p1)
@@ -325,16 +325,19 @@ func TestField_GetPieceStartPosition(t *testing.T) {
 	p0 := piece.NewStandardTetromino(piece.TetrominoO)
 	p1 := piece.NewStandardTetromino(piece.TetrominoT)
 
+	dimP0X := int(p0.DimX())
+	dimP1X := int(p1.DimX())
+
 	tests := []struct {
 		name       string
 		pIdx       int
 		piece      piece.Piece
 		expX, expY int
 	}{
-		{"P0@0", 0, p0, (widthPerPiece - p0.DimX()) / 2, 3},
-		{"P0@1", 1, p0, widthPerPiece + (widthPerPiece-p0.DimX())/2, 3},
-		{"P1@0", 0, p1, (widthPerPiece - p1.DimX()) / 2, 3},
-		{"P1@1", 1, p1, widthPerPiece + (widthPerPiece-p1.DimX())/2, 3},
+		{"P0@0", 0, p0, (widthPerPiece - dimP0X) / 2, 3},
+		{"P0@1", 1, p0, widthPerPiece + (widthPerPiece-dimP0X)/2, 3},
+		{"P1@0", 0, p1, (widthPerPiece - dimP1X) / 2, 3},
+		{"P1@1", 1, p1, widthPerPiece + (widthPerPiece-dimP1X)/2, 3},
 	}
 
 	for _, test := range tests {
@@ -368,12 +371,9 @@ func TestField_GetPieceStartPosition2(t *testing.T) {
 	p2 := piece.NewStandardTetromino(piece.TetrominoI)
 	p2.RotateCW()
 
-	//p0x := p0.LeftEmptyColumns()
-	p0y := p0.TopEmptyRows()
-	//p1x := p1.LeftEmptyColumns()
-	p1y := p1.TopEmptyRows()
-	//p2x := p2.LeftEmptyColumns()
-	p2y := p2.TopEmptyRows()
+	p0y := int(p0.TopEmptyRows())
+	p1y := int(p1.TopEmptyRows())
+	p2y := int(p2.TopEmptyRows())
 
 	// 3 # 0 0 . 1 1 1 1 . . 2 .
 	// 2 . 0 0 . . . . . . . 2 .

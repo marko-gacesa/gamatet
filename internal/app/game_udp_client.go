@@ -151,7 +151,7 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 				Anim:           true,
 			},
 			RandomSeed: seed,
-			PieceFeed:  piece.NewTetrominoFeed(4, seed),
+			PieceFeed:  piece.NewRotTetrominoFeed(4, seed),
 		},
 		Fields: fields,
 	})

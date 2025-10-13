@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package op
 
@@ -264,31 +264,53 @@ func (e *PieceMove) Read(r io.Reader) error {
 func (e *PieceMove) TypeID() event.Code { return codePieceMove }
 
 func NewPieceRotate(pIdx int, cw bool) *PieceTransform {
-	var rotate int8
+	var t PieceTransformType
 	if cw {
-		rotate = 1
+		t = PieceTransformTypeRotCW
 	} else {
-		rotate = -1
+		t = PieceTransformTypeRotCCW
 	}
 	return &PieceTransform{
 		PieceIdx: byte(pIdx),
-		RotateCW: rotate,
-		Activate: 0,
+		Type:     t,
 	}
 }
 
-func NewPieceActivate(pIdx int, amount int) *PieceTransform {
+func NewPieceFlipV(pIdx int) *PieceTransform {
 	return &PieceTransform{
 		PieceIdx: byte(pIdx),
-		RotateCW: 0,
-		Activate: int8(amount),
+		Type:     PieceTransformTypeFlipV,
 	}
 }
+
+func NewPieceFlipH(pIdx int) *PieceTransform {
+	return &PieceTransform{
+		PieceIdx: byte(pIdx),
+		Type:     PieceTransformTypeFlipH,
+	}
+}
+
+func NewPieceActivate(pIdx int) *PieceTransform {
+	return &PieceTransform{
+		PieceIdx: byte(pIdx),
+		Type:     PieceTransformTypeActivate,
+	}
+}
+
+type PieceTransformType byte
+
+const (
+	PieceTransformTypeNone     PieceTransformType = 0
+	PieceTransformTypeFlipV    PieceTransformType = 1
+	PieceTransformTypeFlipH    PieceTransformType = 2
+	PieceTransformTypeRotCW    PieceTransformType = 3
+	PieceTransformTypeRotCCW   PieceTransformType = 4
+	PieceTransformTypeActivate PieceTransformType = 5
+)
 
 type PieceTransform struct {
 	PieceIdx byte
-	RotateCW int8 // 1=cw, -1=ccw, 0=nothing
-	Activate int8 // 1=activate
+	Type     PieceTransformType
 }
 
 var _ event.Event = (*PieceTransform)(nil)
@@ -297,22 +319,32 @@ func (e *PieceTransform) Do(f *field.Field) {
 	ctrl := f.Ctrl(e.PieceIdx)
 	ctrl.Piece = ctrl.Piece.Clone()
 
-	if e.RotateCW > 0 {
+	switch e.Type {
+	case PieceTransformTypeNone:
+	case PieceTransformTypeFlipV:
+		ctrl.Piece.FlipV()
+		animateFlipVPiece(ctrl, f.Config.Anim)
+		ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
+		updatePieceShadow(f, ctrl)
+	case PieceTransformTypeFlipH:
+		ctrl.Piece.FlipH()
+		animateFlipHPiece(ctrl, f.Config.Anim)
+		ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
+		updatePieceShadow(f, ctrl)
+	case PieceTransformTypeRotCW:
 		inverted := ctrl.Piece.RotateCW()
 		animateRotatePiece(ctrl, true, inverted, f.Config.Anim)
 		ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
 		updatePieceShadow(f, ctrl)
-	} else if e.RotateCW < 0 {
+	case PieceTransformTypeRotCCW:
 		inverted := ctrl.Piece.RotateCCW()
 		animateRotatePiece(ctrl, false, inverted, f.Config.Anim)
 		ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
 		updatePieceShadow(f, ctrl)
-	}
-
-	if e.Activate != 0 {
-		activations := ctrl.Piece.GetActivationCount() - int(e.Activate)
+	case PieceTransformTypeActivate:
+		activations := ctrl.Piece.GetActivationCount() - 1
 		ctrl.Piece.SetActivationCount(activations)
-		if e.Activate > 0 && activations == 1 {
+		if activations == 1 {
 			animateBlinkPiece(ctrl, f.Config.Anim)
 		}
 	}
@@ -322,20 +354,30 @@ func (e *PieceTransform) Undo(f *field.Field) {
 	ctrl := f.Ctrl(e.PieceIdx)
 	ctrl.Piece = ctrl.Piece.Clone()
 
-	if e.RotateCW > 0 {
+	switch e.Type {
+	case PieceTransformTypeNone:
+	case PieceTransformTypeFlipV:
+		ctrl.Piece.FlipV()
+		ctrl.List.Clear()
+		ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
+		updatePieceShadow(f, ctrl)
+	case PieceTransformTypeFlipH:
+		ctrl.Piece.FlipH()
+		ctrl.List.Clear()
+		ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
+		updatePieceShadow(f, ctrl)
+	case PieceTransformTypeRotCW:
 		ctrl.Piece.RotateCCW()
 		ctrl.List.Clear()
 		ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
 		updatePieceShadow(f, ctrl)
-	} else if e.RotateCW < 0 {
+	case PieceTransformTypeRotCCW:
 		ctrl.Piece.RotateCW()
 		ctrl.List.Clear()
 		ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
 		updatePieceShadow(f, ctrl)
-	}
-
-	if e.Activate != 0 {
-		activations := ctrl.Piece.GetActivationCount() + int(e.Activate)
+	case PieceTransformTypeActivate:
+		activations := ctrl.Piece.GetActivationCount() + 1
 		ctrl.Piece.SetActivationCount(activations)
 		ctrl.List.Clear()
 	}
@@ -343,25 +385,24 @@ func (e *PieceTransform) Undo(f *field.Field) {
 
 func (e *PieceTransform) Equals(ev event.Event) bool {
 	q, ok := ev.(*PieceTransform)
-	return ok && e.PieceIdx == q.PieceIdx && e.RotateCW == q.RotateCW && e.Activate == q.Activate
+	return ok && e.PieceIdx == q.PieceIdx && e.Type == q.Type
 }
 
 func (e *PieceTransform) Write(w io.Writer) error {
-	if _, err := w.Write([]byte{e.PieceIdx, byte(e.RotateCW), byte(e.Activate)}); err != nil {
+	if _, err := w.Write([]byte{e.PieceIdx, byte(e.Type)}); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (e *PieceTransform) Read(r io.Reader) error {
-	var buffer [3]byte
+	var buffer [2]byte
 	if _, err := io.ReadFull(r, buffer[:]); err != nil {
 		return err
 	}
 
 	e.PieceIdx = buffer[0]
-	e.RotateCW = int8(buffer[1])
-	e.Activate = int8(buffer[2])
+	e.Type = PieceTransformType(buffer[1])
 
 	return nil
 }

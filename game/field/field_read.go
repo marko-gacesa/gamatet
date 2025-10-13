@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package field
 
@@ -75,14 +75,14 @@ func (f *Field) CanRotatePiece(cw bool, pIdx int, liftAll bool) (success bool, i
 		return
 	}
 
-	dim := rotated.DimX()
+	dim := int(rotated.DimX())
 
 	pieceWallKick := c.Piece.WallKick()
 	if c.Config.WallKick < pieceWallKick {
 		pieceWallKick = c.Config.WallKick
 	}
 
-	for wallKick := 1; wallKick <= pieceWallKick; wallKick++ {
+	for wallKick := 1; wallKick <= int(pieceWallKick); wallKick++ {
 		if dim < 2*wallKick {
 			break
 		}
@@ -102,6 +102,34 @@ func (f *Field) CanRotatePiece(cw bool, pIdx int, liftAll bool) (success bool, i
 		}
 	}
 
+	return
+}
+
+func (f *Field) CanFlipVPiece(pIdx int, liftAll bool) (success bool, flipped piece.Piece) {
+	c := f.pieces[pIdx]
+	if c.Piece == nil {
+		return
+	}
+
+	flipped = c.Piece.Clone()
+	flipped.FlipV()
+
+	colMin, colMax := f._getColumnLimits(c)
+	success = f._canPlacePiece(c.X, c.Y, colMin, colMax, flipped, liftAll, pIdx)
+	return
+}
+
+func (f *Field) CanFlipHPiece(pIdx int, liftAll bool) (success bool, flipped piece.Piece) {
+	c := f.pieces[pIdx]
+	if c.Piece == nil {
+		return
+	}
+
+	flipped = c.Piece.Clone()
+	flipped.FlipH()
+
+	colMin, colMax := f._getColumnLimits(c)
+	success = f._canPlacePiece(c.X, c.Y, colMin, colMax, flipped, liftAll, pIdx)
 	return
 }
 
@@ -132,8 +160,8 @@ func (f *Field) GetDropHeight(pIdx int, liftAll bool) (height int) {
 func (f *Field) GetPieceBlockLocations(x, y int, p piece.Piece) (result []block.XYB) {
 	result = make([]block.XYB, 0, p.BlockCount())
 
-	dimX := p.DimX()
-	dimY := p.DimY()
+	dimX := int(p.DimX())
+	dimY := int(p.DimY())
 	for j := 0; j < dimY; j++ {
 		for i := 0; i < dimX; i++ {
 			pBlock := p.Get(i, j)
@@ -159,7 +187,7 @@ func (f *Field) GetPieceBlockLocations(x, y int, p piece.Piece) (result []block.
 }
 
 func (f *Field) GetPieceStartPosition(pIdx int, ctrl *piece.Ctrl, p piece.Piece, liftAll bool) (success bool, x, y int) {
-	dimX := p.DimX()
+	dimX := int(p.DimX())
 
 	colMin, colMax := f._getColumnLimits(ctrl)
 
@@ -185,7 +213,7 @@ func (f *Field) GetPieceStartPosition(pIdx int, ctrl *piece.Ctrl, p piece.Piece,
 	}
 
 	y = f.h - 1
-	y += p.TopEmptyRows()
+	y += int(p.TopEmptyRows())
 
 	success = f._canPlacePiece(x, y, colMin, colMax, p, liftAll, pIdx)
 	return

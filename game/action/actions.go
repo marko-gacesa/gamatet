@@ -17,4 +17,6 @@ const (
 	Rotate    Action = 50
 	RotateCW  Action = 51
 	RotateCCW Action = 52
+	FlipV     Action = 53
+	FlipH     Action = 54
 )

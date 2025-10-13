@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package op
 
@@ -16,8 +16,8 @@ func updatePieceShadow(f *field.Field, ctrl *piece.Ctrl) {
 		return
 	}
 
-	ctrl.Shadow.ColL = ctrl.X + p.LeftEmptyColumns()
-	ctrl.Shadow.ColR = ctrl.X + p.DimX() - p.RightEmptyColumns()
+	ctrl.Shadow.ColL = ctrl.X + int(p.LeftEmptyColumns())
+	ctrl.Shadow.ColR = ctrl.X + int(p.DimX()) - int(p.RightEmptyColumns())
 	ctrl.Shadow.Blocks = ctrl.Shadow.Blocks[:0]
 
 	switch p.Type() {

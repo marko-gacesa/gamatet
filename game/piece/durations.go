@@ -19,7 +19,7 @@ const (
 	DurationMove = 50 * time.Millisecond
 
 	// DurationRotate time to rotate a piece.
-	DurationRotate = 75 * time.Millisecond
+	DurationRotate = 100 * time.Millisecond
 
 	// DurationFall is base time for fall animation:
 	// The final duration will be multiplied by square root of height.

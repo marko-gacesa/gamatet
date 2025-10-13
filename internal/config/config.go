@@ -46,7 +46,7 @@ type PlayerInfo struct {
 type PlayerConfig struct {
 	RotationDirectionCW bool `json:"rotation_direction_cw"`
 	SlideDisabled       bool `json:"slide_disabled"`
-	WallKick            int  `json:"wall_kick"`
+	WallKick            byte `json:"wall_kick"`
 }
 
 func (cfg PlayerConfig) Serialize() []byte {

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package piece
 
@@ -9,12 +9,12 @@ import (
 
 type shooter struct {
 	bulletType block.Type
-	ammo       int
+	ammo       byte
 }
 
 var _ Piece = (*shooter)(nil)
 
-func Shooter(ammo int, bulletType block.Type) Piece {
+func Shooter(ammo byte, bulletType block.Type) Piece {
 	return &shooter{
 		bulletType: bulletType,
 		ammo:       ammo,
@@ -22,7 +22,7 @@ func Shooter(ammo int, bulletType block.Type) Piece {
 }
 
 func (p *shooter) Write(w io.Writer) error {
-	_, err := w.Write([]byte{byte(p.bulletType), byte(p.ammo)})
+	_, err := w.Write([]byte{byte(p.bulletType), p.ammo})
 	return err
 }
 
@@ -34,7 +34,7 @@ func (p *shooter) Read(r io.Reader) error {
 	}
 
 	p.bulletType = block.Type(buffer[0])
-	p.ammo = int(buffer[1])
+	p.ammo = buffer[1]
 
 	return nil
 }
@@ -49,20 +49,21 @@ func (p *shooter) Equals(other Piece) bool {
 	return ok && p.bulletType == q.bulletType && p.ammo == q.ammo
 }
 
-func (*shooter) Type() Type      { return TypeShooter }
-func (*shooter) BlockCount() int { return 1 }
-func (*shooter) DimX() int       { return 1 }
-func (*shooter) DimY() int       { return 1 }
+func (*shooter) Type() Type       { return TypeShooter }
+func (*shooter) BlockCount() byte { return 1 }
+func (*shooter) DimX() byte       { return 1 }
+func (*shooter) DimY() byte       { return 1 }
 
-func (p *shooter) CanActivate() bool        { return p.ammo > 0 }
-func (p *shooter) GetActivationCount() int  { return p.ammo }
-func (p *shooter) SetActivationCount(n int) { p.ammo = n }
+func (p *shooter) CanActivate() bool         { return p.ammo > 0 }
+func (p *shooter) GetActivationCount() byte  { return p.ammo }
+func (p *shooter) SetActivationCount(n byte) { p.ammo = n }
 
-func (*shooter) CurrentRot() int { return 0 }
-func (*shooter) Rots() int       { return 0 }
+func (p *shooter) FlipV() {}
+func (p *shooter) FlipH() {}
+
 func (*shooter) RotateCW() bool  { return false }
 func (*shooter) RotateCCW() bool { return false }
-func (*shooter) WallKick() int   { return 0 }
+func (*shooter) WallKick() byte  { return 0 }
 
 func (p *shooter) IsEmpty(x, y int) bool {
 	return x != 0 || y != 0
@@ -91,12 +92,10 @@ func (p *shooter) Get(x, y int) (b block.Block) {
 	}
 }
 
-func (p *shooter) IsRowEmpty(r int) bool    { return r != 0 }
-func (p *shooter) IsColumnEmpty(c int) bool { return c != 0 }
-func (p *shooter) LeftEmptyColumns() int    { return 0 }
-func (p *shooter) RightEmptyColumns() int   { return 0 }
-func (p *shooter) TopEmptyRows() int        { return 0 }
-func (p *shooter) BottomEmptyRows() int     { return 0 }
+func (p *shooter) LeftEmptyColumns() byte  { return 0 }
+func (p *shooter) RightEmptyColumns() byte { return 0 }
+func (p *shooter) TopEmptyRows() byte      { return 0 }
+func (p *shooter) BottomEmptyRows() byte   { return 0 }
 
 func (p *shooter) String() string {
 	switch p.bulletType {

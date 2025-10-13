@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020, 2025 by Marko Gaćeša
 
 package op
 
@@ -35,20 +35,34 @@ func animateMovePiece(ctrl *piece.Ctrl, dx, dy int, isAnim bool) {
 	}
 }
 
+func animateFlipVPiece(ctrl *piece.Ctrl, isAnim bool) {
+	if isAnim {
+		ctrl.List.Add(anim.NewXRotLin(time.Now(), piece.DurationRotate, -math.Pi))
+	}
+}
+
+func animateFlipHPiece(ctrl *piece.Ctrl, isAnim bool) {
+	if isAnim {
+		ctrl.List.Add(anim.NewYRotLin(time.Now(), piece.DurationRotate, -math.Pi))
+	}
+}
+
 func animateRotatePiece(ctrl *piece.Ctrl, cw, inverted, isAnim bool) {
 	if !isAnim {
 		return
 	}
 
+	t := time.Now()
+
 	if cw {
-		ctrl.List.Add(anim.NewZRotQuad(time.Now(), piece.DurationRotate, -math.Pi/2))
+		ctrl.List.Add(anim.NewZRotQuad(t, piece.DurationRotate, -math.Pi/2))
 		if inverted {
-			ctrl.List.Add(anim.NewYQuad(time.Now(), piece.DurationRotate, -1))
+			ctrl.List.Add(anim.NewYQuad(t, piece.DurationRotate, -1))
 		}
 	} else {
-		ctrl.List.Add(anim.NewZRotQuad(time.Now(), piece.DurationRotate, math.Pi/2))
+		ctrl.List.Add(anim.NewZRotQuad(t, piece.DurationRotate, math.Pi/2))
 		if inverted {
-			ctrl.List.Add(anim.NewXQuad(time.Now(), piece.DurationRotate, 1))
+			ctrl.List.Add(anim.NewXQuad(t, piece.DurationRotate, 1))
 		}
 	}
 }

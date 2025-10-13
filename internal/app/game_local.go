@@ -76,7 +76,7 @@ func (app *App) game(ctx screen.Context) core.GameParams {
 				Anim:           true,
 			},
 			RandomSeed: seed,
-			PieceFeed:  piece.NewTetrominoFeed(4, seed),
+			PieceFeed:  piece.NewRotTetrominoFeed(4, seed),
 		},
 		Fields: fields,
 	}

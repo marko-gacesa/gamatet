@@ -144,6 +144,50 @@ func (*animYQuad) Rotate() (rx, ry, rz float32) { return }
 func (*animYQuad) Scale() (sx, sy, sz float32)  { return }
 func (*animYQuad) Color() (r, g, b, a float32)  { return }
 
+// Translation Z - linear and quadratic
+
+type animZLin struct {
+	animBase
+	dz float32
+}
+
+func NewZLin(now time.Time, duration time.Duration, dz float32) Anim {
+	return &animZLin{animBase: animBase{startedAt: now, duration: duration}, dz: -dz}
+}
+
+func (*animZLin) Feature() Feature { return Translate }
+
+func (a *animZLin) Translate() (dx, dy, dz float32) {
+	rt := 1.0 - a.T()
+	dz = a.dz * rt
+	return
+}
+
+func (*animZLin) Rotate() (rx, ry, rz float32) { return }
+func (*animZLin) Scale() (sx, sy, sz float32)  { return }
+func (*animZLin) Color() (r, g, b, a float32)  { return }
+
+type animZQuad struct {
+	animBase
+	dz float32
+}
+
+func NewZQuad(now time.Time, duration time.Duration, dz float32) Anim {
+	return &animZQuad{animBase: animBase{startedAt: now, duration: duration}, dz: -dz}
+}
+
+func (*animZQuad) Feature() Feature { return Translate }
+
+func (a *animZQuad) Translate() (dx, dy, dz float32) {
+	rt := 1.0 - a.T()
+	dz = a.dz * rt * rt
+	return
+}
+
+func (*animZQuad) Rotate() (rx, ry, rz float32) { return }
+func (*animZQuad) Scale() (sx, sy, sz float32)  { return }
+func (*animZQuad) Color() (r, g, b, a float32)  { return }
+
 // Fall
 
 type animFall struct {
@@ -201,6 +245,94 @@ func (a *animQuake) Translate() (dx, dy, dz float32) {
 func (*animQuake) Rotate() (rx, ry, rz float32) { return }
 func (*animQuake) Scale() (sx, sy, sz float32)  { return }
 func (*animQuake) Color() (r, g, b, a float32)  { return }
+
+// Rotation X - linear and quadratic
+
+type animXRotLin struct {
+	animBase
+	rx float32
+}
+
+func NewXRotLin(now time.Time, duration time.Duration, rx float32) Anim {
+	return &animXRotLin{animBase: animBase{startedAt: now, duration: duration}, rx: -rx}
+}
+
+func (*animXRotLin) Feature() Feature { return Rotate }
+
+func (a *animXRotLin) Rotate() (rx, ry, rz float32) {
+	rt := 1.0 - a.T()
+	rx = a.rx * rt
+	return
+}
+
+func (*animXRotLin) Translate() (dx, dy, dz float32) { return }
+func (*animXRotLin) Scale() (sx, sy, sz float32)     { return }
+func (*animXRotLin) Color() (r, g, b, a float32)     { return }
+
+type animXRotQuad struct {
+	animBase
+	rx float32
+}
+
+func NewXRotQuad(now time.Time, duration time.Duration, rx float32) Anim {
+	return &animXRotQuad{animBase: animBase{startedAt: now, duration: duration}, rx: -rx}
+}
+
+func (*animXRotQuad) Feature() Feature { return Rotate }
+
+func (a *animXRotQuad) Rotate() (rx, ry, rz float32) {
+	rt := 1.0 - a.T()
+	rx = a.rx * rt * rt
+	return
+}
+
+func (*animXRotQuad) Translate() (dx, dy, dz float32) { return }
+func (*animXRotQuad) Scale() (sx, sy, sz float32)     { return }
+func (*animXRotQuad) Color() (r, g, b, a float32)     { return }
+
+// Rotation Y - linear and quadratic
+
+type animYRotLin struct {
+	animBase
+	ry float32
+}
+
+func NewYRotLin(now time.Time, duration time.Duration, ry float32) Anim {
+	return &animYRotLin{animBase: animBase{startedAt: now, duration: duration}, ry: -ry}
+}
+
+func (*animYRotLin) Feature() Feature { return Rotate }
+
+func (a *animYRotLin) Rotate() (rx, ry, rz float32) {
+	rt := 1.0 - a.T()
+	ry = a.ry * rt
+	return
+}
+
+func (*animYRotLin) Translate() (dx, dy, dz float32) { return }
+func (*animYRotLin) Scale() (sx, sy, sz float32)     { return }
+func (*animYRotLin) Color() (r, g, b, a float32)     { return }
+
+type animYRotQuad struct {
+	animBase
+	ry float32
+}
+
+func NewYRotQuad(now time.Time, duration time.Duration, ry float32) Anim {
+	return &animYRotQuad{animBase: animBase{startedAt: now, duration: duration}, ry: -ry}
+}
+
+func (*animYRotQuad) Feature() Feature { return Rotate }
+
+func (a *animYRotQuad) Rotate() (rx, ry, rz float32) {
+	rt := 1.0 - a.T()
+	ry = a.ry * rt * rt
+	return
+}
+
+func (*animYRotQuad) Translate() (dx, dy, dz float32) { return }
+func (*animYRotQuad) Scale() (sx, sy, sz float32)     { return }
+func (*animYRotQuad) Color() (r, g, b, a float32)     { return }
 
 // Rotation Z - linear and quadratic
 

@@ -110,6 +110,35 @@ func HandleActionInput(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, a actio
 
 		p.Push(op.NewPieceRotate(ctrl.Idx, dirCW))
 
+	case action.FlipV, action.FlipH:
+		if ctrl.State != piece.StateDescend && ctrl.State != piece.StateSlide {
+			break
+		}
+
+		pieceType := ctrl.Piece.Type()
+		if pieceType == piece.TypeShooter {
+			_shoot(f, ctrl, p)
+			break // shooters can't flip
+		}
+
+		var success bool
+
+		if a == action.FlipV {
+			success, _ = f.CanFlipVPiece(ctrl.Idx, !f.PieceCollision)
+			if !success {
+				break
+			}
+
+			p.Push(op.NewPieceFlipV(ctrl.Idx))
+		} else {
+			success, _ = f.CanFlipHPiece(ctrl.Idx, !f.PieceCollision)
+			if !success {
+				break
+			}
+
+			p.Push(op.NewPieceFlipH(ctrl.Idx))
+		}
+
 	case action.MoveDown:
 		if ctrl.State != piece.StateDescend && ctrl.State != piece.StateSlide {
 			break
@@ -430,7 +459,7 @@ func _shoot(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 		return
 	}
 
-	p.Push(op.NewPieceActivate(ctrl.Idx, 1))
+	p.Push(op.NewPieceActivate(ctrl.Idx))
 
 	b := ctrl.Piece.Get(0, 0)
 	switch b.Type {

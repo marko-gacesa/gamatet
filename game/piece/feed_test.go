@@ -1,14 +1,16 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020, 2025 by Marko Gaćeša
 
 package piece
 
 import (
+	"fmt"
+	"gamatet/game/block"
 	"reflect"
 	"strings"
 	"testing"
 )
 
-func TestTetrominoBagFeed(t *testing.T) {
+func TestGenericFeed(t *testing.T) {
 	tests := []struct {
 		bagSize int
 		seed    int
@@ -20,7 +22,7 @@ func TestTetrominoBagFeed(t *testing.T) {
 		{bagSize: 4, seed: 34, bags: []int{3, 73, 953, 64531}},
 	}
 
-	printBag := func(pieces []polyomino) string {
+	printBag := func(pieces []polyominoRot) string {
 		m := make([][]string, len(pieces))
 		for i := 0; i < len(pieces); i++ {
 			b := strings.Split(pieces[i].String(), "\n")
@@ -41,73 +43,83 @@ func TestTetrominoBagFeed(t *testing.T) {
 	}
 
 	for testIdx, test := range tests {
-		f := NewTetrominoFeed(test.bagSize, test.seed)
+		t.Run(fmt.Sprintf("seed:%d-bagSize:%d", test.seed, test.bagSize), func(t *testing.T) {
+			shapes := shapesRotTetrominoes
+			shapeCount := len(shapes)
 
-		pieceBagCount := test.bagSize * len(tetrominoes)
+			f := NewGenericFeed(test.bagSize, test.seed, shapeCount, func(idx int) Piece {
+				return &polyominoRot{
+					shapeSquare: shapes[idx],
+					block:       block.Rock,
+				}
+			})
 
-		// init
+			pieceBagCount := test.bagSize * shapeCount
 
-		type bagCheck struct {
-			pieceCount map[polyomino]int
-			pieces     []polyomino
-		}
-		bagTest := make(map[int]bagCheck, len(test.bags))
-		for _, bag := range test.bags {
-			bagTest[bag] = bagCheck{
-				pieceCount: make(map[polyomino]int, len(tetrominoes)),
-				pieces:     make([]polyomino, pieceBagCount),
+			// init
+
+			type bagCheck struct {
+				pieceCount map[polyominoRot]int
+				pieces     []polyominoRot
 			}
-		}
-
-		// the first test: uniqueness of pieces in a single bag (there must be bagSize of each piece in each bag)
-
-		for _, bag := range test.bags {
-			idx := bag * pieceBagCount
-			for bagIdx := 0; bagIdx < pieceBagCount; bagIdx++ {
-				p := f.Get(idx + bagIdx).(*polyomino)
-				bagTest[bag].pieceCount[*p]++
-				bagTest[bag].pieces[bagIdx] = *p
-			}
-		}
-
-		for bag, bagCheckData := range bagTest {
-			for p, count := range bagCheckData.pieceCount {
-				if count != test.bagSize {
-					t.Errorf("uniqueness test failed: test#=%d in bag=%d expected count=%d, got=%d for piece:\n%s\n",
-						testIdx, bag, test.bagSize, count, p.String())
+			bagTest := make(map[int]bagCheck, len(test.bags))
+			for _, bag := range test.bags {
+				bagTest[bag] = bagCheck{
+					pieceCount: make(map[polyominoRot]int, shapeCount),
+					pieces:     make([]polyominoRot, pieceBagCount),
 				}
 			}
-		}
 
-		// the second test: order of pieces in each bag must be the same
+			// the first test: uniqueness of pieces in a single bag (there must be bagSize of each piece in each bag)
 
-		for _, bag := range test.bags {
-			if len(bagTest[bag].pieceCount) != len(tetrominoes) {
-				t.Errorf("piece type count failed: test#=%d in bag=%d expected piece count=:\n%d\ngot piece count=:\n%d\n",
-					testIdx, bag, len(tetrominoes), len(bagTest[bag].pieceCount))
-			}
-
-			idx := bag * pieceBagCount
-			for bagIdx := 0; bagIdx < pieceBagCount; bagIdx++ {
-				p := f.Get(idx + bagIdx).(*polyomino)
-				if bagTest[bag].pieces[bagIdx] != *p {
-					t.Errorf("piece order test failed: test#=%d in bag=%d bagIdx=%d expected piece:\n%s\ngot piece:\n%s\n",
-						testIdx, bag, bagIdx, bagTest[bag].pieces[bagIdx].String(), p.String())
+			for _, bag := range test.bags {
+				idx := bag * pieceBagCount
+				for bagIdx := 0; bagIdx < pieceBagCount; bagIdx++ {
+					p := f.Get(idx + bagIdx).(*polyominoRot)
+					bagTest[bag].pieceCount[*p]++
+					bagTest[bag].pieces[bagIdx] = *p
 				}
 			}
-		}
 
-		// the third test: make sure order of pieces is different in each bag
-
-		for i := 0; i < len(test.bags)-1; i++ {
-			for j := i + 1; j < len(test.bags); j++ {
-				bag1 := bagTest[test.bags[i]].pieces
-				bag2 := bagTest[test.bags[j]].pieces
-				if reflect.DeepEqual(bag1, bag2) {
-					t.Errorf("bag piece order uniqueness test failed: test#=%d in bag1=%d bag2=%d\nbag1 pieces:\n%sbag2 pieces:\n%s",
-						testIdx, i, j, printBag(bag1), printBag(bag2))
+			for bag, bagCheckData := range bagTest {
+				for p, count := range bagCheckData.pieceCount {
+					if count != test.bagSize {
+						t.Errorf("uniqueness test failed: test#=%d in bag=%d expected count=%d, got=%d for piece:\n%s\n",
+							testIdx, bag, test.bagSize, count, p.String())
+					}
 				}
 			}
-		}
+
+			// the second test: order of pieces in each bag must be the same
+
+			for _, bag := range test.bags {
+				if len(bagTest[bag].pieceCount) != shapeCount {
+					t.Errorf("piece type count failed: test#=%d in bag=%d expected piece count=%d got piece count=%d",
+						testIdx, bag, shapeCount, len(bagTest[bag].pieceCount))
+				}
+
+				idx := bag * pieceBagCount
+				for bagIdx := 0; bagIdx < pieceBagCount; bagIdx++ {
+					p := f.Get(idx + bagIdx).(*polyominoRot)
+					if bagTest[bag].pieces[bagIdx] != *p {
+						t.Errorf("piece order test failed: test#=%d in bag=%d bagIdx=%d expected piece:\n%s\ngot piece:\n%s\n",
+							testIdx, bag, bagIdx, bagTest[bag].pieces[bagIdx].String(), p.String())
+					}
+				}
+			}
+
+			// the third test: make sure order of pieces is different in each bag
+
+			for i := 0; i < len(test.bags)-1; i++ {
+				for j := i + 1; j < len(test.bags); j++ {
+					bag1 := bagTest[test.bags[i]].pieces
+					bag2 := bagTest[test.bags[j]].pieces
+					if reflect.DeepEqual(bag1, bag2) {
+						t.Errorf("bag piece order uniqueness test failed: test#=%d in bag1=%d bag2=%d\nbag1 pieces:\n%sbag2 pieces:\n%s",
+							testIdx, i, j, printBag(bag1), printBag(bag2))
+					}
+				}
+			}
+		})
 	}
 }

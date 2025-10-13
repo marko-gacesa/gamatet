@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package field
 
@@ -197,15 +197,15 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 
 		pinfo.PieceEmpty = false
 
-		dw := p.DimX()
-		dh := p.DimY()
+		dw := int(p.DimX())
+		dh := int(p.DimY())
 
 		pinfo.X = ctrl.X
 		pinfo.Y = ctrl.Y
 		pinfo.DimX = dw
 		pinfo.DimY = dh
 		pinfo.Type = ctrl.Piece.Type()
-		pinfo.ActCount = ctrl.Piece.GetActivationCount()
+		pinfo.ActCount = int(ctrl.Piece.GetActivationCount())
 		pinfo.Result = ctrl.List.Process(now)
 
 		pinfo.Blocks = pinfo.Blocks[:0]

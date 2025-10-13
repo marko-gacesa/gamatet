@@ -33,7 +33,7 @@ func (app *App) gameOne(ctx screen.Context) core.GameOneParams {
 				Anim:           true,
 			},
 			RandomSeed: seed,
-			PieceFeed:  piece.NewTetrominoFeed(4, seed),
+			PieceFeed:  piece.NewRotTetrominoFeed(4, seed),
 		},
 		Fields: []core.FieldSetup{
 			{

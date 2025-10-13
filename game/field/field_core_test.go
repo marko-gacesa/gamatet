@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020, 2025 by Marko Gaćeša
 
 package field
 
@@ -80,10 +80,10 @@ func TestField_getXYPieceIdx(t *testing.T) {
 	p1.RotateCW()
 
 	// calculate empty x, y offsets for
-	p0x := p0.LeftEmptyColumns()
-	p0y := p0.TopEmptyRows()
-	p1x := p1.LeftEmptyColumns()
-	p1y := p1.TopEmptyRows()
+	p0x := int(p0.LeftEmptyColumns())
+	p0y := int(p0.TopEmptyRows())
+	p1x := int(p1.LeftEmptyColumns())
+	p1y := int(p1.TopEmptyRows())
 
 	f.Ctrl(0).SetXYP(0-p0x, 0+p0y, p0)
 	f.Ctrl(1).SetXYP(2-p0x, 5+p0y, p0)
@@ -122,9 +122,9 @@ func TestField_isXYEmpty(t *testing.T) {
 	f.setXY(0, 0, b)
 	f.setXY(1, 1, b)
 
-	p0 := piece.NewColorTetromino(1, 0)
-	p0x := p0.LeftEmptyColumns()
-	p0y := p0.TopEmptyRows()
+	p0 := piece.NewStandardTetromino(piece.TetrominoI)
+	p0x := int(p0.LeftEmptyColumns())
+	p0y := int(p0.TopEmptyRows())
 	f.Ctrl(0).SetXYP(2-p0x, 2+p0y, p0)
 	f.Ctrl(1).SetXYP(2-p0x, 1+p0y, p0)
 
@@ -176,9 +176,9 @@ func TestField_canPlacePiece(t *testing.T) {
 	f.setXY(2, 2, b)
 	f.setXY(5, 5, b)
 
-	p0 := piece.NewColorTetromino(2, 0)
-	p0x := p0.LeftEmptyColumns()
-	p0y := p0.TopEmptyRows()
+	p0 := piece.NewStandardTetromino(piece.TetrominoT)
+	p0x := int(p0.LeftEmptyColumns())
+	p0y := int(p0.TopEmptyRows())
 	f.Ctrl(0).SetXYP(2-p0x, 2+p0y, p0)
 
 	// 5 . . . . . #

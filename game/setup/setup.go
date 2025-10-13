@@ -370,11 +370,11 @@ type PlayerConfig piece.Config
 func (c *PlayerConfig) Write(w *bitdata.Writer) {
 	w.WriteBool(c.RotationDirectionCW)
 	w.WriteBool(c.SlideDisabled)
-	w.Write8(byte(c.WallKick), 2)
+	w.Write8(c.WallKick, 2)
 }
 
 func (c *PlayerConfig) Read(r *bitdata.ReaderError) {
 	c.RotationDirectionCW = r.ReadBool()
 	c.SlideDisabled = r.ReadBool()
-	c.WallKick = int(r.Read8(2))
+	c.WallKick = r.Read8(2)
 }

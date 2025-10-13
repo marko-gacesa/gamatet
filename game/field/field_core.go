@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020, 2025 by Marko Gaćeša
 
 package field
 
@@ -186,8 +186,8 @@ func (f *Field) _isXYEmpty(x, y, colMin, colMax int, liftAll bool, liftPiece int
 }
 
 func (f *Field) _canPlacePiece(px, py, colMin, colMax int, p piece.Piece, liftAll bool, liftPiece int) bool {
-	dimX := p.DimX()
-	dimY := p.DimY()
+	dimX := int(p.DimX())
+	dimY := int(p.DimY())
 	for j := 0; j < dimX; j++ {
 		for i := 0; i < dimY; i++ {
 			if p.IsEmpty(i, j) {

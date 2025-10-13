@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020, 2025 by Marko Gaćeša
 
 package piece
 
@@ -20,7 +20,7 @@ func (r *random) int(n int) int {
 
 func (r *random) perm(m []int) {
 	n := len(m)
-	for i := 1; i < n; i++ {
+	for i := 0; i < n; i++ {
 		j := r.int(i + 1)
 		m[i] = m[j]
 		m[j] = i

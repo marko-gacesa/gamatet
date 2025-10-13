@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020, 2025 by Marko Gaćeša
 
 package piece
 
@@ -7,7 +7,7 @@ import "testing"
 func TestBitArrayGet(t *testing.T) {
 	tests := []struct {
 		value    uint32
-		bit      int
+		bit      byte
 		expected bool
 	}{
 		{value: 0b1001, bit: 0, expected: true},
@@ -33,7 +33,7 @@ func TestBitArrayGet(t *testing.T) {
 func TestBitArraySet(t *testing.T) {
 	tests := []struct {
 		initial  uint32
-		bit      int
+		bit      byte
 		expected uint32
 	}{
 		{initial: 0, bit: 0, expected: 1},
@@ -56,7 +56,7 @@ func TestBitArraySet(t *testing.T) {
 func TestBitArrayClear(t *testing.T) {
 	tests := []struct {
 		initial  uint32
-		bit      int
+		bit      byte
 		expected uint32
 	}{
 		{initial: 0xFFFFFFFF, bit: 0, expected: 0xFFFFFFFE},
@@ -78,7 +78,7 @@ func TestBitArrayClear(t *testing.T) {
 func TestBitArrayExchange(t *testing.T) {
 	tests := []struct {
 		initial    uint32
-		bit1, bit2 int
+		bit1, bit2 byte
 		expected   uint32
 	}{
 		{initial: 0b10, bit1: 0, bit2: 1, expected: 0b01},

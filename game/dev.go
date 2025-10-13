@@ -99,7 +99,7 @@ func NewFieldTest(
 	const seed = 101
 	const level = 2
 
-	pieceFeed := piece.NewDebugFeed(seed)
+	pieceFeed := piece.NewRotTetrominoFeed(2, seed)
 
 	setupHost := core.Setup{
 		Name: "test game",

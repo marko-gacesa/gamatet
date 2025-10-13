@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package piece
 
@@ -199,7 +199,7 @@ type Config struct {
 	// WallKick enables wall kick feature.
 	// On piece rotate command when a piece is next to a wall and rotation is not possible because of the wall,
 	// the game will try to move the piece max WallKick places to the left or right to try to place the rotated piece.
-	WallKick int
+	WallKick byte
 }
 
 type Shadow struct {

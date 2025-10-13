@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020, 2025 by Marko Gaćeša
 
 package piece
 
@@ -26,38 +26,36 @@ type Piece interface {
 	Equals(Piece) bool
 
 	Type() Type
-	BlockCount() int
-	DimX() int
-	DimY() int
+	BlockCount() byte
+	DimX() byte
+	DimY() byte
 
 	CanActivate() bool
-	GetActivationCount() int
-	SetActivationCount(count int)
+	GetActivationCount() byte
+	SetActivationCount(count byte)
 
-	CurrentRot() int
-	Rots() int
+	FlipV()
+	FlipH()
 	RotateCW() bool
 	RotateCCW() bool
 
 	// WallKick is maximum distance the piece is allowed to move left or right if a wall prevents rotation.
-	WallKick() int
+	WallKick() byte
 
 	IsEmpty(x, y int) bool
 	Get(x, y int) block.Block
 
-	IsRowEmpty(r int) bool
-	IsColumnEmpty(c int) bool
-	LeftEmptyColumns() int
-	RightEmptyColumns() int
-	TopEmptyRows() int
-	BottomEmptyRows() int
+	LeftEmptyColumns() byte
+	RightEmptyColumns() byte
+	TopEmptyRows() byte
+	BottomEmptyRows() byte
 
 	fmt.Stringer
 }
 
 func GetBlocks(p Piece, blocks []block.XYB) []block.XYB {
-	dimX := p.DimX()
-	dimY := p.DimY()
+	dimX := int(p.DimX())
+	dimY := int(p.DimY())
 	for j := 0; j < dimY; j++ {
 		for i := 0; i < dimX; i++ {
 			pBlock := p.Get(i, j)
@@ -75,22 +73,9 @@ func GetBlocks(p Piece, blocks []block.XYB) []block.XYB {
 	return blocks
 }
 
-func SliceEqual(a, b []Piece) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := 0; i < len(a); i++ {
-		if !a[i].Equals(b[i]) {
-			return false
-		}
-	}
-
-	return true
-}
-
 func Write(w io.Writer, p Piece) (err error) {
 	switch v := p.(type) {
-	case *polyomino:
+	case *polyominoRot:
 		err = serialize.Write8(w, 'P')
 		if err != nil {
 			return
@@ -117,7 +102,7 @@ func Read(r io.Reader) (p Piece, err error) {
 
 	switch code {
 	case 'P':
-		p = &polyomino{}
+		p = &polyominoRot{}
 		err = p.Read(r)
 	case 'S':
 		p = &shooter{}

@@ -1,24 +1,24 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020, 2025 by Marko Gaćeša
 
 package piece
 
 type bitarray uint32
 
-func (a bitarray) get(idx int) bool {
-	return a&(1<<byte(idx)) != 0
+func (a bitarray) get(idx byte) bool {
+	return a&(1<<idx) != 0
 }
 
-func (a bitarray) set(idx int) bitarray {
-	return a | 1<<byte(idx)
+func (a bitarray) set(idx byte) bitarray {
+	return a | 1<<idx
 }
 
-func (a bitarray) clear(idx int) bitarray {
-	return a & ^(1 << byte(idx))
+func (a bitarray) clear(idx byte) bitarray {
+	return a & ^(1 << idx)
 }
 
-func (a bitarray) exchange(idx1, idx2 int) bitarray {
-	mask1 := bitarray(1 << byte(idx1))
-	mask2 := bitarray(1 << byte(idx2))
+func (a bitarray) exchange(idx1, idx2 byte) bitarray {
+	mask1 := bitarray(1 << idx1)
+	mask2 := bitarray(1 << idx2)
 
 	if a&mask1 != 0 {
 		if a&mask2 == 0 {
