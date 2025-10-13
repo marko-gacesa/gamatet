@@ -66,6 +66,8 @@ func (app *App) gameOne(ctx screen.Context) core.GameOneParams {
 	// go-routine to consume all field events
 	go channel.Drain(fieldCh)
 
+	app.returnToMainScreen()
+
 	return core.GameOneParams{
 		PlayerInCh: playerInCh,
 		Game:       g,

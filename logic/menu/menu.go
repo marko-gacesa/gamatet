@@ -109,6 +109,20 @@ func (m *Menu) Next() {
 	m.itemsVisible[m.currentIdx].focus()
 }
 
+func (m *Menu) Focus(idx int) {
+	m.mx.Lock()
+	defer m.mx.Unlock()
+
+	n := len(m.itemsVisible)
+	if idx < 0 || idx >= n || idx == m.currentIdx {
+		return
+	}
+
+	m.itemsVisible[m.currentIdx].focusLost()
+	m.currentIdx = idx
+	m.itemsVisible[m.currentIdx].focus()
+}
+
 func (m *Menu) Decrease() {
 	shouldCallback := func() bool {
 		m.mx.Lock()

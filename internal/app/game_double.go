@@ -78,6 +78,8 @@ func (app *App) gameDouble(ctx screen.Context) core.GameDoubleParams {
 	// go-routine to consume all field events
 	go channel.Drain(fieldCh)
 
+	app.returnToMainScreen()
+
 	return core.GameDoubleParams{
 		Player1InCh: player1InCh,
 		Player2InCh: player2InCh,

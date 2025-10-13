@@ -39,6 +39,8 @@ func (app *App) gameUDPClient(ctx screen.Context) core.GameParams {
 	session := app.resultClientSession
 	serverAddr := app.resultServerAddress
 
+	app.returnToMainScreen()
+
 	gameParams, err := app._gameUDPClient(ctx, session, serverAddr)
 	if err != nil {
 		panic(err)

@@ -41,6 +41,8 @@ func (app *App) gameUDPServer(ctx screen.Context) core.GameParams {
 	session := app.resultServerSession
 	clientMap := app.resultClientMap
 
+	app.returnToMainScreen()
+
 	gameParams, err := app._gameUDPServer(ctx, session, clientMap)
 	if err != nil {
 		panic(err)

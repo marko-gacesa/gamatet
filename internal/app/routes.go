@@ -35,6 +35,11 @@ type routes struct {
 	prev *routes
 }
 
+func (r *routes) clear() {
+	r.id = ""
+	r.prev = nil
+}
+
 func (r *routes) push(id route) *routes {
 	if id == "" {
 		panic("can't push empty")

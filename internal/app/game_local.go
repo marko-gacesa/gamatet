@@ -100,6 +100,8 @@ func (app *App) game(ctx screen.Context) core.GameParams {
 		go channel.Drain(fieldCh)
 	}
 
+	app.returnToMainScreen()
+
 	return core.GameParams{
 		PlayerInCh: playerInChs,
 		FieldCount: fieldCount,

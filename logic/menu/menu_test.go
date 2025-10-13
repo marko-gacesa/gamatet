@@ -188,10 +188,10 @@ func TestMenu(t *testing.T) {
 
 			test.mutate(m)
 
-			if want, got := test.expCurrentIdx, m.CurrentIdx(); want != got {
+			if want, got := test.expCurrentIdx, m.currentIdx; want != got {
 				t.Errorf("CurrentIdx mismatch: want=%d, got=%d", want, got)
 			}
-			if want, got := test.expCount, m.Count(); want != got {
+			if want, got := test.expCount, len(m.itemsVisible); want != got {
 				t.Errorf("Count mismatch: want=%d, got=%d", want, got)
 			}
 		})

@@ -67,7 +67,10 @@ func (app *App) menuLANClientJoin(ctx screen.Context) *menu.Menu {
 			case <-ticker.C:
 				lobbyListener.Refresh()
 				lobbies, version := lobbyListener.List(list.Version())
-				list.Update(lobbies, version)
+				needsFocus := list.Update(lobbies, version)
+				if needsFocus >= 0 {
+					m.Focus(needsFocus)
+				}
 			}
 		}
 	}()
@@ -79,7 +82,10 @@ func (app *App) menuLANClientJoin(ctx screen.Context) *menu.Menu {
 		if err := udp.ListenMulticast(ctx, multicastAddr, func(data []byte, addr net.UDPAddr) {
 			lobbyListener.HandleBroadcastMessages(data, addr)
 			lobbies, version := lobbyListener.List(list.Version())
-			list.Update(lobbies, version)
+			needsFocus := list.Update(lobbies, version)
+			if needsFocus >= 0 {
+				m.Focus(needsFocus)
+			}
 
 			app.logger.Debug("received multicast packet",
 				"version", version,
@@ -140,11 +146,15 @@ func (l *clientLobbyList) Version() int {
 	return l.version
 }
 
-func (l *clientLobbyList) Update(newData []udpstar.LobbyListenerInfo, newVersion int) bool {
+func (l *clientLobbyList) Update(newData []udpstar.LobbyListenerInfo, newVersion int) int {
 	l.mx.Lock()
 	defer l.mx.Unlock()
 
+	needsFocus := -1
+
 	if newVersion != l.version {
+		oldCount := l.entryCount
+
 		l.version = newVersion
 
 		if len(newData) > maxClientLobbyEntries {
@@ -156,11 +166,15 @@ func (l *clientLobbyList) Update(newData []udpstar.LobbyListenerInfo, newVersion
 		for i := range newData {
 			l.entryList[i] = newData[i]
 		}
+
+		if oldCount == 0 && l.entryCount > 0 {
+			needsFocus = 0
+		}
 	}
 
 	l.refresh()
 
-	return true
+	return needsFocus
 }
 
 func (l *clientLobbyList) Refresh() {

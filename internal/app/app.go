@@ -168,6 +168,11 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 	return app.screener.Screen(ctx, data), ctx.Done()
 }
 
+func (app *App) returnToMainScreen() {
+	app.screenIDHistory.clear()
+	app.screenIDNext = routeMain
+}
+
 func (app *App) ScreenFinish() {
 	if app.screenIDNext == routeBack || app.screenIDNext == "" {
 		app.screenIDHistory.pop()
