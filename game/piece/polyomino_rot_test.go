@@ -107,7 +107,7 @@ func TestPolyomino_Rotate(t *testing.T) {
 
 			expShape := _initShapeSquare(test.rots, test.exp)
 
-			piece.RotateCW()
+			piece.UndoActivate()
 
 			if piece.rot != test.expRot {
 				t.Errorf("test %s CW rotate failed. expected rot=%d, but got %d", test.name, test.expRot, piece.rot)
@@ -119,7 +119,7 @@ func TestPolyomino_Rotate(t *testing.T) {
 				return
 			}
 
-			piece.RotateCCW()
+			piece.Activate()
 
 			if piece.rot != test.rot {
 				t.Errorf("test %s CCW rotate failed. expected rot=%d, but got %d", test.name, test.rot, piece.rot)
@@ -136,7 +136,7 @@ func TestPolyomino_Rotate(t *testing.T) {
 			}
 
 			for i := byte(0); i < test.rots; i++ {
-				piece.RotateCW()
+				piece.UndoActivate()
 			}
 
 			if piece.rot != test.rot {
@@ -150,7 +150,7 @@ func TestPolyomino_Rotate(t *testing.T) {
 			}
 
 			for i := byte(0); i < test.rots; i++ {
-				piece.RotateCCW()
+				piece.Activate()
 			}
 
 			if piece.rot != test.rot {
@@ -160,257 +160,6 @@ func TestPolyomino_Rotate(t *testing.T) {
 
 			if piece.data != shape.data {
 				t.Errorf("test %s full CCW rotate failed. expected blocks=%b, but got %b", test.name, shape.data, piece.data)
-				return
-			}
-		})
-	}
-}
-
-func TestPolyomino_FlipV(t *testing.T) {
-	tests := []struct {
-		name string
-		data []bool
-		exp  []bool
-	}{
-		{
-			name: "1x1",
-			data: []bool{XX},
-			exp:  []bool{XX},
-		},
-		{
-			name: "2x2",
-			data: []bool{
-				__, XX,
-				XX, __,
-			},
-			exp: []bool{
-				XX, __,
-				__, XX,
-			},
-		},
-		{
-			name: "2x2-1",
-			data: []bool{
-				__, XX,
-				__, __,
-			},
-			exp: []bool{
-				__, XX,
-				__, __,
-			},
-		},
-		{
-			name: "3x3",
-			data: []bool{
-				__, XX, __,
-				XX, XX, XX,
-				XX, __, __,
-			},
-			exp: []bool{
-				XX, __, __,
-				XX, XX, XX,
-				__, XX, __,
-			},
-		},
-		{
-			name: "3x3-1",
-			data: []bool{
-				__, __, __,
-				XX, XX, XX,
-				XX, __, __,
-			},
-			exp: []bool{
-				__, __, __,
-				XX, __, __,
-				XX, XX, XX,
-			},
-		},
-		{
-			name: "4x4",
-			data: []bool{
-				__, XX, __, XX,
-				XX, XX, XX, XX,
-				XX, __, __, __,
-				XX, XX, XX, XX,
-			},
-			exp: []bool{
-				XX, XX, XX, XX,
-				XX, __, __, __,
-				XX, XX, XX, XX,
-				__, XX, __, XX,
-			},
-		},
-		{
-			name: "4x4-1",
-			data: []bool{
-				__, __, __, __,
-				__, __, XX, __,
-				XX, XX, XX, __,
-				__, XX, XX, __,
-			},
-			exp: []bool{
-				__, __, __, __,
-				__, XX, XX, __,
-				XX, XX, XX, __,
-				__, __, XX, __,
-			},
-		},
-		{
-			name: "5x5",
-			data: []bool{
-				__, __, __, __, __,
-				__, __, XX, XX, XX,
-				XX, XX, XX, __, __,
-				__, XX, XX, __, __,
-				__, XX, __, __, __,
-			},
-			exp: []bool{
-				__, __, __, __, __,
-				__, XX, __, __, __,
-				__, XX, XX, __, __,
-				XX, XX, XX, __, __,
-				__, __, XX, XX, XX,
-			},
-		},
-	}
-
-	var b block.Block
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			shape := _initShapeSquare(0, test.data)
-			piece := &polyominoRot{
-				shapeSquare: shape,
-				block:       b,
-			}
-
-			expShape := _initShapeSquare(0, test.exp)
-
-			piece.FlipV()
-
-			if piece.data != expShape.data {
-				t.Errorf("test %s FlipV flopped. expected blocks=%b, but got %b", test.name, expShape.data, piece.data)
-				return
-			}
-		})
-	}
-}
-
-func TestPolyomino_FlipH(t *testing.T) {
-	tests := []struct {
-		name string
-		data []bool
-		exp  []bool
-	}{
-		{
-			name: "1x1",
-			data: []bool{XX},
-			exp:  []bool{XX},
-		},
-		{
-			name: "2x2",
-			data: []bool{
-				__, XX,
-				XX, __,
-			},
-			exp: []bool{
-				XX, __,
-				__, XX,
-			},
-		},
-		{
-			name: "3x3",
-			data: []bool{
-				__, XX, __,
-				XX, XX, XX,
-				XX, __, __,
-			},
-			exp: []bool{
-				__, XX, __,
-				XX, XX, XX,
-				__, __, XX,
-			},
-		},
-		{
-			name: "3x3-1",
-			data: []bool{
-				__, XX, __,
-				__, XX, XX,
-				__, __, XX,
-			},
-			exp: []bool{
-				__, __, XX,
-				__, XX, XX,
-				__, XX, __,
-			},
-		},
-		{
-			name: "4x4",
-			data: []bool{
-				__, XX, __, XX,
-				XX, XX, XX, XX,
-				XX, __, __, __,
-				XX, XX, XX, XX,
-			},
-			exp: []bool{
-				XX, __, XX, __,
-				XX, XX, XX, XX,
-				__, __, __, XX,
-				XX, XX, XX, XX,
-			},
-		},
-		{
-			name: "5x5",
-			data: []bool{
-				__, __, __, __, __,
-				__, __, XX, XX, XX,
-				XX, XX, XX, __, __,
-				__, XX, XX, __, __,
-				__, XX, __, __, __,
-			},
-			exp: []bool{
-				__, __, __, __, __,
-				XX, XX, XX, __, __,
-				__, __, XX, XX, XX,
-				__, __, XX, XX, __,
-				__, __, __, XX, __,
-			},
-		},
-		{
-			name: "5x5-1",
-			data: []bool{
-				__, __, __, __, __,
-				__, __, __, XX, __,
-				__, __, XX, XX, __,
-				__, __, XX, __, __,
-				__, __, __, __, __,
-			},
-			exp: []bool{
-				__, __, __, __, __,
-				__, __, XX, __, __,
-				__, __, XX, XX, __,
-				__, __, __, XX, __,
-				__, __, __, __, __,
-			},
-		},
-	}
-
-	var b block.Block
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			shape := _initShapeSquare(0, test.data)
-			piece := &polyominoRot{
-				shapeSquare: shape,
-				block:       b,
-			}
-
-			expShape := _initShapeSquare(0, test.exp)
-
-			piece.FlipH()
-
-			if piece.data != expShape.data {
-				t.Errorf("test %s FlipH flopped. expected blocks=%b, but got %b", test.name, expShape.data, piece.data)
 				return
 			}
 		})
@@ -479,7 +228,7 @@ func TestPolyomino_IsRowEmpty(t *testing.T) {
 			piece := &polyominoRot{shapeSquare: shape, rot: 0, block: block.Rock}
 
 			for i := byte(0); i < piece.DimY(); i++ {
-				result := piece.isRowEmpty(i)
+				result := piece.data.isSquareRowEmpty(piece.dim, i)
 				if result != test.exp.emptyRows[i] {
 					t.Errorf("test '%s' failed for row=%d, expected=%t. got=%t", test.name, i, test.exp.emptyRows[i], result)
 				}
@@ -560,7 +309,7 @@ func TestPolyomino_IsColumnEmpty(t *testing.T) {
 			piece := &polyominoRot{shapeSquare: shape, rot: 0, block: block.Rock}
 
 			for i := byte(0); i < piece.DimX(); i++ {
-				result := piece.isColumnEmpty(i)
+				result := piece.data.isSquareColumnEmpty(piece.dim, i)
 				if result != test.exp.emptyColumns[i] {
 					t.Errorf("test '%s' failed for column=%d, expected=%t. got=%t", test.name, i, test.exp.emptyColumns[i], result)
 				}

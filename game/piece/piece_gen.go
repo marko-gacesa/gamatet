@@ -34,3 +34,10 @@ func NewColorTetromino(id int, color uint32) Piece {
 func NewStandardTetromino(id int) Piece {
 	return NewColorTetromino(id, colors[id])
 }
+
+func NewFlipVTetromino(id int, b block.Block) Piece {
+	return &polyominoFlipV{
+		shapeRect: shapesFlipVTetrominoes[id],
+		block:     b,
+	}
+}

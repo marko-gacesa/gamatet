@@ -7,6 +7,7 @@ import (
 	"gamatet/game/block"
 	"gamatet/game/serialize"
 	"io"
+	"math"
 )
 
 type polyominoFlip struct {
@@ -14,30 +15,134 @@ type polyominoFlip struct {
 	block block.Block // block material for the Piece
 }
 
-var _ Piece = (*polyominoFlip)(nil)
+type polyominoFlipV polyominoFlip
 
-func (p *polyominoFlip) Write(w io.Writer) error {
+var _ Piece = (*polyominoFlipV)(nil)
+
+func (p *polyominoFlipV) Write(w io.Writer) error { return writeShapeRect(p.shapeRect, p.block, w) }
+func (p *polyominoFlipV) Read(r io.Reader) error  { return readShapeRect(&p.shapeRect, &p.block, r) }
+
+func (p *polyominoFlipV) Clone() Piece {
+	clone := *p
+	return &clone
+}
+
+func (p *polyominoFlipV) Equals(other Piece) bool {
+	q, ok := other.(*polyominoFlipV)
+	return ok && *p == *q
+}
+
+func (*polyominoFlipV) Type() Type         { return TypeFlipV }
+func (p *polyominoFlipV) BlockCount() byte { return p.size }
+func (p *polyominoFlipV) DimX() byte       { return p.width }
+func (p *polyominoFlipV) DimY() byte       { return p.height }
+
+func (*polyominoFlipV) CanActivate() bool     { return true }
+func (*polyominoFlipV) ActivationCount() byte { return math.MaxUint8 }
+
+func (p *polyominoFlipV) Activate() bool {
+	p.shapeRect.data = p.shapeRect.data.flipV(p.width, p.height)
+	return false
+}
+
+func (p *polyominoFlipV) UndoActivate() bool {
+	p.shapeRect.data = p.shapeRect.data.flipV(p.width, p.height)
+	return false
+}
+
+func (p *polyominoFlipV) WallKick() byte { return 0 }
+
+func (p *polyominoFlipV) IsEmpty(x, y int) bool { return p.data.isEmpty(p.width, p.height, x, y) }
+
+func (p *polyominoFlipV) Get(x, y int) block.Block {
+	if p.IsEmpty(x, y) {
+		return block.Block{Type: block.TypeEmpty}
+	}
+	return p.block
+}
+
+func (p *polyominoFlipV) LeftEmptyColumns() (empty byte)  { return 0 }
+func (p *polyominoFlipV) RightEmptyColumns() (empty byte) { return 0 }
+func (p *polyominoFlipV) TopEmptyRows() (empty byte)      { return 0 }
+func (p *polyominoFlipV) BottomEmptyRows() (empty byte)   { return 0 }
+
+func (p *polyominoFlipV) String() string { return p.shapeRect.String() }
+
+type polyominoFlipH polyominoFlip
+
+var _ Piece = (*polyominoFlipH)(nil)
+
+func (p *polyominoFlipH) Write(w io.Writer) error { return writeShapeRect(p.shapeRect, p.block, w) }
+func (p *polyominoFlipH) Read(r io.Reader) error  { return readShapeRect(&p.shapeRect, &p.block, r) }
+
+func (p *polyominoFlipH) Clone() Piece {
+	clone := *p
+	return &clone
+}
+
+func (p *polyominoFlipH) Equals(other Piece) bool {
+	q, ok := other.(*polyominoFlipH)
+	return ok && *p == *q
+}
+
+func (*polyominoFlipH) Type() Type         { return TypeFlipH }
+func (p *polyominoFlipH) BlockCount() byte { return p.size }
+func (p *polyominoFlipH) DimX() byte       { return p.width }
+func (p *polyominoFlipH) DimY() byte       { return p.height }
+
+func (*polyominoFlipH) CanActivate() bool     { return true }
+func (*polyominoFlipH) ActivationCount() byte { return math.MaxUint8 }
+
+func (p *polyominoFlipH) Activate() bool {
+	p.shapeRect.data = p.shapeRect.data.flipH(p.width, p.height)
+	return false
+}
+
+func (p *polyominoFlipH) UndoActivate() bool {
+	p.shapeRect.data = p.shapeRect.data.flipH(p.width, p.height)
+	return false
+}
+
+func (p *polyominoFlipH) WallKick() byte { return 0 }
+
+func (p *polyominoFlipH) IsEmpty(x, y int) bool { return p.data.isEmpty(p.width, p.height, x, y) }
+
+func (p *polyominoFlipH) Get(x, y int) block.Block {
+	if p.IsEmpty(x, y) {
+		return block.Block{Type: block.TypeEmpty}
+	}
+	return p.block
+}
+
+func (p *polyominoFlipH) LeftEmptyColumns() (empty byte)  { return 0 }
+func (p *polyominoFlipH) RightEmptyColumns() (empty byte) { return 0 }
+func (p *polyominoFlipH) TopEmptyRows() (empty byte)      { return 0 }
+func (p *polyominoFlipH) BottomEmptyRows() (empty byte)   { return 0 }
+
+func (p *polyominoFlipH) String() string { return p.shapeRect.String() }
+
+func writeShapeRect(s shapeRect, b block.Block, w io.Writer) error {
 	var buffer [3]byte
-	buffer[0] = p.width
-	buffer[1] = p.height
-	buffer[2] = p.size
+	buffer[0] = s.width
+	buffer[1] = s.height
+	buffer[2] = s.size
 
 	if _, err := w.Write(buffer[:]); err != nil {
 		return err
 	}
 
-	if err := p.block.Write(w); err != nil {
+	if err := b.Write(w); err != nil {
 		return err
 	}
 
-	if err := serialize.Write32(w, uint32(p.data)); err != nil {
+	if err := serialize.Write32(w, uint32(s.data)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (p *polyominoFlip) Read(r io.Reader) (err error) {
+func readShapeRect(s *shapeRect, b *block.Block, r io.Reader) (err error) {
 	var buffer [3]byte
 
 	n, err := r.Read(buffer[:])
@@ -50,11 +155,11 @@ func (p *polyominoFlip) Read(r io.Reader) (err error) {
 		return
 	}
 
-	p.width = buffer[0]
-	p.height = buffer[1]
-	p.size = buffer[2]
+	s.width = buffer[0]
+	s.height = buffer[1]
+	s.size = buffer[2]
 
-	err = p.block.Read(r)
+	err = b.Read(r)
 	if err != nil {
 		return
 	}
@@ -64,82 +169,7 @@ func (p *polyominoFlip) Read(r io.Reader) (err error) {
 		return
 	}
 
-	p.data = bitarray(data)
+	s.data = bitarray(data)
 
 	return
 }
-
-func (p *polyominoFlip) Clone() Piece {
-	clone := *p
-	return &clone
-}
-
-func (p *polyominoFlip) Equals(other Piece) bool {
-	q, ok := other.(*polyominoFlip)
-	return ok && *p == *q
-}
-
-func (*polyominoFlip) Type() Type         { return TypeStandard }
-func (p *polyominoFlip) BlockCount() byte { return p.size }
-func (p *polyominoFlip) DimX() byte       { return p.width }
-func (p *polyominoFlip) DimY() byte       { return p.height }
-
-func (*polyominoFlip) CanActivate() bool        { return false }
-func (*polyominoFlip) GetActivationCount() byte { return 0 }
-func (*polyominoFlip) SetActivationCount(byte)  {}
-
-func (p *polyominoFlip) FlipV() {
-	w := p.width
-	h := p.height
-	h2 := h >> 1
-	for y := byte(0); y < h2; y++ {
-		for x := byte(0); x < w; x++ {
-			idx0 := y*w + x
-			idx1 := (h-y-1)*w + x
-			p.data = p.data.exchange(idx0, idx1)
-		}
-	}
-}
-
-func (p *polyominoFlip) FlipH() {
-	w := p.width
-	h := p.height
-	w2 := w >> 1
-	for y := byte(0); y < h; y++ {
-		for x := byte(0); x < w2; x++ {
-			idx0 := y*w + x
-			idx1 := y*w + (w - x - 1)
-			p.data = p.data.exchange(idx0, idx1)
-		}
-	}
-}
-
-func (p *polyominoFlip) RotateCW() (inverted bool)  { return false }
-func (p *polyominoFlip) RotateCCW() (inverted bool) { return false }
-func (p *polyominoFlip) WallKick() byte             { return 0 }
-
-func (p *polyominoFlip) IsEmpty(x, y int) bool {
-	w := int(p.width)
-	h := int(p.height)
-	if x < 0 || x >= w || y < 0 || y >= h {
-		return true
-	}
-
-	idx := y*w + x
-	return !p.data.get(byte(idx))
-}
-
-func (p *polyominoFlip) Get(x, y int) (b block.Block) {
-	if p.IsEmpty(x, y) {
-		return
-	}
-	b = p.block
-	return
-}
-
-func (p *polyominoFlip) LeftEmptyColumns() (empty byte)  { return 0 }
-func (p *polyominoFlip) RightEmptyColumns() (empty byte) { return 0 }
-func (p *polyominoFlip) TopEmptyRows() (empty byte)      { return 0 }
-func (p *polyominoFlip) BottomEmptyRows() (empty byte)   { return 0 }
-
-func (p *polyominoFlip) String() string { return p.shapeRect.String() }

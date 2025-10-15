@@ -54,16 +54,23 @@ func (*shooter) BlockCount() byte { return 1 }
 func (*shooter) DimX() byte       { return 1 }
 func (*shooter) DimY() byte       { return 1 }
 
-func (p *shooter) CanActivate() bool         { return p.ammo > 0 }
-func (p *shooter) GetActivationCount() byte  { return p.ammo }
-func (p *shooter) SetActivationCount(n byte) { p.ammo = n }
+func (p *shooter) CanActivate() bool     { return p.ammo > 0 }
+func (p *shooter) ActivationCount() byte { return p.ammo }
+func (p *shooter) Activate() bool {
+	if p.ammo == 0 {
+		return false
+	}
 
-func (p *shooter) FlipV() {}
-func (p *shooter) FlipH() {}
+	p.ammo--
+	return true
+}
 
-func (*shooter) RotateCW() bool  { return false }
-func (*shooter) RotateCCW() bool { return false }
-func (*shooter) WallKick() byte  { return 0 }
+func (p *shooter) UndoActivate() bool {
+	p.ammo++
+	return true
+}
+
+func (*shooter) WallKick() byte { return 0 }
 
 func (p *shooter) IsEmpty(x, y int) bool {
 	return x != 0 || y != 0
@@ -101,11 +108,17 @@ func (p *shooter) String() string {
 	switch p.bulletType {
 	default:
 		fallthrough
+	case block.TypeRock:
+		return "RR"
 	case block.TypeLava:
 		return "LL"
 	case block.TypeAcid:
 		return "AA"
-	case block.TypeWave:
+	case block.TypeCurl:
 		return "CC"
+	case block.TypeWave:
+		return "WW"
+	case block.TypeBomb:
+		return "BB"
 	}
 }

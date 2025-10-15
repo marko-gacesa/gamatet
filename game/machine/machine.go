@@ -79,69 +79,38 @@ func HandleActionInput(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, a actio
 			dx = 1
 		}
 
-		success := f.CanMovePiece(dx, 0, ctrl.Idx, !f.PieceCollision)
-		if !success {
-			break
-		}
-
-		p.Push(op.NewPieceMove(ctrl.Idx, dx, 0))
-
-	case action.RotateCW, action.RotateCCW:
-		if ctrl.State != piece.StateDescend && ctrl.State != piece.StateSlide {
-			break
-		}
-
-		pieceType := ctrl.Piece.Type()
-		if pieceType == piece.TypeShooter {
-			_shoot(f, ctrl, p)
-			break // shooters can't rotate
-		}
-
-		dirCW := a == action.RotateCW
-
-		success, _, dx, _ := f.CanRotatePiece(dirCW, ctrl.Idx, !f.PieceCollision)
-		if !success {
-			break
-		}
-
-		if dx != 0 {
+		if success := f.CanMovePiece(dx, 0, ctrl.Idx, !f.PieceCollision); success {
 			p.Push(op.NewPieceMove(ctrl.Idx, dx, 0))
 		}
 
-		p.Push(op.NewPieceRotate(ctrl.Idx, dirCW))
-
-	case action.FlipV, action.FlipH:
+	case action.Activate:
 		if ctrl.State != piece.StateDescend && ctrl.State != piece.StateSlide {
-			break
+			return
 		}
 
-		pieceType := ctrl.Piece.Type()
-		if pieceType == piece.TypeShooter {
+		switch ctrl.Piece.Type() {
+		case piece.TypeRotation:
+			if success, _, dx, _ := f.CanRotatePiece(ctrl.Idx, !f.PieceCollision); success {
+				if dx != 0 {
+					p.Push(op.NewPieceMove(ctrl.Idx, dx, 0))
+				}
+				p.Push(op.NewPieceRotate(ctrl.Idx, ctrl.RotationDirectionCW))
+			}
+		case piece.TypeFlipV:
+			if success, _ := f.CanFlipVPiece(ctrl.Idx, !f.PieceCollision); success {
+				p.Push(op.NewPieceActivate(ctrl.Idx))
+			}
+		case piece.TypeFlipH:
+			if success, _ := f.CanFlipHPiece(ctrl.Idx, !f.PieceCollision); success {
+				p.Push(op.NewPieceActivate(ctrl.Idx))
+			}
+		case piece.TypeShooter:
 			_shoot(f, ctrl, p)
-			break // shooters can't flip
-		}
-
-		var success bool
-
-		if a == action.FlipV {
-			success, _ = f.CanFlipVPiece(ctrl.Idx, !f.PieceCollision)
-			if !success {
-				break
-			}
-
-			p.Push(op.NewPieceFlipV(ctrl.Idx))
-		} else {
-			success, _ = f.CanFlipHPiece(ctrl.Idx, !f.PieceCollision)
-			if !success {
-				break
-			}
-
-			p.Push(op.NewPieceFlipH(ctrl.Idx))
 		}
 
 	case action.MoveDown:
 		if ctrl.State != piece.StateDescend && ctrl.State != piece.StateSlide {
-			break
+			return
 		}
 
 		success := f.CanMovePiece(0, -1, ctrl.Idx, !f.PieceCollision)
@@ -151,7 +120,7 @@ func HandleActionInput(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, a actio
 			} else {
 				ctrl.Timer.Reset(time.Nanosecond)
 			}
-			break
+			return
 		}
 
 		p.Push(op.NewPieceMove(ctrl.Idx, 0, -1))
@@ -160,20 +129,19 @@ func HandleActionInput(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, a actio
 
 	case action.Drop:
 		if ctrl.State != piece.StateDescend && ctrl.State != piece.StateSlide {
-			break
+			return
 		}
 
-		if ctrl.Piece.Type() == piece.TypeShooter {
-			_shoot(f, ctrl, p)
-			break
-		}
-
-		if ctrl.Piece.Type() == piece.TypeStandard {
+		switch ctrl.Piece.Type() {
+		case piece.TypeFlipV, piece.TypeFlipH, piece.TypeRotation:
 			if t := ctrl.Blocks[0].Type; t.NoSlide() {
 				_meldPiece(f, ctrl, p)
 				_clearPiece(ctrl, p)
-				break
+				return
 			}
+		case piece.TypeShooter:
+			_shoot(f, ctrl, p)
+			return
 		}
 
 		height := f.GetDropHeight(ctrl.Idx, !f.PieceCollision)
@@ -181,7 +149,7 @@ func HandleActionInput(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, a actio
 			if ctrl.State != piece.StateSlide {
 				_changeState(ctrl, p, piece.StateSlide)
 			}
-			break
+			return
 		}
 
 		p.Push(op.NewPieceFall(ctrl.Idx, height))
@@ -275,17 +243,15 @@ func _clearPiece(ctrl *piece.Ctrl, p event.Pusher) {
 }
 
 func _meldPiece(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
-	if ctrl.Piece.Type() == piece.TypeShooter {
-		return
-	}
-
-	if ctrl.Piece.Type() == piece.TypeStandard {
+	switch ctrl.Piece.Type() {
+	case piece.TypeFlipV, piece.TypeFlipH, piece.TypeRotation:
 		switch ctrl.Blocks[0].Type {
 		case block.TypeLava, block.TypeAcid, block.TypeBomb, block.TypeCurl, block.TypeWave:
 			_meldLiquidPiece(f, ctrl, p)
 		default:
 			_meldSolidPiece(f, ctrl, p)
 		}
+	case piece.TypeShooter:
 	}
 }
 
@@ -454,7 +420,7 @@ func _dropWave(f *field.Field, p event.Pusher, x, y int) bool {
 }
 
 func _shoot(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
-	ammo := ctrl.Piece.GetActivationCount()
+	ammo := ctrl.Piece.ActivationCount()
 	if ammo == 0 {
 		return
 	}

@@ -205,7 +205,7 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 		pinfo.DimX = dw
 		pinfo.DimY = dh
 		pinfo.Type = ctrl.Piece.Type()
-		pinfo.ActCount = int(ctrl.Piece.GetActivationCount())
+		pinfo.ActCount = int(ctrl.Piece.ActivationCount())
 		pinfo.Result = ctrl.List.Process(now)
 
 		pinfo.Blocks = pinfo.Blocks[:0]

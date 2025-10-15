@@ -188,8 +188,8 @@ func (f *Field) _isXYEmpty(x, y, colMin, colMax int, liftAll bool, liftPiece int
 func (f *Field) _canPlacePiece(px, py, colMin, colMax int, p piece.Piece, liftAll bool, liftPiece int) bool {
 	dimX := int(p.DimX())
 	dimY := int(p.DimY())
-	for j := 0; j < dimX; j++ {
-		for i := 0; i < dimY; i++ {
+	for j := 0; j < dimY; j++ {
+		for i := 0; i < dimX; i++ {
 			if p.IsEmpty(i, j) {
 				continue
 			}

@@ -87,7 +87,7 @@ func (ft *FieldTest) InputKeyPress(key, scancode int) {
 	case glfw.KeyRight:
 		cmd = []byte{byte(action.MoveRight)}
 	case glfw.KeyUp:
-		cmd = []byte{byte(action.RotateCCW)}
+		cmd = []byte{byte(action.Activate)}
 	case glfw.KeyDown:
 		cmd = []byte{byte(action.MoveDown)}
 	case glfw.KeySpace:

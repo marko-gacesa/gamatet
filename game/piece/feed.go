@@ -4,6 +4,7 @@ package piece
 
 import (
 	"gamatet/game/block"
+	"slices"
 	"strconv"
 	"sync"
 )
@@ -74,10 +75,25 @@ func NewRotTetrominoFeed(bagSize int, seed int) GenericFeed {
 	})
 }
 
-func NewFlipVTetrominoFeed(bagSize int, seed int) GenericFeed {
-	return NewGenericFeed(bagSize, seed, len(shapesFlipVTetrominoes), func(idx int) Piece {
-		return &polyominoFlip{
-			shapeRect: shapesFlipVTetrominoes[idx],
+func NewFlipVFeed(bagSize int, seed int) GenericFeed {
+	shapes := slices.Concat(shapesFlipVTinyminoes, shapesFlipVTetrominoes)
+	return NewGenericFeed(bagSize, seed, len(shapes), func(idx int) Piece {
+		return &polyominoFlipV{
+			shapeRect: shapes[idx],
+			block: block.Block{
+				Type:     block.TypeRock,
+				Hardness: 0,
+				Color:    colors[idx%len(colors)],
+			},
+		}
+	})
+}
+
+func NewFlipHFeed(bagSize int, seed int) GenericFeed {
+	shapes := slices.Concat(shapesFlipHTinyminoes, shapesFlipHTetrominoes)
+	return NewGenericFeed(bagSize, seed, len(shapes), func(idx int) Piece {
+		return &polyominoFlipH{
+			shapeRect: shapes[idx],
 			block: block.Block{
 				Type:     block.TypeRock,
 				Hardness: 0,

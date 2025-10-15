@@ -49,25 +49,13 @@ func init() {
 	_durationSlide = make([]time.Duration, MaxLevel+1)
 
 	for level := 0; level <= MaxLevel; level++ {
-		// https://tetris.fandom.com/wiki/Tetris_Worlds
-		_durationDescend[level] = time.Duration(math.Pow(0.8-(float64(level)*0.007), float64(level)) * float64(time.Second))
-
-		// 0:500, 1:475, 2:450, 3:425, 4:400, 5:375, 6:350, 7:325, 8:300, 9:275, 10:250, 11:225, 12:200, ...
-		_durationSlide[level] = time.Duration(500-level*25) * time.Millisecond
+		_durationDescend[level] = time.Duration(float64(time.Second) * math.Pow(4.0/3.0, float64(-level)))
+		_durationSlide[level] = time.Duration(float64(time.Second) * 0.5 * math.Pow(1.125, float64(-level)))
+		//fmt.Println(level, _durationDescend[level], _durationSlide[level])
 	}
 }
 
 func getDescendDuration(level int) time.Duration {
-	/*
-		// https://en.wikipedia.org/wiki/Intel_8253#IBM_PC_programming_tips_and_hints
-		const pit8253 = time.Microsecond * 65536 * 88 / 105
-
-		if level <= 10 {
-			return pit8253 * time.Duration(11-level)
-		} else {
-			return pit8253 / time.Duration(level)
-		}
-	*/
 	return _durationDescend[level]
 }
 

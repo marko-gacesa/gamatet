@@ -77,7 +77,7 @@ func TestField_getXYPieceIdx(t *testing.T) {
 
 	p0 := piece.NewStandardTetromino(piece.TetrominoI)
 	p1 := p0.Clone()
-	p1.RotateCW()
+	p1.UndoActivate() // rotate CW
 
 	// calculate empty x, y offsets for
 	p0x := int(p0.LeftEmptyColumns())
@@ -209,9 +209,11 @@ func TestField_canPlacePiece(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		r := f._canPlacePiece(test.px, test.py, 0, f.w-1, p0, test.liftAll, test.liftIdx)
-		if r != test.exp {
-			t.Errorf("test '%s' failed, for (%d, %d, %t, %d); expected %t got %t", test.name, test.px, test.py, test.liftAll, test.liftIdx, test.exp, r)
-		}
+		t.Run(test.name, func(t *testing.T) {
+			r := f._canPlacePiece(test.px, test.py, 0, f.w-1, p0, test.liftAll, test.liftIdx)
+			if r != test.exp {
+				t.Errorf("test '%s' failed, for (%d, %d, %t, %d); expected %t got %t", test.name, test.px, test.py, test.liftAll, test.liftIdx, test.exp, r)
+			}
+		})
 	}
 }

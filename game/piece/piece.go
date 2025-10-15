@@ -12,10 +12,13 @@ import (
 type Type byte
 
 const (
-	// TypeStandard have all blocks of the same type (Rock, Lava or Acid) and color.
-	TypeStandard Type = iota
+	TypeFlipV Type = 1
+	TypeFlipH Type = 2
+
+	TypeRotation Type = 4
+
 	// TypeShooter is 1x1 block that shoots bullets, and disappears after falling.
-	TypeShooter
+	TypeShooter = 10
 )
 
 type Piece interface {
@@ -31,15 +34,11 @@ type Piece interface {
 	DimY() byte
 
 	CanActivate() bool
-	GetActivationCount() byte
-	SetActivationCount(count byte)
+	ActivationCount() byte
+	Activate() bool
+	UndoActivate() bool
 
-	FlipV()
-	FlipH()
-	RotateCW() bool
-	RotateCCW() bool
-
-	// WallKick is maximum distance the piece is allowed to move left or right if a wall prevents rotation.
+	// WallKick is maximum distance the piece is allowed to move left or right if a wall prevents transformation (rotation).
 	WallKick() byte
 
 	IsEmpty(x, y int) bool
@@ -75,8 +74,20 @@ func GetBlocks(p Piece, blocks []block.XYB) []block.XYB {
 
 func Write(w io.Writer, p Piece) (err error) {
 	switch v := p.(type) {
+	case *polyominoFlipV:
+		err = serialize.Write8(w, 'V')
+		if err != nil {
+			return
+		}
+		err = v.Write(w)
+	case *polyominoFlipH:
+		err = serialize.Write8(w, 'H')
+		if err != nil {
+			return
+		}
+		err = v.Write(w)
 	case *polyominoRot:
-		err = serialize.Write8(w, 'P')
+		err = serialize.Write8(w, 'R')
 		if err != nil {
 			return
 		}
@@ -101,7 +112,13 @@ func Read(r io.Reader) (p Piece, err error) {
 	}
 
 	switch code {
-	case 'P':
+	case 'V':
+		p = &polyominoFlipV{}
+		err = p.Read(r)
+	case 'H':
+		p = &polyominoFlipH{}
+		err = p.Read(r)
+	case 'R':
 		p = &polyominoRot{}
 		err = p.Read(r)
 	case 'S':

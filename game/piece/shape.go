@@ -33,6 +33,10 @@ func (p shapeSquare) String() string {
 	return polyominoToStr(p.data, p.dim, p.dim)
 }
 
+func (p shapeSquare) def() string {
+	return fmt.Sprintf("{dim: %d, size: %d, rots: %d, data: %d},", p.dim, p.size, p.rots, p.data)
+}
+
 func polyominoToStr(b bitarray, w, h byte) string {
 	sb := strings.Builder{}
 
@@ -48,8 +52,4 @@ func polyominoToStr(b bitarray, w, h byte) string {
 	}
 
 	return sb.String()
-}
-
-func (p shapeSquare) def() string {
-	return fmt.Sprintf("{dim: %d, size: %d, rots: %d, data: %d},", p.dim, p.size, p.rots, p.data)
 }

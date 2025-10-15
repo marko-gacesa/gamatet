@@ -55,17 +55,18 @@ func (f *Field) CanMovePiece(dx, dy, pIdx int, liftAll bool) (success bool) {
 	return
 }
 
-func (f *Field) CanRotatePiece(cw bool, pIdx int, liftAll bool) (success bool, inverted bool, dx int, rotated piece.Piece) {
+func (f *Field) CanRotatePiece(pIdx int, liftAll bool) (success bool, inverted bool, dx int, rotated piece.Piece) {
 	c := f.pieces[pIdx]
-	if c.Piece == nil {
+	if c.Piece == nil || c.Piece.Type() != piece.TypeRotation {
 		return
 	}
 
 	rotated = c.Piece.Clone()
-	if cw {
-		inverted = rotated.RotateCW()
+
+	if c.RotationDirectionCW {
+		inverted = rotated.UndoActivate()
 	} else {
-		inverted = rotated.RotateCCW()
+		inverted = rotated.Activate()
 	}
 
 	colMin, colMax := f._getColumnLimits(c)
@@ -107,12 +108,12 @@ func (f *Field) CanRotatePiece(cw bool, pIdx int, liftAll bool) (success bool, i
 
 func (f *Field) CanFlipVPiece(pIdx int, liftAll bool) (success bool, flipped piece.Piece) {
 	c := f.pieces[pIdx]
-	if c.Piece == nil {
+	if c.Piece == nil || c.Piece.Type() != piece.TypeFlipV {
 		return
 	}
 
 	flipped = c.Piece.Clone()
-	flipped.FlipV()
+	flipped.Activate()
 
 	colMin, colMax := f._getColumnLimits(c)
 	success = f._canPlacePiece(c.X, c.Y, colMin, colMax, flipped, liftAll, pIdx)
@@ -121,12 +122,12 @@ func (f *Field) CanFlipVPiece(pIdx int, liftAll bool) (success bool, flipped pie
 
 func (f *Field) CanFlipHPiece(pIdx int, liftAll bool) (success bool, flipped piece.Piece) {
 	c := f.pieces[pIdx]
-	if c.Piece == nil {
+	if c.Piece == nil || c.Piece.Type() != piece.TypeFlipH {
 		return
 	}
 
 	flipped = c.Piece.Clone()
-	flipped.FlipH()
+	flipped.Activate()
 
 	colMin, colMax := f._getColumnLimits(c)
 	success = f._canPlacePiece(c.X, c.Y, colMin, colMax, flipped, liftAll, pIdx)

@@ -207,17 +207,17 @@ func TestShapesRot(t *testing.T) {
 	}))
 
 	if want, got := _tinyminoes, shapesRotTinyminoes; !slices.Equal(want, got) {
-		t.Errorf("tinyminoes mismatch: want=%+v got=%+v", want, got)
+		t.Errorf("tinyminoes mismatch")
 		outputShapes(_tinyminoes)
 	}
 
 	if want, got := _tetrominoes, shapesRotTetrominoes; !slices.Equal(want, got) {
-		t.Errorf("tetrominoes mismatch: want=%+v got=%+v", want, got)
+		t.Errorf("tetrominoes mismatch")
 		outputShapes(_tetrominoes)
 	}
 
 	if want, got := _pentominoes, shapesRotPentominoes; !slices.Equal(want, got) {
-		t.Errorf("pentominoes mismatch: want=%+v got=%+v", want, got)
+		t.Error("pentominoes mismatch")
 		outputShapes(_pentominoes)
 	}
 }

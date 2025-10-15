@@ -7,6 +7,7 @@ import (
 	"gamatet/game/block"
 	"gamatet/game/serialize"
 	"io"
+	"math"
 )
 
 type polyominoRot struct {
@@ -82,200 +83,66 @@ func (p *polyominoRot) Equals(other Piece) bool {
 	return ok && *p == *q
 }
 
-func (*polyominoRot) Type() Type         { return TypeStandard }
+func (*polyominoRot) Type() Type         { return TypeRotation }
 func (p *polyominoRot) BlockCount() byte { return p.size }
 func (p *polyominoRot) DimX() byte       { return p.dim }
 func (p *polyominoRot) DimY() byte       { return p.dim }
 
-func (*polyominoRot) CanActivate() bool        { return false }
-func (*polyominoRot) GetActivationCount() byte { return 0 }
-func (*polyominoRot) SetActivationCount(byte)  {}
+func (*polyominoRot) CanActivate() bool     { return true }
+func (*polyominoRot) ActivationCount() byte { return math.MaxUint8 }
 
-func (p *polyominoRot) FlipV() {
-	dim := p.dim
-	y1 := p.TopEmptyRows()
-	y2 := dim - p.BottomEmptyRows()
-	flipDim := y2 - y1
-	flipDim2 := flipDim >> 1
-	for i := byte(0); i < flipDim2; i++ {
-		for x := byte(0); x < dim; x++ {
-			idx0 := (y1+i)*dim + x
-			idx1 := (flipDim+y1-i-1)*dim + x
-			p.data = p.data.exchange(idx0, idx1)
-		}
-	}
-}
-
-func (p *polyominoRot) FlipH() {
-	dim := p.dim
-	x1 := p.LeftEmptyColumns()
-	x2 := dim - p.RightEmptyColumns()
-	flipDim := x2 - x1
-	flipDim2 := flipDim >> 1
-	for y := byte(0); y < dim; y++ {
-		for i := byte(0); i < flipDim2; i++ {
-			idx0 := y*dim + x1 + i
-			idx1 := y*dim + (x1 + flipDim - i - 1)
-			p.data = p.data.exchange(idx0, idx1)
-		}
-	}
-}
-
-func (p *polyominoRot) RotateCW() (inverted bool) {
+// Activate is rotate CCW
+func (p *polyominoRot) Activate() (inverted bool) {
 	switch p.rots {
-	default:
-		return
-	case 2:
-		if p.rot != 0 {
-			p.rot--
-		} else {
-			p.RotateCCW()
-			inverted = true
-			return
-		}
-	case 4:
-		p.rot = (p.rot + 1) & 3
-	}
-
-	dim := p.dim
-	dim1 := dim - 1
-	dim2 := p.dim >> 1
-	for j := byte(0); j < dim2; j++ {
-		for i := j; i < dim1-j; i++ {
-			idx0 := j*dim + i
-			idx1 := i*dim + dim1 - j
-			idx2 := (dim1-j)*dim + dim1 - i
-			idx3 := (dim1-i)*dim + j
-			p.data = p.data.exchange(idx0, idx3).exchange(idx3, idx2).exchange(idx2, idx1)
-		}
-	}
-
-	return
-}
-
-func (p *polyominoRot) RotateCCW() (inverted bool) {
-	switch p.rots {
-	default:
-		return
 	case 2:
 		if p.rot == 0 {
 			p.rot++
+			p.data = p.data.rotateCCW(p.dim)
 		} else {
-			p.RotateCW()
+			p.rot = 0
+			p.data = p.data.rotateCW(p.dim)
 			inverted = true
-			return
 		}
-		//p.rot = (p.rot + 1) & 1
 	case 4:
 		p.rot = (p.rot - 1) & 3
+		p.data = p.data.rotateCCW(p.dim)
 	}
-
-	dim := p.dim
-	dim1 := dim - 1
-	dim2 := p.dim >> 1
-	for j := byte(0); j < dim2; j++ {
-		for i := j; i < dim1-j; i++ {
-			idx0 := j*dim + i
-			idx1 := i*dim + dim1 - j
-			idx2 := (dim1-j)*dim + dim1 - i
-			idx3 := (dim1-i)*dim + j
-			p.data = p.data.exchange(idx0, idx1).exchange(idx1, idx2).exchange(idx2, idx3)
-		}
-	}
-
 	return
 }
 
-func (p *polyominoRot) WallKick() byte {
-	return p.dim / 2
-}
-
-func (p *polyominoRot) IsEmpty(x, y int) bool {
-	d := int(p.dim)
-	if x < 0 || x >= d || y < 0 || y >= d {
-		return true
+// UndoActivate is rotate CW
+func (p *polyominoRot) UndoActivate() (inverted bool) {
+	switch p.rots {
+	case 2:
+		if p.rot != 0 {
+			p.rot = 0
+			p.data = p.data.rotateCW(p.dim)
+		} else {
+			p.rot++
+			p.data = p.data.rotateCCW(p.dim)
+			inverted = true
+		}
+	case 4:
+		p.rot = (p.rot + 1) & 3
+		p.data = p.data.rotateCW(p.dim)
 	}
-
-	idx := y*d + x
-	return !p.data.get(byte(idx))
+	return
 }
 
-func (p *polyominoRot) Get(x, y int) (b block.Block) {
+func (p *polyominoRot) WallKick() byte { return p.dim / 2 }
+
+func (p *polyominoRot) IsEmpty(x, y int) bool { return p.data.isEmpty(p.dim, p.dim, x, y) }
+
+func (p *polyominoRot) Get(x, y int) block.Block {
 	if p.IsEmpty(x, y) {
-		return
+		return block.Block{Type: block.TypeEmpty}
 	}
-	b = p.block
-	return
+	return p.block
 }
 
-func (p *polyominoRot) isRowEmpty(r byte) bool {
-	d := p.dim
-	lim := (r + 1) * d
-	for idx := r * d; idx < lim; idx++ {
-		if p.data.get(idx) {
-			return false
-		}
-	}
-	return true
-}
+func (p *polyominoRot) LeftEmptyColumns() byte  { return p.data.countSquareLeftEmptyColumns(p.dim) }
+func (p *polyominoRot) RightEmptyColumns() byte { return p.data.countSquareRightEmptyColumns(p.dim) }
+func (p *polyominoRot) TopEmptyRows() byte      { return p.data.countSquareTopEmptyRows(p.dim) }
+func (p *polyominoRot) BottomEmptyRows() byte   { return p.data.countSquareBottomEmptyRows(p.dim) }
 
-func (p *polyominoRot) isColumnEmpty(c byte) bool {
-	d := p.dim
-	lim := d * d
-	for idx := c; idx < lim; idx += d {
-		if p.data.get(idx) {
-			return false
-		}
-	}
-	return true
-}
-
-func (p *polyominoRot) LeftEmptyColumns() (empty byte) {
-	d := p.dim
-	for i := byte(0); i < d; i++ {
-		if p.isColumnEmpty(i) {
-			empty++
-		} else {
-			return
-		}
-	}
-	return
-}
-
-func (p *polyominoRot) RightEmptyColumns() (empty byte) {
-	for i := p.dim; i > 0; i-- {
-		if p.isColumnEmpty(i - 1) {
-			empty++
-		} else {
-			return
-		}
-	}
-	return
-}
-
-func (p *polyominoRot) TopEmptyRows() (empty byte) {
-	d := p.dim
-	for i := byte(0); i < d; i++ {
-		if p.isRowEmpty(i) {
-			empty++
-		} else {
-			return
-		}
-	}
-	return
-}
-
-func (p *polyominoRot) BottomEmptyRows() (empty byte) {
-	for i := p.dim; i > 0; i-- {
-		if p.isRowEmpty(i - 1) {
-			empty++
-		} else {
-			return
-		}
-	}
-	return
-}
-
-func (p *polyominoRot) String() string {
-	return p.shapeSquare.String()
-}
+func (p *polyominoRot) String() string { return p.shapeSquare.String() }

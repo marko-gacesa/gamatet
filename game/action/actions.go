@@ -14,9 +14,5 @@ const (
 	MoveUp    Action = 32
 	MoveDown  Action = 33
 	Drop      Action = 40
-	Rotate    Action = 50
-	RotateCW  Action = 51
-	RotateCCW Action = 52
-	FlipV     Action = 53
-	FlipH     Action = 54
+	Activate  Action = 50
 )

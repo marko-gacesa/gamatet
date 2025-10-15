@@ -117,7 +117,8 @@ func TestField_CanRotatePiece(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		r, _, _, _ := f.CanRotatePiece(test.cw, test.pIdx, test.liftAll)
+		f.Ctrl(byte(test.pIdx)).Config.RotationDirectionCW = test.cw
+		r, _, _, _ := f.CanRotatePiece(test.pIdx, test.liftAll)
 		if r != test.exp {
 			t.Errorf("test '%s' failed, for cw=%t; expected %t got %t", test.name, test.cw, test.exp, r)
 		}
@@ -133,19 +134,19 @@ func TestField_CanRotatePiece_WallKick(t *testing.T) {
 	// [][]
 	// []
 	p0CW := p0.Clone()
-	p0CW.RotateCW()
+	p0CW.UndoActivate() // rotate CW
 
 	//   []
 	// [][]
 	//   []
 	p0CCW := p0.Clone()
-	p0CCW.RotateCCW()
+	p0CCW.Activate() // rotate CCW
 
 	// [][][][]
 	p1 := piece.NewStandardTetromino(piece.TetrominoI)
 
 	p1R := p1.Clone()
-	p1R.RotateCW()
+	p1R.UndoActivate() // rotate CW
 
 	tests := []struct {
 		name     string
@@ -183,6 +184,7 @@ func TestField_CanRotatePiece_WallKick(t *testing.T) {
 
 		ctrl := f.Ctrl(0)
 		ctrl.Config.WallKick = test.wallKick
+		ctrl.Config.RotationDirectionCW = true
 
 		var colMin, colMax int
 
@@ -213,7 +215,7 @@ func TestField_CanRotatePiece_WallKick(t *testing.T) {
 			}
 		}
 
-		success, _, dx, rotated := f.CanRotatePiece(true, 0, false)
+		success, _, dx, rotated := f.CanRotatePiece(0, false)
 
 		if success {
 			ctrl.X += dx
@@ -269,6 +271,37 @@ func TestField_GetDropHeight(t *testing.T) {
 		}
 
 		f.pieces[test.pIdx].Y -= r
+	}
+}
+
+func TestField_GetDropHeightFlipV(t *testing.T) {
+	f := Make(6, 6, 2)
+
+	b := block.Block{Type: block.TypeRock}
+	f.setXY(4, 2, b)
+
+	f.Ctrl(0).SetXYP(0, 3, piece.NewFlipVTetromino(0, b))
+	f.Ctrl(1).SetXYP(1, 4, piece.NewFlipVTetromino(1, b))
+
+	// 5 . 2 2 2 2 .
+	// 4 . 1 1 1 1 .
+	// 3 0 0 . . . .
+	// 2 0 0 . . # .
+	// 1 . . . . . .
+	// 0 . . . . . .
+	//   0 1 2 3 4 5
+
+	if want, got := 2, f.GetDropHeight(0, false); want != got {
+		t.Errorf("GetDropHeight(0,false) = %d, want %d", got, want)
+	}
+	if want, got := 2, f.GetDropHeight(0, true); want != got {
+		t.Errorf("GetDropHeight(0,true) = %d, want %d", got, want)
+	}
+	if want, got := 0, f.GetDropHeight(1, false); want != got {
+		t.Errorf("GetDropHeight(1,false) = %d, want %d", got, want)
+	}
+	if want, got := 1, f.GetDropHeight(1, true); want != got {
+		t.Errorf("GetDropHeight(1,true) = %d, want %d", got, want)
 	}
 }
 
@@ -369,7 +402,7 @@ func TestField_GetPieceStartPosition2(t *testing.T) {
 	p0 := piece.NewStandardTetromino(piece.TetrominoO)
 	p1 := piece.NewStandardTetromino(piece.TetrominoI)
 	p2 := piece.NewStandardTetromino(piece.TetrominoI)
-	p2.RotateCW()
+	p2.UndoActivate() // rotate CW
 
 	p0y := int(p0.TopEmptyRows())
 	p1y := int(p1.TopEmptyRows())

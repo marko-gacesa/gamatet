@@ -27,7 +27,7 @@ const (
 	codePieceState
 	codePieceSet
 	codePieceMove
-	codePieceTransform
+	codePieceActivate
 	codePieceFall
 )
 
@@ -104,8 +104,8 @@ func instance(code event.Code) event.Event {
 		e = &PieceSet{}
 	case codePieceMove:
 		e = &PieceMove{}
-	case codePieceTransform:
-		e = &PieceTransform{}
+	case codePieceActivate:
+		e = &PieceActivate{}
 	case codePieceFall:
 		e = &PieceFall{}
 
