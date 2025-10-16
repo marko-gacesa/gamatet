@@ -15,6 +15,11 @@ type Feed interface {
 
 const MaxBagSize = 4
 
+// SamePieceFeed is the feed that always return the same piece. Useful for testing.
+type SamePieceFeed struct{ Piece }
+
+func (p SamePieceFeed) Get(int) Piece { return p.Piece }
+
 type GenericFeed struct {
 	seed          int
 	pieceBagCount int
@@ -43,7 +48,7 @@ func NewGenericFeed(bagSize int, seed int, shapeCount int, fn func(idx int) Piec
 	}
 }
 
-func (f GenericFeed) shapeIdx(idx int) int {
+func (f GenericFeed) Get(idx int) Piece {
 	bagIdx := idx / f.pieceBagCount
 	idx = idx % f.pieceBagCount
 
@@ -54,11 +59,7 @@ func (f GenericFeed) shapeIdx(idx int) int {
 	shapeIdx := m[idx] % f.shapeCount
 	f.pool.Put(m)
 
-	return shapeIdx
-}
-
-func (f GenericFeed) Get(idx int) Piece {
-	return f.fn(f.shapeIdx(idx))
+	return f.fn(shapeIdx)
 }
 
 func NewRotTetrominoFeed(bagSize int, seed int) GenericFeed {

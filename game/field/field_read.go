@@ -76,32 +76,45 @@ func (f *Field) CanRotatePiece(pIdx int, liftAll bool) (success bool, inverted b
 		return
 	}
 
-	dim := int(rotated.DimX())
+	pieceWallKick := min(c.Piece.WallKick(), c.Config.WallKick)
 
-	pieceWallKick := c.Piece.WallKick()
-	if c.Config.WallKick < pieceWallKick {
-		pieceWallKick = c.Config.WallKick
-	}
+	// Kick always
 
 	for wallKick := 1; wallKick <= int(pieceWallKick); wallKick++ {
-		if dim < 2*wallKick {
-			break
+		success = f._canPlacePiece(c.X+wallKick, c.Y, colMin, colMax, rotated, liftAll, pIdx)
+		if success {
+			dx = wallKick
+			return
 		}
 
-		if c.X == colMin-wallKick {
-			success = f._canPlacePiece(c.X+wallKick, c.Y, colMin, colMax, rotated, liftAll, pIdx)
-			if success {
-				dx = wallKick
-				return
-			}
-		} else if c.X == colMax+1-dim+wallKick {
-			success = f._canPlacePiece(c.X-wallKick, c.Y, colMin, colMax, rotated, liftAll, pIdx)
-			if success {
-				dx = -wallKick
-				return
-			}
+		success = f._canPlacePiece(c.X-wallKick, c.Y, colMin, colMax, rotated, liftAll, pIdx)
+		if success {
+			dx = -wallKick
+			return
 		}
 	}
+
+	/*
+		// Kick only from field edges
+
+		dim := int(rotated.DimX())
+
+		for wallKick := 1; wallKick <= int(pieceWallKick); wallKick++ {
+			if c.X == colMin-wallKick {
+				success = f._canPlacePiece(c.X+wallKick, c.Y, colMin, colMax, rotated, liftAll, pIdx)
+				if success {
+					dx = wallKick
+					return
+				}
+			} else if c.X == colMax+1-dim+wallKick {
+				success = f._canPlacePiece(c.X-wallKick, c.Y, colMin, colMax, rotated, liftAll, pIdx)
+				if success {
+					dx = -wallKick
+					return
+				}
+			}
+		}
+	*/
 
 	return
 }
