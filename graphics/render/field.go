@@ -37,26 +37,34 @@ var (
 		{0.0, 1.0, 0.2, 0.8},
 		{1.0, 1.0, 0.2, 0.8},
 	}
+	colorText  = mgl32.Vec4{1, 1, 1, 0.8}
 	colorLabel = mgl32.Vec4{1, 1, 1, 0.5}
 )
 
-const widthPad = 5
+const (
+	scaleLabel = 0.6
+	scaleText  = 0.8
+
+	paddingText = 0.2
+)
+
+const sidePanelBlockWidth = 5
 
 var t0 = time.Now()
 
 func GetExtendedContent(w, h int, infoPos []piece.DisplayPosition) (int, int) {
 	w += 2 // left frame, right frame
-	h += 1 // bottom frame
+	h += 2 // top, bottom frame
 	var hasLeft, hasRight bool
 	for _, p := range infoPos {
 		hasLeft = hasLeft || p == piece.DisplayPositionTopLeft || p == piece.DisplayPositionBottomLeft
 		hasRight = hasRight || p == piece.DisplayPositionTopRight || p == piece.DisplayPositionBottomRight
 	}
 	if hasLeft {
-		w += widthPad
+		w += sidePanelBlockWidth
 	}
 	if hasRight {
-		w += widthPad
+		w += sidePanelBlockWidth
 	}
 	return w, h
 }
@@ -201,12 +209,12 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 	hasLeftPad := slices.Contains(infoPositions[:], piece.DisplayPositionTopLeft) || slices.Contains(infoPositions[:], piece.DisplayPositionBottomLeft)
 	hasRightPad := slices.Contains(infoPositions[:], piece.DisplayPositionTopRight) || slices.Contains(infoPositions[:], piece.DisplayPositionBottomRight)
 
-	contentWidth, contentHeight := renderInfo.W+2, renderInfo.H+1
+	contentWidth, contentHeight := renderInfo.W+2, renderInfo.H+2
 	if hasLeftPad {
-		contentWidth += widthPad
+		contentWidth += sidePanelBlockWidth
 	}
 	if hasRightPad {
-		contentWidth += widthPad
+		contentWidth += sidePanelBlockWidth
 	}
 
 	aniMatrixField, _ := animListUpdate(&renderInfo.Result)
@@ -219,7 +227,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 	if hasLeftPad {
 		modelField = modelFrame.
-			Mul4(mgl32.Translate3D(1+widthPad, 1, 0))
+			Mul4(mgl32.Translate3D(1+sidePanelBlockWidth, 1, 0))
 	} else {
 		modelField = modelFrame.
 			Mul4(mgl32.Translate3D(1, 1, 0))
@@ -230,24 +238,47 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 	// prepare the field frame
 
 	for x := 0; x < contentWidth; x++ {
-		m := modelFrame.Mul4(mgl32.Translate3D(float32(x), float32(0), 0))
-		f.listWall.Add(m)
+		f.listWall.Add(modelFrame.Mul4(mgl32.Translate3D(float32(x), float32(0), 0)))
+		f.listWall.Add(modelFrame.Mul4(mgl32.Translate3D(float32(x), float32(contentHeight-1), 0)))
 	}
 
-	for y := 1; y < contentHeight; y++ {
+	modelTitleLeft := modelField.Mul4(mgl32.Translate3D(-0.5, float32(contentHeight-2), 0.5))
+	modelTitleRight := modelTitleLeft.Mul4(mgl32.Translate3D(float32(f.w), 0, 0))
+	d := f.printText(
+		modelTitleLeft,
+		colorLabel,
+		scaleLabel,
+		"SCORE:")
+	f.printText(
+		modelTitleLeft.Mul4(mgl32.Translate3D(d+0.25, 0, 0)),
+		colorText,
+		scaleText,
+		"00234234")
+	d = f.printTextRight(
+		modelTitleRight,
+		colorText,
+		scaleText,
+		renderInfo.TextData.BlocksRemoved)
+	f.printTextRight(
+		modelTitleRight.Mul4(mgl32.Translate3D(-d-0.25, 0, 0)),
+		colorLabel,
+		scaleLabel,
+		"BLOCKS:")
+
+	for y := 1; y < contentHeight-1; y++ {
 		var m mgl32.Mat4
 
 		m = modelFrame.Mul4(mgl32.Translate3D(float32(0), float32(y), 0))
 		f.listWall.Add(m)
 
 		if hasLeftPad {
-			for i := 0; i < widthPad; i++ {
+			for i := 0; i < sidePanelBlockWidth; i++ {
 				m = modelFrame.Mul4(mgl32.Translate3D(float32(1+i), float32(y), 0))
 				f.listWall.Add(m)
 			}
 		}
 		if hasRightPad {
-			for i := 0; i < widthPad; i++ {
+			for i := 0; i < sidePanelBlockWidth; i++ {
 				m = modelFrame.Mul4(mgl32.Translate3D(float32(contentWidth-2-i), float32(y), 0))
 				f.listWall.Add(m)
 			}
@@ -425,19 +456,19 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		var modelInfo mgl32.Mat4
 		var hDir float32
 
-		colorText := colorPlayer[idx]
+		colorPlayerText := colorPlayer[idx]
 
 		const edgeOffset = 0.75
 
 		switch p.Position {
 		case piece.DisplayPositionTopLeft:
-			modelInfo = modelField.Mul4(mgl32.Translate3D(-(1+widthPad)-0.5, float32(renderInfo.H)-edgeOffset-0.5, 0.5))
+			modelInfo = modelField.Mul4(mgl32.Translate3D(-(1+sidePanelBlockWidth)-0.5, float32(renderInfo.H)-edgeOffset+1-0.5, 0.5))
 			hDir = -1
 		case piece.DisplayPositionTopRight:
-			modelInfo = modelField.Mul4(mgl32.Translate3D(float32(renderInfo.W)-0.5, float32(renderInfo.H)-edgeOffset-0.5, 0.5))
+			modelInfo = modelField.Mul4(mgl32.Translate3D(float32(renderInfo.W)-0.5, float32(renderInfo.H)-edgeOffset+1-0.5, 0.5))
 			hDir = -1
 		case piece.DisplayPositionBottomLeft:
-			modelInfo = modelField.Mul4(mgl32.Translate3D(-(1+widthPad)-0.5, edgeOffset-1-0.5, 0.5))
+			modelInfo = modelField.Mul4(mgl32.Translate3D(-(1+sidePanelBlockWidth)-0.5, edgeOffset-1-0.5, 0.5))
 			hDir = 1
 		case piece.DisplayPositionBottomRight:
 			modelInfo = modelField.Mul4(mgl32.Translate3D(float32(renderInfo.W)-0.5, edgeOffset-1-0.5, 0.5))
@@ -446,6 +477,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 			continue
 		}
 
+		// Render text position helpers
 		//f.listStr.Add(modelInfo, mgl32.Vec4{1, 1, 1, 1}, "X")
 		//f.listRock.Add(
 		//	modelInfo.
@@ -454,34 +486,58 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		//	mgl32.Vec4{1, 1, 1, 1}, 0)
 		//f.listRock.Add(
 		//	modelInfo.
-		//		Mul4(mgl32.Translate3D(widthPad+1, 0, 0.5)).
+		//		Mul4(mgl32.Translate3D(sidePanelBlockWidth+1, 0, 0.5)).
 		//		Mul4(mgl32.Scale3D(pulse*0.3, pulse*0.2, pulse*0.3)),
 		//	mgl32.Vec4{1, 1, 1, 1}, 0)
 
-		f.printValue(&modelInfo, colorLabel, colorText, "PLAYER", p.PieceTextData.Name, hDir)
-		f.printValue(&modelInfo, colorLabel, colorText, "SCORE", p.PieceTextData.Score, hDir)
-		f.printValue(&modelInfo, colorLabel, colorText, "PIECE", p.PieceTextData.PieceNum, hDir)
-		f.printValue(&modelInfo, colorLabel, colorText, "STATE", piece.StateName[p.State], hDir)
+		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "PLAYER", p.PieceTextData.Name, hDir)
+		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "SCORE", p.PieceTextData.Score, hDir)
+		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "PIECE", p.PieceTextData.PieceNum, hDir)
+		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "STATE", piece.StateName[p.State], hDir)
+
+		if len(p.NextPieces[0].Blocks) == 0 {
+			continue
+		}
 
 		modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, 0.5*hDir, 0))
-		f.printText(&modelInfo, colorLabel, "NEXT", hDir)
+		f.printLabel(&modelInfo, colorLabel, "NEXT", hDir)
 
 		modelNextBlocks := modelInfo.
-			Mul4(mgl32.Translate3D((1.0+widthPad)/2, 0.3*hDir, 0.5))
+			Mul4(mgl32.Translate3D((1.0+sidePanelBlockWidth)/2, 0.3*hDir, 0.5))
 
 		var y float32
-		for i, nb := range p.NextBlocks {
-			dim, centerX, centerY := barycenter(nb)
+		for i, np := range p.NextPieces {
+			dim, centerX, centerY := barycenter(np.Blocks)
 			dimScale := 0.3/(float32(3*i)+1.0) + 0.2
+
 			y += hDir * dimScale * dim / 2
+
 			modelPieceN := modelNextBlocks.
 				Mul4(mgl32.Translate3D(0, y, 0)).
 				Mul4(mgl32.Scale3D(dimScale, dimScale, dimScale)).
-				Mul4(mgl32.HomogRotate3DX(-0.4)).
-				Mul4(mgl32.HomogRotate3DZ(float32(math.Mod(f.t, 2*math.Pi))))
+				Mul4(mgl32.HomogRotate3DX(-0.4))
+
+			switch np.Type {
+			case piece.TypeFlipV:
+				modelPieceN = modelPieceN.Mul4(mgl32.HomogRotate3DX(float32(math.Mod(2*f.t, 2*math.Pi))))
+			case piece.TypeFlipH:
+				modelPieceN = modelPieceN.Mul4(mgl32.HomogRotate3DY(float32(math.Mod(2*f.t, 2*math.Pi))))
+			case piece.TypeRotation:
+				t := f.t
+				if p.DirectionCW {
+					t = -t
+				}
+				modelPieceN = modelPieceN.Mul4(mgl32.HomogRotate3DZ(float32(math.Mod(t, 2*math.Pi))))
+			case piece.TypeShooter:
+				t := math.Sin(10 * f.t)
+				t = 0.25*t*t + 0.75
+				s := float32(t)
+				modelPieceN = modelPieceN.Mul4(mgl32.Scale3D(s, s, s))
+			}
+
 			y += hDir * dimScale * (dim/2 + 0.7)
 
-			for _, pb := range nb {
+			for _, pb := range np.Blocks {
 				modelPieceBlock := modelPieceN.
 					Mul4(mgl32.Translate3D(float32(pb.X)-centerX, float32(pb.Y)-centerY, 0))
 
@@ -674,7 +730,7 @@ func (f *Field) renderAll(r *Renderer) {
 	gl.Enable(gl.DEPTH_TEST)
 }
 
-func (f *Field) printValue(modelInfo *mgl32.Mat4, colorLabel, colorText mgl32.Vec4, title, value string, hDir float32) {
+func (f *Field) printLabelAndValue(modelInfo *mgl32.Mat4, colorLabel, colorText mgl32.Vec4, label, value string, hDir float32) {
 	if value == "" {
 		return
 	}
@@ -684,12 +740,12 @@ func (f *Field) printValue(modelInfo *mgl32.Mat4, colorLabel, colorText mgl32.Ve
 	const padding = 0.2
 
 	var wt, ht, wv, hv float32
-	wt, ht = f.text.Dim(title)
+	wt, ht = f.text.Dim(label)
 	wv, hv = f.text.Dim(value)
 	wt, ht = scaleTitle*wt, scaleTitle*ht
 	wv, hv = scaleValue*wv, scaleValue*hv
 
-	// so that the value is always below the title
+	// so that the value is always below the label
 	var yt, yv float32
 	if hDir > 0 {
 		yt = hDir * (hv + ht*0.5)
@@ -700,34 +756,46 @@ func (f *Field) printValue(modelInfo *mgl32.Mat4, colorLabel, colorText mgl32.Ve
 	}
 
 	modelTitle := modelInfo.
-		Mul4(mgl32.Translate3D((1.0+widthPad)/2.0-wt/2, yt, 0)).
+		Mul4(mgl32.Translate3D((1.0+sidePanelBlockWidth)/2.0-wt/2, yt, 0)).
 		Mul4(mgl32.Scale3D(scaleTitle, scaleTitle, 1.0))
-	f.listStr.Add(modelTitle, colorLabel, title)
+	f.listStr.Add(modelTitle, colorLabel, label)
 
 	modelValue := modelInfo.
-		Mul4(mgl32.Translate3D((1.0+widthPad)/2.0-wv/2, yv, 0)).
+		Mul4(mgl32.Translate3D((1.0+sidePanelBlockWidth)/2.0-wv/2, yv, 0)).
 		Mul4(mgl32.Scale3D(scaleValue, scaleValue, 1.0))
 	f.listStr.Add(modelValue, colorText, value)
 
 	*modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, hDir*(ht+hv+padding), 0))
 }
 
-func (f *Field) printText(modelInfo *mgl32.Mat4, colorText mgl32.Vec4, s string, hDir float32) {
-	const scale = 0.6
-	const padding = 0.2
-
+func (f *Field) printLabel(modelInfo *mgl32.Mat4, colorText mgl32.Vec4, s string, hDir float32) {
 	var w, h float32
 	w, h = f.text.Dim(s)
-	w, h = scale*w, scale*h
+	w, h = scaleLabel*w, scaleLabel*h
 
 	y := hDir * h * 0.5
 
 	modelValue := modelInfo.
-		Mul4(mgl32.Translate3D((1.0+widthPad)/2.0-w/2, y, 0)).
-		Mul4(mgl32.Scale3D(scale, scale, 1.0))
+		Mul4(mgl32.Translate3D((1.0+sidePanelBlockWidth)/2.0-w/2, y, 0)).
+		Mul4(mgl32.Scale3D(scaleLabel, scaleLabel, 1.0))
 	f.listStr.Add(modelValue, colorText, s)
 
-	*modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, hDir*(h+padding), 0))
+	*modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, hDir*(h+paddingText), 0))
+}
+
+func (f *Field) printText(m mgl32.Mat4, colorText mgl32.Vec4, scaleText float32, text string) float32 {
+	w, _ := f.text.Dim(text)
+	w *= scaleText
+	f.listStr.Add(m.Mul4(mgl32.Scale3D(scaleText, scaleText, 1.0)), colorText, text)
+	return w
+}
+
+func (f *Field) printTextRight(m mgl32.Mat4, colorText mgl32.Vec4, scaleText float32, text string) float32 {
+	w, _ := f.text.Dim(text)
+	w *= scaleText
+	m = m.Mul4(mgl32.Translate3D(-w, 0, 0))
+	f.listStr.Add(m.Mul4(mgl32.Scale3D(scaleText, scaleText, 1.0)), colorText, text)
+	return w
 }
 
 func barycenter(blocks []block.XYB) (float32, float32, float32) {

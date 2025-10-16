@@ -12,13 +12,15 @@ import (
 type Type byte
 
 const (
-	TypeFlipV Type = 1
-	TypeFlipH Type = 2
+	TypeNone Type = iota
 
-	TypeRotation Type = 4
+	TypeFlipV
+	TypeFlipH
+
+	TypeRotation
 
 	// TypeShooter is 1x1 block that shoots bullets, and disappears after falling.
-	TypeShooter = 10
+	TypeShooter
 )
 
 type Piece interface {

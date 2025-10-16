@@ -123,7 +123,9 @@ func (e *PieceSet) Do(f *field.Field) {
 		animateNewPiece(ctrl, f.Config.Anim)
 		ctrl.Blocks = piece.GetBlocks(e.Piece, ctrl.Blocks[:0])
 		for i := 0; i < piece.NextBlockCount; i++ {
-			ctrl.NextBlocks[i] = piece.GetBlocks(ctrl.Feed.Get(ctrl.PieceCount+i), ctrl.NextBlocks[i][:0])
+			np := ctrl.Feed.Get(ctrl.PieceCount + i)
+			ctrl.NextPieces[i].Type = np.Type()
+			ctrl.NextPieces[i].Blocks = piece.GetBlocks(np, ctrl.NextPieces[i].Blocks[:0])
 		}
 	case TypeClear:
 		ctrl.SetXYP(0, 0, nil)
@@ -144,7 +146,9 @@ func (e *PieceSet) Undo(f *field.Field) {
 		ctrl.PieceCountStr = strconv.Itoa(e.PieceCount)
 		ctrl.Blocks = piece.GetBlocks(e.Piece, ctrl.Blocks[:0])
 		for i := 0; i < piece.NextBlockCount; i++ {
-			ctrl.NextBlocks[i] = piece.GetBlocks(ctrl.Feed.Get(ctrl.PieceCount+i), ctrl.NextBlocks[i][:0])
+			np := ctrl.Feed.Get(ctrl.PieceCount + i)
+			ctrl.NextPieces[i].Type = np.Type()
+			ctrl.NextPieces[i].Blocks = piece.GetBlocks(np, ctrl.NextPieces[i].Blocks[:0])
 		}
 	}
 	updatePieceShadow(f, ctrl)

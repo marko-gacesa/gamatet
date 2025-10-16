@@ -55,16 +55,17 @@ func (s State) IsTerminal() bool {
 	return s == StateWon || s == StateLost || s == StateStop
 }
 
+type NextPieceInfo struct {
+	Type   Type
+	Blocks []block.XYB
+}
+
 type Ctrl struct {
 	// Idx is an index of Ctrl in the field
 	Idx int
 
 	// Name of the player
 	Name string
-
-	// Score is player's score.
-	Score    int
-	ScoreStr string
 
 	// X and Y are current position of the piece on the board
 	X, Y int
@@ -78,7 +79,7 @@ type Ctrl struct {
 	// Blocks is copy of individual piece blocks
 	Blocks []block.XYB
 
-	NextBlocks [NextBlockCount][]block.XYB
+	NextPieces [NextBlockCount]NextPieceInfo
 
 	// IsShadowShown is true if the shadow should be rendered, or false is there is no shadow
 	IsShadowShown bool
@@ -89,6 +90,10 @@ type Ctrl struct {
 	IsColumnLimited bool
 	// ColumnLimit holds column range to which the piece is limited
 	ColumnLimit ColumnLimit
+
+	// Score is player's score.
+	Score    int
+	ScoreStr string
 
 	// PieceCount is the index number of the piece since the game start
 	PieceCount    int
@@ -117,15 +122,18 @@ type Ctrl struct {
 
 func NewCtrl(idx int) *Ctrl {
 	const zeroStr = "0"
+
 	c := &Ctrl{}
 	c.Idx = idx
 	c.Name = ""
+
 	c.Score = 0
 	c.ScoreStr = zeroStr
 	c.PieceCount = 0
 	c.PieceCountStr = zeroStr
 	c.Level = 0
 	c.LevelStr = zeroStr
+
 	c.State = StateInit
 	c.InfoPosition = DisplayPosition(idx + 1)
 	return c

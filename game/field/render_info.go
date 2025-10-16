@@ -21,6 +21,11 @@ type BlockRenderInfo struct {
 	anim.Result
 }
 
+type NextPieceRenderInfo struct {
+	Type   piece.Type
+	Blocks []block.XYB
+}
+
 type PieceRenderInfo struct {
 	Position piece.DisplayPosition
 	State    piece.State
@@ -29,7 +34,8 @@ type PieceRenderInfo struct {
 	IsLimited bool
 	Limits    piece.ColumnLimit
 
-	NextBlocks [piece.NextBlockCount][]block.XYB
+	DirectionCW bool
+	NextPieces  [piece.NextBlockCount]NextPieceRenderInfo
 
 	PieceEmpty bool
 
@@ -50,12 +56,17 @@ type PieceTextData struct {
 	Level    string
 }
 
+type TextData struct {
+	BlocksRemoved string
+}
+
 type RenderInfo struct {
 	W, H   int
 	Paused bool
 	Blocks []BlockRenderInfo
 	Pieces [MaxPieces]PieceRenderInfo
 	Result anim.Result
+	TextData
 }
 
 var syncPoolRenderInfo = &sync.Pool{
@@ -65,7 +76,7 @@ var syncPoolRenderInfo = &sync.Pool{
 		for i := 0; i < len(info.Pieces); i++ {
 			info.Pieces[i].Blocks = make([]block.XYB, 0, 8)
 			for j := 0; j < piece.NextBlockCount; j++ {
-				info.Pieces[i].NextBlocks[j] = make([]block.XYB, 0, 8)
+				info.Pieces[i].NextPieces[j].Blocks = make([]block.XYB, 0, 8)
 			}
 		}
 		return info
@@ -97,6 +108,10 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 	info.Paused = paused
 	info.Blocks = info.Blocks[:0] // empty it, but keep the memory
 	info.Result = f.animList.Process(now)
+
+	info.TextData = TextData{
+		BlocksRemoved: f.stats.blocksRemovedStr,
+	}
 
 	// process all blocks of the Field
 
@@ -164,51 +179,57 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 		info.Pieces[i].State = 0
 		info.Pieces[i].IsLimited = false
 		info.Pieces[i].PieceEmpty = true
+		for j := 0; j < piece.NextBlockCount; j++ {
+			info.Pieces[i].NextPieces[j].Type = piece.TypeNone
+			info.Pieces[i].NextPieces[j].Blocks = info.Pieces[i].NextPieces[j].Blocks[:0]
+		}
 	}
 
 	for pIdx := 0; pIdx < pieceCount; pIdx++ {
 		ctrl := f.pieces[pIdx]
 
 		pinfo := &info.Pieces[pIdx]
+		pinfo.PieceEmpty = false
 
 		pinfo.Position = ctrl.InfoPosition
 		pinfo.State = ctrl.State
+
 		pinfo.PieceTextData = PieceTextData{
 			Name:     ctrl.Name,
 			Score:    ctrl.ScoreStr,
 			PieceNum: ctrl.PieceCountStr,
 			Level:    ctrl.LevelStr,
 		}
-
 		pinfo.IsLimited = ctrl.IsColumnLimited
 		pinfo.Limits = ctrl.ColumnLimit
 
-		for i := 0; i < piece.NextBlockCount; i++ {
-			pinfo.NextBlocks[i] = pinfo.NextBlocks[i][:0]
-			pinfo.NextBlocks[i] = append(pinfo.NextBlocks[i], ctrl.NextBlocks[i]...)
-		}
+		pinfo.Blocks = pinfo.Blocks[:0]
+		pinfo.DrawShadow = false
 
-		p := ctrl.Piece
-
-		if p == nil || paused {
-			pinfo.PieceEmpty = true
+		if paused {
 			continue
 		}
 
-		pinfo.PieceEmpty = false
+		pinfo.DirectionCW = ctrl.Config.RotationDirectionCW
 
-		dw := int(p.DimX())
-		dh := int(p.DimY())
+		for i := 0; i < piece.NextBlockCount; i++ {
+			pinfo.NextPieces[i].Type = ctrl.NextPieces[i].Type
+			pinfo.NextPieces[i].Blocks = append(pinfo.NextPieces[i].Blocks, ctrl.NextPieces[i].Blocks...)
+		}
+
+		p := ctrl.Piece
+		if p == nil {
+			continue
+		}
 
 		pinfo.X = ctrl.X
 		pinfo.Y = ctrl.Y
-		pinfo.DimX = dw
-		pinfo.DimY = dh
-		pinfo.Type = ctrl.Piece.Type()
-		pinfo.ActCount = int(ctrl.Piece.ActivationCount())
+		pinfo.DimX = int(p.DimX())
+		pinfo.DimY = int(p.DimY())
+		pinfo.Type = p.Type()
+		pinfo.ActCount = int(p.ActivationCount())
 		pinfo.Result = ctrl.List.Process(now)
 
-		pinfo.Blocks = pinfo.Blocks[:0]
 		pinfo.Blocks = append(pinfo.Blocks, ctrl.Blocks...)
 
 		pinfo.DrawShadow = ctrl.IsShadowShown

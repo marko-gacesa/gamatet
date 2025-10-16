@@ -3,6 +3,7 @@
 package field
 
 import (
+	"fmt"
 	"gamatet/game/block"
 	"gamatet/game/piece"
 	"gamatet/logic/anim"
@@ -21,6 +22,11 @@ type exElem struct {
 	next *exElem
 }
 
+type stats struct {
+	blocksRemoved    int
+	blocksRemovedStr string
+}
+
 type Field struct {
 	Idx      int
 	w        int
@@ -32,6 +38,7 @@ type Field struct {
 	paused   bool
 	doneCh   chan struct{}
 	Config
+	stats
 }
 
 type Config struct {
@@ -74,6 +81,8 @@ func Make(dimW, dimH, pieceCount int) (f *Field) {
 	for i := 0; i < pieceCount; i++ {
 		f.pieces[i] = piece.NewCtrl(i)
 	}
+
+	f.UpdateBlocksRemoved(0)
 
 	return
 }
@@ -126,6 +135,11 @@ func (f *Field) Unpause() {
 
 func (f *Field) Anim(a anim.Anim) {
 	f.animList.Add(a)
+}
+
+func (f *Field) UpdateBlocksRemoved(delta int) {
+	f.stats.blocksRemoved += delta
+	f.stats.blocksRemovedStr = fmt.Sprintf("%06d", f.blocksRemoved)
 }
 
 func (f *Field) setXY(x, y int, b block.Block) *anim.List {

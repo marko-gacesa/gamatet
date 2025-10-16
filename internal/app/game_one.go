@@ -40,7 +40,7 @@ func (app *App) gameOne(ctx screen.Context) core.GameOneParams {
 				OutCh: fieldCh,
 				Players: []core.PlayerSetup{
 					{
-						Name: "",
+						Name: "Marko",
 						Config: piece.Config{
 							RotationDirectionCW: false,
 							SlideDisabled:       false,

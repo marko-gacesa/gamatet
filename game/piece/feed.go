@@ -103,3 +103,47 @@ func NewFlipHFeed(bagSize int, seed int) GenericFeed {
 		}
 	})
 }
+
+type TestFeed struct{}
+
+func NewTestFeed(bagSize int, seed int) GenericFeed {
+
+	return NewGenericFeed(bagSize, seed, 4, func(idx int) Piece {
+		switch idx {
+		default:
+			fallthrough
+		case 0:
+			return &polyominoFlipH{
+				shapeRect: shapesFlipHTetrominoes[5],
+				block: block.Block{
+					Type:     block.TypeRock,
+					Hardness: 1,
+					Color:    colors[idx%len(colors)],
+				},
+			}
+		case 1:
+			return &polyominoFlipV{
+				shapeRect: shapesFlipVTetrominoes[3],
+				block: block.Block{
+					Type:     block.TypeRock,
+					Hardness: 2,
+					Color:    colors[idx%len(colors)],
+				},
+			}
+		case 2:
+			return &polyominoRot{
+				shapeSquare: shapesRotTetrominoes[TetrominoJ],
+				block: block.Block{
+					Type:     block.TypeLava,
+					Hardness: 0,
+					Color:    block.Lava.Color,
+				},
+			}
+		case 3:
+			return &shooter{
+				bulletType: block.TypeAcid,
+				ammo:       5,
+			}
+		}
+	})
+}

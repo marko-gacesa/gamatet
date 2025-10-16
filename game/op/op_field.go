@@ -79,11 +79,13 @@ var _ event.Event = (*FieldDestroyRow)(nil)
 
 func (e *FieldDestroyRow) Do(f *field.Field) {
 	f.ShiftRowsDown(int(e.Row))
+	f.UpdateBlocksRemoved(f.GetWidth())
 	updateAllPiecesShadow(f)
 }
 
 func (e *FieldDestroyRow) Undo(f *field.Field) {
 	f.UndoShiftRowsDown(int(e.Row), e.Blocks)
+	f.UpdateBlocksRemoved(-f.GetWidth())
 	updateAllPiecesShadow(f)
 }
 
@@ -144,11 +146,13 @@ var _ event.Event = (*FieldDestroyColumn)(nil)
 
 func (e *FieldDestroyColumn) Do(f *field.Field) {
 	f.ShiftColumnDownByN(int(e.Col), int(e.Row), int(e.N), int(e.Height))
+	f.UpdateBlocksRemoved(1)
 	updateAllPiecesShadow(f)
 }
 
 func (e *FieldDestroyColumn) Undo(f *field.Field) {
 	f.UndoShiftColumnByN(int(e.Col), int(e.Row), int(e.N), int(e.Height), e.Block)
+	f.UpdateBlocksRemoved(-1)
 	updateAllPiecesShadow(f)
 }
 
