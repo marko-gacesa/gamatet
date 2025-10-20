@@ -9,9 +9,17 @@ import (
 )
 
 type Analyzer struct {
-	Field   *field.Field
-	added   int
-	removed int
+	Field *field.Field
+
+	blocks delta
+	stats  delta
+}
+
+type delta struct {
+	added    int
+	removed  int
+	hardened int
+	softened int
 }
 
 func (a *Analyzer) Analyze(e event.Event) {
@@ -19,13 +27,23 @@ func (a *Analyzer) Analyze(e event.Event) {
 	case *op.FieldBlockSet:
 		switch v.Op {
 		case op.TypeSet:
-			a.added++
+			a.blocks.added++
 		case op.TypeClear:
-			a.removed++
+			a.blocks.removed++
+		}
+	case *op.FieldBlockHardness:
+		switch {
+		case v.Hardness > 1:
+			a.blocks.hardened += int(v.Hardness)
+		case v.Hardness < 1:
+			a.blocks.softened -= int(v.Hardness)
 		}
 	case *op.FieldDestroyRow:
-		a.removed += a.Field.GetWidth()
+		a.blocks.removed += a.Field.GetWidth()
 	case *op.FieldDestroyColumn:
-		a.removed++
+		a.blocks.removed++
+	case *op.FieldStat:
+		a.stats.removed += int(v.BlocksRemoved)
+		a.stats.softened += int(v.BlocksSoftened)
 	}
 }

@@ -1,9 +1,10 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package op
 
 import (
 	"bytes"
+	"encoding/binary"
 	"gamatet/game/block"
 	"gamatet/game/event"
 	"gamatet/game/field"
@@ -79,13 +80,11 @@ var _ event.Event = (*FieldDestroyRow)(nil)
 
 func (e *FieldDestroyRow) Do(f *field.Field) {
 	f.ShiftRowsDown(int(e.Row))
-	f.UpdateBlocksRemoved(f.GetWidth())
 	updateAllPiecesShadow(f)
 }
 
 func (e *FieldDestroyRow) Undo(f *field.Field) {
 	f.UndoShiftRowsDown(int(e.Row), e.Blocks)
-	f.UpdateBlocksRemoved(-f.GetWidth())
 	updateAllPiecesShadow(f)
 }
 
@@ -146,13 +145,11 @@ var _ event.Event = (*FieldDestroyColumn)(nil)
 
 func (e *FieldDestroyColumn) Do(f *field.Field) {
 	f.ShiftColumnDownByN(int(e.Col), int(e.Row), int(e.N), int(e.Height))
-	f.UpdateBlocksRemoved(1)
 	updateAllPiecesShadow(f)
 }
 
 func (e *FieldDestroyColumn) Undo(f *field.Field) {
 	f.UndoShiftColumnByN(int(e.Col), int(e.Row), int(e.N), int(e.Height), e.Block)
-	f.UpdateBlocksRemoved(-1)
 	updateAllPiecesShadow(f)
 }
 
@@ -454,6 +451,62 @@ func (e *FieldExBlock) Read(r io.Reader) error {
 }
 
 func (e *FieldExBlock) TypeID() event.Code { return codeFieldExBlock }
+
+func NewFieldStat(removed, softened int16) *FieldStat {
+	return &FieldStat{
+		BlocksRemoved:  removed,
+		BlocksSoftened: softened,
+	}
+}
+
+type FieldStat struct {
+	BlocksRemoved  int16
+	BlocksSoftened int16
+}
+
+var _ event.Event = (*FieldStat)(nil)
+
+func (e *FieldStat) Do(f *field.Field) {
+	f.UpdateBlocksRemoved(int(e.BlocksRemoved))
+}
+
+func (e *FieldStat) Undo(f *field.Field) {
+	f.UpdateBlocksRemoved(int(-e.BlocksRemoved))
+}
+
+func (e *FieldStat) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldStat)
+	return ok && e.BlocksRemoved == q.BlocksRemoved && e.BlocksSoftened == q.BlocksSoftened
+}
+
+func (e *FieldStat) Read(r io.Reader) error {
+	var buffer [4]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.BlocksRemoved = int16(binary.LittleEndian.Uint16(buffer[:2]))
+	e.BlocksSoftened = int16(binary.LittleEndian.Uint16(buffer[2:4]))
+
+	return nil
+}
+
+func (e *FieldStat) Write(w io.Writer) error {
+	var buffer [4]byte
+
+	binary.LittleEndian.PutUint16(buffer[:2], uint16(e.BlocksRemoved))
+	binary.LittleEndian.PutUint16(buffer[2:4], uint16(e.BlocksSoftened))
+
+	if _, err := w.Write(buffer[:]); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *FieldStat) TypeID() event.Code {
+	return codeFieldStat
+}
 
 func NewFieldLost(f *field.Field) *FieldLost {
 	n := byte(f.Ctrls())

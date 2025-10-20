@@ -153,6 +153,14 @@ func (o *GameOptions) Sanitize() bool {
 		o.TeamSize = MaxTeamSize
 		sanitized = true
 	}
+	if o.PieceCollision && o.TeamSize == 1 {
+		o.PieceCollision = false
+		sanitized = true
+	}
+	if o.PlayerZones && o.TeamSize == 1 {
+		o.PlayerZones = false
+		sanitized = true
+	}
 	return sanitized
 }
 
@@ -349,7 +357,7 @@ func MultiplayerPlayerSetupDefault() Setup {
 			FieldCount:       2,
 			TeamSize:         1,
 			PieceCollision:   false,
-			PlayerZones:      true,
+			PlayerZones:      false,
 			SamePiecesForAll: true,
 		},
 		FieldOptions: FieldOptions{

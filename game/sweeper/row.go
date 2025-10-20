@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package sweeper
 
@@ -16,12 +16,21 @@ func NewRow(f *field.Field) *Row {
 	return &Row{base: *b}
 }
 
-type Row struct{ base }
+type Row struct {
+	base
+	countRemoved  int
+	countSoftened int
+}
 
-func (s *Row) Start(analyzer *Analyzer) {
-	if analyzer.added > 0 {
-		s.base.Start(analyzer)
+func (s *Row) Start(analyzer *Analyzer) (started bool) {
+	if analyzer.blocks.added > 0 {
+		started = s.base.Start(analyzer)
+		if started {
+			s.countRemoved = 0
+			s.countSoftened = 0
+		}
 	}
+	return
 }
 
 // Sweep removes blocks from the field. Removed blocks are from full rows.
@@ -31,7 +40,7 @@ func (s *Row) Sweep(p event.Pusher) {
 
 	result := f.GetDestroyInfo()
 	if result.RowCount == 0 {
-		s.endIteration()
+		s.finish(p)
 		return
 	}
 
@@ -41,7 +50,8 @@ func (s *Row) Sweep(p event.Pusher) {
 	if row > -1 {
 		blocks := f.GetRow(row)
 		p.Push(op.NewFieldDestroyRow(row, blocks))
-		s.endIteration()
+		s.countRemoved += f.GetWidth()
+		s.finish(p)
 		return
 	}
 
@@ -50,12 +60,15 @@ func (s *Row) Sweep(p event.Pusher) {
 		p.Push(op.NewFieldBlockHardness(loc.X, loc.Y, -1, field.AnimSpin, 0))
 	}
 
+	s.countSoftened += len(result.HardDec)
+
 	var maxHeight int
 
 	// Process each of the columns, from the bottom row up to the top (rows are returned in that order).
 	for col, columnInfo := range result.Columns {
 		for _, blockInfo := range columnInfo.Rows {
 			b := f.GetXY(col, blockInfo.Row)
+			s.countRemoved++
 			p.Push(op.NewFieldDestroyColumn(col, blockInfo.Row, blockInfo.N, blockInfo.Height, b))
 			if blockInfo.Height > maxHeight {
 				maxHeight = blockInfo.Height
@@ -72,9 +85,22 @@ func (s *Row) Sweep(p event.Pusher) {
 	// |[0][0][0][2]|    |[0][0][0][1]|      |[0][0][0][0]|    |            |
 
 	if !result.HasHardOrImm() {
-		s.endIteration()
+		s.finish(p)
 		return
 	}
 
 	s.reschedule(piece.GetFallDuration(maxHeight) + piece.DurationFullLine)
+}
+
+func (s *Row) finish(p event.Pusher) {
+	s.endIteration()
+
+	if s.countRemoved == 0 && s.countSoftened == 0 {
+		return
+	}
+
+	p.Push(op.NewFieldStat(int16(s.countRemoved), int16(s.countSoftened)))
+
+	s.countRemoved = 0
+	s.countSoftened = 0
 }

@@ -7,6 +7,7 @@ import (
 	"gamatet/game/block"
 	"gamatet/game/piece"
 	"gamatet/logic/anim"
+	"math/rand/v2"
 )
 
 const MaxPieces = 4
@@ -39,6 +40,7 @@ type Field struct {
 	doneCh   chan struct{}
 	Config
 	stats
+	rand rand.Rand
 }
 
 type Config struct {
@@ -53,7 +55,7 @@ const (
 	MaxHeight = 40
 )
 
-func Make(dimW, dimH, pieceCount int) (f *Field) {
+func Make(dimW, dimH, pieceCount int, options ...func(f *Field)) (f *Field) {
 	if dimW < MinWidth {
 		panic("too narrow")
 	} else if dimW > MaxWidth {
@@ -76,15 +78,26 @@ func Make(dimW, dimH, pieceCount int) (f *Field) {
 		blocks: make([]elem, dimW*dimH),
 		pieces: make([]*piece.Ctrl, pieceCount),
 		doneCh: make(chan struct{}),
+		rand:   *rand.New(rand.NewPCG(0, 0)),
 	}
 
 	for i := 0; i < pieceCount; i++ {
 		f.pieces[i] = piece.NewCtrl(i)
 	}
 
+	for _, option := range options {
+		option(f)
+	}
+
 	f.UpdateBlocksRemoved(0)
 
 	return
+}
+
+func WithRand(r *rand.Rand) func(f *Field) {
+	return func(f *Field) {
+		f.rand = *r
+	}
 }
 
 func (f *Field) Ctrls() int {

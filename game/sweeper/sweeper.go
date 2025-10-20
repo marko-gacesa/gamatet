@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020, 2025 by Marko Gaćeša
 
 package sweeper
 
@@ -12,7 +12,8 @@ type Sweeper interface {
 	Timer() <-chan time.Time
 
 	// Start starts the sweeper. The analyzer is used for conditional start.
-	Start(analyzer *Analyzer)
+	// Returns true if the sweeper has just been started, or false if it was already active.
+	Start(analyzer *Analyzer) bool
 
 	// Pause pauses the internal timer of the sweeper.
 	Pause()

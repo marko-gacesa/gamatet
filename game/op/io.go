@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package op
 
@@ -20,6 +20,7 @@ const (
 	codeFieldBlockHardness
 	codeFieldBlockTransform
 	codeFieldExBlock
+	codeFieldStat
 	codeFieldLost
 	codeFieldQuake
 
@@ -93,6 +94,8 @@ func instance(code event.Code) event.Event {
 		e = &FieldBlockTransform{}
 	case codeFieldExBlock:
 		e = &FieldExBlock{}
+	case codeFieldStat:
+		e = &FieldStat{}
 	case codeFieldLost:
 		e = &FieldLost{}
 	case codeFieldQuake:

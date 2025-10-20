@@ -14,6 +14,7 @@ import (
 	"gamatet/game/sweeper"
 	"github.com/marko-gacesa/udpstar/channel"
 	"github.com/marko-gacesa/udpstar/udpstar/controller"
+	"math/rand/v2"
 	"time"
 )
 
@@ -57,13 +58,15 @@ func MakeHost(setup Setup) *GameHost {
 	var inputs []hostPlayerData
 	fields := make([]hostFieldData, len(setup.Fields))
 
+	r := rand.New(rand.NewPCG(uint64(setup.Config.RandomSeed), 0))
+
 	for i := range setup.Fields {
 		players := setup.Fields[i].Players
 
 		width := setup.Config.WidthPerPlayer * len(players)
 		height := setup.Config.Height
 
-		f := field.Make(width, height, len(players))
+		f := field.Make(width, height, len(players), field.WithRand(r))
 		f.Idx = i
 		f.Config = setup.Config.FieldConfig
 
@@ -106,6 +109,13 @@ func MakeHost(setup Setup) *GameHost {
 			Field:    f,
 			Sweepers: sweepers,
 			OutCh:    setup.Fields[i].OutCh,
+		}
+	}
+
+	if len(fields) > 1 {
+		for i := range fields {
+			p := sweeper.NewPunisher(fields[i].Field, getFieldPushers(fields, i))
+			fields[i].Sweepers = append(fields[i].Sweepers, p)
 		}
 	}
 
@@ -199,16 +209,16 @@ func (g *GameHost) Perform(ctx context.Context) {
 					Color:    0xFFFF00FF,
 				})
 			}
-			//for i := 3; i < 7; i++ {
-			//	for j := 0; j < 18; j++ {
-			//		putBlock(events, i, j, block.Block{Type: block.TypeRock, Hardness: byte(i - 3), Color: 0x90FF80FF})
-			//		//putBlock(events, i, j, block.Iron)
-			//	}
-			//}
+			for i := 3; i < 7; i++ {
+				for j := 0; j < 18; j++ {
+					putBlock(events, i, j, block.Block{Type: block.TypeRock, Hardness: byte(i - 3), Color: 0x90FF80FF})
+					//putBlock(events, i, j, block.Iron)
+				}
+			}
 			conjureBlock(&g.fields[0].events, 0, 6, block.Goal)
 			conjureBlock(&g.fields[0].events, 1, 5, block.Block{Type: block.TypeGoal, Hardness: 0, Color: 0x0000FFFF})
 			conjureBlock(&g.fields[0].events, 7, 4, block.Iron)
-			g.applyEvents(ctx)
+			g.applyEvents()
 		}(g.fields[0].Field, &g.fields[0].events)
 	*/
 	////////////////////////////
@@ -387,4 +397,20 @@ func (g *GameHost) applyEvents() {
 			s.Start(analyzer)
 		}
 	}
+}
+
+func getFieldPushers(fields []hostFieldData, exceptIdx int) []sweeper.FieldPusher {
+	list := make([]sweeper.FieldPusher, 0, len(fields)-1)
+	for i := range fields {
+		if i == exceptIdx {
+			continue
+		}
+
+		list = append(list, sweeper.FieldPusher{
+			Field:  fields[i].Field,
+			Pusher: &fields[i].events,
+		})
+	}
+
+	return list
 }

@@ -233,6 +233,18 @@ func (f *Field) GetPieceStartPosition(pIdx int, ctrl *piece.Ctrl, p piece.Piece,
 	return
 }
 
+func (f *Field) GetTopmostEmpty(x int) int {
+	w := f.w
+	y := f.h - 1
+	for idx := y*w + x; idx >= 0; idx -= w {
+		if f.blocks[idx].Type != block.TypeEmpty {
+			return y + 1
+		}
+		y--
+	}
+	return 0
+}
+
 // GetHeightToTopmostEmpty returns height from which the block at location (x, y) can fall
 // until it hits something - either the bottom or another block. So, if height>0, the location
 // (x, y - height) always will be empty. If height==0 than falling is not possible.

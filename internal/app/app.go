@@ -61,7 +61,6 @@ func NewApp(ctx context.Context, cfg config.Config, cfgPath string) *App {
 	udpService := udp.NewService(ctx, cfg.Network.Port,
 		udp.WithLogger(logger),
 		udp.WithServerStateCallback(func(state udp.ServerState, err error) {
-			// TODO
 			logger.Debug("server state changed", "state", state)
 		}),
 		udp.WithIdleTimeout(30*time.Second),

@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package sweeper
 
@@ -25,14 +25,15 @@ func (s *base) Timer() <-chan time.Time {
 	return s.timer.C
 }
 
-func (s *base) Start(*Analyzer) {
+func (s *base) Start(*Analyzer) bool {
 	if s.active {
 		// timer is already active or nothing to do
-		return
+		return false
 	}
 
 	s.active = true
 	s.timer.Reset(time.Microsecond)
+	return true
 }
 
 func (s *base) Pause() {

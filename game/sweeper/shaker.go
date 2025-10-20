@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package sweeper
 
@@ -20,19 +20,19 @@ type Shaker struct {
 	intensity byte
 }
 
-func (s *Shaker) Start(analyzer *Analyzer) {
+func (s *Shaker) Start(analyzer *Analyzer) bool {
 	w := s.field.GetWidth()
 
-	intensity := (analyzer.removed-w>>1)/w + 1
+	intensity := (analyzer.blocks.removed + w>>1) / w
 	if intensity < 2 {
-		return
+		return false
 	}
 	if intensity > 5 {
 		intensity = 5
 	}
 
 	s.intensity = byte(intensity)
-	s.base.Start(analyzer)
+	return s.base.Start(analyzer)
 }
 
 func (s *Shaker) Sweep(p event.Pusher) {
