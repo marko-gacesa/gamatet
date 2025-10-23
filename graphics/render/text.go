@@ -116,6 +116,7 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 	defer gl.DepthMask(true) // enable writing to depth buffer
 
 	var xAdvance float32
+	var invert bool
 
 	modelText := model
 	var chPrev rune
@@ -129,6 +130,14 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 		if ch <= 32 {
 			switch ch {
 			case ' ':
+				if invert {
+					mat.TexUV(runeatlas.RectUV{})
+					modelSpace := modelText.
+						Mul4(mgl32.Translate3D(spaceAdvance/2, 0, 0)).
+						Mul4(mgl32.Scale3D(spaceAdvance, 1, 1))
+					r.Render(&modelSpace)
+				}
+
 				modelText = modelText.Mul4(mgl32.Translate3D(spaceAdvance, 0, 0))
 				xAdvance += spaceAdvance
 			case '\n':
@@ -138,12 +147,23 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 			case '\t':
 				const tab = 1.0
 				tabAdv := tab - float32(math.Mod(float64(xAdvance), tab))
-				xAdvance += tabAdv
+
+				if invert {
+					mat.TexUV(runeatlas.RectUV{})
+					modelTab := modelText.
+						Mul4(mgl32.Translate3D(tabAdv/2, 0, 0)).
+						Mul4(mgl32.Scale3D(tabAdv, 1, 1))
+					r.Render(&modelTab)
+				}
+
 				modelText = modelText.Mul4(mgl32.Translate3D(tabAdv, 0, 0))
+				xAdvance += tabAdv
 			case '\x02': // invert on
 				mat.InvertOn()
+				invert = true
 			case '\x03': // invert off
 				mat.InvertOff()
+				invert = false
 			}
 			continue
 		}
