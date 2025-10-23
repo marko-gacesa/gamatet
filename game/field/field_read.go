@@ -106,28 +106,6 @@ func (f *Field) CanRotatePiece(pIdx int, liftAll bool) (success bool, inverted b
 		}
 	}
 
-	/*
-		// Kick only from field edges
-
-		dim := int(rotated.DimX())
-
-		for wallKick := 1; wallKick <= int(pieceWallKick); wallKick++ {
-			if c.X == colMin-wallKick {
-				success = f._canPlacePiece(c.X+wallKick, c.Y, colMin, colMax, rotated, liftAll, pIdx)
-				if success {
-					dx = wallKick
-					return
-				}
-			} else if c.X == colMax+1-dim+wallKick {
-				success = f._canPlacePiece(c.X-wallKick, c.Y, colMin, colMax, rotated, liftAll, pIdx)
-				if success {
-					dx = -wallKick
-					return
-				}
-			}
-		}
-	*/
-
 	return
 }
 

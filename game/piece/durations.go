@@ -51,7 +51,6 @@ func init() {
 	for level := 0; level <= MaxLevel; level++ {
 		_durationDescend[level] = time.Duration(float64(time.Second) * math.Pow(4.0/3.0, float64(-level)))
 		_durationSlide[level] = time.Duration(float64(time.Second) * 0.5 * math.Pow(1.125, float64(-level)))
-		//fmt.Println(level, _durationDescend[level], _durationSlide[level])
 	}
 }
 
