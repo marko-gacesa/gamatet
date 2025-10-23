@@ -65,7 +65,7 @@ func (cfg *Config) Sanitize() {
 				PlayerConfig: PlayerConfig{
 					RotationDirectionCW: false,
 					SlideDisabled:       false,
-					WallKick:            2,
+					WallKick:            piece.WallKickDefault,
 				},
 			})
 		}
@@ -78,8 +78,8 @@ func (cfg *Config) Sanitize() {
 		if cfg.PlayerInfos[i].Name == "" {
 			cfg.PlayerInfos[i].Name = fmt.Sprintf("Player %d", i+1)
 		}
-		if cfg.PlayerInfos[i].WallKick < 0 || cfg.PlayerInfos[i].WallKick > piece.MaxWallKick {
-			cfg.PlayerInfos[i].WallKick = piece.MaxWallKick
+		if cfg.PlayerInfos[i].WallKick < 0 || cfg.PlayerInfos[i].WallKick > piece.WallKickMax {
+			cfg.PlayerInfos[i].WallKick = piece.WallKickDefault
 		}
 	}
 

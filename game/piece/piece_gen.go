@@ -41,3 +41,11 @@ func NewFlipVTetromino(id int, b block.Block) Piece {
 		block:     b,
 	}
 }
+
+func NewPentominos(id int, b block.Block) Piece {
+	return &polyominoRot{
+		shapeSquare: shapesRotPentominoes[id],
+		rot:         0,
+		block:       b,
+	}
+}

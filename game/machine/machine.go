@@ -90,9 +90,9 @@ func HandleActionInput(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, a actio
 
 		switch ctrl.Piece.Type() {
 		case piece.TypeRotation:
-			if success, _, dx, _ := f.CanRotatePiece(ctrl.Idx, !f.PieceCollision); success {
-				if dx != 0 {
-					p.Push(op.NewPieceMove(ctrl.Idx, dx, 0))
+			if success, _, dx, dy, _ := f.CanRotatePiece(ctrl.Idx, !f.PieceCollision); success {
+				if dx != 0 || dy != 0 {
+					p.Push(op.NewPieceMove(ctrl.Idx, dx, dy))
 				}
 				p.Push(op.NewPieceRotate(ctrl.Idx, ctrl.RotationDirectionCW))
 			}

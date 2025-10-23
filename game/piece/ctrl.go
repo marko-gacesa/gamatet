@@ -10,7 +10,10 @@ import (
 
 const MaxLevel = 15
 
-const MaxWallKick = 2
+const (
+	WallKickMax     = 2
+	WallKickDefault = 2
+)
 
 const NextBlockCount = 3
 

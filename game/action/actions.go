@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020, 2025 by Marko Gaćeša
 
 package action
 
@@ -11,7 +11,6 @@ const (
 	SpeedUp   Action = 20
 	MoveLeft  Action = 30
 	MoveRight Action = 31
-	MoveUp    Action = 32
 	MoveDown  Action = 33
 	Drop      Action = 40
 	Activate  Action = 50

@@ -55,7 +55,7 @@ func (f *Field) CanMovePiece(dx, dy, pIdx int, liftAll bool) (success bool) {
 	return
 }
 
-func (f *Field) CanRotatePiece(pIdx int, liftAll bool) (success bool, inverted bool, dx int, rotated piece.Piece) {
+func (f *Field) CanRotatePiece(pIdx int, liftAll bool) (success bool, inverted bool, dx, dy int, rotated piece.Piece) {
 	c := f.pieces[pIdx]
 	if c.Piece == nil || c.Piece.Type() != piece.TypeRotation {
 		return
@@ -78,7 +78,7 @@ func (f *Field) CanRotatePiece(pIdx int, liftAll bool) (success bool, inverted b
 
 	pieceWallKick := min(c.Piece.WallKick(), c.Config.WallKick)
 
-	// Kick always
+	// Wall kick left/right
 
 	for wallKick := 1; wallKick <= int(pieceWallKick); wallKick++ {
 		success = f._canPlacePiece(c.X+wallKick, c.Y, colMin, colMax, rotated, liftAll, pIdx)
@@ -91,6 +91,18 @@ func (f *Field) CanRotatePiece(pIdx int, liftAll bool) (success bool, inverted b
 		if success {
 			dx = -wallKick
 			return
+		}
+	}
+
+	// Ceiling kick down
+
+	if c.Y >= f.h {
+		for wallKick := 1; wallKick <= int(pieceWallKick); wallKick++ {
+			success = f._canPlacePiece(c.X, c.Y-wallKick, colMin, colMax, rotated, liftAll, pIdx)
+			if success {
+				dy = -wallKick
+				return
+			}
 		}
 	}
 

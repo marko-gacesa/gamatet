@@ -14,7 +14,7 @@ func (app *App) gameOne(ctx screen.Context) core.GameOneParams {
 	const fieldW = 10
 	const fieldH = 24
 
-	var level = 7
+	const level = 7
 	const seed = 101
 
 	fieldCh := make(chan []byte)

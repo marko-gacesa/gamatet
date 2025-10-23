@@ -118,7 +118,7 @@ func TestField_CanRotatePiece(t *testing.T) {
 
 	for _, test := range tests {
 		f.Ctrl(byte(test.pIdx)).Config.RotationDirectionCW = test.cw
-		r, _, _, _ := f.CanRotatePiece(test.pIdx, test.liftAll)
+		r, _, _, _, _ := f.CanRotatePiece(test.pIdx, test.liftAll)
 		if r != test.exp {
 			t.Errorf("test '%s' failed, for cw=%t; expected %t got %t", test.name, test.cw, test.exp, r)
 		}
@@ -215,7 +215,7 @@ func TestField_CanRotatePiece_WallKick(t *testing.T) {
 			}
 		}
 
-		success, _, dx, rotated := f.CanRotatePiece(0, false)
+		success, _, dx, _, rotated := f.CanRotatePiece(0, false)
 
 		if success {
 			ctrl.X += dx
