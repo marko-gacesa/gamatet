@@ -5,7 +5,6 @@ package app
 import (
 	"context"
 	"gamatet/game/setup"
-	"gamatet/graphics/scene"
 	"gamatet/internal/config"
 	"gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/udp"
@@ -147,10 +146,6 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 	case routeMenuLANClientLobby:
 		data = app.menuLANClientLobby(ctx)
 
-	case routeTestBlocks:
-		data = scene.Demo(scene.DemoBlocks)
-	case routeTestField:
-		data = scene.Demo(scene.DemoFields)
 	case routeGameSinglePlayNow:
 		data = app.gameOne(ctx)
 	case routeGameDoublePlayNow:

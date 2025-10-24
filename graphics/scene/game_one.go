@@ -18,7 +18,9 @@ type GameOne struct {
 	base.BlockBase
 	res  render.FieldResources
 	text render.Text
-	fps  render.FPS
+
+	textHUD render.Text
+	fpsHUD  render.FPS
 
 	playerInCh  chan<- []byte
 	model       mgl32.Mat4
@@ -37,7 +39,9 @@ func NewGameOne(
 ) *GameOne {
 	res := render.GenerateFieldResources(tex)
 	text := render.MakeText(tex, render.Font)
-	fps := render.NewFPS()
+
+	textHUD := render.MakeText(tex, render.HudFont)
+	fpsHUD := render.NewFPS()
 
 	w, h := render.GetExtendedContent(params.Game.GetSize(0))
 
@@ -45,7 +49,9 @@ func NewGameOne(
 		BlockBase: base.NewBlockBase(renderer, tex, w, h, false),
 		res:       *res,
 		text:      *text,
-		fps:       *fps,
+
+		textHUD: *textHUD,
+		fpsHUD:  *fpsHUD,
 
 		// these are set below
 		playerInCh:  nil,
@@ -101,6 +107,10 @@ func (ft *GameOne) Prepare(now time.Time) {
 }
 
 func (ft *GameOne) Render() {
+	r := ft.Renderer()
+
 	ft.SetCamera()
-	ft.fieldRender.Render(ft.Renderer())
+	ft.fieldRender.Render(r)
+
+	ft.fpsHUD.Render(r, &ft.textHUD)
 }

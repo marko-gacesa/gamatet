@@ -14,11 +14,13 @@ import (
 	"time"
 )
 
-type GameMulti struct {
+type Game struct {
 	base.BlockBase
 	res  render.FieldResources
 	text render.Text
-	fps  render.FPS
+
+	textHUD render.Text
+	fpsHUD  render.FPS
 
 	playersInCh  [4]chan<- []byte
 	model        mgl32.Mat4
@@ -28,16 +30,18 @@ type GameMulti struct {
 	waitDoneCh <-chan struct{}
 }
 
-var _ screen.Screen = (*GameMulti)(nil)
+var _ screen.Screen = (*Game)(nil)
 
-func NewGameMulti(
+func NewGame(
 	renderer *render.Renderer,
 	tex *texture.Manager,
 	params core.GameParams,
-) *GameMulti {
+) *Game {
 	res := render.GenerateFieldResources(tex)
 	text := render.MakeText(tex, render.Font)
-	fps := render.NewFPS()
+
+	textHUD := render.MakeText(tex, render.HudFont)
+	fpsHUD := render.NewFPS()
 
 	center := mgl32.Ident4()
 	fieldModels := make([]mgl32.Mat4, params.FieldCount)
@@ -101,11 +105,13 @@ func NewGameMulti(
 		fieldRenders[i] = render.NewField(fieldModels[i], res, text, int(i), params.Game)
 	}
 
-	g := &GameMulti{
+	g := &Game{
 		BlockBase: base.NewBlockBase(renderer, tex, w, h, true),
 		res:       *res,
 		text:      *text,
-		fps:       *fps,
+
+		textHUD: *textHUD,
+		fpsHUD:  *fpsHUD,
 
 		// these are set below
 		playersInCh:  params.PlayerInCh,
@@ -119,8 +125,11 @@ func NewGameMulti(
 	return g
 }
 
-func (ft *GameMulti) Release() {
+func (ft *Game) Release() {
 	<-ft.waitDoneCh
+
+	ft.textHUD.Release()
+
 	ft.text.Release()
 	ft.res.Release()
 
@@ -131,7 +140,7 @@ func (ft *GameMulti) Release() {
 	}
 }
 
-func (ft *GameMulti) InputKeyPress(key, scancode int) {
+func (ft *Game) InputKeyPress(key, scancode int) {
 	ft.BlockBase.InputKeyPress(key, scancode)
 
 	var cmd1, cmd2, cmd3, cmd4 []byte
@@ -171,16 +180,19 @@ func (ft *GameMulti) InputKeyPress(key, scancode int) {
 	base.SendAction(cmd4, ft.waitDoneCh, ft.playersInCh[3])
 }
 
-func (ft *GameMulti) Prepare(now time.Time) {
+func (ft *Game) Prepare(now time.Time) {
 	for i := range ft.fieldRenders {
 		ft.fieldRenders[i].Prepare(now)
 	}
 }
 
-func (ft *GameMulti) Render() {
-	ft.SetCamera()
+func (ft *Game) Render() {
 	r := ft.Renderer()
+
+	ft.SetCamera()
 	for i := range ft.fieldRenders {
 		ft.fieldRenders[i].Render(r)
 	}
+
+	ft.fpsHUD.Render(r, &ft.textHUD)
 }

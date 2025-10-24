@@ -19,9 +19,6 @@ const (
 	routeMenuLANClientJoin   route = "menu-lan-client-join"
 	routeMenuLANClientLobby  route = "menu-lan-client-lobby"
 
-	routeTestField  route = "test-field"
-	routeTestBlocks route = "test-blocks"
-
 	routeGame              route = "game"
 	routeGameSinglePlayNow route = "game-single-play-now"
 	routeGameDoublePlayNow route = "game-double-play-now"

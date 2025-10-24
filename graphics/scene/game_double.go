@@ -18,7 +18,9 @@ type GameDouble struct {
 	base.BlockBase
 	res  render.FieldResources
 	text render.Text
-	fps  render.FPS
+
+	textHUD render.Text
+	fpsHUD  render.FPS
 
 	player1InCh chan<- []byte
 	player2InCh chan<- []byte
@@ -38,7 +40,9 @@ func NewGameDouble(
 ) *GameDouble {
 	res := render.GenerateFieldResources(tex)
 	text := render.MakeText(tex, render.Font)
-	fps := render.NewFPS()
+
+	textHUD := render.MakeText(tex, render.HudFont)
+	fpsHUD := render.NewFPS()
 
 	w, h := render.GetExtendedContent(params.Game.GetSize(0))
 
@@ -46,7 +50,9 @@ func NewGameDouble(
 		BlockBase: base.NewBlockBase(renderer, tex, w, h, true),
 		res:       *res,
 		text:      *text,
-		fps:       *fps,
+
+		textHUD: *textHUD,
+		fpsHUD:  *fpsHUD,
 
 		// these are set below
 		player1InCh: nil,
@@ -118,5 +124,9 @@ func (ft *GameDouble) Prepare(now time.Time) {
 
 func (ft *GameDouble) Render() {
 	r := ft.Renderer()
+
+	ft.SetCamera()
 	ft.fieldRender.Render(r)
+
+	ft.fpsHUD.Render(r, &ft.textHUD)
 }
