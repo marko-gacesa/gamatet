@@ -49,9 +49,9 @@ type Config struct {
 }
 
 const (
-	MinWidth  = 4
+	MinWidth  = 6
 	MaxWidth  = 40
-	MinHeight = 4
+	MinHeight = 12
 	MaxHeight = 40
 )
 

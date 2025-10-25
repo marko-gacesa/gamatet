@@ -11,11 +11,6 @@ import (
 
 var _ Sweeper = (*Punisher)(nil)
 
-type FieldPusher struct {
-	Field  *field.Field
-	Pusher event.Pusher
-}
-
 func NewPunisher(f *field.Field, others []FieldPusher) *Punisher {
 	b := newBase(f)
 	return &Punisher{

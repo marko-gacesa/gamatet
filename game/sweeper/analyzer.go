@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package sweeper
 
@@ -13,6 +13,8 @@ type Analyzer struct {
 
 	blocks delta
 	stats  delta
+
+	lost bool
 }
 
 type delta struct {
@@ -45,5 +47,7 @@ func (a *Analyzer) Analyze(e event.Event) {
 	case *op.FieldStat:
 		a.stats.removed += int(v.BlocksRemoved)
 		a.stats.softened += int(v.BlocksSoftened)
+	case *op.FieldLost:
+		a.lost = true
 	}
 }

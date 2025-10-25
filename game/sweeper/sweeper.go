@@ -4,6 +4,7 @@ package sweeper
 
 import (
 	"gamatet/game/event"
+	"gamatet/game/field"
 	"time"
 )
 
@@ -23,4 +24,9 @@ type Sweeper interface {
 
 	// Sweep removes blocks from the field.
 	Sweep(p event.Pusher)
+}
+
+type FieldPusher struct {
+	Field  *field.Field
+	Pusher event.Pusher
 }
