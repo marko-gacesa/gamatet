@@ -158,7 +158,7 @@ func HandleActionInput(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, a actio
 	}
 }
 
-func HandleTimeout(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
+func HandleTimeout(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) bool {
 	switch ctrl.State {
 	case piece.StateInit:
 		_changeState(ctrl, p, piece.StateNew)
@@ -182,8 +182,7 @@ func HandleTimeout(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 		}
 		if !success {
 			// can't position piece: end game
-			p.Push(op.NewFieldLost(f))
-			break
+			return true
 		}
 
 		p.Push(op.NewPieceSet(ctrl.Idx, op.TypeSet, x, y, newPiece, pieceCount+1))
@@ -213,7 +212,7 @@ func HandleTimeout(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 	case piece.StateFall:
 		_changeState(ctrl, p, piece.StateSlide)
 
-	case piece.StateLost, piece.StateWon:
+	case piece.StateGameOver, piece.StateVictory, piece.StateDefeat:
 		if ctrl.Piece != nil {
 			p.Push(op.NewPieceSet(ctrl.Idx, op.TypeClear, ctrl.X, ctrl.Y, ctrl.Piece, ctrl.PieceCount))
 		}
@@ -227,6 +226,8 @@ func HandleTimeout(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 		// should not happen, unknown state
 		panic("timer timeout for unknown state")
 	}
+
+	return false
 }
 
 func _changeState(ctrl *piece.Ctrl, p event.Pusher, newState piece.State) {

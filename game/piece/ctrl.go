@@ -26,36 +26,42 @@ const (
 	StateDescend
 	StateFall
 	StateSlide
-	StateWon
-	StateLost
+	StateGameOver
+	StateVictory
+	StateDefeat
 	StateStop
 )
 
 var StateName = map[State]string{
-	StatePause:   "Pause",
-	StateInit:    "Init",
-	StateNew:     "New",
-	StateDescend: "Descend",
-	StateFall:    "Fall",
-	StateSlide:   "Slide",
-	StateWon:     "Won",
-	StateLost:    "Lost",
-	StateStop:    "Stop",
+	StatePause:    "Pause",
+	StateInit:     "Init",
+	StateNew:      "New",
+	StateDescend:  "Descend",
+	StateFall:     "Fall",
+	StateSlide:    "Slide",
+	StateGameOver: "Game Over",
+	StateVictory:  "Victory",
+	StateDefeat:   "Defeat",
+	StateStop:     "Stop",
 }
 
 // IsPausable returns if the game can paused in the current state.
 func (s State) IsPausable() bool {
-	return s != StateLost && s != StateWon && s != StateStop
+	return s != StateGameOver && s != StateDefeat && s != StateVictory && s != StateStop
 }
 
 // IsAbortable returns if the game can be aborted in the current state.
 func (s State) IsAbortable() bool {
-	return s == StatePause || s == StateWon || s == StateLost || s == StateStop
+	return s == StatePause || s == StateGameOver || s == StateVictory || s == StateDefeat || s == StateStop
 }
 
 // IsTerminal returns if the current state is the final state.
 func (s State) IsTerminal() bool {
-	return s == StateWon || s == StateLost || s == StateStop
+	return s == StateGameOver || s == StateVictory || s == StateDefeat || s == StateStop
+}
+
+func (s State) String() string {
+	return StateName[s]
 }
 
 type NextPieceInfo struct {
@@ -167,7 +173,7 @@ func (c *Ctrl) RestartTimer(param int) {
 		}
 	case StateSlide:
 		dur = GetSlideDuration(c.Level)
-	case StateLost, StateWon:
+	case StateGameOver, StateVictory, StateDefeat:
 		dur = DurationNewPiece
 	case StatePause, StateStop:
 		// no timer for these states

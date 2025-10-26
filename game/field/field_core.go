@@ -108,6 +108,10 @@ func (f *Field) Ctrl(idx byte) *piece.Ctrl {
 	return f.pieces[idx]
 }
 
+func (f *Field) IsFinished() bool {
+	return len(f.pieces) == 0 || f.pieces[0].State.IsTerminal()
+}
+
 func (f *Field) GetDone() <-chan struct{} {
 	return f.doneCh
 }

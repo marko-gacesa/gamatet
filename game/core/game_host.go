@@ -112,10 +112,15 @@ func MakeHost(setup Setup) *GameHost {
 		}
 	}
 
+	for i := range fields {
+		s := sweeper.NewGameOver(fields[i].Field)
+		fields[i].Sweepers = append(fields[i].Sweepers, s)
+	}
+
 	if len(fields) > 1 {
 		for i := range fields {
-			p := sweeper.NewPunisher(fields[i].Field, getFieldPushers(fields, i))
-			fields[i].Sweepers = append(fields[i].Sweepers, p)
+			s := sweeper.NewPunisher(fields[i].Field, getFieldPushers(fields, i))
+			fields[i].Sweepers = append(fields[i].Sweepers, s)
 		}
 	}
 
@@ -258,7 +263,10 @@ func (g *GameHost) Perform(ctx context.Context) {
 			ctrl := f.Ctrl(fc.ID.CtrlIdx)
 			events := &g.fields[fc.ID.FieldIdx].events
 
-			machine.HandleTimeout(f, ctrl, events)
+			if isDone := machine.HandleTimeout(f, ctrl, events); isDone {
+				g.checkWinner(int(fc.ID.FieldIdx))
+			}
+
 			g.applyEvents()
 
 		case sw := <-sweeperTimer:
@@ -362,6 +370,39 @@ func (g *GameHost) applyEvents() {
 		for _, s := range g.fields[fIdx].Sweepers {
 			s.Start(analyzer)
 		}
+	}
+}
+
+func (g *GameHost) checkWinner(loserIdx int) {
+	var (
+		playingLastIdx int
+		playingCount   int
+	)
+
+	if len(g.fields) == 1 {
+		f := g.fields[loserIdx].Field
+		g.fields[loserIdx].events.Push(op.NewFieldGameOver(f))
+		return
+	}
+
+	playingLastIdx = -1
+	for fIdx := range g.fields {
+		f := g.fields[fIdx].Field
+
+		if fIdx == loserIdx {
+			g.fields[fIdx].events.Push(op.NewFieldDefeat(f))
+			continue
+		}
+
+		if !f.IsFinished() {
+			playingCount++
+			playingLastIdx = fIdx
+			continue
+		}
+	}
+
+	if playingCount == 1 {
+		g.fields[playingLastIdx].events.Push(op.NewFieldVictory(g.fields[playingLastIdx].Field))
 	}
 }
 

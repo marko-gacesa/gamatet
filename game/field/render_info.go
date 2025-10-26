@@ -205,12 +205,11 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 
 		pinfo.Blocks = pinfo.Blocks[:0]
 		pinfo.DrawShadow = false
+		pinfo.DirectionCW = ctrl.Config.RotationDirectionCW
 
-		if paused {
+		if paused || ctrl.State.IsTerminal() {
 			continue
 		}
-
-		pinfo.DirectionCW = ctrl.Config.RotationDirectionCW
 
 		for i := 0; i < piece.NextBlockCount; i++ {
 			pinfo.NextPieces[i].Type = ctrl.NextPieces[i].Type

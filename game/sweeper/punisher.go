@@ -41,6 +41,10 @@ func (s *Punisher) Start(analyzer *Analyzer) bool {
 func (s *Punisher) Sweep(event.Pusher) {
 	for i := range s.others {
 		f := s.others[i].Field
+		if f.IsFinished() {
+			continue
+		}
+
 		h := f.GetHeight()
 		xys := f.Blizzard(s.intensity)
 

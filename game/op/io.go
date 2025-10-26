@@ -21,7 +21,9 @@ const (
 	codeFieldBlockTransform
 	codeFieldExBlock
 	codeFieldStat
-	codeFieldLost
+	codeFieldGameOver
+	codeFieldVictory
+	codeFieldDefeat
 	codeFieldQuake
 
 	// piece events
@@ -96,8 +98,8 @@ func instance(code event.Code) event.Event {
 		e = &FieldExBlock{}
 	case codeFieldStat:
 		e = &FieldStat{}
-	case codeFieldLost:
-		e = &FieldLost{}
+	case codeFieldDefeat:
+		e = &FieldDefeat{}
 	case codeFieldQuake:
 		e = &FieldQuake{}
 

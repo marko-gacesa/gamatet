@@ -508,75 +508,63 @@ func (e *FieldStat) TypeID() event.Code {
 	return codeFieldStat
 }
 
-func NewFieldLost(f *field.Field) *FieldLost {
-	n := byte(f.Ctrls())
-	ctrlStates := make([]byte, 2*n)
-	for i := byte(0); i < n; i++ {
-		state := f.Ctrl(i).State
-		ctrlStates[i*2] = i
-		ctrlStates[i*2+1] = byte(state)
-	}
-
-	return &FieldLost{
-		CtrlStates: ctrlStates,
-	}
+func NewFieldGameOver(f *field.Field) *FieldGameOver {
+	return &FieldGameOver{CtrlStates: saveCtrlStates(f)}
 }
 
-type FieldLost struct {
-	CtrlStates []byte
-}
+type FieldGameOver struct{ CtrlStates []byte }
 
-var _ event.Event = (*FieldLost)(nil)
+var _ event.Event = (*FieldGameOver)(nil)
 
-func (e *FieldLost) Do(f *field.Field) {
-	for i := 0; i < len(e.CtrlStates); i += 2 {
-		ctrlIdx := e.CtrlStates[i]
-		ctrl := f.Ctrl(ctrlIdx)
-		ctrl.State = piece.StateLost
-		ctrl.RestartTimer(0)
-	}
-}
+func (e *FieldGameOver) Do(f *field.Field)   { setCtrlStates(f, e.CtrlStates, piece.StateGameOver) }
+func (e *FieldGameOver) Undo(f *field.Field) { restoreCtrlStates(f, e.CtrlStates) }
 
-func (e *FieldLost) Undo(f *field.Field) {
-	for i := 0; i < len(e.CtrlStates); i += 2 {
-		ctrlIdx := e.CtrlStates[i]
-		ctrlState := e.CtrlStates[i+1]
-		ctrl := f.Ctrl(ctrlIdx)
-		ctrl.State = piece.State(ctrlState)
-		ctrl.RestartTimer(0)
-	}
-}
-
-func (e *FieldLost) Equals(ev event.Event) bool {
-	q, ok := ev.(*FieldLost)
+func (e *FieldGameOver) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldGameOver)
 	return ok && bytes.Equal(e.CtrlStates, q.CtrlStates)
 }
 
-func (e *FieldLost) Write(w io.Writer) error {
-	if _, err := w.Write([]byte{byte(len(e.CtrlStates))}); err != nil {
-		return err
-	}
-	if _, err := w.Write(e.CtrlStates); err != nil {
-		return err
-	}
-	return nil
+func (e *FieldGameOver) Write(w io.Writer) error { return writeCtrlStates(w, e.CtrlStates) }
+func (e *FieldGameOver) Read(r io.Reader) error  { return readCtrlStates(r, &e.CtrlStates) }
+func (e *FieldGameOver) TypeID() event.Code      { return codeFieldGameOver }
+
+func NewFieldVictory(f *field.Field) *FieldVictory {
+	return &FieldVictory{CtrlStates: saveCtrlStates(f)}
 }
 
-func (e *FieldLost) Read(r io.Reader) error {
-	var buffer [1]byte
-	if _, err := io.ReadFull(r, buffer[:]); err != nil {
-		return err
-	}
+type FieldVictory struct{ CtrlStates []byte }
 
-	e.CtrlStates = make([]byte, buffer[0])
-	if _, err := io.ReadFull(r, e.CtrlStates); err != nil {
-		return err
-	}
+var _ event.Event = (*FieldVictory)(nil)
 
-	return nil
+func (e *FieldVictory) Do(f *field.Field)   { setCtrlStates(f, e.CtrlStates, piece.StateVictory) }
+func (e *FieldVictory) Undo(f *field.Field) { restoreCtrlStates(f, e.CtrlStates) }
+
+func (e *FieldVictory) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldVictory)
+	return ok && bytes.Equal(e.CtrlStates, q.CtrlStates)
 }
 
-func (e *FieldLost) TypeID() event.Code { return codeFieldLost }
+func (e *FieldVictory) Write(w io.Writer) error { return writeCtrlStates(w, e.CtrlStates) }
+func (e *FieldVictory) Read(r io.Reader) error  { return readCtrlStates(r, &e.CtrlStates) }
+func (e *FieldVictory) TypeID() event.Code      { return codeFieldVictory }
+
+func NewFieldDefeat(f *field.Field) *FieldDefeat { return &FieldDefeat{CtrlStates: saveCtrlStates(f)} }
+
+type FieldDefeat struct{ CtrlStates []byte }
+
+var _ event.Event = (*FieldDefeat)(nil)
+
+func (e *FieldDefeat) Do(f *field.Field)   { setCtrlStates(f, e.CtrlStates, piece.StateDefeat) }
+func (e *FieldDefeat) Undo(f *field.Field) { restoreCtrlStates(f, e.CtrlStates) }
+
+func (e *FieldDefeat) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldDefeat)
+	return ok && bytes.Equal(e.CtrlStates, q.CtrlStates)
+}
+
+func (e *FieldDefeat) Write(w io.Writer) error { return writeCtrlStates(w, e.CtrlStates) }
+func (e *FieldDefeat) Read(r io.Reader) error  { return readCtrlStates(r, &e.CtrlStates) }
+func (e *FieldDefeat) TypeID() event.Code      { return codeFieldDefeat }
 
 func NewFieldQuake(intensity byte) *FieldQuake {
 	return &FieldQuake{

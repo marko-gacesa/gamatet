@@ -30,3 +30,22 @@ func (f *Field) Blizzard(intensity int) []block.XY {
 
 	return result
 }
+
+func (f *Field) AllXY(max int) []block.XYB {
+	result := make([]block.XYB, 0, min(32, max))
+
+	idx := 0
+	for y := 0; y < f.h; y++ {
+		for x := 0; x < f.w; x++ {
+			if f.blocks[idx].Block.Type.Destroyable() {
+				result = append(result, block.XYB{XY: block.XY{X: x, Y: y}, Block: f.blocks[idx].Block})
+			}
+			idx++
+			if len(result) >= max {
+				return result
+			}
+		}
+	}
+
+	return result
+}

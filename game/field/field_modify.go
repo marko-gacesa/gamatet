@@ -159,6 +159,8 @@ func (f *Field) ClearXY(x, y, animType, animParam int) (b block.Block) {
 			f.animBlockDestroy(x, y, b)
 		case AnimPop:
 			f.addExBlock(x, y, b, anim.NewPopOut(time.Now(), piece.DurationAnimBlockChange))
+		case AnimFall:
+			f.addExBlock(x, -1, b, anim.NewFall(time.Now(), piece.DurationAnimBlockChange, float32(animParam+1)))
 		}
 	}
 
