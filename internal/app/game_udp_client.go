@@ -107,7 +107,7 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 			playerInputPipe := core.MakeChannelPipe[[]byte](ctx) // The "In" part of the pipe should be closed on UI component.
 			playerInChs[localPlayerIdx] = playerInputPipe.In
 
-			session.Actors[storyActorIdx].InputCh = playerInputPipe.Out // [C] The network layer reads player inputs from here.
+			session.Actors[actor.ActorIdx].InputCh = playerInputPipe.Out // [C] The network layer reads player inputs from here.
 
 			fieldPlayers[storyActorIdx] = core.PlayerSetup{
 				Name:   localPlayerInfo.Name,

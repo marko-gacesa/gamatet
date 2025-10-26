@@ -10,24 +10,6 @@ import (
 	"math/rand/v2"
 )
 
-const MaxPieces = 4
-
-type elem struct {
-	block.Block
-	anim.List
-}
-
-type exElem struct {
-	block.XY
-	elem
-	next *exElem
-}
-
-type stats struct {
-	blocksRemoved    int
-	blocksRemovedStr string
-}
-
 type Field struct {
 	Idx      int
 	w        int
@@ -36,11 +18,42 @@ type Field struct {
 	pieces   []*piece.Ctrl
 	firstEx  *exElem
 	animList anim.List
-	paused   bool
+	mode     Mode
 	doneCh   chan struct{}
 	Config
 	stats
 	rand rand.Rand
+}
+
+const MaxPieces = 4
+
+type Mode byte
+
+const (
+	ModeNormal Mode = iota
+	ModeGameOver
+	ModeVictory
+	ModeDefeat
+	ModePause
+	ModeSuspended
+)
+
+func (m Mode) String() string {
+	switch m {
+	case ModeNormal:
+		return "Normal"
+	case ModeGameOver:
+		return "GameOver"
+	case ModeVictory:
+		return "Victory"
+	case ModeDefeat:
+		return "Defeat"
+	case ModePause:
+		return "Pause"
+	case ModeSuspended:
+		return "Suspended"
+	}
+	return "Unknown"
 }
 
 type Config struct {
@@ -48,10 +61,20 @@ type Config struct {
 	Anim           bool
 }
 
+type elem struct {
+	block.Block
+	anim.List
+}
+
+type stats struct {
+	blocksRemoved    int
+	blocksRemovedStr string
+}
+
 const (
-	MinWidth  = 6
+	MinWidth  = 4
 	MaxWidth  = 40
-	MinHeight = 12
+	MinHeight = 4
 	MaxHeight = 40
 )
 
@@ -132,13 +155,20 @@ func (f *Field) StopTimers() {
 	}
 }
 
+func (f *Field) GetMode() Mode {
+	return f.mode
+}
+
+func (f *Field) SetMode(m Mode) {
+	f.mode = m
+}
+
 func (f *Field) Pause() {
 	for _, ctrl := range f.pieces {
 		ctrl.StopTimer()
 		ctrl.PausedState = ctrl.State
 		ctrl.State = piece.StatePause
 	}
-	f.paused = true
 }
 
 func (f *Field) Unpause() {
@@ -147,7 +177,6 @@ func (f *Field) Unpause() {
 		ctrl.PausedState = piece.StatePause
 		ctrl.RestartTimer(0)
 	}
-	f.paused = false
 }
 
 func (f *Field) Anim(a anim.Anim) {

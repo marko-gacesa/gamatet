@@ -208,10 +208,12 @@ func (g *GameHost) Perform(ctx context.Context) {
 			return
 
 		case suspend := <-g.suspendCh:
-			g.suspended = suspend
 			if suspend {
-				g.pause()
+				g.suspend()
+			} else {
+				g.unsuspend()
 			}
+			g.applyEvents()
 
 		case inputData := <-inputCh:
 			data := inputData.Data
@@ -230,29 +232,21 @@ func (g *GameHost) Perform(ctx context.Context) {
 			a := action.Action(data[0])
 
 			if g.paused && a == action.Drop {
-				g.unpause()
-				continue
-			}
-
-			if a == action.Abort {
+				a = action.Pause
+			} else if a == action.Abort {
 				if ctrl.State.IsAbortable() {
 					return
-				} else {
-					a = action.Pause
 				}
+
+				a = action.Pause
 			}
 
 			if a == action.Pause {
-				if g.paused {
-					g.unpause()
-				} else if ctrl.State.IsPausable() {
-					g.pause()
-				}
-				continue
+				g.pauseToggle(ctrl)
 			}
 
 			if g.paused {
-				continue
+				a = action.NoOp
 			}
 
 			machine.HandleActionInput(f, ctrl, events, a)
@@ -315,37 +309,82 @@ func (g *GameHost) sendStop() {
 	}
 }
 
-func (g *GameHost) pause() {
-	if g.paused {
+func (g *GameHost) pauseToggle(ctrl *piece.Ctrl) {
+	if g.suspended {
 		return
 	}
 
-	g.paused = true
-
-	for fIdx := 0; fIdx < len(g.fields); fIdx++ {
-		g.fields[fIdx].Field.Pause()
-		for _, s := range g.fields[fIdx].Sweepers {
-			s.Pause()
-		}
-
-		g.fields[fIdx].OutCh <- op.FieldPauseBytes
+	if g.paused {
+		g.unpauseAllFields()
+		g.paused = false
+	} else if ctrl.State.IsPausable() {
+		g.pauseAllFields(field.ModePause)
+		g.paused = true
 	}
 }
 
-func (g *GameHost) unpause() {
-	if g.suspended || !g.paused {
+func (g *GameHost) suspend() {
+	if g.suspended {
 		return
 	}
 
-	g.paused = false
+	g.suspended = true
+	g.paused = true
+	g.pauseAllFields(field.ModeSuspended)
+}
 
+func (g *GameHost) unsuspend() {
+	if !g.suspended {
+		return
+	}
+
+	g.suspended = false
+	g.unsuspendAllFields()
+}
+
+func (g *GameHost) unsuspendAllFields() {
 	for fIdx := 0; fIdx < len(g.fields); fIdx++ {
-		g.fields[fIdx].Field.Unpause()
-		for _, s := range g.fields[fIdx].Sweepers {
-			s.Unpause()
+		f := g.fields[fIdx].Field
+		oldMode := f.GetMode()
+		if oldMode == field.ModeSuspended {
+			g.fields[fIdx].events.Push(op.NewFieldMode(f, field.ModePause, false))
 		}
+	}
+}
 
-		g.fields[fIdx].OutCh <- op.FieldUnpauseBytes
+func (g *GameHost) pauseAllFields(newMode field.Mode) {
+	for fIdx := 0; fIdx < len(g.fields); fIdx++ {
+		f := g.fields[fIdx].Field
+		oldMode := f.GetMode()
+		if oldMode == field.ModeNormal {
+			g.fields[fIdx].events.Push(op.NewFieldMode(f, newMode, false))
+			g.pauseField(fIdx)
+		}
+	}
+}
+
+func (g *GameHost) unpauseAllFields() {
+	for fIdx := 0; fIdx < len(g.fields); fIdx++ {
+		f := g.fields[fIdx].Field
+		oldMode := f.GetMode()
+		if oldMode == field.ModePause {
+			g.fields[fIdx].events.Push(op.NewFieldMode(f, field.ModeNormal, false))
+			g.unpauseField(fIdx)
+		}
+	}
+}
+
+func (g *GameHost) pauseField(fIdx int) {
+	g.fields[fIdx].Field.Pause()
+	for _, s := range g.fields[fIdx].Sweepers {
+		s.Pause()
+	}
+}
+
+func (g *GameHost) unpauseField(fIdx int) {
+	g.fields[fIdx].Field.Unpause()
+	for _, s := range g.fields[fIdx].Sweepers {
+		s.Unpause()
 	}
 }
 
@@ -380,8 +419,7 @@ func (g *GameHost) checkWinner(loserIdx int) {
 	)
 
 	if len(g.fields) == 1 {
-		f := g.fields[loserIdx].Field
-		g.fields[loserIdx].events.Push(op.NewFieldGameOver(f))
+		g.fields[0].events.Push(op.NewFieldMode(g.fields[0].Field, field.ModeGameOver, true))
 		return
 	}
 
@@ -390,7 +428,7 @@ func (g *GameHost) checkWinner(loserIdx int) {
 		f := g.fields[fIdx].Field
 
 		if fIdx == loserIdx {
-			g.fields[fIdx].events.Push(op.NewFieldDefeat(f))
+			g.fields[loserIdx].events.Push(op.NewFieldMode(f, field.ModeDefeat, true))
 			continue
 		}
 
@@ -402,7 +440,8 @@ func (g *GameHost) checkWinner(loserIdx int) {
 	}
 
 	if playingCount == 1 {
-		g.fields[playingLastIdx].events.Push(op.NewFieldVictory(g.fields[playingLastIdx].Field))
+		f := g.fields[playingLastIdx].Field
+		g.fields[playingLastIdx].events.Push(op.NewFieldMode(f, field.ModeVictory, true))
 	}
 }
 

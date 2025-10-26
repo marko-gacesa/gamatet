@@ -30,39 +30,116 @@ func (e FieldStop) Write(io.Writer) error { return nil }
 
 func (e FieldStop) TypeID() event.Code { return codeFieldStop }
 
-type FieldPause struct{}
+func NewFieldMode(f *field.Field, modeNew field.Mode, stopPieces bool) *FieldMode {
+	n := byte(f.Ctrls())
+	ctrlStates := make([]byte, 2*n)
+	for i := byte(0); i < n; i++ {
+		state := f.Ctrl(i).State
+		ctrlStates[i*2] = i
+		ctrlStates[i*2+1] = byte(state)
+	}
 
-var _ event.Event = FieldPause{}
-
-func (e FieldPause) Do(f *field.Field)   { f.Pause() }
-func (e FieldPause) Undo(f *field.Field) { f.Unpause() }
-
-func (e FieldPause) Equals(ev event.Event) bool {
-	_, ok := ev.(FieldPause)
-	return ok
+	return &FieldMode{
+		ModeNew:    modeNew,
+		ModeOld:    f.GetMode(),
+		CtrlStates: ctrlStates,
+		StopPieces: stopPieces,
+	}
 }
 
-func (e FieldPause) Read(io.Reader) error  { return nil }
-func (e FieldPause) Write(io.Writer) error { return nil }
-
-func (e FieldPause) TypeID() event.Code { return codeFieldPause }
-
-type FieldUnpause struct{}
-
-var _ event.Event = FieldUnpause{}
-
-func (e FieldUnpause) Do(f *field.Field)   { f.Unpause() }
-func (e FieldUnpause) Undo(f *field.Field) { f.Pause() }
-
-func (e FieldUnpause) Equals(ev event.Event) bool {
-	_, ok := ev.(*FieldUnpause)
-	return ok
+type FieldMode struct {
+	ModeNew    field.Mode
+	ModeOld    field.Mode
+	CtrlStates []byte
+	StopPieces bool
 }
 
-func (e FieldUnpause) Read(io.Reader) error  { return nil }
-func (e FieldUnpause) Write(io.Writer) error { return nil }
+var _ event.Event = (*FieldMode)(nil)
 
-func (e FieldUnpause) TypeID() event.Code { return codeFieldUnpause }
+func (e *FieldMode) Do(f *field.Field) {
+	f.SetMode(e.ModeNew)
+	if !e.StopPieces {
+		return
+	}
+	for i := 0; i < len(e.CtrlStates); i += 2 {
+		ctrlIdx := e.CtrlStates[i]
+		ctrl := f.Ctrl(ctrlIdx)
+		ctrl.State = piece.StateStop
+		ctrl.RestartTimer(0)
+	}
+}
+
+func (e *FieldMode) Undo(f *field.Field) {
+	f.SetMode(e.ModeOld)
+	for i := 0; i < len(e.CtrlStates); i += 2 {
+		ctrlIdx := e.CtrlStates[i]
+		ctrlState := e.CtrlStates[i+1]
+		ctrl := f.Ctrl(ctrlIdx)
+		ctrl.State = piece.State(ctrlState)
+		ctrl.RestartTimer(0)
+	}
+}
+
+func (e *FieldMode) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldMode)
+	return ok && q.ModeNew == e.ModeNew && q.ModeOld == e.ModeOld &&
+		bytes.Equal(q.CtrlStates, e.CtrlStates) && q.StopPieces == e.StopPieces
+}
+
+func (e *FieldMode) Read(r io.Reader) error {
+	var bufferMode [2]byte
+	if _, err := io.ReadFull(r, bufferMode[:]); err != nil {
+		return err
+	}
+
+	e.ModeNew = field.Mode(bufferMode[0])
+	e.ModeOld = field.Mode(bufferMode[1])
+
+	var bufferStates [1]byte
+	if _, err := io.ReadFull(r, bufferStates[:]); err != nil {
+		return err
+	}
+
+	e.CtrlStates = make([]byte, bufferStates[0])
+	if _, err := io.ReadFull(r, e.CtrlStates); err != nil {
+		return err
+	}
+
+	var bufferStateNew [1]byte
+	if _, err := io.ReadFull(r, bufferStateNew[:]); err != nil {
+		return err
+	}
+
+	e.StopPieces = bufferStateNew[0] != 0
+
+	return nil
+}
+
+func (e *FieldMode) Write(w io.Writer) error {
+	if _, err := w.Write([]byte{byte(e.ModeNew), byte(e.ModeOld)}); err != nil {
+		return err
+	}
+
+	if _, err := w.Write([]byte{byte(len(e.CtrlStates))}); err != nil {
+		return err
+	}
+	if _, err := w.Write(e.CtrlStates); err != nil {
+		return err
+	}
+
+	var stopPieces byte
+	if e.StopPieces {
+		stopPieces = 1
+	}
+
+	if _, err := w.Write([]byte{stopPieces}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *FieldMode) TypeID() event.Code { return codeFieldMode }
 
 func NewFieldDestroyRow(row int, blocks []block.Block) *FieldDestroyRow {
 	return &FieldDestroyRow{
@@ -507,64 +584,6 @@ func (e *FieldStat) Write(w io.Writer) error {
 func (e *FieldStat) TypeID() event.Code {
 	return codeFieldStat
 }
-
-func NewFieldGameOver(f *field.Field) *FieldGameOver {
-	return &FieldGameOver{CtrlStates: saveCtrlStates(f)}
-}
-
-type FieldGameOver struct{ CtrlStates []byte }
-
-var _ event.Event = (*FieldGameOver)(nil)
-
-func (e *FieldGameOver) Do(f *field.Field)   { setCtrlStates(f, e.CtrlStates, piece.StateGameOver) }
-func (e *FieldGameOver) Undo(f *field.Field) { restoreCtrlStates(f, e.CtrlStates) }
-
-func (e *FieldGameOver) Equals(ev event.Event) bool {
-	q, ok := ev.(*FieldGameOver)
-	return ok && bytes.Equal(e.CtrlStates, q.CtrlStates)
-}
-
-func (e *FieldGameOver) Write(w io.Writer) error { return writeCtrlStates(w, e.CtrlStates) }
-func (e *FieldGameOver) Read(r io.Reader) error  { return readCtrlStates(r, &e.CtrlStates) }
-func (e *FieldGameOver) TypeID() event.Code      { return codeFieldGameOver }
-
-func NewFieldVictory(f *field.Field) *FieldVictory {
-	return &FieldVictory{CtrlStates: saveCtrlStates(f)}
-}
-
-type FieldVictory struct{ CtrlStates []byte }
-
-var _ event.Event = (*FieldVictory)(nil)
-
-func (e *FieldVictory) Do(f *field.Field)   { setCtrlStates(f, e.CtrlStates, piece.StateVictory) }
-func (e *FieldVictory) Undo(f *field.Field) { restoreCtrlStates(f, e.CtrlStates) }
-
-func (e *FieldVictory) Equals(ev event.Event) bool {
-	q, ok := ev.(*FieldVictory)
-	return ok && bytes.Equal(e.CtrlStates, q.CtrlStates)
-}
-
-func (e *FieldVictory) Write(w io.Writer) error { return writeCtrlStates(w, e.CtrlStates) }
-func (e *FieldVictory) Read(r io.Reader) error  { return readCtrlStates(r, &e.CtrlStates) }
-func (e *FieldVictory) TypeID() event.Code      { return codeFieldVictory }
-
-func NewFieldDefeat(f *field.Field) *FieldDefeat { return &FieldDefeat{CtrlStates: saveCtrlStates(f)} }
-
-type FieldDefeat struct{ CtrlStates []byte }
-
-var _ event.Event = (*FieldDefeat)(nil)
-
-func (e *FieldDefeat) Do(f *field.Field)   { setCtrlStates(f, e.CtrlStates, piece.StateDefeat) }
-func (e *FieldDefeat) Undo(f *field.Field) { restoreCtrlStates(f, e.CtrlStates) }
-
-func (e *FieldDefeat) Equals(ev event.Event) bool {
-	q, ok := ev.(*FieldDefeat)
-	return ok && bytes.Equal(e.CtrlStates, q.CtrlStates)
-}
-
-func (e *FieldDefeat) Write(w io.Writer) error { return writeCtrlStates(w, e.CtrlStates) }
-func (e *FieldDefeat) Read(r io.Reader) error  { return readCtrlStates(r, &e.CtrlStates) }
-func (e *FieldDefeat) TypeID() event.Code      { return codeFieldDefeat }
 
 func NewFieldQuake(intensity byte) *FieldQuake {
 	return &FieldQuake{

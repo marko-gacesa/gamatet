@@ -351,7 +351,9 @@ func TestField_GetPieceBlockLocations(t *testing.T) {
 }
 
 func TestField_GetPieceStartPosition(t *testing.T) {
-	f := Make(10, 4, 2)
+	const w = 10
+	const h = 8
+	f := Make(w, h, 2)
 
 	widthPerPiece := f.w / 2
 
@@ -367,10 +369,10 @@ func TestField_GetPieceStartPosition(t *testing.T) {
 		piece      piece.Piece
 		expX, expY int
 	}{
-		{"P0@0", 0, p0, (widthPerPiece - dimP0X) / 2, 3},
-		{"P0@1", 1, p0, widthPerPiece + (widthPerPiece-dimP0X)/2, 3},
-		{"P1@0", 0, p1, (widthPerPiece - dimP1X) / 2, 3},
-		{"P1@1", 1, p1, widthPerPiece + (widthPerPiece-dimP1X)/2, 3},
+		{"P0@0", 0, p0, (widthPerPiece - dimP0X) / 2, h - 1},
+		{"P0@1", 1, p0, widthPerPiece + (widthPerPiece-dimP0X)/2, h - 1},
+		{"P1@0", 0, p1, (widthPerPiece - dimP1X) / 2, h - 1},
+		{"P1@1", 1, p1, widthPerPiece + (widthPerPiece-dimP1X)/2, h - 1},
 	}
 
 	for _, test := range tests {
@@ -396,7 +398,9 @@ func TestField_GetPieceStartPosition(t *testing.T) {
 }
 
 func TestField_GetPieceStartPosition2(t *testing.T) {
-	f := Make(12, 4, 3)
+	const w = 12
+	const h = 4
+	f := Make(w, h, 3)
 	f.setXY(0, 3, block.Block{Type: block.TypeRock})
 
 	p0 := piece.NewStandardTetromino(piece.TetrominoO)

@@ -19,6 +19,12 @@ const (
 	AnimMeld
 )
 
+type exElem struct {
+	block.XY
+	elem
+	next *exElem
+}
+
 func (f *Field) addExBlock(x, y int, b block.Block, anims ...anim.Anim) {
 	list := anim.List{}
 	list.AddAll(anims...)

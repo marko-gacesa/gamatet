@@ -6,7 +6,6 @@ import (
 	"gamatet/game/event"
 	"gamatet/game/field"
 	"gamatet/game/op"
-	"gamatet/game/piece"
 )
 
 type Analyzer struct {
@@ -15,7 +14,7 @@ type Analyzer struct {
 	blocks delta
 	stats  delta
 
-	endState *piece.State
+	endMode *field.Mode
 }
 
 type delta struct {
@@ -48,14 +47,9 @@ func (a *Analyzer) Analyze(e event.Event) {
 	case *op.FieldStat:
 		a.stats.removed += int(v.BlocksRemoved)
 		a.stats.softened += int(v.BlocksSoftened)
-	case *op.FieldGameOver:
-		state := piece.StateGameOver
-		a.endState = &state
-	case *op.FieldVictory:
-		state := piece.StateVictory
-		a.endState = &state
-	case *op.FieldDefeat:
-		state := piece.StateDefeat
-		a.endState = &state
+	case *op.FieldMode:
+		if v.ModeNew == field.ModeGameOver || v.ModeNew == field.ModeVictory || v.ModeNew == field.ModeDefeat {
+			a.endMode = &v.ModeNew
+		}
 	}
 }

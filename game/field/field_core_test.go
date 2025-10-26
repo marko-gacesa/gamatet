@@ -12,8 +12,8 @@ func TestMake(t *testing.T) {
 	tests := []struct {
 		w, h, p int
 	}{
-		{4, 4, 1},
-		{6, 8, 2},
+		{MinWidth, MinHeight, 1},
+		{MaxWidth, MaxHeight, 2},
 	}
 
 	for _, test := range tests {

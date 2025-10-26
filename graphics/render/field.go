@@ -318,11 +318,25 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		}
 	}
 
-	// pause
+	// text
 
-	if renderInfo.Paused {
-		const text = "PAUSE"
+	var text string
 
+	switch renderInfo.Mode {
+	case field.ModeNormal:
+	case field.ModeGameOver:
+		text = "GAME\nOVER"
+	case field.ModeVictory:
+		text = "VICTORY"
+	case field.ModeDefeat:
+		text = "DEFEAT"
+	case field.ModePause:
+		text = "PAUSED"
+	case field.ModeSuspended:
+		text = "SUSPENDED"
+	}
+
+	if text != "" {
 		w, h := f.text.Dim(text)
 		w, h = w*pulse, h*pulse
 

@@ -12,8 +12,7 @@ import (
 const (
 	// field events
 	codeFieldStop event.Code = iota
-	codeFieldPause
-	codeFieldUnpause
+	codeFieldMode
 	codeFieldDestroyRow
 	codeFieldDestroyColumn
 	codeFieldBlockSet
@@ -21,9 +20,6 @@ const (
 	codeFieldBlockTransform
 	codeFieldExBlock
 	codeFieldStat
-	codeFieldGameOver
-	codeFieldVictory
-	codeFieldDefeat
 	codeFieldQuake
 
 	// piece events
@@ -41,11 +37,7 @@ const (
 	TypeSet   Type = 1
 )
 
-var (
-	FieldStopBytes    = []byte{byte(codeFieldStop)}
-	FieldPauseBytes   = []byte{byte(codeFieldPause)}
-	FieldUnpauseBytes = []byte{byte(codeFieldUnpause)}
-)
+var FieldStopBytes = []byte{byte(codeFieldStop)}
 
 func Write(w io.Writer, e event.Event) error {
 	err := serialize.Write8(w, byte(e.TypeID()))
@@ -79,11 +71,8 @@ func instance(code event.Code) event.Event {
 	case codeFieldStop:
 		e = FieldStop{}
 
-	case codeFieldPause:
-		e = FieldPause{}
-	case codeFieldUnpause:
-		e = FieldUnpause{}
-
+	case codeFieldMode:
+		e = &FieldMode{}
 	case codeFieldDestroyRow:
 		e = &FieldDestroyRow{}
 	case codeFieldDestroyColumn:
@@ -98,8 +87,6 @@ func instance(code event.Code) event.Event {
 		e = &FieldExBlock{}
 	case codeFieldStat:
 		e = &FieldStat{}
-	case codeFieldDefeat:
-		e = &FieldDefeat{}
 	case codeFieldQuake:
 		e = &FieldQuake{}
 

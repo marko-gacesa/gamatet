@@ -23,13 +23,13 @@ const (
 	MaxFieldCount = 8
 	MaxTeamSize   = field.MaxPieces
 
-	MaxFieldWidthSingle    = field.MaxWidth
-	MaxFieldWidthPerPlayer = field.MaxWidth / field.MaxPieces
-	MinFieldWidthPerPlayer = field.MinWidth
+	MaxFieldWidthSingle    = 20
+	MaxFieldWidthPerPlayer = 10
+	MinFieldWidthPerPlayer = 6
 	DefaultFieldWidth      = 10
 
-	MaxFieldHeight     = field.MaxHeight
-	MinFieldHeight     = field.MinHeight
+	MaxFieldHeight     = 24
+	MinFieldHeight     = 12
 	DefaultFieldHeight = 20
 
 	MaxSpeed     = piece.MaxLevel

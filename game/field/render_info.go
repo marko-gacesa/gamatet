@@ -62,7 +62,7 @@ type TextData struct {
 
 type RenderInfo struct {
 	W, H   int
-	Paused bool
+	Mode   Mode
 	Blocks []BlockRenderInfo
 	Pieces [MaxPieces]PieceRenderInfo
 	Result anim.Result
@@ -99,13 +99,15 @@ func ReturnRenderInfo(info *RenderInfo) {
 func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 	w := f.w
 	h := f.h
-	paused := f.paused
+
+	showNextPieces := f.mode == ModeNormal
+	showBlocks := f.mode != ModePause && f.mode != ModeSuspended
 
 	// reset the RenderInfo
 
 	info.W = w
 	info.H = h
-	info.Paused = paused
+	info.Mode = f.mode
 	info.Blocks = info.Blocks[:0] // empty it, but keep the memory
 	info.Result = f.animList.Process(now)
 
@@ -115,7 +117,7 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 
 	// process all blocks of the Field
 
-	if !paused {
+	if showBlocks {
 		idx := 0
 		for y := 0; y < h; y++ {
 			for x := 0; x < w; x++ {
@@ -207,13 +209,15 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 		pinfo.DrawShadow = false
 		pinfo.DirectionCW = ctrl.Config.RotationDirectionCW
 
-		if paused || ctrl.State.IsTerminal() {
+		if !showBlocks || ctrl.State.IsTerminal() {
 			continue
 		}
 
-		for i := 0; i < piece.NextBlockCount; i++ {
-			pinfo.NextPieces[i].Type = ctrl.NextPieces[i].Type
-			pinfo.NextPieces[i].Blocks = append(pinfo.NextPieces[i].Blocks, ctrl.NextPieces[i].Blocks...)
+		if showNextPieces {
+			for i := 0; i < piece.NextBlockCount; i++ {
+				pinfo.NextPieces[i].Type = ctrl.NextPieces[i].Type
+				pinfo.NextPieces[i].Blocks = append(pinfo.NextPieces[i].Blocks, ctrl.NextPieces[i].Blocks...)
+			}
 		}
 
 		p := ctrl.Piece

@@ -26,16 +26,16 @@ type GameOver struct {
 }
 
 func (s *GameOver) Start(analyzer *Analyzer) bool {
-	if analyzer.endState == nil {
+	if analyzer.endMode == nil {
 		return false
 	}
 
-	switch *analyzer.endState {
-	case piece.StateGameOver:
+	switch *analyzer.endMode {
+	case field.ModeGameOver:
 		s.animFn = blockVanish
-	case piece.StateVictory:
+	case field.ModeVictory:
 		s.animFn = blockBurn
-	case piece.StateDefeat:
+	case field.ModeDefeat:
 		s.animFn = blockFall
 	default:
 		return false

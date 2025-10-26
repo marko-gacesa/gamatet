@@ -212,19 +212,14 @@ func HandleTimeout(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) bool {
 	case piece.StateFall:
 		_changeState(ctrl, p, piece.StateSlide)
 
-	case piece.StateGameOver, piece.StateVictory, piece.StateDefeat:
+	case piece.StateStop:
 		if ctrl.Piece != nil {
 			p.Push(op.NewPieceSet(ctrl.Idx, op.TypeClear, ctrl.X, ctrl.Y, ctrl.Piece, ctrl.PieceCount))
 		}
-		_changeState(ctrl, p, piece.StateStop)
-
-	case piece.StateStop:
-		// should not happen, this state doesn't use timer
-		panic("timer timeout for game state with no timer")
 
 	default:
 		// should not happen, unknown state
-		panic("timer timeout for unknown state")
+		panic("timer timeout for unknown state: " + ctrl.State.String())
 	}
 
 	return false
