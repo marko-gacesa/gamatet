@@ -1,25 +1,29 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package app
 
 import (
+	"gamatet/game/action"
 	"gamatet/game/core"
 	"gamatet/game/field"
 	"gamatet/game/piece"
+	"gamatet/internal/types"
 	"gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/channel"
 )
 
-func (app *App) gameOne(ctx screen.Context) core.GameOneParams {
+func (app *App) gameOne(ctx screen.Context) types.GameOneParams {
 	const fieldW = 10
 	const fieldH = 24
 
-	const level = 7
+	const level = 8
 	const seed = 101
 
 	fieldCh := make(chan []byte)
-	playerPipe := core.MakeChannelPipe[[]byte](ctx)
+	playerPipe := channel.MakePipe[[]byte]()
 	playerInCh, playerOutCh := playerPipe.In, playerPipe.Out
+
+	actionCh := make(chan action.Action)
 
 	setup := core.Setup{
 		Name: "",
@@ -44,20 +48,21 @@ func (app *App) gameOne(ctx screen.Context) core.GameOneParams {
 						Config: piece.Config{
 							RotationDirectionCW: false,
 							SlideDisabled:       false,
-							WallKick:            2,
+							WallKick:            piece.WallKickDefault,
 						},
-						InCh: playerOutCh,
+						IsLocal: true,
+						InCh:    playerOutCh,
 					},
 				},
 			},
 		},
+		ActionCh: actionCh,
 	}
 
 	g := core.MakeHost(setup)
 
 	// go-routine for processing events for the field
 	go func() {
-		defer close(fieldCh)
 		defer ctx.Stop()
 
 		g.Perform(ctx)
@@ -68,8 +73,9 @@ func (app *App) gameOne(ctx screen.Context) core.GameOneParams {
 
 	app.returnToMainScreen()
 
-	return core.GameOneParams{
+	return types.GameOneParams{
 		PlayerInCh: playerInCh,
+		ActionCh:   actionCh,
 		Game:       g,
 		Done:       ctx.Done(),
 	}

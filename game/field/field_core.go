@@ -36,6 +36,7 @@ const (
 	ModeDefeat
 	ModePause
 	ModeSuspended
+	ModeServerLost
 )
 
 func (m Mode) String() string {
@@ -52,6 +53,8 @@ func (m Mode) String() string {
 		return "Pause"
 	case ModeSuspended:
 		return "Suspended"
+	case ModeServerLost:
+		return "ServerLost"
 	}
 	return "Unknown"
 }

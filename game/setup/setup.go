@@ -375,6 +375,14 @@ func MultiplayerPlayerSetupDefault() Setup {
 
 type PlayerConfig piece.Config
 
+func DefaultPlayerConfig() PlayerConfig {
+	return PlayerConfig{
+		RotationDirectionCW: false,
+		SlideDisabled:       false,
+		WallKick:            piece.WallKickDefault,
+	}
+}
+
 func (c *PlayerConfig) Write(w *bitdata.Writer) {
 	w.WriteBool(c.RotationDirectionCW)
 	w.WriteBool(c.SlideDisabled)

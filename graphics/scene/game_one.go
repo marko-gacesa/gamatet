@@ -8,6 +8,7 @@ import (
 	"gamatet/graphics/render"
 	"gamatet/graphics/scene/base"
 	"gamatet/graphics/texture"
+	"gamatet/internal/types"
 	"gamatet/logic/screen"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -27,6 +28,8 @@ type GameOne struct {
 	game        core.RenderRequester
 	fieldRender *render.Field
 
+	actionCh chan<- action.Action
+
 	waitDoneCh <-chan struct{}
 }
 
@@ -35,7 +38,7 @@ var _ screen.Screen = (*GameOne)(nil)
 func NewGameOne(
 	renderer *render.Renderer,
 	tex *texture.Manager,
-	params core.GameOneParams,
+	params types.GameOneParams,
 ) *GameOne {
 	res := render.GenerateFieldResources(tex)
 	text := render.MakeText(tex, render.Font)
@@ -59,6 +62,8 @@ func NewGameOne(
 		game:        nil,
 		fieldRender: nil,
 
+		actionCh: params.ActionCh,
+
 		waitDoneCh: params.Done,
 	}
 
@@ -76,30 +81,34 @@ func (ft *GameOne) Release() {
 	ft.res.Release()
 
 	close(ft.playerInCh)
+
+	close(ft.actionCh)
 }
 
 func (ft *GameOne) InputKeyPress(key, scancode int) {
 	ft.BlockBase.InputKeyPress(key, scancode)
 
-	var cmd []byte
+	var a action.Action
+
 	switch glfw.Key(key) {
 	case glfw.KeyEscape:
-		cmd = []byte{byte(action.Abort)}
-	case glfw.KeyPause:
-		cmd = []byte{byte(action.Pause)}
+		ft.actionCh <- action.Abort
+	case glfw.KeyPause, glfw.KeyP:
+		ft.actionCh <- action.Pause
+
 	case glfw.KeyLeft:
-		cmd = []byte{byte(action.MoveLeft)}
+		a = action.MoveLeft
 	case glfw.KeyRight:
-		cmd = []byte{byte(action.MoveRight)}
+		a = action.MoveRight
 	case glfw.KeyUp:
-		cmd = []byte{byte(action.Activate)}
+		a = action.Activate
 	case glfw.KeyDown:
-		cmd = []byte{byte(action.MoveDown)}
+		a = action.MoveDown
 	case glfw.KeySpace:
-		cmd = []byte{byte(action.Drop)}
+		a = action.Drop
 	}
 
-	base.SendAction(cmd, ft.waitDoneCh, ft.playerInCh)
+	base.SendAction(a, ft.waitDoneCh, ft.playerInCh)
 }
 
 func (ft *GameOne) Prepare(now time.Time) {

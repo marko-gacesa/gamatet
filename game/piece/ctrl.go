@@ -167,8 +167,10 @@ func (c *Ctrl) RestartTimer(param int) {
 		}
 	case StateSlide:
 		dur = GetSlideDuration(c.Level)
-	case StatePause, StateStop:
-		dur = 1
+	case StatePause:
+		dur = 0
+	case StateStop:
+		dur = time.Millisecond
 	default:
 		panic("invalid state")
 	}

@@ -101,7 +101,7 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 	h := f.h
 
 	showNextPieces := f.mode == ModeNormal
-	showBlocks := f.mode != ModePause && f.mode != ModeSuspended
+	showBlocks := f.mode != ModePause && f.mode != ModeSuspended && f.mode != ModeServerLost
 
 	// reset the RenderInfo
 

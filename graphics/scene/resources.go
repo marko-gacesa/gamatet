@@ -3,9 +3,9 @@
 package scene
 
 import (
-	"gamatet/game/core"
 	"gamatet/graphics/render"
 	"gamatet/graphics/texture"
+	"gamatet/internal/types"
 	"gamatet/logic/menu"
 	"gamatet/logic/screen"
 )
@@ -26,11 +26,11 @@ func (r Resources) Screen(ctx screen.Context, data any) screen.Screen {
 	switch v := data.(type) {
 	case *menu.Menu:
 		return NewMenu(r.rend, r.tex, v)
-	case core.GameParams:
+	case types.GameParams:
 		return NewGame(r.rend, r.tex, v)
-	case core.GameOneParams:
+	case types.GameOneParams:
 		return NewGameOne(r.rend, r.tex, v)
-	case core.GameDoubleParams:
+	case types.GameDoubleParams:
 		return NewGameDouble(r.rend, r.tex, v)
 	}
 

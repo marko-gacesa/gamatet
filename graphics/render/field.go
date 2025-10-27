@@ -333,7 +333,9 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 	case field.ModePause:
 		text = "PAUSED"
 	case field.ModeSuspended:
-		text = "SUSPENDED"
+		text = "NETWORK\nPROBLEM"
+	case field.ModeServerLost:
+		text = "SERVER LOST"
 	}
 
 	if text != "" {
@@ -508,6 +510,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "SCORE", p.PieceTextData.Score, hDir)
 		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "PIECE", p.PieceTextData.PieceNum, hDir)
 		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "STATE", piece.StateName[p.State], hDir)
+		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "MODE", renderInfo.Mode.String(), hDir)
 
 		if len(p.NextPieces[0].Blocks) == 0 {
 			continue

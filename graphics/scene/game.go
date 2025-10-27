@@ -8,6 +8,7 @@ import (
 	"gamatet/graphics/render"
 	"gamatet/graphics/scene/base"
 	"gamatet/graphics/texture"
+	"gamatet/internal/types"
 	"gamatet/logic/screen"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -19,13 +20,16 @@ type Game struct {
 	res  render.FieldResources
 	text render.Text
 
-	textHUD render.Text
-	fpsHUD  render.FPS
+	textHUD      render.Text
+	fpsHUD       render.FPS
+	latenciesHUD render.Latencies
 
 	playersInCh  [4]chan<- []byte
 	model        mgl32.Mat4
 	game         core.RenderRequester
 	fieldRenders []*render.Field
+
+	actionCh chan<- action.Action
 
 	waitDoneCh <-chan struct{}
 }
@@ -35,13 +39,14 @@ var _ screen.Screen = (*Game)(nil)
 func NewGame(
 	renderer *render.Renderer,
 	tex *texture.Manager,
-	params core.GameParams,
+	params types.GameParams,
 ) *Game {
 	res := render.GenerateFieldResources(tex)
 	text := render.MakeText(tex, render.Font)
 
 	textHUD := render.MakeText(tex, render.HudFont)
 	fpsHUD := render.NewFPS()
+	latenciesHUD := render.NewLatencies(params.LatenciesFn)
 
 	center := mgl32.Ident4()
 	fieldModels := make([]mgl32.Mat4, params.FieldCount)
@@ -110,14 +115,17 @@ func NewGame(
 		res:       *res,
 		text:      *text,
 
-		textHUD: *textHUD,
-		fpsHUD:  *fpsHUD,
+		textHUD:      *textHUD,
+		fpsHUD:       *fpsHUD,
+		latenciesHUD: *latenciesHUD,
 
 		// these are set below
 		playersInCh:  params.PlayerInCh,
 		model:        center,
 		game:         params.Game,
 		fieldRenders: fieldRenders,
+
+		actionCh: params.ActionCh,
 
 		waitDoneCh: params.Done,
 	}
@@ -138,52 +146,56 @@ func (ft *Game) Release() {
 			close(ft.playersInCh[i])
 		}
 	}
+
+	close(ft.actionCh)
 }
 
 func (ft *Game) InputKeyPress(key, scancode int) {
 	ft.BlockBase.InputKeyPress(key, scancode)
 
-	var cmd1, cmd2, cmd3, cmd4 []byte
+	var a1, a2, a3, a4 action.Action
 
 	switch glfw.Key(key) {
 	case glfw.KeyEscape:
-		cmd1 = []byte{byte(action.Abort)}
+		ft.actionCh <- action.Abort
 	case glfw.KeyPause:
-		cmd1 = []byte{byte(action.Pause)}
+		ft.actionCh <- action.Pause
 
 	case glfw.KeyLeft:
-		cmd1 = []byte{byte(action.MoveLeft)}
+		a1 = action.MoveLeft
 	case glfw.KeyRight:
-		cmd1 = []byte{byte(action.MoveRight)}
+		a1 = action.MoveRight
 	case glfw.KeyUp:
-		cmd1 = []byte{byte(action.Activate)}
+		a1 = action.Activate
 	case glfw.KeyDown:
-		cmd1 = []byte{byte(action.MoveDown)}
+		a1 = action.MoveDown
 	case glfw.KeyRightShift:
-		cmd1 = []byte{byte(action.Drop)}
+		a1 = action.Drop
 
 	case glfw.KeyA:
-		cmd2 = []byte{byte(action.MoveLeft)}
+		a2 = action.MoveLeft
 	case glfw.KeyD:
-		cmd2 = []byte{byte(action.MoveRight)}
+		a2 = action.MoveRight
 	case glfw.KeyW:
-		cmd2 = []byte{byte(action.Activate)}
+		a2 = action.Activate
 	case glfw.KeyS:
-		cmd2 = []byte{byte(action.MoveDown)}
+		a2 = action.MoveDown
 	case glfw.KeyLeftShift:
-		cmd2 = []byte{byte(action.Drop)}
+		a2 = action.Drop
 	}
 
-	base.SendAction(cmd1, ft.waitDoneCh, ft.playersInCh[0])
-	base.SendAction(cmd2, ft.waitDoneCh, ft.playersInCh[1])
-	base.SendAction(cmd3, ft.waitDoneCh, ft.playersInCh[2])
-	base.SendAction(cmd4, ft.waitDoneCh, ft.playersInCh[3])
+	base.SendAction(a1, ft.waitDoneCh, ft.playersInCh[0])
+	base.SendAction(a2, ft.waitDoneCh, ft.playersInCh[1])
+	base.SendAction(a3, ft.waitDoneCh, ft.playersInCh[2])
+	base.SendAction(a4, ft.waitDoneCh, ft.playersInCh[3])
 }
 
 func (ft *Game) Prepare(now time.Time) {
 	for i := range ft.fieldRenders {
 		ft.fieldRenders[i].Prepare(now)
 	}
+
+	ft.latenciesHUD.Prepare()
 }
 
 func (ft *Game) Render() {
@@ -195,4 +207,5 @@ func (ft *Game) Render() {
 	}
 
 	ft.fpsHUD.Render(r, &ft.textHUD)
+	ft.latenciesHUD.Render(r, &ft.textHUD)
 }

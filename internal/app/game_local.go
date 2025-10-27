@@ -3,15 +3,17 @@
 package app
 
 import (
+	"gamatet/game/action"
 	"gamatet/game/core"
 	"gamatet/game/field"
 	"gamatet/game/piece"
 	"gamatet/game/setup"
+	"gamatet/internal/types"
 	"gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/channel"
 )
 
-func (app *App) game(ctx screen.Context) core.GameParams {
+func (app *App) game(ctx screen.Context) types.GameParams {
 	if app.resultSetup == nil {
 		panic("Input missing")
 	}
@@ -41,7 +43,7 @@ func (app *App) game(ctx screen.Context) core.GameParams {
 	var playerInChs [setup.MaxLocalPlayers]chan<- []byte
 	var playerOutChs [setup.MaxLocalPlayers]<-chan []byte
 	for i := range playerCount {
-		pipe := core.MakeChannelPipe[[]byte](ctx)
+		pipe := channel.MakePipe[[]byte]()
 		playerInChs[i], playerOutChs[i] = pipe.In, pipe.Out
 	}
 
@@ -52,9 +54,10 @@ func (app *App) game(ctx screen.Context) core.GameParams {
 		for j := range players {
 			playerIdx := i*int(teamSize) + j
 			players[j] = core.PlayerSetup{
-				Name:   app.cfg.PlayerInfos[playerIdx].Name,
-				Config: piece.Config(app.cfg.PlayerInfos[playerIdx].PlayerConfig),
-				InCh:   playerOutChs[playerIdx],
+				Name:    app.cfg.PlayerInfos[playerIdx].Name,
+				IsLocal: true,
+				Config:  piece.Config(app.cfg.PlayerInfos[playerIdx].PlayerConfig),
+				InCh:    playerOutChs[playerIdx],
 			}
 		}
 
@@ -63,6 +66,8 @@ func (app *App) game(ctx screen.Context) core.GameParams {
 			Players: players,
 		}
 	}
+
+	actionCh := make(chan action.Action)
 
 	setup := core.Setup{
 		Name: app.resultSetup.Name,
@@ -78,18 +83,14 @@ func (app *App) game(ctx screen.Context) core.GameParams {
 			RandomSeed: seed,
 			PieceFeed:  piece.NewRotTetrominoFeed(4, seed),
 		},
-		Fields: fields,
+		Fields:   fields,
+		ActionCh: actionCh,
 	}
 
 	g := core.MakeHost(setup)
 
 	// go-routine for processing events for the field
 	go func() {
-		defer func() {
-			for _, fieldCh := range fieldChs {
-				close(fieldCh)
-			}
-		}()
 		defer ctx.Stop()
 
 		g.Perform(ctx)
@@ -102,9 +103,10 @@ func (app *App) game(ctx screen.Context) core.GameParams {
 
 	app.returnToMainScreen()
 
-	return core.GameParams{
+	return types.GameParams{
 		PlayerInCh: playerInChs,
 		FieldCount: fieldCount,
+		ActionCh:   actionCh,
 		Game:       g,
 		Done:       ctx.Done(),
 	}

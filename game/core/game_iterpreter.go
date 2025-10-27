@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"gamatet/game/action"
 	"gamatet/game/event"
 	"gamatet/game/field"
 	"gamatet/game/piece"
@@ -21,15 +22,20 @@ var _ interface {
 
 type GameInterpreter struct {
 	// fixed setup
-	fields []interpreterFieldData
-	inputs []interpreterPlayerData
-
-	// state
-	paused bool
+	fields   []interpreterFieldData
+	inputs   []interpreterPlayerData
+	actionCh <-chan action.Action
 
 	renderReqCh chan field.RenderRequest
 
 	doneCh chan struct{}
+
+	options InterpreterOptions
+}
+
+type InterpreterOptions struct {
+	LocalPlayerActionCh chan<- []byte
+	SinceLastContactFn  func() time.Duration
 }
 
 type interpreterFieldData struct {
@@ -45,7 +51,11 @@ type interpreterPlayerData struct {
 	field.PiecePlace
 }
 
-func MakeInterpreter(setup Setup) *GameInterpreter {
+func MakeInterpreter(setup Setup, options InterpreterOptions) *GameInterpreter {
+	if setup.ActionCh == nil {
+		panic("ActionCh must not be nil")
+	}
+
 	var inputs []interpreterPlayerData
 	fields := make([]interpreterFieldData, len(setup.Fields))
 
@@ -80,7 +90,7 @@ func MakeInterpreter(setup Setup) *GameInterpreter {
 			}
 
 			if players[j].InCh != nil {
-				panic(fmt.Sprintf("player=%d@field=%d should not have InCh", j, i))
+				panic(fmt.Sprintf("player=%d@field=%d shouldn't have InCh", j, i))
 			}
 
 			inputs = append(inputs, interpreterPlayerData{
@@ -99,12 +109,17 @@ func MakeInterpreter(setup Setup) *GameInterpreter {
 		}
 	}
 
-	return &GameInterpreter{
+	g := &GameInterpreter{
 		fields:      fields,
 		inputs:      inputs,
+		actionCh:    setup.ActionCh,
 		renderReqCh: make(chan field.RenderRequest),
 		doneCh:      make(chan struct{}),
+
+		options: options,
 	}
+
+	return g
 }
 
 func (g *GameInterpreter) Perform(ctx context.Context) {
@@ -120,6 +135,8 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 
 	var s serializer
 
+	const serverLostDuration = time.Second * 5
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -127,6 +144,24 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 
 		case <-fieldsDoneCh:
 			return
+
+		case a := <-g.actionCh:
+			switch a {
+			case action.Abort:
+				if g.options.SinceLastContactFn != nil && g.options.SinceLastContactFn() > serverLostDuration {
+					return
+				}
+				if m := g.fields[0].Field.GetMode(); m != field.ModeNormal {
+					return
+				}
+				if g.options.LocalPlayerActionCh != nil {
+					g.options.LocalPlayerActionCh <- []byte{byte(a)}
+				}
+			case action.Pause:
+				if g.options.LocalPlayerActionCh != nil {
+					g.options.LocalPlayerActionCh <- []byte{byte(a)}
+				}
+			}
 
 		case fieldEventData := <-fieldEventCh:
 			var events event.List
@@ -145,6 +180,9 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 			renderInfo := field.ObtainRenderInfo()
 			f := g.fields[rr.FieldIdx].Field
 			f.FillRenderInfo(renderInfo, rr.Time)
+			if g.options.SinceLastContactFn != nil && g.options.SinceLastContactFn() > serverLostDuration {
+				renderInfo.Mode = field.ModeServerLost
+			}
 			rr.RenderInfo <- renderInfo
 		}
 	}

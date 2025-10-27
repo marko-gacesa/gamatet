@@ -71,6 +71,9 @@ func (e *FieldMode) Do(f *field.Field) {
 
 func (e *FieldMode) Undo(f *field.Field) {
 	f.SetMode(e.ModeOld)
+	if !e.StopPieces {
+		return
+	}
 	for i := 0; i < len(e.CtrlStates); i += 2 {
 		ctrlIdx := e.CtrlStates[i]
 		ctrlState := e.CtrlStates[i+1]

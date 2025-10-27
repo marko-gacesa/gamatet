@@ -28,11 +28,13 @@ type GameHost struct {
 	// fixed setup
 	fields    []hostFieldData
 	inputs    []hostPlayerData
+	actionCh  <-chan action.Action
 	suspendCh chan bool
 
 	// state
 	suspended bool
 	paused    bool
+	done      bool
 
 	renderReqCh chan field.RenderRequest
 
@@ -55,6 +57,10 @@ type hostPlayerData struct {
 }
 
 func MakeHost(setup Setup) *GameHost {
+	if setup.ActionCh == nil {
+		panic("ActionCh must not be nil")
+	}
+
 	var inputs []hostPlayerData
 	fields := make([]hostFieldData, len(setup.Fields))
 
@@ -94,6 +100,10 @@ func MakeHost(setup Setup) *GameHost {
 				CtrlIdx:  byte(j),
 			}
 
+			if players[j].InCh == nil {
+				panic(fmt.Sprintf("player=%d@field=%d should have OutCh", j, i))
+			}
+
 			inputs = append(inputs, hostPlayerData{
 				Name:       players[j].Name,
 				PiecePlace: pp,
@@ -127,6 +137,7 @@ func MakeHost(setup Setup) *GameHost {
 	return &GameHost{
 		fields:      fields,
 		inputs:      inputs,
+		actionCh:    setup.ActionCh,
 		suspendCh:   make(chan bool),
 		renderReqCh: make(chan field.RenderRequest),
 		doneCh:      make(chan struct{}),
@@ -207,6 +218,20 @@ func (g *GameHost) Perform(ctx context.Context) {
 		case <-ctx.Done():
 			return
 
+		case a := <-g.actionCh:
+			switch a {
+			case action.Abort:
+				if g.done || g.paused {
+					return
+				}
+				g.pause()
+			case action.Pause:
+				g.pauseToggle()
+			default:
+				continue
+			}
+			g.applyEvents()
+
 		case suspend := <-g.suspendCh:
 			if suspend {
 				g.suspend()
@@ -221,6 +246,12 @@ func (g *GameHost) Perform(ctx context.Context) {
 				continue
 			}
 
+			a := action.Action(data[0])
+
+			if a == action.NoOp {
+				continue
+			}
+
 			pp := &g.inputs[inputData.ID]
 			fIdx := pp.FieldIdx
 			pIdx := pp.CtrlIdx
@@ -228,8 +259,6 @@ func (g *GameHost) Perform(ctx context.Context) {
 			f := g.fields[fIdx].Field
 			ctrl := f.Ctrl(pIdx)
 			events := &g.fields[fIdx].events
-
-			a := action.Action(data[0])
 
 			if g.paused && a == action.Drop {
 				a = action.Pause
@@ -242,7 +271,7 @@ func (g *GameHost) Perform(ctx context.Context) {
 			}
 
 			if a == action.Pause {
-				g.pauseToggle(ctrl)
+				g.pauseToggleCtrl(ctrl)
 			}
 
 			if g.paused {
@@ -306,43 +335,70 @@ func (g *GameHost) GetSize(idx int) (int, int, []piece.DisplayPosition) {
 func (g *GameHost) sendStop() {
 	for fIdx := range g.fields {
 		g.fields[fIdx].OutCh <- op.FieldStopBytes
+		close(g.fields[fIdx].OutCh)
 	}
 }
 
-func (g *GameHost) pauseToggle(ctrl *piece.Ctrl) {
-	if g.suspended {
+func (g *GameHost) pauseToggleCtrl(ctrl *piece.Ctrl) {
+	if g.done || g.suspended {
 		return
 	}
 
 	if g.paused {
-		g.unpauseAllFields()
+		g._unpauseAllFields()
 		g.paused = false
 	} else if ctrl.State.IsPausable() {
-		g.pauseAllFields(field.ModePause)
+		g._pauseAllFields(field.ModePause)
 		g.paused = true
 	}
 }
 
 func (g *GameHost) suspend() {
-	if g.suspended {
+	if g.done || g.suspended {
 		return
 	}
 
 	g.suspended = true
 	g.paused = true
-	g.pauseAllFields(field.ModeSuspended)
+	g._pauseAllFields(field.ModeSuspended)
 }
 
 func (g *GameHost) unsuspend() {
-	if !g.suspended {
+	if g.done || !g.suspended {
 		return
 	}
 
 	g.suspended = false
-	g.unsuspendAllFields()
+	g._unsuspendAllFields()
 }
 
-func (g *GameHost) unsuspendAllFields() {
+func (g *GameHost) pauseToggle() {
+	if g.paused {
+		g.unpause()
+	} else {
+		g.pause()
+	}
+}
+
+func (g *GameHost) pause() {
+	if g.done || g.paused {
+		return
+	}
+
+	g.paused = true
+	g._pauseAllFields(field.ModePause)
+}
+
+func (g *GameHost) unpause() {
+	if g.done || !g.paused {
+		return
+	}
+
+	g.paused = false
+	g._unpauseAllFields()
+}
+
+func (g *GameHost) _unsuspendAllFields() {
 	for fIdx := 0; fIdx < len(g.fields); fIdx++ {
 		f := g.fields[fIdx].Field
 		oldMode := f.GetMode()
@@ -352,36 +408,37 @@ func (g *GameHost) unsuspendAllFields() {
 	}
 }
 
-func (g *GameHost) pauseAllFields(newMode field.Mode) {
+func (g *GameHost) _pauseAllFields(newMode field.Mode) {
 	for fIdx := 0; fIdx < len(g.fields); fIdx++ {
 		f := g.fields[fIdx].Field
 		oldMode := f.GetMode()
-		if oldMode == field.ModeNormal {
+		if (newMode == field.ModeSuspended && (oldMode == field.ModePause || oldMode == field.ModeNormal)) ||
+			(newMode == field.ModePause && oldMode == field.ModeNormal) {
 			g.fields[fIdx].events.Push(op.NewFieldMode(f, newMode, false))
-			g.pauseField(fIdx)
+			g._pauseField(fIdx)
 		}
 	}
 }
 
-func (g *GameHost) unpauseAllFields() {
+func (g *GameHost) _unpauseAllFields() {
 	for fIdx := 0; fIdx < len(g.fields); fIdx++ {
 		f := g.fields[fIdx].Field
 		oldMode := f.GetMode()
 		if oldMode == field.ModePause {
 			g.fields[fIdx].events.Push(op.NewFieldMode(f, field.ModeNormal, false))
-			g.unpauseField(fIdx)
+			g._unpauseField(fIdx)
 		}
 	}
 }
 
-func (g *GameHost) pauseField(fIdx int) {
+func (g *GameHost) _pauseField(fIdx int) {
 	g.fields[fIdx].Field.Pause()
 	for _, s := range g.fields[fIdx].Sweepers {
 		s.Pause()
 	}
 }
 
-func (g *GameHost) unpauseField(fIdx int) {
+func (g *GameHost) _unpauseField(fIdx int) {
 	g.fields[fIdx].Field.Unpause()
 	for _, s := range g.fields[fIdx].Sweepers {
 		s.Unpause()
@@ -419,6 +476,7 @@ func (g *GameHost) checkWinner(loserIdx int) {
 	)
 
 	if len(g.fields) == 1 {
+		g.done = true
 		g.fields[0].events.Push(op.NewFieldMode(g.fields[0].Field, field.ModeGameOver, true))
 		return
 	}
@@ -440,6 +498,7 @@ func (g *GameHost) checkWinner(loserIdx int) {
 	}
 
 	if playingCount == 1 {
+		g.done = true
 		f := g.fields[playingLastIdx].Field
 		g.fields[playingLastIdx].events.Push(op.NewFieldMode(f, field.ModeVictory, true))
 	}

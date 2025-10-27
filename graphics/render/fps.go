@@ -49,14 +49,14 @@ func (fps *FPS) Render(r *Renderer, text *Text) {
 		return
 	}
 
-	//tw, th := h.text.Dim(s)
+	//tw, th := text.Dim(s)
 	//_, _ = tw, th
 
-	const contentW = 50
+	const contentW = 80
 	const contentH = contentW * 9 / 16
 	r.OrthogonalFull(contentW, contentH, contentW, contentH, 1)
 
-	model := mgl32.Translate3D(float32(-contentW)/2, float32(contentH)/2-0.5, 0)
+	model := mgl32.Translate3D(-float32(contentW)/2, -float32(contentH)/2+0.5, 0)
 
 	text.String(r, model, mgl32.Vec4{0.5, 0.5, 0, 0.7}, s)
 }

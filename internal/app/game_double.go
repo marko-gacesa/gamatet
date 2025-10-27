@@ -1,16 +1,18 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package app
 
 import (
+	"gamatet/game/action"
 	"gamatet/game/core"
 	"gamatet/game/field"
 	"gamatet/game/piece"
+	"gamatet/internal/types"
 	"gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/channel"
 )
 
-func (app *App) gameDouble(ctx screen.Context) core.GameDoubleParams {
+func (app *App) gameDouble(ctx screen.Context) types.GameDoubleParams {
 	const fieldW = 8
 	const fieldH = 24
 
@@ -19,10 +21,12 @@ func (app *App) gameDouble(ctx screen.Context) core.GameDoubleParams {
 
 	fieldCh := make(chan []byte)
 
-	player1Pipe := core.MakeChannelPipe[[]byte](ctx)
-	player2Pipe := core.MakeChannelPipe[[]byte](ctx)
+	player1Pipe := channel.MakePipe[[]byte]()
+	player2Pipe := channel.MakePipe[[]byte]()
 	player1InCh, player1OutCh := player1Pipe.In, player1Pipe.Out
 	player2InCh, player2OutCh := player2Pipe.In, player2Pipe.Out
+
+	actionCh := make(chan action.Action)
 
 	setup := core.Setup{
 		Name: "",
@@ -49,7 +53,8 @@ func (app *App) gameDouble(ctx screen.Context) core.GameDoubleParams {
 							SlideDisabled:       false,
 							WallKick:            2,
 						},
-						InCh: player1OutCh,
+						IsLocal: true,
+						InCh:    player1OutCh,
 					},
 					{
 						Name: "ogi",
@@ -58,18 +63,19 @@ func (app *App) gameDouble(ctx screen.Context) core.GameDoubleParams {
 							SlideDisabled:       false,
 							WallKick:            2,
 						},
-						InCh: player2OutCh,
+						IsLocal: true,
+						InCh:    player2OutCh,
 					},
 				},
 			},
 		},
+		ActionCh: actionCh,
 	}
 
 	g := core.MakeHost(setup)
 
 	// go-routine for processing events for the field
 	go func() {
-		defer close(fieldCh)
 		defer ctx.Stop()
 
 		g.Perform(ctx)
@@ -80,9 +86,10 @@ func (app *App) gameDouble(ctx screen.Context) core.GameDoubleParams {
 
 	app.returnToMainScreen()
 
-	return core.GameDoubleParams{
+	return types.GameDoubleParams{
 		Player1InCh: player1InCh,
 		Player2InCh: player2InCh,
+		ActionCh:    actionCh,
 		Game:        g,
 		Done:        ctx.Done(),
 	}

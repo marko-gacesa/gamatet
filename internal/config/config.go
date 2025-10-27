@@ -135,6 +135,8 @@ func (cfg *Network) GetMulticastAddress() net.UDPAddr {
 func Load() (Config, string) {
 	var cfg Config
 
+	cfg.LANGameDefaults = setup.MultiplayerPlayerSetupDefault()
+
 	dirs := getDirList()
 	for _, dir := range dirs {
 		fn := path.Join(dir, filename)

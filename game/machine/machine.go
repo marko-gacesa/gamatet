@@ -212,6 +212,8 @@ func HandleTimeout(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) bool {
 	case piece.StateFall:
 		_changeState(ctrl, p, piece.StateSlide)
 
+	case piece.StatePause:
+
 	case piece.StateStop:
 		if ctrl.Piece != nil {
 			p.Push(op.NewPieceSet(ctrl.Idx, op.TypeClear, ctrl.X, ctrl.Y, ctrl.Piece, ctrl.PieceCount))

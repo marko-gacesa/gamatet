@@ -5,11 +5,15 @@ package app
 import (
 	"errors"
 	"fmt"
+	"gamatet/game/action"
 	"gamatet/game/core"
 	"gamatet/game/field"
 	"gamatet/game/piece"
 	"gamatet/game/setup"
+	"gamatet/internal/types"
 	"gamatet/logic/screen"
+	"github.com/marko-gacesa/udpstar/channel"
+	"github.com/marko-gacesa/udpstar/udpstar"
 	"github.com/marko-gacesa/udpstar/udpstar/client"
 	"net"
 )
@@ -22,20 +26,18 @@ import (
 // * [C] The channel from which the network engine reads local player actions: session.Actor[i].Channel
 //
 // Server:                                                         |  Client:
-// +-Game Engine: Server ---------+  +- Network Engine: Server -+  |  +- Network Engine: Client -----+  +-Game Engine: Client ---------+
-// | Field                        |  |                          |  |  |                              |  | Field                        |
-// |    InCh {must be nil}        |  |  Story                   |  |  |  Story              /->------|--|--> InCh [A]                  |
-// |    OutCh [1] ->--------------|--|----> [2] Channel ->------|--|--|---> Channel [B] ->-/         |  |    OutCh {must be nil}       |
-// |                              |  |                          |  |  |                              |  |                              |
-// | Local player                 |  |  Client Actor            |  |  |  Local Actor                 |  | Local player                 |
-// |    InCh [3] <-- keyboard     |  |     Channel <------------|--|--|--<- InputCh [C] <-- keyboard |  |    InCh {must be nil}        |
-// |    OutCh {must be nil}       |  |      [5]|                |  |  |                              |  |    OutCh {must be nil}       |
-// |                              |  +--------------------------+  |  +------------------------------+  |                              |
-// | Remote player                |            |                   |                                    | Remote player                |
-// |    InCh [4] <----------------|----------<-+                   |                                    |    InCh {must be nil}        |
-// |    OutCh {must be nil}       |                                |                                    |    OutCh {must be nil}       |
-// +------------------------------+                                |                                    +------------------------------+
-func (app *App) gameUDPClient(ctx screen.Context) core.GameParams {
+// +-Game Engine: Server -----+  +- Network Engine: Server -+  |  +- Network Engine: Client -----+  +-Game Engine: Client ---+
+// | Field                    |  |                          |  |  |                              |  | Field                  |
+// |    InCh {must be nil}    |  |  Story                   |  |  |  Story              /->------|--|--> InCh [A]            |
+// |    OutCh [1] ->----------|--|----> [2] Channel ->------|--|--|---> Channel [B] ->-/         |  |    OutCh {must be nil} |
+// |                          |  |                          |  |  |                              |  |                        |
+// | Local player             |  |  Client Actor            |  |  |  Local Actor                 |  | Local player           |
+// |    InCh [3] <-- keyboard |  |     Channel <------------|--|--|--<- InputCh [C] <-- keyboard |  |    InCh {must be nil}  |
+// |                          |  |      [5]|                |  |  |                              |  |                        |
+// | Remote player            |  +---------|----------------+  |  +------------------------------+  | Remote player          |
+// |    InCh [4] <------------|----------<-+                   |                                    |    InCh {must be nil}  |
+// +--------------------------+                                |                                    +------------------------+
+func (app *App) gameUDPClient(ctx screen.Context) types.GameParams {
 	session := app.resultClientSession
 	serverAddr := app.resultServerAddress
 
@@ -49,31 +51,28 @@ func (app *App) gameUDPClient(ctx screen.Context) core.GameParams {
 	return gameParams
 }
 
-func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serverAddr net.UDPAddr) (core.GameParams, error) {
+func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serverAddr net.UDPAddr) (types.GameParams, error) {
 	if session == nil {
-		return core.GameParams{}, errors.New("input is missing")
+		return types.GameParams{}, errors.New("input is missing")
 	}
 
 	var s setup.Setup
 
 	if err := setup.Unpack(&s, session.Def); err != nil {
-		return core.GameParams{}, fmt.Errorf("unable to unpack setup: %s", err)
+		return types.GameParams{}, fmt.Errorf("unable to unpack setup: %s", err)
 	}
 
 	if s.Sanitize() {
-		return core.GameParams{}, errors.New("sanitize is required")
+		return types.GameParams{}, errors.New("sanitize is required")
 	}
 
 	if int(s.GameOptions.FieldCount) != len(session.Stories) {
-		return core.GameParams{}, fmt.Errorf("mismatch: field count=%d, story count=%d",
+		return types.GameParams{}, fmt.Errorf("mismatch: field count=%d, story count=%d",
 			s.GameOptions.FieldCount, len(session.Stories))
 	}
 
 	// Input channels for local players. Closed on the UI component. Elements can be nil.
 	var playerInChs [setup.MaxLocalPlayers]chan<- []byte
-
-	// Field pipes. Closed when the game engine completes.
-	fieldPipes := make([]core.ChannelPipe[[]byte], s.GameOptions.FieldCount)
 
 	fields := make([]core.FieldSetup, len(session.Stories))
 	for fieldIdx := range fields {
@@ -81,49 +80,72 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 
 		actors, err := session.StoryActors(storyToken)
 		if err != nil {
-			return core.GameParams{}, fmt.Errorf("unable to get actors for story %x: %s", storyToken, err)
+			return types.GameParams{}, fmt.Errorf("unable to get actors for story %x: %s", storyToken, err)
 		}
 
 		if int(s.GameOptions.TeamSize) != len(actors) {
-			return core.GameParams{}, fmt.Errorf("mismatch: team size=%d, actor count=%d",
+			return types.GameParams{}, fmt.Errorf("mismatch: team size=%d, actor count=%d",
 				s.GameOptions.TeamSize, len(actors))
 		}
 
 		fieldPlayers := make([]core.PlayerSetup, len(actors))
 		for storyActorIdx, actor := range actors {
 			if actor.Token == 0 {
-				fieldPlayers[actor.ActorIdx] = core.PlayerSetup{
-					Name:   actor.Name,
-					Config: piece.Config{},
+				fieldPlayers[storyActorIdx] = core.PlayerSetup{
+					Name:    actor.Name,
+					Config:  piece.Config{},
+					IsLocal: false,
 				}
 				continue
 			}
 
 			localPlayerInfo, localPlayerIdx := app.LocalPlayer(actor.Token)
 			if localPlayerIdx < 0 {
-				return core.GameParams{}, fmt.Errorf("local player token=%x not found", actor.Token)
+				return types.GameParams{}, fmt.Errorf("local player token=%x not found", actor.Token)
 			}
 
-			playerInputPipe := core.MakeChannelPipe[[]byte](ctx) // The "In" part of the pipe should be closed on UI component.
+			playerInputPipe := channel.MakePipe[[]byte]() // The "In" part of the pipe should be closed on UI component.
 			playerInChs[localPlayerIdx] = playerInputPipe.In
 
 			session.Actors[actor.ActorIdx].InputCh = playerInputPipe.Out // [C] The network layer reads player inputs from here.
 
 			fieldPlayers[storyActorIdx] = core.PlayerSetup{
-				Name:   localPlayerInfo.Name,
-				Config: piece.Config(localPlayerInfo.PlayerConfig),
-				InCh:   nil,
+				Name:    localPlayerInfo.Name,
+				Config:  piece.Config(localPlayerInfo.PlayerConfig),
+				IsLocal: true,
 			}
 		}
 
-		fieldPipes[fieldIdx] = core.MakeChannelPipe[[]byte](ctx) // The "In" part of the pipe is closed when the game engine stops.
+		fieldPipe := channel.MakePipe[[]byte]() // The "In" part of the pipe is closed by the network layer, in the client.
 
-		session.Stories[fieldIdx].Channel = fieldPipes[fieldIdx].In // [B] The network engine puts field events to this channel.
+		session.Stories[fieldIdx].Channel = fieldPipe.In // [B] The network engine puts field events to this channel.
 
 		fields[fieldIdx] = core.FieldSetup{
-			InCh:    fieldPipes[fieldIdx].Out, // [A] The game engine reads game events from this channel.
+			InCh:    fieldPipe.Out, // [A] The game engine reads game events from this channel.
 			Players: fieldPlayers,
 		}
+	}
+
+	udpSender := udpSender{
+		addr: serverAddr,
+		srv:  app.udpService,
+	}
+
+	cli, err := client.New(udpSender, *session, client.WithLogger(app.logger))
+	if err != nil {
+		return types.GameParams{}, fmt.Errorf("unable to create client: %s", err)
+	}
+
+	go func() {
+		cli.Start(ctx)
+	}()
+
+	err = app.udpService.Handle(ctx, func(data []byte, addr net.UDPAddr) []byte {
+		cli.HandleIncomingMessages(data)
+		return nil
+	})
+	if err != nil {
+		return types.GameParams{}, fmt.Errorf("failed to start udp packet handler: %s", err)
 	}
 
 	var (
@@ -137,6 +159,16 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 
 	if playerCount := s.PlayerCount(); playerCount > 1 {
 		fieldW = s.WidthPerPlayer
+	}
+
+	actionCh := make(chan action.Action)
+
+	var localPlayerCh chan<- []byte
+	for i := range playerInChs {
+		if playerInChs[i] != nil {
+			localPlayerCh = playerInChs[i]
+			break
+		}
 	}
 
 	gameInterpreter := core.MakeInterpreter(core.Setup{
@@ -153,47 +185,31 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 			RandomSeed: seed,
 			PieceFeed:  piece.NewRotTetrominoFeed(4, seed),
 		},
-		Fields: fields,
+		Fields:   fields,
+		ActionCh: actionCh,
+	}, core.InterpreterOptions{
+		LocalPlayerActionCh: localPlayerCh,
+		SinceLastContactFn:  cli.SinceLastServerMessage,
 	})
-
-	udpSender := udpSender{
-		addr: serverAddr,
-		srv:  app.udpService,
-	}
-
-	cli, err := client.New(udpSender, *session, client.WithLogger(app.logger))
-	if err != nil {
-		return core.GameParams{}, fmt.Errorf("unable to create client: %s", err)
-	}
-
-	go func() {
-		cli.Start(ctx)
-	}()
-
-	err = app.udpService.Handle(ctx, func(data []byte, addr net.UDPAddr) []byte {
-		cli.HandleIncomingMessages(data)
-		return nil
-	})
-	if err != nil {
-		return core.GameParams{}, fmt.Errorf("failed to start udp packet handler: %s", err)
-	}
 
 	// Go-routine for processing events for the field
 	go func() {
-		defer func() {
-			for _, fieldPipe := range fieldPipes {
-				close(fieldPipe.In)
-			}
-		}()
 		defer ctx.Stop()
 
 		gameInterpreter.Perform(ctx)
 	}()
 
-	return core.GameParams{
+	_ = cli.Latency
+	_ = cli.Quality
+
+	return types.GameParams{
 		PlayerInCh: playerInChs,
 		FieldCount: byte(len(fields)),
-		Game:       gameInterpreter,
-		Done:       ctx.Done(),
+		ActionCh:   actionCh,
+		LatenciesFn: func() []udpstar.LatencyActor {
+			return cli.Latencies().Latencies
+		},
+		Game: gameInterpreter,
+		Done: ctx.Done(),
 	}, nil
 }

@@ -8,6 +8,7 @@ import (
 	"gamatet/graphics/render"
 	"gamatet/graphics/scene/base"
 	"gamatet/graphics/texture"
+	"gamatet/internal/types"
 	"gamatet/logic/screen"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -28,6 +29,8 @@ type GameDouble struct {
 	game        core.RenderRequester
 	fieldRender *render.Field
 
+	actionCh chan<- action.Action
+
 	waitDoneCh <-chan struct{}
 }
 
@@ -36,7 +39,7 @@ var _ screen.Screen = (*GameDouble)(nil)
 func NewGameDouble(
 	renderer *render.Renderer,
 	tex *texture.Manager,
-	params core.GameDoubleParams,
+	params types.GameDoubleParams,
 ) *GameDouble {
 	res := render.GenerateFieldResources(tex)
 	text := render.MakeText(tex, render.Font)
@@ -61,6 +64,8 @@ func NewGameDouble(
 		game:        nil,
 		fieldRender: nil,
 
+		actionCh: params.ActionCh,
+
 		waitDoneCh: params.Done,
 	}
 
@@ -80,42 +85,44 @@ func (ft *GameDouble) Release() {
 
 	close(ft.player1InCh)
 	close(ft.player2InCh)
+
+	close(ft.actionCh)
 }
 
 func (ft *GameDouble) InputKeyPress(key, scancode int) {
-	var cmd1, cmd2 []byte
+	var a1, a2 action.Action
 
 	switch glfw.Key(key) {
 	case glfw.KeyEscape:
-		cmd1 = []byte{byte(action.Abort)}
+		ft.actionCh <- action.Abort
 	case glfw.KeyPause:
-		cmd1 = []byte{byte(action.Pause)}
+		ft.actionCh <- action.Pause
 
 	case glfw.KeyLeft:
-		cmd1 = []byte{byte(action.MoveLeft)}
+		a1 = action.MoveLeft
 	case glfw.KeyRight:
-		cmd1 = []byte{byte(action.MoveRight)}
+		a1 = action.MoveRight
 	case glfw.KeyUp:
-		cmd1 = []byte{byte(action.Activate)}
+		a1 = action.Activate
 	case glfw.KeyDown:
-		cmd1 = []byte{byte(action.MoveDown)}
+		a1 = action.MoveDown
 	case glfw.KeyRightShift:
-		cmd1 = []byte{byte(action.Drop)}
+		a1 = action.Drop
 
 	case glfw.KeyA:
-		cmd2 = []byte{byte(action.MoveLeft)}
+		a2 = action.MoveLeft
 	case glfw.KeyD:
-		cmd2 = []byte{byte(action.MoveRight)}
+		a2 = action.MoveRight
 	case glfw.KeyW:
-		cmd2 = []byte{byte(action.Activate)}
+		a2 = action.Activate
 	case glfw.KeyS:
-		cmd2 = []byte{byte(action.MoveDown)}
+		a2 = action.MoveDown
 	case glfw.KeyLeftShift:
-		cmd2 = []byte{byte(action.Drop)}
+		a2 = action.Drop
 	}
 
-	base.SendAction(cmd1, ft.waitDoneCh, ft.player1InCh)
-	base.SendAction(cmd2, ft.waitDoneCh, ft.player2InCh)
+	base.SendAction(a1, ft.waitDoneCh, ft.player1InCh)
+	base.SendAction(a2, ft.waitDoneCh, ft.player2InCh)
 }
 
 func (ft *GameDouble) Prepare(now time.Time) {
