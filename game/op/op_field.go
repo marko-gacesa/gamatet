@@ -33,7 +33,7 @@ func (e FieldStop) TypeID() event.Code { return codeFieldStop }
 func NewFieldMode(f *field.Field, modeNew field.Mode, stopPieces bool) *FieldMode {
 	n := byte(f.Ctrls())
 	ctrlStates := make([]byte, 2*n)
-	for i := byte(0); i < n; i++ {
+	for i := range n {
 		state := f.Ctrl(i).State
 		ctrlStates[i*2] = i
 		ctrlStates[i*2+1] = byte(state)
@@ -177,7 +177,7 @@ func (e *FieldDestroyRow) Write(w io.Writer) error {
 	if _, err := w.Write([]byte{e.Row, byte(len(e.Blocks))}); err != nil {
 		return err
 	}
-	for i := 0; i < len(e.Blocks); i++ {
+	for i := range e.Blocks {
 		if err := e.Blocks[i].Write(w); err != nil {
 			return err
 		}

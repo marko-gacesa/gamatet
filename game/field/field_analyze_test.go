@@ -12,7 +12,7 @@ func TestField_FindTops(t *testing.T) {
 	b := block.Block{Type: block.TypeRock}
 
 	fillToH := func(f *Field, col, h int) {
-		for i := 0; i <= h; i++ {
+		for i := range h + 1 {
 			f.setXY(col, i, b)
 		}
 	}

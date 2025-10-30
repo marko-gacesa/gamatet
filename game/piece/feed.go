@@ -41,7 +41,7 @@ func NewGenericFeed(bagSize int, seed int, shapeCount int, fn func(idx int) Piec
 		shapeCount:    shapeCount,
 		fn:            fn,
 		pool: &sync.Pool{
-			New: func() interface{} {
+			New: func() any {
 				return make([]int, pieceBagCount)
 			},
 		},

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package texture
 
@@ -16,8 +16,8 @@ func GrayTex(seed int64) *image.Gray {
 	clamp(values, 0.0, 0.99999)
 
 	img := image.NewGray(image.Rect(0, 0, size, size))
-	for y := 0; y < size; y++ {
-		for x := 0; x < size; x++ {
+	for y := range size {
+		for x := range size {
 			g := color.Gray{Y: byte(values[y*size+x] * 256)}
 			img.SetGray(x, y, g)
 		}
@@ -97,7 +97,7 @@ func Link(seed int64) *image.Gray {
 	img := image.NewGray(image.Rect(0, 0, w, h))
 
 	part := func(x, y, l, a int) {
-		for i := 0; i < l; i++ {
+		for i := range l {
 			v := byte(r.Intn(16) + a)
 			img.SetGray(x+i, y, color.Gray{v})
 		}
@@ -134,8 +134,8 @@ func Link(seed int64) *image.Gray {
 		return !isEmpty(x, y) && img.GrayAt(x, y).Y > 128
 	}
 
-	for x := 0; x < w; x++ {
-		for y := 0; y < h; y++ {
+	for x := range w {
+		for y := range h {
 			if isEmpty(x, y) && (isLink(x-1, y) || isLink(x+1, y) || isLink(x, y-1) || isLink(x, y+1)) {
 				v := byte(r.Intn(64) + 32)
 				img.SetGray(x, y, color.Gray{v})
@@ -143,8 +143,8 @@ func Link(seed int64) *image.Gray {
 		}
 	}
 
-	for x := 0; x < w; x++ {
-		for y := 0; y < h; y++ {
+	for x := range w {
+		for y := range h {
 			if isEmpty(x, y) {
 				img.SetGray(x, y, color.Gray{1})
 			}

@@ -70,12 +70,12 @@ type RenderInfo struct {
 }
 
 var syncPoolRenderInfo = &sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		info := &RenderInfo{}
 		info.Blocks = make([]BlockRenderInfo, 0, 256)
-		for i := 0; i < len(info.Pieces); i++ {
+		for i := range len(info.Pieces) {
 			info.Pieces[i].Blocks = make([]block.XYB, 0, 8)
-			for j := 0; j < piece.NextBlockCount; j++ {
+			for j := range piece.NextBlockCount {
 				info.Pieces[i].NextPieces[j].Blocks = make([]block.XYB, 0, 8)
 			}
 		}
@@ -119,8 +119,8 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 
 	if showBlocks {
 		idx := 0
-		for y := 0; y < h; y++ {
-			for x := 0; x < w; x++ {
+		for y := range h {
+			for x := range w {
 				b := &f.blocks[idx]
 				idx++
 
@@ -181,13 +181,13 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 		info.Pieces[i].State = 0
 		info.Pieces[i].IsLimited = false
 		info.Pieces[i].PieceEmpty = true
-		for j := 0; j < piece.NextBlockCount; j++ {
+		for j := range piece.NextBlockCount {
 			info.Pieces[i].NextPieces[j].Type = piece.TypeNone
 			info.Pieces[i].NextPieces[j].Blocks = info.Pieces[i].NextPieces[j].Blocks[:0]
 		}
 	}
 
-	for pIdx := 0; pIdx < pieceCount; pIdx++ {
+	for pIdx := range pieceCount {
 		ctrl := f.pieces[pIdx]
 
 		pinfo := &info.Pieces[pIdx]
@@ -214,7 +214,7 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 		}
 
 		if showNextPieces {
-			for i := 0; i < piece.NextBlockCount; i++ {
+			for i := range piece.NextBlockCount {
 				pinfo.NextPieces[i].Type = ctrl.NextPieces[i].Type
 				pinfo.NextPieces[i].Blocks = append(pinfo.NextPieces[i].Blocks, ctrl.NextPieces[i].Blocks...)
 			}

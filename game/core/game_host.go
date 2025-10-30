@@ -163,7 +163,7 @@ func (g *GameHost) Perform(ctx context.Context) {
 			defer close(ch)
 			for fIdx, f := range g.fields {
 				ctrlCount := byte(f.Field.Ctrls())
-				for pIdx := byte(0); pIdx < ctrlCount; pIdx++ {
+				for pIdx := range ctrlCount {
 					ch <- channel.Input[time.Time, field.PiecePlace]{
 						ID: field.PiecePlace{
 							FieldIdx: byte(fIdx),

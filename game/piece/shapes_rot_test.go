@@ -248,7 +248,7 @@ func _initShapeSquare(rots byte, boolData []bool) shapeSquare {
 	}
 
 	var data bitarray
-	for i := byte(0); i < n; i++ {
+	for i := range n {
 		if boolData[i] {
 			data = data.set(i)
 			size++

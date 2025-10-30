@@ -149,7 +149,7 @@ func (f *Field) preRender(renderInfo *field.RenderInfo, now time.Time) {
 	f.t = now.Sub(t0).Seconds()
 
 	w := renderInfo.W
-	for i := 0; i < w; i++ {
+	for i := range w {
 		f.listsBack[i] = rendercache.ModelPool.Get()
 	}
 	f.w = w
@@ -171,7 +171,8 @@ func (f *Field) preRender(renderInfo *field.RenderInfo, now time.Time) {
 }
 
 func (f *Field) postRender() {
-	for i, w := 0, f.w; i < w; i++ {
+	w := f.w
+	for i := range w {
 		rendercache.ModelPool.Put(f.listsBack[i])
 	}
 
@@ -237,7 +238,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 	// prepare the field frame
 
-	for x := 0; x < contentWidth; x++ {
+	for x := range contentWidth {
 		f.listWall.Add(modelFrame.Mul4(mgl32.Translate3D(float32(x), float32(0), 0)))
 		f.listWall.Add(modelFrame.Mul4(mgl32.Translate3D(float32(x), float32(contentHeight-1), 0)))
 	}
@@ -272,13 +273,13 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		f.listWall.Add(m)
 
 		if hasLeftPad {
-			for i := 0; i < sidePanelBlockWidth; i++ {
+			for i := range sidePanelBlockWidth {
 				m = modelFrame.Mul4(mgl32.Translate3D(float32(1+i), float32(y), 0))
 				f.listWall.Add(m)
 			}
 		}
 		if hasRightPad {
-			for i := 0; i < sidePanelBlockWidth; i++ {
+			for i := range sidePanelBlockWidth {
 				m = modelFrame.Mul4(mgl32.Translate3D(float32(contentWidth-2-i), float32(y), 0))
 				f.listWall.Add(m)
 			}
@@ -290,7 +291,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 	// prepare the background
 
-	for x := 0; x < renderInfo.W; x++ {
+	for x := range renderInfo.W {
 		colorCol := colorBack
 		for pIdx := range renderInfo.Pieces {
 			p := &renderInfo.Pieces[pIdx]
@@ -312,7 +313,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 		f.colorsBack[x] = colorCol
 
-		for y := 0; y < renderInfo.H; y++ {
+		for y := range renderInfo.H {
 			m := modelField.Mul4(mgl32.Translate3D(float32(x), float32(y), float32(-1)))
 			f.listsBack[x].Add(m)
 		}

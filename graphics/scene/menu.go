@@ -29,7 +29,7 @@ var (
 )
 
 func init() {
-	for i := 0; i < screenMaxShownItems; i++ {
+	for i := range screenMaxShownItems {
 		screenModelMarker[i] = mgl32.Ident4().
 			Mul4(mgl32.Translate3D(-screenContentW/2+1, float32(screenMaxShownItems-screenContentH/2+1-i), 0))
 		screenModelItem[i] = screenModelMarker[i].
@@ -136,7 +136,7 @@ func (m *Menu) Prepare(now time.Time) {
 	m.strCache[0] = m.iter.Title
 	m.strCache[1] = m.iter.Description
 
-	for i := 0; i < n; i++ {
+	for i := range n {
 		m.strCache[2+i] = m.iter.Items[i]
 	}
 

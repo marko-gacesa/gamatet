@@ -24,7 +24,7 @@ func TestGenericFeed(t *testing.T) {
 
 	printBag := func(pieces []polyominoRot) string {
 		m := make([][]string, len(pieces))
-		for i := 0; i < len(pieces); i++ {
+		for i := range pieces {
 			b := strings.Split(pieces[i].String(), "\n")
 			m[i] = b[0 : len(b)-1]
 			for len(m[i]) <= 4 {
@@ -32,8 +32,8 @@ func TestGenericFeed(t *testing.T) {
 			}
 		}
 		sb := strings.Builder{}
-		for col := 0; col < 4; col++ {
-			for i := 0; i < len(pieces); i++ {
+		for col := range 4 {
+			for i := range pieces {
 				sb.WriteString(m[i][col])
 				sb.WriteString(" | ")
 			}
@@ -74,7 +74,7 @@ func TestGenericFeed(t *testing.T) {
 
 			for _, bag := range test.bags {
 				idx := bag * pieceBagCount
-				for bagIdx := 0; bagIdx < pieceBagCount; bagIdx++ {
+				for bagIdx := range pieceBagCount {
 					p := f.Get(idx + bagIdx).(*polyominoRot)
 					bagTest[bag].pieceCount[*p]++
 					bagTest[bag].pieces[bagIdx] = *p
@@ -99,7 +99,7 @@ func TestGenericFeed(t *testing.T) {
 				}
 
 				idx := bag * pieceBagCount
-				for bagIdx := 0; bagIdx < pieceBagCount; bagIdx++ {
+				for bagIdx := range pieceBagCount {
 					p := f.Get(idx + bagIdx).(*polyominoRot)
 					if bagTest[bag].pieces[bagIdx] != *p {
 						t.Errorf("piece order test failed: test#=%d in bag=%d bagIdx=%d expected piece:\n%s\ngot piece:\n%s\n",

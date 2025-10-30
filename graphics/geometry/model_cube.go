@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package geometry
 
@@ -358,7 +358,7 @@ func CubeSideOctagonalStar(k float32) func(mat3 mgl32.Mat3, v *[]blockVertex) {
 }
 
 func halfSide(model mgl32.Mat3, halfSizePart func(model, texture mgl32.Mat3)) {
-	for i := 0; i < 2; i++ {
+	for i := range 2 {
 		angle := float32(i) * math.Pi
 		texture := mgl32.Ident3().
 			Mul3(mgl32.Translate2D(0.5, 0.5)).
@@ -377,7 +377,7 @@ func halfSide(model mgl32.Mat3, halfSizePart func(model, texture mgl32.Mat3)) {
 }
 
 func quarterSide(model mgl32.Mat3, quarterSizePart func(model, texture mgl32.Mat3)) {
-	for i := 0; i < 4; i++ {
+	for i := range 4 {
 		angle := float32(i) * math.Pi / 2.0
 		texture := mgl32.Ident3().
 			Mul3(mgl32.Translate2D(0.5, 0.5)).
@@ -398,7 +398,7 @@ func makeCubeModel(makeSide func(side mgl32.Mat3, v *[]blockVertex)) []blockVert
 	v := make([]blockVertex, 0, 64)
 
 	center := mgl32.Ident3()
-	for i := 0; i < 6; i++ {
+	for i := range 6 {
 		var side mgl32.Mat3
 
 		switch i {

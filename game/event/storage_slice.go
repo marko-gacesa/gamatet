@@ -11,7 +11,7 @@ func (q *Slice) Push(e Event) {
 }
 
 func (q Slice) Range(f func(Event)) {
-	for i := 0; i < len(q); i++ {
+	for i := range q {
 		f(q[i])
 	}
 }

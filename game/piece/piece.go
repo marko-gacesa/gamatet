@@ -57,8 +57,8 @@ type Piece interface {
 func GetBlocks(p Piece, blocks []block.XYB) []block.XYB {
 	dimX := int(p.DimX())
 	dimY := int(p.DimY())
-	for j := 0; j < dimY; j++ {
-		for i := 0; i < dimX; i++ {
+	for j := range dimY {
+		for i := range dimX {
 			pBlock := p.Get(i, j)
 			if pBlock.Type == block.TypeEmpty {
 				continue

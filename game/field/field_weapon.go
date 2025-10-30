@@ -35,8 +35,8 @@ func (f *Field) AllXY(max int) []block.XYB {
 	result := make([]block.XYB, 0, min(32, max))
 
 	idx := 0
-	for y := 0; y < f.h; y++ {
-		for x := 0; x < f.w; x++ {
+	for y := range f.h {
+		for x := range f.w {
 			if f.blocks[idx].Block.Type.Destroyable() {
 				result = append(result, block.XYB{XY: block.XY{X: x, Y: y}, Block: f.blocks[idx].Block})
 			}

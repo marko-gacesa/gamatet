@@ -40,8 +40,8 @@ func (p shapeSquare) def() string {
 func polyominoToStr(b bitarray, w, h byte) string {
 	sb := strings.Builder{}
 
-	for j := byte(0); j < h; j++ {
-		for i := byte(0); i < w; i++ {
+	for j := range h {
+		for i := range w {
 			if b.get(j*w + i) {
 				sb.WriteString("[]")
 			} else {

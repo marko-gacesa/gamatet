@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package field
 
@@ -18,7 +18,7 @@ func (f *Field) clearBlock(x, y int) (b block.Block) {
 
 func (f *Field) ShiftRowsDown(y int) {
 	// destroy blocks in the row=y
-	for x := 0; x < f.w; x++ {
+	for x := range f.w {
 		b := f.clearBlock(x, y)
 		f.animBlockDestroy(x, y, b)
 	}
@@ -50,7 +50,7 @@ func (f *Field) UndoShiftRowsDown(y int, blocks []block.Block) {
 
 	// restore the row
 	idx := y * f.w
-	for i := 0; i < f.w; i++ {
+	for i := range f.w {
 		f.blocks[idx+i] = elem{Block: blocks[i]}
 	}
 }
@@ -70,7 +70,7 @@ func (f *Field) ShiftColumnDownByN(x, y, n, height int) {
 	// move n blocks above it by height rows down
 	d := f.w * height
 	idx := (y-height+1)*f.w + x
-	for i := 0; i < n; i++ {
+	for range n {
 		idxSrc := idx + d
 		f.blocks[idx] = f.blocks[idxSrc]
 		f.blocks[idxSrc] = elem{}
@@ -87,7 +87,7 @@ func (f *Field) UndoShiftColumnByN(x, y, n, height int, b block.Block) {
 	// move n blocks above it by height rows up
 	d := f.w * height
 	idx := (y+n)*f.w + x
-	for i := 0; i < n; i++ {
+	for range n {
 		idxSrc := idx - d
 		f.blocks[idx] = f.blocks[idxSrc]
 		f.blocks[idxSrc] = elem{}

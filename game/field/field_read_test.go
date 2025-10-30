@@ -12,8 +12,8 @@ import (
 func TestField_GetRow(t *testing.T) {
 	f := Make(6, 6, 0)
 
-	for row := 0; row < 6; row++ {
-		for column := 0; column < 6; column++ {
+	for row := range 6 {
+		for column := range 6 {
 			b := block.Block{Type: block.TypeRock, Hardness: byte(row + column)}
 			f.setXY(column, row, b)
 		}
@@ -21,7 +21,7 @@ func TestField_GetRow(t *testing.T) {
 
 	blocks := f.GetRow(2)
 
-	for column := 0; column < 6; column++ {
+	for column := range 6 {
 		b := blocks[column]
 		if b.Type != block.TypeRock {
 			t.Errorf("test failed, at blocks index %d; expected Type %d got %d", column, block.TypeRock, b.Type)
@@ -833,12 +833,12 @@ func TestField_GetDestroyInfo(t *testing.T) {
 		},
 	}
 
-	for column := 0; column < 1; column++ {
+	for column := range 1 {
 		for _, test := range tests {
 			f := Make(w, h, 0)
 
 			for _, row := range test.rowsToClear {
-				for col := 0; col < w; col++ {
+				for col := range w {
 					f.setXY(col, row, block.Block{Type: block.TypeRock})
 				}
 			}
@@ -1053,7 +1053,7 @@ func TestField_GetDestroyInfo2(t *testing.T) {
 					continue
 				}
 
-				for row := 0; row < len(r); row++ {
+				for row := range r {
 					if r[row].Row != test.expected[column][row].Row {
 						t.Errorf("test %q failed. expected row=%d, but got row=%d at index=%d", test.name, test.expected[column][row].Row, r[row].Row, row)
 					} else if r[row].Height != test.expected[column][row].Height {

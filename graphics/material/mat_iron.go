@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package material
 
@@ -26,10 +26,7 @@ type Iron struct {
 }
 
 func (p *Iron) Lights(lights []PointLight) {
-	n := int32(len(lights))
-	if n > MaxLights {
-		n = MaxLights
-	}
+	n := min(int32(len(lights)), MaxLights)
 
 	for i := int32(0); i < n; i++ {
 		uniformVec3(p.uniPointLights+i*3, lights[i].Position)

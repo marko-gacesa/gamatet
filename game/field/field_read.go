@@ -166,8 +166,8 @@ func (f *Field) GetPieceBlockLocations(x, y int, p piece.Piece) (result []block.
 
 	dimX := int(p.DimX())
 	dimY := int(p.DimY())
-	for j := 0; j < dimY; j++ {
-		for i := 0; i < dimX; i++ {
+	for j := range dimY {
+		for i := range dimX {
 			pBlock := p.Get(i, j)
 			if pBlock.Type == block.TypeEmpty {
 				continue
@@ -325,10 +325,10 @@ func (f *Field) GetDestroyInfo() (info DestroyInfo) {
 	colCurrH := make([]int, w)
 
 	// Proceed from the bottom row up to the top row: Find all rows with all blocks non-empty.
-	for row := 0; row < h; row++ {
+	for row := range h {
 		isFull := true
 		onlyHard := true
-		for col := 0; col < w; col++ {
+		for col := range w {
 			b := f.blocks[blockIdx]
 
 			if b.Type == block.TypeEmpty {
@@ -354,7 +354,7 @@ func (f *Field) GetDestroyInfo() (info DestroyInfo) {
 				info.Columns = make([]DestroyColumnInfo, f.w)
 			}
 
-			for col := 0; col < w; col++ {
+			for col := range w {
 				b := f.blocks[blockIdx]
 				blockIdx++
 
@@ -391,7 +391,7 @@ func (f *Field) GetDestroyInfo() (info DestroyInfo) {
 		}
 
 		blockIdx -= w
-		for col := 0; col < w; col++ {
+		for col := range w {
 			b := f.blocks[blockIdx]
 			blockIdx++
 

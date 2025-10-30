@@ -97,7 +97,7 @@ func (app *App) menuLANClientLobby(ctx screen.Context) *menu.Menu {
 	items = append(items, menu.NewStatic(
 		gameStr, "", nil,
 		menu.WithDisabled(func() bool { return true })))
-	for i := byte(0); i < slotCount; i++ {
+	for i := range slotCount {
 		items = append(items, menu.NewStatic("", "",
 			func(r rune) bool {
 				switch unicode.ToLower(r) {

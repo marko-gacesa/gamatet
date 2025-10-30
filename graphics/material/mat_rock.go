@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package material
 
@@ -50,12 +50,9 @@ func (p *Rock) ClearChain() {
 }
 
 func (p *Rock) Lights(lights []PointLight) {
-	n := int32(len(lights))
-	if n > MaxLights {
-		n = MaxLights
-	}
+	n := min(int32(len(lights)), MaxLights)
 
-	for i := int32(0); i < n; i++ {
+	for i := range n {
 		uniformVec3(p.uniPointLights+i*3, lights[i].Position)
 		uniformVec3(p.uniPointLights+i*3+1, lights[i].Color)
 		uniform1f(p.uniPointLights+i*3+2, lights[i].Intensity)

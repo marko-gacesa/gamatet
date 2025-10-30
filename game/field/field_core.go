@@ -107,7 +107,7 @@ func Make(dimW, dimH, pieceCount int, options ...func(f *Field)) (f *Field) {
 		rand:   *rand.New(rand.NewPCG(0, 0)),
 	}
 
-	for i := 0; i < pieceCount; i++ {
+	for i := range pieceCount {
 		f.pieces[i] = piece.NewCtrl(i)
 	}
 
@@ -251,8 +251,8 @@ func (f *Field) _isXYEmpty(x, y, colMin, colMax int, liftAll bool, liftPiece int
 func (f *Field) _canPlacePiece(px, py, colMin, colMax int, p piece.Piece, liftAll bool, liftPiece int) bool {
 	dimX := int(p.DimX())
 	dimY := int(p.DimY())
-	for j := 0; j < dimY; j++ {
-		for i := 0; i < dimX; i++ {
+	for j := range dimY {
+		for i := range dimX {
 			if p.IsEmpty(i, j) {
 				continue
 			}

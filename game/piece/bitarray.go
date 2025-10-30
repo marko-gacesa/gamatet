@@ -35,8 +35,8 @@ func (a bitarray) exchange(idx1, idx2 byte) bitarray {
 
 func (a bitarray) flipV(w, h byte) bitarray {
 	h2 := h >> 1
-	for y := byte(0); y < h2; y++ {
-		for x := byte(0); x < w; x++ {
+	for y := range h2 {
+		for x := range w {
 			idx0 := y*w + x
 			idx1 := (h-y-1)*w + x
 			a = a.exchange(idx0, idx1)
@@ -47,8 +47,8 @@ func (a bitarray) flipV(w, h byte) bitarray {
 
 func (a bitarray) flipH(w, h byte) bitarray {
 	w2 := w >> 1
-	for y := byte(0); y < h; y++ {
-		for x := byte(0); x < w2; x++ {
+	for y := range h {
+		for x := range w2 {
 			idx0 := y*w + x
 			idx1 := y*w + (w - x - 1)
 			a = a.exchange(idx0, idx1)
@@ -60,7 +60,7 @@ func (a bitarray) flipH(w, h byte) bitarray {
 func (a bitarray) rotateCW(dim byte) bitarray {
 	dim1 := dim - 1
 	dim2 := dim >> 1
-	for j := byte(0); j < dim2; j++ {
+	for j := range dim2 {
 		for i := j; i < dim1-j; i++ {
 			idx0 := j*dim + i
 			idx1 := i*dim + dim1 - j
@@ -75,7 +75,7 @@ func (a bitarray) rotateCW(dim byte) bitarray {
 func (a bitarray) rotateCCW(dim byte) bitarray {
 	dim1 := dim - 1
 	dim2 := dim >> 1
-	for j := byte(0); j < dim2; j++ {
+	for j := range dim2 {
 		for i := j; i < dim1-j; i++ {
 			idx0 := j*dim + i
 			idx1 := i*dim + dim1 - j
@@ -108,7 +108,7 @@ func (a bitarray) isSquareColumnEmpty(dim, c byte) bool {
 }
 
 func (a bitarray) countSquareLeftEmptyColumns(dim byte) (empty byte) {
-	for i := byte(0); i < dim; i++ {
+	for i := range dim {
 		if a.isSquareColumnEmpty(dim, i) {
 			empty++
 		} else {
@@ -130,7 +130,7 @@ func (a bitarray) countSquareRightEmptyColumns(dim byte) (empty byte) {
 }
 
 func (a bitarray) countSquareTopEmptyRows(dim byte) (empty byte) {
-	for i := byte(0); i < dim; i++ {
+	for i := range dim {
 		if a.isSquareRowEmpty(dim, i) {
 			empty++
 		} else {

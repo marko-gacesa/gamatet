@@ -41,7 +41,7 @@ func updatePieceShadow(f *field.Field, ctrl *piece.Ctrl) {
 
 func updateAllPiecesShadow(f *field.Field) {
 	n := f.Ctrls()
-	for i := 0; i < n; i++ {
+	for i := range n {
 		ctrl := f.Ctrl(byte(i))
 		updatePieceShadow(f, ctrl)
 	}

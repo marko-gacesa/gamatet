@@ -344,7 +344,7 @@ func _initShapeRect(w, h byte, boolData []bool) shapeRect {
 
 	var size byte
 	var data bitarray
-	for i := byte(0); i < n; i++ {
+	for i := range n {
 		if boolData[i] {
 			data = data.set(i)
 			size++
@@ -362,11 +362,11 @@ func _initShapeRect(w, h byte, boolData []bool) shapeRect {
 		rightNonEmpty  bool
 	)
 
-	for x := byte(0); x < w; x++ {
+	for x := range w {
 		topNonEmpty = topNonEmpty || data.get(x)
 		bottomNonEmpty = bottomNonEmpty || data.get((h-1)*w+x)
 	}
-	for y := byte(0); y < h; y++ {
+	for y := range h {
 		leftNonEmpty = leftNonEmpty || data.get(y*w)
 		rightNonEmpty = rightNonEmpty || data.get(y*w+w-1)
 	}

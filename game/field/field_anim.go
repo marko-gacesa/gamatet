@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package field
 
@@ -45,7 +45,7 @@ func (f *Field) animBlockDestroy(x, y int, b block.Block) {
 	}
 
 	var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
-	for i := 0; i < 6; i++ {
+	for range 6 {
 		dx := rnd.Int()%11 - 5
 		dy := rnd.Int()%11 - 5
 		now := time.Now()

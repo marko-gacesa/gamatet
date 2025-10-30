@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package texture
 
@@ -13,7 +13,7 @@ func Perlin2D(nDim, mDim int, seed int64) []float32 {
 		panic("nDim must be a power of 2")
 	}
 
-	if nDim <= 0 || !gutil.IsPow2(nDim) {
+	if mDim <= 0 || !gutil.IsPow2(mDim) {
 		panic("mDim must be a power of 2")
 	}
 
@@ -27,7 +27,7 @@ func Perlin2D(nDim, mDim int, seed int64) []float32 {
 	mesh := newMesh2D(mDim, seed)
 	iterations := gutil.Log2(nDim / mDim)
 
-	for i := 0; i < iterations; i++ {
+	for range iterations {
 		mDim = mesh.dim
 
 		cellSize := nDim / mDim
@@ -36,8 +36,8 @@ func Perlin2D(nDim, mDim int, seed int64) []float32 {
 		for yCell := 0; yCell < mDim; yCell++ {
 			for xCell := 0; xCell < mDim; xCell++ {
 				mesh.SetMeshCell(xCell, yCell)
-				for y := 0; y < cellSize; y++ {
-					for x := 0; x < cellSize; x++ {
+				for y := range cellSize {
+					for x := range cellSize {
 						v := mesh.Interpolate(float32(x)/cellSizeF, float32(y)/cellSizeF)
 						idx := (yCell*cellSize+y)*nDim + (xCell*cellSize + x)
 						values[idx] += v
@@ -70,7 +70,7 @@ func newMesh2D(dim int, seed int64) *mesh2D {
 		interX: [4]gutil.CatmullRom{},
 	}
 	n := dim * dim
-	for i := 0; i < n; i++ {
+	for i := range n {
 		m.values[i] = random.Float32()
 	}
 	return m
@@ -81,8 +81,8 @@ func (m *mesh2D) Double() *mesh2D {
 	dim := m.dim * 2
 	amp := m.amp / ampDiv
 	values := make([]float32, dim*dim)
-	for y := 0; y < dim; y++ {
-		for x := 0; x < dim; x++ {
+	for y := range dim {
+		for x := range dim {
 			divX := x / 2
 			modX := x % 2
 			divY := y / 2
@@ -114,7 +114,7 @@ func (m *mesh2D) getValue(x, y int) float32 {
 }
 
 func (m *mesh2D) SetMeshCell(x, y int) {
-	for i := 0; i < 4; i++ {
+	for i := range 4 {
 		m.interX[i].Update(m.getValue(x-1, y-1+i), m.getValue(x, y-1+i), m.getValue(x+1, y-1+i), m.getValue(x+2, y-1+i))
 	}
 }
@@ -131,7 +131,7 @@ func clamp(values []float32, min, max float32) {
 	var maxV float32
 	minV = math.MaxFloat32
 	maxV = -math.MaxFloat32
-	for i := 0; i < size; i++ {
+	for i := range size {
 		if values[i] < minV {
 			minV = values[i]
 		}
@@ -144,7 +144,7 @@ func clamp(values []float32, min, max float32) {
 
 	dV := maxV - minV
 	v := max - min
-	for i := 0; i < size; i++ {
+	for i := range size {
 		values[i] = ((values[i]-minV)/dV)*v + min
 	}
 }
@@ -155,7 +155,7 @@ func clampSin(values []float32, min, max float32) {
 	var maxV float32
 	minV = math.MaxFloat32
 	maxV = -math.MaxFloat32
-	for i := 0; i < size; i++ {
+	for i := range size {
 		if values[i] < minV {
 			minV = values[i]
 		}
@@ -168,7 +168,7 @@ func clampSin(values []float32, min, max float32) {
 
 	dV := maxV - minV
 	v := max - min
-	for i := 0; i < size; i++ {
+	for i := range size {
 		values[i] = float32(math.Sin(float64((values[i]-minV)/dV)*2*math.Pi)*0.5+0.5)*v + min
 	}
 }

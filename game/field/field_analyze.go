@@ -7,7 +7,7 @@ import "gamatet/game/block"
 func (f *Field) FindTops() []block.XY {
 	tops := make([]block.XY, 0, f.w)
 
-	for x := 0; x < f.w; x++ {
+	for x := range f.w {
 		y := f.GetTopmostEmpty(x)
 		if y >= f.h {
 			continue

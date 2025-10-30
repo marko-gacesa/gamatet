@@ -46,7 +46,7 @@ func (app *App) menuLANServerLobby(ctx screen.Context) *menu.Menu {
 	items = append(items, menu.NewStatic(
 		gameStr, "", nil,
 		menu.WithDisabled(func() bool { return true })))
-	for i := byte(0); i < playerCount; i++ {
+	for i := range playerCount {
 		items = append(items, menu.NewStatic("", "",
 			func(r rune) bool {
 				switch unicode.ToLower(r) {
