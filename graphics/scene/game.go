@@ -3,6 +3,7 @@
 package scene
 
 import (
+	"fmt"
 	"gamatet/game/action"
 	"gamatet/game/core"
 	"gamatet/graphics/render"
@@ -21,8 +22,8 @@ type Game struct {
 	text render.Text
 
 	textHUD      render.Text
-	fpsHUD       render.FPS
-	latenciesHUD render.Latencies
+	fpsHUD       render.HUD
+	latenciesHUD render.HUD
 
 	playersInCh  [4]chan<- []byte
 	model        mgl32.Mat4
@@ -44,9 +45,14 @@ func NewGame(
 	res := render.GenerateFieldResources(tex)
 	text := render.MakeText(tex, render.Font)
 
+	var latencies fmt.Stringer
+	if params.Latencies != nil {
+		latencies = params.Latencies
+	}
+
 	textHUD := render.MakeText(tex, render.HudFont)
-	fpsHUD := render.NewFPS()
-	latenciesHUD := render.NewLatencies(params.LatenciesFn)
+	fpsHUD := render.NewHUD(render.NewFPS(), HUDPosFPS, textHUD)
+	latenciesHUD := render.NewHUD(latencies, HUDPosLatencies, textHUD)
 
 	center := mgl32.Ident4()
 	fieldModels := make([]mgl32.Mat4, params.FieldCount)
@@ -195,6 +201,7 @@ func (ft *Game) Prepare(now time.Time) {
 		ft.fieldRenders[i].Prepare(now)
 	}
 
+	ft.fpsHUD.Prepare()
 	ft.latenciesHUD.Prepare()
 }
 
@@ -206,6 +213,6 @@ func (ft *Game) Render() {
 		ft.fieldRenders[i].Render(r)
 	}
 
-	ft.fpsHUD.Render(r, &ft.textHUD)
-	ft.latenciesHUD.Render(r, &ft.textHUD)
+	ft.fpsHUD.Render(r)
+	ft.latenciesHUD.Render(r)
 }

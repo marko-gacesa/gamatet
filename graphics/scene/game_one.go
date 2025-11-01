@@ -21,7 +21,7 @@ type GameOne struct {
 	text render.Text
 
 	textHUD render.Text
-	fpsHUD  render.FPS
+	fpsHUD  render.HUD
 
 	playerInCh  chan<- []byte
 	model       mgl32.Mat4
@@ -44,7 +44,7 @@ func NewGameOne(
 	text := render.MakeText(tex, render.Font)
 
 	textHUD := render.MakeText(tex, render.HudFont)
-	fpsHUD := render.NewFPS()
+	fpsHUD := render.NewHUD(render.NewFPS(), HUDPosFPS, textHUD)
 
 	w, h := render.GetExtendedContent(params.Game.GetSize(0))
 
@@ -113,6 +113,7 @@ func (ft *GameOne) InputKeyPress(key, scancode int) {
 
 func (ft *GameOne) Prepare(now time.Time) {
 	ft.fieldRender.Prepare(now)
+	ft.fpsHUD.Prepare()
 }
 
 func (ft *GameOne) Render() {
@@ -121,5 +122,5 @@ func (ft *GameOne) Render() {
 	ft.SetCamera()
 	ft.fieldRender.Render(r)
 
-	ft.fpsHUD.Render(r, &ft.textHUD)
+	ft.fpsHUD.Render(r)
 }

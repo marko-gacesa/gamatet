@@ -12,6 +12,7 @@ import (
 	"gamatet/game/op"
 	"gamatet/game/piece"
 	"gamatet/game/sweeper"
+	"gamatet/logic/latency"
 	"github.com/marko-gacesa/udpstar/channel"
 	"github.com/marko-gacesa/udpstar/udpstar/controller"
 	"math/rand/v2"
@@ -39,6 +40,12 @@ type GameHost struct {
 	renderReqCh chan field.RenderRequest
 
 	doneCh chan struct{}
+
+	options HostOptions
+}
+
+type HostOptions struct {
+	Latencies *latency.List
 }
 
 type hostFieldData struct {
@@ -56,7 +63,7 @@ type hostPlayerData struct {
 	InCh <-chan []byte // player actions, either direct local or from remote players
 }
 
-func MakeHost(setup Setup) *GameHost {
+func MakeHost(setup Setup, options HostOptions) *GameHost {
 	if setup.ActionCh == nil {
 		panic("ActionCh must not be nil")
 	}
@@ -141,6 +148,8 @@ func MakeHost(setup Setup) *GameHost {
 		suspendCh:   make(chan bool),
 		renderReqCh: make(chan field.RenderRequest),
 		doneCh:      make(chan struct{}),
+
+		options: options,
 	}
 }
 
@@ -300,6 +309,9 @@ func (g *GameHost) Perform(ctx context.Context) {
 			renderInfo := field.ObtainRenderInfo()
 			f := g.fields[rr.FieldIdx].Field
 			f.FillRenderInfo(renderInfo, rr.Time)
+			if g.options.Latencies != nil {
+				renderInfo.TextData.Latencies = g.options.Latencies.String()
+			}
 			rr.RenderInfo <- renderInfo
 		}
 	}

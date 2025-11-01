@@ -87,7 +87,7 @@ func (app *App) game(ctx screen.Context) types.GameParams {
 		ActionCh: actionCh,
 	}
 
-	g := core.MakeHost(setup)
+	g := core.MakeHost(setup, core.HostOptions{})
 
 	// go-routine for processing events for the field
 	go func() {

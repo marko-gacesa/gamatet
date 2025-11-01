@@ -245,17 +245,17 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 	modelTitleLeft := modelField.Mul4(mgl32.Translate3D(-0.5, float32(contentHeight-2), 0.5))
 	modelTitleRight := modelTitleLeft.Mul4(mgl32.Translate3D(float32(f.w), 0, 0))
-	d := f.printText(
-		modelTitleLeft,
-		colorLabel,
-		scaleLabel,
-		"SCORE:")
-	f.printText(
-		modelTitleLeft.Mul4(mgl32.Translate3D(d+0.25, 0, 0)),
-		colorText,
-		scaleText,
-		"00234234")
-	d = f.printTextRight(
+	//d := f.printText(
+	//	modelTitleLeft,
+	//	colorLabel,
+	//	scaleLabel,
+	//	"SCORE:")
+	//f.printText(
+	//	modelTitleLeft.Mul4(mgl32.Translate3D(d+0.25, 0, 0)),
+	//	colorText,
+	//	scaleText,
+	//	"00234234")
+	d := f.printTextRight(
 		modelTitleRight,
 		colorText,
 		scaleText,
@@ -317,37 +317,6 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 			m := modelField.Mul4(mgl32.Translate3D(float32(x), float32(y), float32(-1)))
 			f.listsBack[x].Add(m)
 		}
-	}
-
-	// text
-
-	var text string
-
-	switch renderInfo.Mode {
-	case field.ModeNormal:
-	case field.ModeGameOver:
-		text = "GAME\nOVER"
-	case field.ModeVictory:
-		text = "VICTORY"
-	case field.ModeDefeat:
-		text = "DEFEAT"
-	case field.ModePause:
-		text = "PAUSED"
-	case field.ModeSuspended:
-		text = "NETWORK\nPROBLEM"
-	case field.ModeServerLost:
-		text = "SERVER LOST"
-	}
-
-	if text != "" {
-		w, h := f.text.Dim(text)
-		w, h = w*pulse, h*pulse
-
-		modelPause := modelField.
-			Mul4(mgl32.Translate3D(float32(renderInfo.W)/2.0-w/2-0.5, float32(renderInfo.H)/2-0.5, 0)).
-			Mul4(mgl32.Scale3D(pulse, pulse, 1))
-
-		f.listStr.Add(modelPause, mgl32.Vec4{1, 1, 1, 1}, text)
 	}
 
 	// prepare the field's blocks
@@ -576,6 +545,44 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 				}
 			}
 		}
+	}
+
+	// text
+
+	var message string
+
+	switch renderInfo.Mode {
+	case field.ModeNormal:
+	case field.ModeGameOver:
+		message = "GAME OVER"
+	case field.ModeVictory:
+		message = "VICTORY"
+	case field.ModeDefeat:
+		message = "DEFEAT"
+	case field.ModePause:
+		message = "PAUSED"
+	case field.ModeSuspended:
+		message = "NETWORK\nPROBLEM"
+	case field.ModeServerLost:
+		message = "SERVER LOST"
+	}
+
+	if message != "" {
+		w, h := f.text.Dim(message)
+
+		modelMessage := modelField.
+			Mul4(mgl32.Translate3D((float32(renderInfo.W-1)-w*pulse)/2.0, (float32(renderInfo.H-2)+h*pulse)/2.0, 0)).
+			Mul4(mgl32.Scale3D(pulse, pulse, 1))
+		f.listStr.Add(modelMessage, mgl32.Vec4{1, 1, 1, 1}, message)
+	}
+
+	if (renderInfo.Mode == field.ModePause || renderInfo.Mode == field.ModeSuspended) && renderInfo.TextData.Latencies != "" {
+		const scale = 0.5
+		_, h := f.text.Dim(renderInfo.TextData.Latencies)
+		modelLatencies := modelField.
+			Mul4(mgl32.Translate3D(0, h*scale, 0)).
+			Mul4(mgl32.Scale3D(scale, scale, 1))
+		f.listStr.Add(modelLatencies, mgl32.Vec4{0.6, 0.6, 0.6, 1}, renderInfo.TextData.Latencies)
 	}
 
 	// sort

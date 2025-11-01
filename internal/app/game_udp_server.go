@@ -11,6 +11,7 @@ import (
 	"gamatet/game/piece"
 	"gamatet/game/setup"
 	"gamatet/internal/types"
+	"gamatet/logic/latency"
 	"gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/channel"
 	"github.com/marko-gacesa/udpstar/udpstar"
@@ -27,7 +28,7 @@ import (
 // * [4] The channel from which game engine reads remote player actions: core.FieldSetup[i].Players[j].InCh
 // * [5] The previous should be linked to the channel on which network puts remote actor's action: session.Clients[actor.ClientIdx].Actors[actorIdx].Channel
 //
-// Server:                                                         |  Client:
+// Server:                                                     |  Client:
 // +-Game Engine: Server -----+  +- Network Engine: Server -+  |  +- Network Engine: Client -----+  +-Game Engine: Client ---+
 // | Field                    |  |                          |  |  |                              |  | Field                  |
 // |    InCh {must be nil}    |  |  Story                   |  |  |  Story              /->------|--|--> InCh [A]            |
@@ -155,6 +156,10 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 		}
 	}()
 
+	latencies := latency.NewList(func() []udpstar.LatencyActor {
+		return app.gameServer.Latencies(session.Token)
+	})
+
 	var (
 		zones          = s.GameOptions.PlayerZones
 		pieceCollision = s.GameOptions.PieceCollision
@@ -186,6 +191,8 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 		},
 		Fields:   fields,
 		ActionCh: actionCh,
+	}, core.HostOptions{
+		Latencies: latencies,
 	})
 
 	// Go-routine for processing events for the field.
@@ -210,10 +217,8 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 		PlayerInCh: playerInChs,
 		FieldCount: byte(len(fields)),
 		ActionCh:   actionCh,
-		LatenciesFn: func() []udpstar.LatencyActor {
-			return app.gameServer.Latencies(session.Token)
-		},
-		Game: gameHost,
-		Done: ctx.Done(),
+		Latencies:  latencies,
+		Game:       gameHost,
+		Done:       ctx.Done(),
 	}, nil
 }

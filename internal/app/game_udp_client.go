@@ -11,6 +11,7 @@ import (
 	"gamatet/game/piece"
 	"gamatet/game/setup"
 	"gamatet/internal/types"
+	"gamatet/logic/latency"
 	"gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/channel"
 	"github.com/marko-gacesa/udpstar/udpstar"
@@ -25,7 +26,7 @@ import (
 // * [B] The previous should be linked to where the network layer would put field events: session.Stories[i].Channel
 // * [C] The channel from which the network engine reads local player actions: session.Actor[i].Channel
 //
-// Server:                                                         |  Client:
+// Server:                                                     |  Client:
 // +-Game Engine: Server -----+  +- Network Engine: Server -+  |  +- Network Engine: Client -----+  +-Game Engine: Client ---+
 // | Field                    |  |                          |  |  |                              |  | Field                  |
 // |    InCh {must be nil}    |  |  Story                   |  |  |  Story              /->------|--|--> InCh [A]            |
@@ -202,14 +203,16 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 	_ = cli.Latency
 	_ = cli.Quality
 
+	latencies := latency.NewList(func() []udpstar.LatencyActor {
+		return cli.Latencies().Latencies
+	})
+
 	return types.GameParams{
 		PlayerInCh: playerInChs,
 		FieldCount: byte(len(fields)),
 		ActionCh:   actionCh,
-		LatenciesFn: func() []udpstar.LatencyActor {
-			return cli.Latencies().Latencies
-		},
-		Game: gameInterpreter,
-		Done: ctx.Done(),
+		Latencies:  latencies,
+		Game:       gameInterpreter,
+		Done:       ctx.Done(),
 	}, nil
 }

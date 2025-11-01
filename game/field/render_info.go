@@ -58,6 +58,7 @@ type PieceTextData struct {
 
 type TextData struct {
 	BlocksRemoved string
+	Latencies     string
 }
 
 type RenderInfo struct {

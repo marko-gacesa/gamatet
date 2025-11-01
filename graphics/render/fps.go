@@ -3,60 +3,38 @@
 package render
 
 import (
+	"gamatet/logic/cache"
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/go-gl/mathgl/mgl32"
 	"strconv"
 )
 
 type FPS struct {
-	value    int
-	valueOld int
-	valueStr string
-
-	frame int
-	freq  uint64
-	prev  uint64
+	cached *cache.String[int]
 }
 
-func NewFPS() *FPS {
-	return &FPS{freq: glfw.GetTimerFrequency()}
-}
-
-func (fps *FPS) update() {
-	curr := glfw.GetTimerValue() % fps.freq
-	if curr > fps.prev {
-		fps.frame++
-	} else {
-		fps.value = fps.frame
-		if fps.valueOld != fps.value {
-			fps.valueOld = fps.value
-			fps.valueStr = "fps=" + strconv.Itoa(fps.value)
-		}
-		fps.frame = 1
+func NewFPS() FPS {
+	freq := glfw.GetTimerFrequency()
+	var frame uint64
+	var prev uint64
+	var value int
+	return FPS{
+		cached: cache.NewString[int](
+			func() int {
+				curr := glfw.GetTimerValue() % freq
+				if curr > prev {
+					frame++
+				} else {
+					value = int(frame)
+					frame = 1
+				}
+				prev = curr
+				return value
+			},
+			func(v1 int, v2 int) bool { return v1 == v2 },
+			func(fps int) string { return "fps=" + strconv.Itoa(fps) },
+			0,
+		),
 	}
-	fps.prev = curr
 }
 
-func (fps *FPS) Get() int {
-	fps.update()
-	return fps.value
-}
-
-func (fps *FPS) Render(r *Renderer, text *Text) {
-	fps.update()
-	s := fps.valueStr
-	if s == "" {
-		return
-	}
-
-	//tw, th := text.Dim(s)
-	//_, _ = tw, th
-
-	const contentW = 80
-	const contentH = contentW * 9 / 16
-	r.OrthogonalFull(contentW, contentH, contentW, contentH, 1)
-
-	model := mgl32.Translate3D(-float32(contentW)/2, -float32(contentH)/2+0.5, 0)
-
-	text.String(r, model, mgl32.Vec4{0.5, 0.5, 0, 0.7}, s)
-}
+func (f FPS) String() string { return f.cached.String() }

@@ -6,7 +6,7 @@ import (
 	"gamatet/game/action"
 	"gamatet/game/core"
 	"gamatet/game/setup"
-	"github.com/marko-gacesa/udpstar/udpstar"
+	"gamatet/logic/latency"
 )
 
 type GameOneParams struct {
@@ -25,10 +25,10 @@ type GameDoubleParams struct {
 }
 
 type GameParams struct {
-	PlayerInCh  [setup.MaxLocalPlayers]chan<- []byte
-	FieldCount  byte
-	ActionCh    chan<- action.Action
-	LatenciesFn func() []udpstar.LatencyActor
-	Game        core.RenderRequester
-	Done        <-chan struct{}
+	PlayerInCh [setup.MaxLocalPlayers]chan<- []byte
+	FieldCount byte
+	ActionCh   chan<- action.Action
+	Latencies  *latency.List
+	Game       core.RenderRequester
+	Done       <-chan struct{}
 }

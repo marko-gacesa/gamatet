@@ -10,6 +10,7 @@ import (
 	"gamatet/game/event"
 	"gamatet/game/field"
 	"gamatet/game/piece"
+	"gamatet/logic/latency"
 	"github.com/marko-gacesa/udpstar/channel"
 	"log"
 	"time"
@@ -36,6 +37,7 @@ type GameInterpreter struct {
 type InterpreterOptions struct {
 	LocalPlayerActionCh chan<- []byte
 	SinceLastContactFn  func() time.Duration
+	Latencies           *latency.List
 }
 
 type interpreterFieldData struct {
@@ -109,7 +111,7 @@ func MakeInterpreter(setup Setup, options InterpreterOptions) *GameInterpreter {
 		}
 	}
 
-	g := &GameInterpreter{
+	return &GameInterpreter{
 		fields:      fields,
 		inputs:      inputs,
 		actionCh:    setup.ActionCh,
@@ -118,8 +120,6 @@ func MakeInterpreter(setup Setup, options InterpreterOptions) *GameInterpreter {
 
 		options: options,
 	}
-
-	return g
 }
 
 func (g *GameInterpreter) Perform(ctx context.Context) {
@@ -182,6 +182,9 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 			f.FillRenderInfo(renderInfo, rr.Time)
 			if g.options.SinceLastContactFn != nil && g.options.SinceLastContactFn() > serverLostDuration {
 				renderInfo.Mode = field.ModeServerLost
+			}
+			if g.options.Latencies != nil {
+				renderInfo.TextData.Latencies = g.options.Latencies.String()
 			}
 			rr.RenderInfo <- renderInfo
 		}
