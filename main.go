@@ -14,13 +14,15 @@ import (
 func main() {
 	globalCtx := appctx.Context
 
-	cfg, cfgPath := config.Load()
+	logger := app.Logger()
+
+	cfg, cfgPath := config.Load(logger)
 
 	pid := os.Getpid()
 
 	appCtx, appCtxStop := context.WithCancel(globalCtx)
 
-	app := app.NewApp(appCtx, cfg, cfgPath)
+	app := app.NewApp(appCtx, logger, cfg, cfgPath)
 	app.Log().Info("Starting", "pid", pid, "cfgPath", cfgPath)
 
 	err := loop.Loop(appCtx, app)

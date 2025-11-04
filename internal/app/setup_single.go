@@ -8,48 +8,19 @@ import (
 	"math"
 )
 
-func setupMulti(s *setup.Setup, sections *setupSections) []menu.Item {
+func setupSingle(s *setup.Setup, sections *setupSections) []menu.Item {
 	return []menu.Item{
 		menu.NewText(&s.Name, setup.MaxLenName, setup.MaxLenName,
 			"Game name", ""),
 
 		//menu.NewEnum(&s.GameOptions.GameType, setup.GameTypeAll, setup.GameTypeNameMap,
 		//	"Game type", ""),
-		menu.NewInteger(&s.GameOptions.FieldCount, 1, setup.MaxFieldCount,
-			"Number of teams (game fields)", ""),
-		menu.NewBool(&s.GameOptions.SamePiecesForAll,
-			"All players get the same pieces", "",
-			menu.WithVisible(func() bool {
-				return s.FieldCount*s.TeamSize > 1
-			})),
-		menu.NewInteger(&s.GameOptions.TeamSize, 1, setup.MaxTeamSize,
-			"Players per field (team size)", ""),
-		menu.NewBool(&s.GameOptions.PlayerZones,
-			"\tTeam member zones", "",
-			menu.WithVisible(func() bool {
-				return s.TeamSize > 1
-			})),
-		menu.NewBool(&s.GameOptions.PieceCollision,
-			"\tTeam members' piece collision", "",
-			menu.WithVisible(func() bool {
-				return s.TeamSize > 1 && !s.GameOptions.PlayerZones
-			}),
-			menu.WithDisabled(func() bool {
-				return s.GameOptions.PlayerZones
-			})),
-
 		menu.NewEnum(&sections.showField, []bool{false, true}, sections.showFieldMap,
 			"Show field options", ""),
 		menu.NewInteger(&s.FieldOptions.WidthSingle, setup.MinFieldWidthPerPlayer, setup.MaxFieldWidthSingle,
 			"\tField width", "",
 			menu.WithVisible(func() bool {
-				return sections.showField && s.GameOptions.TeamSize == 1
-			}),
-		),
-		menu.NewInteger(&s.FieldOptions.WidthPerPlayer, setup.MinFieldWidthPerPlayer, setup.MaxFieldWidthPerPlayer,
-			"\tField width (per team member)", "",
-			menu.WithVisible(func() bool {
-				return sections.showField && s.GameOptions.TeamSize > 1
+				return sections.showField
 			}),
 		),
 		menu.NewInteger(&s.FieldOptions.Height, setup.MinFieldHeight, setup.MaxFieldHeight,
@@ -96,28 +67,12 @@ func setupMulti(s *setup.Setup, sections *setupSections) []menu.Item {
 	}
 }
 
-func setupResult(s *setup.Setup, target **setup.Setup, maxPlayers byte) []menu.Item {
+func setupResultSingle(s *setup.Setup, target **setup.Setup) []menu.Item {
 	return []menu.Item{
 		menu.NewCommand(target, s,
 			"", "",
-			menu.WithVisible(func() bool {
-				playerCount := s.GameOptions.PlayerCount()
-				return playerCount > 1 && playerCount <= maxPlayers
-			}),
 			menu.WithLabelFn(func() string {
 				return itemTextPrefixForward + "Start (" + s.String() + ")"
 			})),
-		menu.NewStatic(
-			"Can't start: Too many players - Maximum is "+string('0'+rune(maxPlayers)), "", nil,
-			menu.WithVisible(func() bool {
-				return s.GameOptions.FieldCount*s.GameOptions.TeamSize > maxPlayers
-			}),
-			menu.WithDisabled(func() bool { return true })),
-		menu.NewStatic(
-			"Can't start: Need at least 2 players", "", nil,
-			menu.WithVisible(func() bool {
-				return s.GameOptions.FieldCount*s.GameOptions.TeamSize <= 1
-			}),
-			menu.WithDisabled(func() bool { return true })),
 	}
 }

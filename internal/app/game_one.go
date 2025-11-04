@@ -7,17 +7,23 @@ import (
 	"gamatet/game/core"
 	"gamatet/game/field"
 	"gamatet/game/piece"
+	"gamatet/game/setup"
 	"gamatet/internal/types"
 	"gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/channel"
+	"math/rand/v2"
 )
 
 func (app *App) gameOne(ctx screen.Context) types.GameOneParams {
-	const fieldW = 10
-	const fieldH = 24
+	var s setup.Setup
+	if app.resultSetup != nil {
+		s = *app.resultSetup
+	}
+	s.Sanitize()
 
-	const level = 8
-	const seed = 101
+	if !s.MiscOptions.CustomSeed {
+		s.MiscOptions.Seed = rand.Int64()
+	}
 
 	fieldCh := make(chan []byte)
 	playerPipe := channel.MakePipe[[]byte]()
@@ -25,31 +31,29 @@ func (app *App) gameOne(ctx screen.Context) types.GameOneParams {
 
 	actionCh := make(chan action.Action)
 
+	pieceFeed := Feed(s)
+
 	setup := core.Setup{
 		Name: "",
 		Config: core.GameConfig{
-			WidthPerPlayer: fieldW,
-			Height:         fieldH,
-			Level:          level,
+			WidthPerPlayer: int(s.FieldOptions.WidthSingle),
+			Height:         int(s.FieldOptions.Height),
+			Level:          int(s.FieldOptions.Speed),
 			PlayerZones:    false,
 			FieldConfig: field.Config{
 				PieceCollision: false,
 				Anim:           true,
 			},
-			RandomSeed: seed,
-			PieceFeed:  piece.NewRotTetrominoFeed(4, seed),
+			RandomSeed: int(s.MiscOptions.Seed),
+			PieceFeed:  pieceFeed,
 		},
 		Fields: []core.FieldSetup{
 			{
 				OutCh: fieldCh,
 				Players: []core.PlayerSetup{
 					{
-						Name: "Marko",
-						Config: piece.Config{
-							RotationDirectionCW: false,
-							SlideDisabled:       false,
-							WallKick:            piece.WallKickDefault,
-						},
+						Name:    app.cfg.LocalPlayers.Infos[0].Name,
+						Config:  piece.Config(app.cfg.LocalPlayers.Infos[0].PlayerConfig),
 						IsLocal: true,
 						InCh:    playerOutCh,
 					},

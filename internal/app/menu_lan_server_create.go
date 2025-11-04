@@ -12,9 +12,7 @@ import (
 )
 
 func (app *App) menuLANServerCreate(ctx screen.Context) *menu.Menu {
-	app.resultSetup = nil // Clear result of this input
-
-	s := app.cfg.LANGameDefaults
+	s := app.cfg.Presets.Multi[0]
 	if !s.MiscOptions.CustomSeed {
 		s.MiscOptions.Seed = rand.Int64()
 	}

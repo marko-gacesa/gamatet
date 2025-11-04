@@ -16,14 +16,6 @@ type GameOneParams struct {
 	Done       <-chan struct{}
 }
 
-type GameDoubleParams struct {
-	Player1InCh chan<- []byte
-	Player2InCh chan<- []byte
-	ActionCh    chan<- action.Action
-	Game        core.RenderRequester
-	Done        <-chan struct{}
-}
-
 type GameParams struct {
 	PlayerInCh [setup.MaxLocalPlayers]chan<- []byte
 	FieldCount byte

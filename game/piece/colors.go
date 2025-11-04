@@ -1,6 +1,20 @@
+// Copyright (c) 2025 by Marko Gaćeša
+
 package piece
 
-var colors = []uint32{
+import "math/rand/v2"
+
+type Color interface {
+	Color(idx int) uint32
+}
+
+type DefaultColor struct{}
+
+func (c DefaultColor) Color(idx int) uint32 {
+	return _colors[idx%len(_colors)]
+}
+
+var _colors = []uint32{
 	0xFFFF0000, // yellow
 	0x00FFFF00, // cyan
 	0xFF00FF00, // magenta
@@ -25,4 +39,29 @@ var colors = []uint32{
 	0x00808000, // teal
 	0x80800000, // olive
 	0x40E0D000, // turquoise
+}
+
+type RandomColor struct {
+	r, g, b uint16
+	seed    int
+	pcg     rand.PCG
+	rand    rand.Rand
+}
+
+func NewRandomColor(r, g, b float32, seed int) *RandomColor {
+	c := &RandomColor{
+		r:    uint16(256 * r),
+		g:    uint16(256 * g),
+		b:    uint16(256 * b),
+		seed: seed,
+		pcg:  *rand.NewPCG(0, 0),
+	}
+	c.rand = *rand.New(&c.pcg)
+	return c
+}
+
+func (r *RandomColor) Color(idx int) uint32 {
+	r.pcg.Seed(uint64(r.seed), uint64(idx))
+	v := uint16(r.rand.Uint64())&0xFF | 0x80
+	return uint32(r.r*v)&0xFF00<<16 | uint32(r.g*v)&0xFF00<<8 | uint32(r.b*v)&0xFF00
 }

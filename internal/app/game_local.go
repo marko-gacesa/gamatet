@@ -11,14 +11,21 @@ import (
 	"gamatet/internal/types"
 	"gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/channel"
+	"math/rand/v2"
 )
 
 func (app *App) game(ctx screen.Context) types.GameParams {
-	if app.resultSetup == nil {
-		panic("Input missing")
+	var s setup.Setup
+	if app.resultSetup != nil {
+		s = *app.resultSetup
+	}
+	s.Sanitize()
+
+	if !s.MiscOptions.CustomSeed {
+		s.MiscOptions.Seed = rand.Int64()
 	}
 
-	s := app.resultSetup
+	pieceFeed := Feed(s)
 
 	var (
 		playerCount    = s.PlayerCount()
@@ -54,9 +61,9 @@ func (app *App) game(ctx screen.Context) types.GameParams {
 		for j := range players {
 			playerIdx := i*int(teamSize) + j
 			players[j] = core.PlayerSetup{
-				Name:    app.cfg.PlayerInfos[playerIdx].Name,
+				Name:    app.cfg.LocalPlayers.Infos[playerIdx].Name,
 				IsLocal: true,
-				Config:  piece.Config(app.cfg.PlayerInfos[playerIdx].PlayerConfig),
+				Config:  piece.Config(app.cfg.LocalPlayers.Infos[playerIdx].PlayerConfig),
 				InCh:    playerOutChs[playerIdx],
 			}
 		}
@@ -81,7 +88,7 @@ func (app *App) game(ctx screen.Context) types.GameParams {
 				Anim:           true,
 			},
 			RandomSeed: seed,
-			PieceFeed:  piece.NewRotTetrominoFeed(4, seed),
+			PieceFeed:  pieceFeed,
 		},
 		Fields:   fields,
 		ActionCh: actionCh,

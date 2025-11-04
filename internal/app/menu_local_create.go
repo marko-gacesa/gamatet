@@ -13,7 +13,7 @@ import (
 func (app *App) menuLocalCreateGame(ctx screen.Context, idx int) *menu.Menu {
 	app.resultSetup = nil // Clear result of this input
 
-	s := app.cfg.LocalGameDefaults[idx]
+	s := app.cfg.Presets.Multi[idx]
 	if !s.MiscOptions.CustomSeed {
 		s.MiscOptions.Seed = rand.Int64()
 	}

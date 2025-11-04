@@ -32,7 +32,7 @@ func NewColorTetromino(id int, color uint32) Piece {
 }
 
 func NewStandardTetromino(id int) Piece {
-	return NewColorTetromino(id, colors[id])
+	return NewColorTetromino(id, DefaultColor{}.Color(id))
 }
 
 func NewFlipVTetromino(id int, b block.Block) Piece {

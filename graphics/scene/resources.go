@@ -30,8 +30,6 @@ func (r Resources) Screen(ctx screen.Context, data any) screen.Screen {
 		return NewGame(r.rend, r.tex, v)
 	case types.GameOneParams:
 		return NewGameOne(r.rend, r.tex, v)
-	case types.GameDoubleParams:
-		return NewGameDouble(r.rend, r.tex, v)
 	}
 
 	return nil

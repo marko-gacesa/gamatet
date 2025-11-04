@@ -72,6 +72,8 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 			s.GameOptions.FieldCount, len(session.Stories))
 	}
 
+	pieceFeed := Feed(s)
+
 	// Input channels for local players. Closed on the UI component. Elements can be nil.
 	var playerInChs [setup.MaxLocalPlayers]chan<- []byte
 
@@ -184,7 +186,7 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 				Anim:           true,
 			},
 			RandomSeed: seed,
-			PieceFeed:  piece.NewRotTetrominoFeed(4, seed),
+			PieceFeed:  pieceFeed,
 		},
 		Fields:   fields,
 		ActionCh: actionCh,

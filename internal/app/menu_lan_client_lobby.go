@@ -102,13 +102,13 @@ func (app *App) menuLANClientLobby(ctx screen.Context) *menu.Menu {
 			func(r rune) bool {
 				switch unicode.ToLower(r) {
 				case '\n':
-					name := app.cfg.PlayerInfos[0].Name
-					cfg := app.cfg.PlayerInfos[0].PlayerConfig.Serialize()
+					name := app.LocalPlayerName(0)
+					cfg := app.LocalPlayerConfig(0).Serialize()
 					lobbyClient.Join(app.actorTokens[0], i, name, cfg)
 				case '1', '2', '3', '4':
 					idx := byte(r - '1')
-					name := app.cfg.PlayerInfos[idx].Name
-					cfg := app.cfg.PlayerInfos[idx].PlayerConfig.Serialize()
+					name := app.LocalPlayerName(idx)
+					cfg := app.LocalPlayerConfig(idx).Serialize()
 					lobbyClient.Join(app.actorTokens[idx], i, name, cfg)
 				case 'x':
 					if idx := slices.Index(app.actorTokens[:], slots.GetActor(i)); idx >= 0 {

@@ -1,41 +1,69 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024, 2025 by Marko Gaćeša
 
 package config
 
 import (
-	"encoding/json"
-	"fmt"
 	"gamatet/game/piece"
 	"gamatet/game/setup"
-	"net"
 	"os"
-	"path"
-	"slices"
+	"strings"
 )
 
 const (
-	filename = ".gamatet.config.json"
-
 	defaultLanguage = "en"
-
-	//defaultMulticast = "239.255.231.79"
-	defaultMulticast     = "224.0.0.79"
-	defaultPort          = 64774
-	defaultMulticastPort = 64775
-
-	LocalPlayerLimit = 4
-	LocalGameSetups  = 4
 )
 
 type Config struct {
-	Language string `json:"language"`
+	Language     string       `json:"language"`
+	LocalPlayers LocalPlayers `json:"local_players"`
+	Network      Network      `json:"network"`
+	Presets      Presets      `json:"presets"`
+}
 
-	PlayerInfos []PlayerInfo `json:"player_names"`
+func (cfg *Config) Sanitize() {
+	cfg.SanitizeLanguage()
+	cfg.LocalPlayers.Sanitize()
+	cfg.Presets.Sanitize()
+	cfg.Network.Sanitize()
+}
 
-	Network Network `json:"network"`
+func (cfg *Config) SanitizeLanguage() {
+	if cfg.Language == "" {
+		const envLang = "LANG"
+		lang := os.Getenv(envLang)
+		idx := strings.IndexAny(lang, "._-")
+		if idx < 0 {
+			cfg.Language = defaultLanguage
+			return
+		}
 
-	LocalGameDefaults []setup.Setup `json:"local_game_defaults"`
-	LANGameDefaults   setup.Setup   `json:"lan_game_defaults"`
+		cfg.Language = lang[:idx]
+	}
+
+	cfg.Language = strings.ToLower(cfg.Language)
+
+	// TODO: Check if lang is supported
+}
+
+type LocalPlayers struct {
+	Infos []PlayerInfo `json:"infos"`
+}
+
+func (cfg *LocalPlayers) Sanitize() {
+	cfg.Infos = SliceFixLen(cfg.Infos, setup.MaxLocalPlayers, func(idx int) PlayerInfo {
+		return PlayerInfo{
+			Name: "",
+			PlayerConfig: PlayerConfig{
+				RotationDirectionCW: false,
+				SlideDisabled:       false,
+				WallKick:            piece.WallKickDefault,
+			},
+		}
+	})
+
+	for _, info := range cfg.Infos {
+		info.Sanitize()
+	}
 }
 
 type PlayerInfo struct {
@@ -43,145 +71,27 @@ type PlayerInfo struct {
 	PlayerConfig
 }
 
-type PlayerConfig struct {
-	RotationDirectionCW bool `json:"rotation_direction_cw"`
-	SlideDisabled       bool `json:"slide_disabled"`
-	WallKick            byte `json:"wall_kick"`
+func (cfg *PlayerInfo) Sanitize() {
+	if cfg.Name == "" || len(cfg.Name) > setup.MaxLenName {
+		cfg.Name = "Player"
+	}
+
+	cfg.PlayerConfig.Sanitize()
 }
 
-func (cfg PlayerConfig) Serialize() []byte {
-	return setup.Pack((*setup.PlayerConfig)(&cfg))
+type Presets struct {
+	Single []setup.Setup `json:"single"`
+	Multi  []setup.Setup `json:"multi"`
 }
 
-func (cfg *Config) Sanitize() {
-	if cfg.Language == "" {
-		cfg.Language = defaultLanguage
+func (cfg *Presets) Sanitize() {
+	cfg.Single = SliceFixLen(cfg.Single, setup.SinglePlayerPresetCount, setup.SinglePlayerPreset)
+	for i := range cfg.Single {
+		cfg.Single[i].SanitizeSingle()
 	}
 
-	if len(cfg.PlayerInfos) < LocalPlayerLimit {
-		for i := len(cfg.PlayerInfos); i < LocalPlayerLimit; i++ {
-			cfg.PlayerInfos = append(cfg.PlayerInfos, PlayerInfo{
-				Name: "",
-				PlayerConfig: PlayerConfig{
-					RotationDirectionCW: false,
-					SlideDisabled:       false,
-					WallKick:            piece.WallKickDefault,
-				},
-			})
-		}
-	} else if len(cfg.PlayerInfos) > LocalPlayerLimit {
-		cfg.PlayerInfos = cfg.PlayerInfos[:LocalPlayerLimit]
+	cfg.Multi = SliceFixLen(cfg.Multi, setup.MultiPlayerPresetCount, setup.MultiPlayerPreset)
+	for i := range cfg.Multi {
+		cfg.Multi[i].SanitizeMulti()
 	}
-
-	cfg.PlayerInfos = slices.Clip(cfg.PlayerInfos)
-	for i := range cfg.PlayerInfos {
-		if cfg.PlayerInfos[i].Name == "" {
-			cfg.PlayerInfos[i].Name = fmt.Sprintf("Player %d", i+1)
-		}
-		if cfg.PlayerInfos[i].WallKick < 0 || cfg.PlayerInfos[i].WallKick > piece.WallKickMax {
-			cfg.PlayerInfos[i].WallKick = piece.WallKickDefault
-		}
-	}
-
-	cfg.Network.Sanitize()
-
-	cfg.LANGameDefaults.Sanitize()
-
-	if len(cfg.LocalGameDefaults) < LocalGameSetups {
-		for i := len(cfg.LocalGameDefaults); i < LocalGameSetups; i++ {
-			cfg.LocalGameDefaults = append(cfg.LocalGameDefaults, setup.MultiplayerPlayerSetupDefault())
-		}
-	} else if len(cfg.LocalGameDefaults) > LocalGameSetups {
-		cfg.LocalGameDefaults = cfg.LocalGameDefaults[:LocalGameSetups]
-	}
-	for i := range cfg.LocalGameDefaults {
-		cfg.LocalGameDefaults[i].Sanitize()
-	}
-}
-
-type Network struct {
-	Port             int    `json:"port"`
-	MulticastPort    int    `json:"multicast_port"`
-	MulticastAddress string `json:"multicast_address"`
-}
-
-func (cfg *Network) Sanitize() {
-	if cfg.Port == 0 || cfg.Port > 65535 {
-		cfg.Port = defaultPort
-	}
-
-	if cfg.MulticastPort == 0 || cfg.MulticastPort > 65535 {
-		cfg.MulticastPort = defaultMulticastPort
-	}
-
-	if cfg.MulticastAddress != "" {
-		a, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", cfg.MulticastAddress, cfg.MulticastPort))
-		if err != nil || !a.IP.IsLinkLocalMulticast() {
-			cfg.MulticastAddress = ""
-		}
-
-	}
-
-	if cfg.MulticastAddress == "" {
-		cfg.MulticastAddress = defaultMulticast
-	}
-}
-
-func (cfg *Network) GetMulticastAddress() net.UDPAddr {
-	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", cfg.MulticastAddress, cfg.MulticastPort))
-	return *addr
-}
-
-func Load() (Config, string) {
-	var cfg Config
-
-	cfg.LANGameDefaults = setup.MultiplayerPlayerSetupDefault()
-
-	dirs := getDirList()
-	for _, dir := range dirs {
-		fn := path.Join(dir, filename)
-		f, err := os.Open(fn)
-		if os.IsNotExist(err) {
-			continue
-		}
-		if err != nil {
-			fmt.Printf("failed to open config file %s: %s\n", fn, err.Error())
-			continue
-		}
-
-		if err := func() error {
-			defer f.Close()
-			return json.NewDecoder(f).Decode(&cfg)
-		}(); err != nil {
-			fmt.Printf("failed to load config from %s: %s\n", fn, err.Error())
-		}
-
-		return cfg, dir
-	}
-
-	cfg.Sanitize()
-
-	if len(dirs) > 0 {
-		return cfg, path.Join(dirs[0], filename)
-	}
-
-	return cfg, filename
-}
-
-func getDirList() []string {
-	var dirs []string
-
-	dir, _ := os.UserHomeDir()
-	if dir != "" {
-		dirs = append(dirs, dir)
-	}
-
-	if len(os.Args) > 0 {
-		dir = path.Dir(os.Args[0])
-		if dir != "" {
-			dirs = append(dirs, dir)
-		}
-	}
-
-	return dirs
 }

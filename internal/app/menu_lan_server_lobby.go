@@ -27,7 +27,7 @@ func (app *App) menuLANServerLobby(ctx screen.Context) *menu.Menu {
 
 	lobbyToken := message.RandomToken()
 
-	app.cfg.LANGameDefaults = *app.resultSetup
+	app.cfg.Presets.Multi[0] = *app.resultSetup
 
 	gameDef := app.resultSetup.Def()
 	gameStr := app.resultSetup.String()
@@ -52,7 +52,7 @@ func (app *App) menuLANServerLobby(ctx screen.Context) *menu.Menu {
 				switch unicode.ToLower(r) {
 				case '1', '2', '3', '4':
 					idx := byte(r - '1')
-					app.gameServer.JoinLocal(lobbyToken, app.actorTokens[idx], i, idx, app.cfg.PlayerInfos[idx].Name)
+					app.gameServer.JoinLocal(lobbyToken, app.actorTokens[idx], i, idx, app.LocalPlayerName(idx))
 				case 'x', '\b', '\xFF':
 					app.gameServer.EvictIdx(lobbyToken, i)
 				}
@@ -126,7 +126,7 @@ func (app *App) menuLANServerLobby(ctx screen.Context) *menu.Menu {
 		return app.menuError(ctx, err)
 	}
 
-	_ = app.gameServer.JoinLocal(lobbyToken, app.actorTokens[0], 0, 0, app.cfg.PlayerInfos[0].Name)
+	_ = app.gameServer.JoinLocal(lobbyToken, app.actorTokens[0], 0, 0, app.LocalPlayerName(0))
 
 	// Start UI refresher
 

@@ -5,19 +5,5 @@ package setup
 type GameType byte
 
 const (
-	GameTypeRotatingPolyominoes GameType = iota
-	GameTypeHMirroringPolyominoes
-	GameTypeVMirroringPolyominoes
+	GameTypeFallingPolyominoes = iota
 )
-
-var GameTypeAll = []GameType{
-	GameTypeRotatingPolyominoes,
-	GameTypeHMirroringPolyominoes,
-	GameTypeVMirroringPolyominoes,
-}
-
-var GameTypeNameMap = map[GameType]string{
-	GameTypeRotatingPolyominoes:   "Rotating Polyominoes",
-	GameTypeHMirroringPolyominoes: "Horizontal Mirroring Polyominoes",
-	GameTypeVMirroringPolyominoes: "Vertical Mirroring Polyominoes",
-}
