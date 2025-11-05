@@ -11,19 +11,14 @@ import (
 	"gamatet/internal/types"
 	"gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/channel"
-	"math/rand/v2"
 )
 
-func (app *App) gameOne(ctx screen.Context) types.GameOneParams {
+func (app *App) gameSinglePlayer(ctx screen.Context) types.GameOneParams {
 	var s setup.Setup
 	if app.resultSetup != nil {
 		s = *app.resultSetup
 	}
 	s.Sanitize()
-
-	if !s.MiscOptions.CustomSeed {
-		s.MiscOptions.Seed = rand.Int64()
-	}
 
 	fieldCh := make(chan []byte)
 	playerPipe := channel.MakePipe[[]byte]()

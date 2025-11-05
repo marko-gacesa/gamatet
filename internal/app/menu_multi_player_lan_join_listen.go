@@ -19,7 +19,7 @@ import (
 
 const maxClientLobbyEntries = 20
 
-func (app *App) menuLANClientJoin(ctx screen.Context) *menu.Menu {
+func (app *App) menuMultiPlayerLANJoinListen(ctx screen.Context) *menu.Menu {
 	app.resultClientLobbySelected = nil
 
 	list := makeClientLobbyList()
@@ -46,7 +46,7 @@ func (app *App) menuLANClientJoin(ctx screen.Context) *menu.Menu {
 		}
 
 		if app.resultClientLobbySelected != nil {
-			app.screenIDNext = routeMenuLANClientLobby
+			app.screenIDNext = routeMultiPlayerLANJoinLobby
 			ctx.Stop()
 			return
 		}

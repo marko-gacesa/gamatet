@@ -11,19 +11,14 @@ import (
 	"gamatet/internal/types"
 	"gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/channel"
-	"math/rand/v2"
 )
 
-func (app *App) game(ctx screen.Context) types.GameParams {
+func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {
 	var s setup.Setup
 	if app.resultSetup != nil {
 		s = *app.resultSetup
 	}
 	s.Sanitize()
-
-	if !s.MiscOptions.CustomSeed {
-		s.MiscOptions.Seed = rand.Int64()
-	}
 
 	pieceFeed := Feed(s)
 

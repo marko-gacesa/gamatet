@@ -4,6 +4,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"gamatet/game/setup"
 	"gamatet/internal/config"
 	"gamatet/logic/screen"
@@ -13,7 +14,10 @@ import (
 	"github.com/marko-gacesa/udpstar/udpstar/message"
 	"github.com/marko-gacesa/udpstar/udpstar/server"
 	"log/slog"
+	"math/rand/v2"
 	"net"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -120,29 +124,40 @@ func (app *App) LocalPlayer(token message.Token) (config.PlayerInfo, int) {
 }
 
 const (
-	routeMain route = "main"
-	routeQuit route = "quit"
-	routeBack route = "back"
+	routeMain = "main"
+	routeQuit = "quit"
+	routeBack = "back"
 
-	routeMenuSinglePlayer route = "menu-single-player"
+	routeSinglePlayerPrefix      = "1p|"
+	routeSinglePlayerMenu        = routeSinglePlayerPrefix + "menu"
+	routeSinglePlayerPresetGameN = routeSinglePlayerPrefix + "preset-game:"
+	routeSinglePayerCustomSetup  = routeSinglePlayerPrefix + "custom-setup"
+	routeSinglePayerCustomGame   = routeSinglePlayerPrefix + "custom-game"
 
-	routeMenuLocalCreate route = "menu-local-create"
+	routeSinglePlayerPresetEditMenu = routeSinglePlayerPrefix + "preset-edit-menu"
+	routeSinglePlayerPresetEditN    = routeSinglePlayerPrefix + "preset-edit:"
 
-	routeMenuLANMain         route = "menu-lan-main"
-	routeMenuLANServerCreate route = "menu-lan-server-create"
-	routeMenuLANServerLobby  route = "menu-lan-server-lobby"
-	routeMenuLANClientJoin   route = "menu-lan-client-join"
-	routeMenuLANClientLobby  route = "menu-lan-client-lobby"
+	routeMultiPlayerPrefix         = "mp|"
+	routeMultiPlayerPresetEditMenu = routeMultiPlayerPrefix + "preset-edit-menu"
+	routeMultiPlayerPresetEditN    = routeMultiPlayerPrefix + "preset-edit:"
 
-	routeGame              route = "game"
-	routeGameSinglePreset1 route = "game-single-preset-1"
-	routeGameSinglePreset2 route = "game-single-preset-2"
-	routeGameSinglePreset3 route = "game-single-preset-3"
-	routeGameSinglePreset4 route = "game-single-preset-4"
-	routeGameSinglePreset5 route = "game-single-preset-5"
+	routeMultiPlayerLocalPrefix      = "mp-local|"
+	routeMultiPlayerLocalMenu        = routeMultiPlayerLocalPrefix + "menu"
+	routeMultiPlayerLocalPresetGameN = routeMultiPlayerLocalPrefix + "preset-game:"
+	routeMultiPayerLocalCustomSetup  = routeMultiPlayerLocalPrefix + "custom-setup"
+	routeMultiPayerLocalCustomGame   = routeMultiPlayerLocalPrefix + "custom-game"
 
-	routeGameUDPServer route = "game-udp-server"
-	routeGameUDPClient route = "game-udp-client"
+	routeMultiPlayerLANPrefix         = "mp-lan|"
+	routeMultiPlayerLANMain           = routeMultiPlayerLANPrefix + "main"
+	routeMultiPlayerLANHostMenu       = routeMultiPlayerLANPrefix + "host-menu"
+	routeMultiPlayerLANHostPresetN    = routeMultiPlayerLANPrefix + "host-preset:"
+	routeMultiPayerLANHostCustomSetup = routeMultiPlayerLANPrefix + "host-custom-setup"
+	routeMultiPayerLANHostLobby       = routeMultiPlayerLANPrefix + "host-lobby"
+	routeMultiPlayerLANJoinListen     = routeMultiPlayerLANPrefix + "join-listen"
+	routeMultiPlayerLANJoinLobby      = routeMultiPlayerLANPrefix + "join-lobby"
+
+	routeMultiPlayerLANHostGame = routeMultiPlayerLANPrefix + "host-game"
+	routeMultiPlayerLANJoinGame = routeMultiPlayerLANPrefix + "join-game"
 )
 
 func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan struct{}) {
@@ -151,49 +166,106 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 
 	ctx := screen.NewContext(parentCtx)
 
-	switch id {
-	case "", routeQuit:
+	switch {
+	case id == "" || id == routeQuit:
 		data = nil
-	case routeMain:
+	case id == routeMain:
 		data = app.menuMain(ctx)
-	case routeMenuSinglePlayer:
+
+	// Single player
+
+	case id == routeSinglePlayerMenu:
 		data = app.menuSinglePlayer(ctx)
+	case strings.HasPrefix(string(id), routeSinglePlayerPresetGameN):
+		s := strings.TrimPrefix(string(id), routeSinglePlayerPresetGameN)
+		idx, err := strconv.Atoi(s)
+		if err != nil {
+			data = app.menuError(ctx, err)
+		} else {
+			app.loadPresetSingle(idx)
+			data = app.gameSinglePlayer(ctx)
+		}
+	case id == routeSinglePayerCustomSetup:
+		data = app.menuSinglePlayerSetup(ctx, -1, routeSinglePayerCustomGame)
+	case id == routeSinglePayerCustomGame:
+		data = app.gameSinglePlayer(ctx)
 
-	case routeMenuLocalCreate:
-		data = app.menuLocalCreateGame(ctx, 0)
+	// Single player presets edit
 
-	case routeMenuLANMain:
-		data = app.menuLANMain(ctx)
-	case routeMenuLANServerCreate:
-		data = app.menuLANServerCreate(ctx)
-	case routeMenuLANServerLobby:
-		data = app.menuLANServerLobby(ctx)
-	case routeMenuLANClientJoin:
-		data = app.menuLANClientJoin(ctx)
-	case routeMenuLANClientLobby:
-		data = app.menuLANClientLobby(ctx)
+	case id == routeSinglePlayerPresetEditMenu:
+		data = app.menuSingleEditPresets(ctx)
+	case strings.HasPrefix(string(id), routeSinglePlayerPresetEditN):
+		s := strings.TrimPrefix(string(id), routeSinglePlayerPresetEditN)
+		idx, err := strconv.Atoi(s)
+		if err != nil {
+			data = app.menuError(ctx, err)
+		} else {
+			data = app.menuSinglePlayerSetup(ctx, idx, routeBack)
+		}
 
-	case routeGameSinglePreset1:
-		app.resultSetup = &app.cfg.Presets.Single[0]
-		data = app.gameOne(ctx)
-	case routeGameSinglePreset2:
-		app.resultSetup = &app.cfg.Presets.Single[1]
-		data = app.gameOne(ctx)
-	case routeGameSinglePreset3:
-		app.resultSetup = &app.cfg.Presets.Single[2]
-		data = app.gameOne(ctx)
-	case routeGameSinglePreset4:
-		app.resultSetup = &app.cfg.Presets.Single[3]
-		data = app.gameOne(ctx)
-	case routeGameSinglePreset5:
-		app.resultSetup = &app.cfg.Presets.Single[4]
-		data = app.gameOne(ctx)
-	case routeGame:
-		data = app.game(ctx)
+	// Multi-player presets edit
 
-	case routeGameUDPServer:
+	case id == routeMultiPlayerPresetEditMenu:
+		data = app.menuMultiPlayerEditPresets(ctx)
+	case strings.HasPrefix(string(id), routeMultiPlayerPresetEditN):
+		s := strings.TrimPrefix(string(id), routeMultiPlayerPresetEditN)
+		idx, err := strconv.Atoi(s)
+		if err != nil {
+			data = app.menuError(ctx, err)
+		} else {
+			data = app.menuMultiPlayerSetup(ctx, setup.MaxPlayers, idx, routeBack)
+		}
+
+	// Multi-player local
+
+	case id == routeMultiPlayerLocalMenu:
+		data = app.menuMultiPlayerLocal(ctx)
+	case strings.HasPrefix(string(id), routeMultiPlayerLocalPresetGameN):
+		s := strings.TrimPrefix(string(id), routeMultiPlayerLocalPresetGameN)
+		idx, err := strconv.Atoi(s)
+		if err != nil {
+			data = app.menuError(ctx, err)
+		} else {
+			app.loadPresetMulti(idx)
+			if app.resultSetup != nil && app.resultSetup.PlayerCount() > setup.MaxLocalPlayers {
+				data = app.menuErrorText(ctx, fmt.Sprintf("The preset defined too many players. Maximum is %d", setup.MaxLocalPlayers))
+			} else {
+				data = app.gameMultiPlayerLocal(ctx)
+			}
+		}
+	case id == routeMultiPayerLocalCustomSetup:
+		data = app.menuMultiPlayerSetup(ctx, setup.MaxLocalPlayers, -1, routeMultiPayerLocalCustomGame)
+	case id == routeMultiPayerLocalCustomGame:
+		data = app.gameMultiPlayerLocal(ctx)
+
+	// Multi-player LAN
+
+	case id == routeMultiPlayerLANMain:
+		data = app.menuMultiPlayerLANMain(ctx)
+	case id == routeMultiPlayerLANHostMenu:
+		data = app.menuMultiPlayerLANHostMenu(ctx)
+	case strings.HasPrefix(string(id), routeMultiPlayerLANHostPresetN):
+		s := strings.TrimPrefix(string(id), routeMultiPlayerLANHostPresetN)
+		idx, err := strconv.Atoi(s)
+		if err != nil {
+			data = app.menuError(ctx, err)
+		} else {
+			app.loadPresetMulti(idx)
+			data = app.menuMultiPlayerLANHostLobby(ctx)
+		}
+	case id == routeMultiPayerLANHostCustomSetup:
+		data = app.menuMultiPlayerSetup(ctx, setup.MaxPlayers, -1, routeMultiPayerLANHostLobby)
+	case id == routeMultiPayerLANHostLobby:
+		data = app.menuMultiPlayerLANHostLobby(ctx)
+
+	case id == routeMultiPlayerLANJoinListen:
+		data = app.menuMultiPlayerLANJoinListen(ctx)
+	case id == routeMultiPlayerLANJoinLobby:
+		data = app.menuMultiPlayerLANJoinLobby(ctx)
+
+	case id == routeMultiPlayerLANHostGame:
 		data = app.gameUDPServer(ctx)
-	case routeGameUDPClient:
+	case id == routeMultiPlayerLANJoinGame:
 		data = app.gameUDPClient(ctx)
 	}
 
@@ -217,4 +289,22 @@ func (app *App) ScreenFinish() {
 
 func (app *App) LogError(err error, msg string) {
 	app.logger.Error(msg, "error", err)
+}
+
+func (app *App) loadPresetSingle(idx int) {
+	s := app.cfg.Presets.Single[idx]
+	if !s.MiscOptions.CustomSeed {
+		s.MiscOptions.Seed = rand.Int64()
+	}
+
+	app.resultSetup = &s
+}
+
+func (app *App) loadPresetMulti(idx int) {
+	s := app.cfg.Presets.Multi[idx]
+	if !s.MiscOptions.CustomSeed {
+		s.MiscOptions.Seed = rand.Int64()
+	}
+
+	app.resultSetup = &s
 }

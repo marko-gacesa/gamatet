@@ -8,11 +8,8 @@ import (
 	"math"
 )
 
-func setupMulti(s *setup.Setup, sections *setupSections) []menu.Item {
+func setupMultiPlayer(s *setup.Setup, sections *setupSections) []menu.Item {
 	return []menu.Item{
-		menu.NewText(&s.Name, setup.MaxLenName, setup.MaxLenName,
-			"Game name", ""),
-
 		//menu.NewEnum(&s.GameOptions.GameType, setup.GameTypeAll, setup.GameTypeNameMap,
 		//	"Game type", ""),
 		menu.NewInteger(&s.GameOptions.FieldCount, 1, setup.MaxFieldCount,
@@ -96,7 +93,13 @@ func setupMulti(s *setup.Setup, sections *setupSections) []menu.Item {
 	}
 }
 
-func setupResult(s *setup.Setup, target **setup.Setup, maxPlayers byte) []menu.Item {
+func setupResultMulti(s *setup.Setup, target **setup.Setup, maxPlayers byte, save bool) []menu.Item {
+	var action string
+	if save {
+		action = itemTextPrefixBack + "Save"
+	} else {
+		action = itemTextPrefixForward + "Start"
+	}
 	return []menu.Item{
 		menu.NewCommand(target, s,
 			"", "",
@@ -105,16 +108,16 @@ func setupResult(s *setup.Setup, target **setup.Setup, maxPlayers byte) []menu.I
 				return playerCount > 1 && playerCount <= maxPlayers
 			}),
 			menu.WithLabelFn(func() string {
-				return itemTextPrefixForward + "Start (" + s.String() + ")"
+				return action + " (" + s.String() + ")"
 			})),
 		menu.NewStatic(
-			"Can't start: Too many players - Maximum is "+string('0'+rune(maxPlayers)), "", nil,
+			"Invalid setup: Too many players - Maximum is "+string('0'+rune(maxPlayers)), "", nil,
 			menu.WithVisible(func() bool {
 				return s.GameOptions.FieldCount*s.GameOptions.TeamSize > maxPlayers
 			}),
 			menu.WithDisabled(func() bool { return true })),
 		menu.NewStatic(
-			"Can't start: Need at least 2 players", "", nil,
+			"Invalid setup: Need at least 2 players", "", nil,
 			menu.WithVisible(func() bool {
 				return s.GameOptions.FieldCount*s.GameOptions.TeamSize <= 1
 			}),

@@ -10,9 +10,6 @@ import (
 
 func setupSingle(s *setup.Setup, sections *setupSections) []menu.Item {
 	return []menu.Item{
-		menu.NewText(&s.Name, setup.MaxLenName, setup.MaxLenName,
-			"Game name", ""),
-
 		//menu.NewEnum(&s.GameOptions.GameType, setup.GameTypeAll, setup.GameTypeNameMap,
 		//	"Game type", ""),
 		menu.NewEnum(&sections.showField, []bool{false, true}, sections.showFieldMap,
@@ -67,12 +64,18 @@ func setupSingle(s *setup.Setup, sections *setupSections) []menu.Item {
 	}
 }
 
-func setupResultSingle(s *setup.Setup, target **setup.Setup) []menu.Item {
+func setupResultSingle(s *setup.Setup, target **setup.Setup, save bool) []menu.Item {
+	var action string
+	if save {
+		action = itemTextPrefixBack + "Save"
+	} else {
+		action = itemTextPrefixForward + "Start"
+	}
 	return []menu.Item{
 		menu.NewCommand(target, s,
 			"", "",
 			menu.WithLabelFn(func() string {
-				return itemTextPrefixForward + "Start (" + s.String() + ")"
+				return action + " (" + s.String() + ")"
 			})),
 	}
 }

@@ -45,6 +45,11 @@ type Setup struct {
 	MiscOptions
 }
 
+func (o *Setup) Empty() bool {
+	return o.GameOptions.FieldCount == 0 || o.GameOptions.TeamSize == 0 ||
+		o.FieldOptions.WidthSingle == 0 || o.FieldOptions.WidthPerPlayer == 0 || o.FieldOptions.Height == 0
+}
+
 func (o *Setup) Def() []byte {
 	w := bitdata.NewWriter()
 	o.Write(w)
@@ -269,8 +274,8 @@ func (o *GameOptions) String() string {
 		opts.WriteByte('!')
 	}
 
-	if o.FieldCount*o.TeamSize > 1 && o.SamePiecesForAll {
-		opts.WriteByte('=')
+	if o.FieldCount*o.TeamSize > 1 && !o.SamePiecesForAll {
+		opts.WriteRune('≠')
 	}
 
 	if opts.Len() > 0 {

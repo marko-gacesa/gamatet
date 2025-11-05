@@ -17,7 +17,7 @@ import (
 	"unicode"
 )
 
-func (app *App) menuLANServerLobby(ctx screen.Context) *menu.Menu {
+func (app *App) menuMultiPlayerLANHostLobby(ctx screen.Context) *menu.Menu {
 	if app.resultSetup == nil {
 		return app.menuErrorText(ctx, "Input missing")
 	}
@@ -26,8 +26,6 @@ func (app *App) menuLANServerLobby(ctx screen.Context) *menu.Menu {
 	app.resultClientMap = nil
 
 	lobbyToken := message.RandomToken()
-
-	app.cfg.Presets.Multi[0] = *app.resultSetup
 
 	gameDef := app.resultSetup.Def()
 	gameStr := app.resultSetup.String()
@@ -99,7 +97,7 @@ func (app *App) menuLANServerLobby(ctx screen.Context) *menu.Menu {
 			start++
 			go func() {
 				app.resultServerSession, app.resultClientMap, _ = app.gameServer.FinishLobby(ctx, lobbyToken)
-				app.screenIDNext = routeGameUDPServer
+				app.screenIDNext = routeMultiPlayerLANHostGame
 				ctx.Stop()
 			}()
 		}
