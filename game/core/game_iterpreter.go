@@ -75,7 +75,7 @@ func MakeInterpreter(setup Setup, options InterpreterOptions) *GameInterpreter {
 			ctrl := f.Ctrl(byte(j))
 
 			ctrl.Name = players[j].Name
-			ctrl.Feed = setup.Config.PieceFeed
+			ctrl.Feed = piece.NewCtrlFeed(setup.Config.PieceFeed, i, j, setup.Config.SamePieces)
 			ctrl.Config = players[j].Config
 			ctrl.Level = setup.Config.Level
 			ctrl.IsShadowShown = true

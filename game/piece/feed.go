@@ -145,45 +145,25 @@ func NewFlipHFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 	})
 }
 
-type TestFeed struct{}
+type CtrlFeed struct {
+	internal Feed
+	fIdx     int
+	ctrlIdx  int
+	same     bool
+}
 
-func NewTestFeed(bagSize int, seed int) GenericFeed {
-	return NewGenericFeed(bagSize, seed, 4, func(idx int) Piece {
-		switch idx {
-		default:
-			fallthrough
-		case 0:
-			return &polyominoFlipH{
-				shapeRect: shapesFlipHTetrominoes[5],
-				block: block.Block{
-					Type:     block.TypeRock,
-					Hardness: 1,
-					Color:    DefaultColor{}.Color(idx),
-				},
-			}
-		case 1:
-			return &polyominoFlipV{
-				shapeRect: shapesFlipVTetrominoes[3],
-				block: block.Block{
-					Type:     block.TypeRock,
-					Hardness: 2,
-					Color:    DefaultColor{}.Color(idx),
-				},
-			}
-		case 2:
-			return &polyominoRot{
-				shapeSquare: shapesRotTetrominoes[TetrominoJ],
-				block: block.Block{
-					Type:     block.TypeLava,
-					Hardness: 0,
-					Color:    block.Lava.Color,
-				},
-			}
-		case 3:
-			return &shooter{
-				bulletType: block.TypeAcid,
-				ammo:       5,
-			}
-		}
-	})
+func NewCtrlFeed(internal Feed, fIdx, ctrlIdx int, same bool) *CtrlFeed {
+	return &CtrlFeed{
+		internal: internal,
+		fIdx:     fIdx,
+		ctrlIdx:  ctrlIdx,
+		same:     same,
+	}
+}
+
+func (f *CtrlFeed) Get(idx int) Piece {
+	if f.same {
+		return f.internal.Get(idx)
+	}
+	return f.internal.Get(idx + f.fIdx*137 + f.ctrlIdx*5)
 }

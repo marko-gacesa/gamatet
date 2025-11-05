@@ -74,7 +74,7 @@ type Ctrl struct {
 	X, Y int
 
 	// Feed is the next piece feed
-	Feed Feed
+	Feed *CtrlFeed
 
 	// Piece is the piece itself
 	Piece Piece

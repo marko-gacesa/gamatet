@@ -187,6 +187,7 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 			},
 			RandomSeed: seed,
 			PieceFeed:  pieceFeed,
+			SamePieces: s.SamePiecesForAll,
 		},
 		Fields:   fields,
 		ActionCh: actionCh,

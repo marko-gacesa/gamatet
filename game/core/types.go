@@ -38,6 +38,7 @@ type GameConfig struct {
 	FieldConfig    field.Config
 	RandomSeed     int // used for random events
 	PieceFeed      piece.Feed
+	SamePieces     bool
 }
 
 type FieldSetup struct {

@@ -72,7 +72,7 @@ func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {
 	actionCh := make(chan action.Action)
 
 	setup := core.Setup{
-		Name: app.resultSetup.Name,
+		Name: s.Name,
 		Config: core.GameConfig{
 			WidthPerPlayer: int(fieldW),
 			Height:         int(fieldH),
@@ -84,6 +84,7 @@ func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {
 			},
 			RandomSeed: seed,
 			PieceFeed:  pieceFeed,
+			SamePieces: s.SamePiecesForAll,
 		},
 		Fields:   fields,
 		ActionCh: actionCh,

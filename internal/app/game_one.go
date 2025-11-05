@@ -41,6 +41,7 @@ func (app *App) gameSinglePlayer(ctx screen.Context) types.GameOneParams {
 			},
 			RandomSeed: int(s.MiscOptions.Seed),
 			PieceFeed:  pieceFeed,
+			SamePieces: true,
 		},
 		Fields: []core.FieldSetup{
 			{

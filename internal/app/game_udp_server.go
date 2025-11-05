@@ -190,6 +190,7 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 			},
 			RandomSeed: seed,
 			PieceFeed:  pieceFeed,
+			SamePieces: s.SamePiecesForAll,
 		},
 		Fields:   fields,
 		ActionCh: actionCh,
