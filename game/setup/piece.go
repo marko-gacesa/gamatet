@@ -42,6 +42,6 @@ var PieceSizeNameMap = map[byte]string{
 }
 
 const (
-	BagSizeDefault = 4
+	BagSizeDefault = 2
 	BagSizeMax     = piece.MaxBagSize
 )

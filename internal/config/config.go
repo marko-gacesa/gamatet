@@ -61,8 +61,21 @@ func (cfg *LocalPlayers) Sanitize() {
 		}
 	})
 
-	for _, info := range cfg.Infos {
-		info.Sanitize()
+	for i := range cfg.Infos {
+		if cfg.Infos[i].Name == "" || len(cfg.Infos[i].Name) > setup.MaxLenName {
+			switch i % 4 {
+			case 0:
+				cfg.Infos[i].Name = string('\u0394') // delta
+			case 1:
+				cfg.Infos[i].Name = string('\u0398') // theta
+			case 2:
+				cfg.Infos[i].Name = string('\u03A8') // psi
+			case 3:
+				cfg.Infos[i].Name = string('\u03A9') // omega
+			}
+		}
+
+		cfg.Infos[i].Sanitize()
 	}
 }
 
@@ -72,10 +85,6 @@ type PlayerInfo struct {
 }
 
 func (cfg *PlayerInfo) Sanitize() {
-	if cfg.Name == "" || len(cfg.Name) > setup.MaxLenName {
-		cfg.Name = "Player"
-	}
-
 	cfg.PlayerConfig.Sanitize()
 }
 
@@ -90,6 +99,7 @@ func (cfg *Presets) Sanitize() {
 	cfg.Single = SliceFixLen(cfg.Single, setup.SinglePlayerPresetCount, setup.SinglePlayerPreset)
 	for i := range cfg.Single {
 		cfg.Single[i].SanitizeSingle()
+		cfg.Single[i].SanitizeName()
 	}
 
 	if cfg.SingleCustom.Empty() {
@@ -101,6 +111,7 @@ func (cfg *Presets) Sanitize() {
 	cfg.Multi = SliceFixLen(cfg.Multi, setup.MultiPlayerPresetCount, setup.MultiPlayerPreset)
 	for i := range cfg.Multi {
 		cfg.Multi[i].SanitizeMulti()
+		cfg.Multi[i].SanitizeName()
 	}
 
 	if cfg.MultiCustom.Empty() {

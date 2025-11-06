@@ -8,7 +8,7 @@ const (
 )
 
 func SinglePlayerPreset(idx int) Setup {
-	switch idx % SinglePlayerPresetCount {
+	switch byte(idx) % SinglePlayerPresetCount {
 	case 0:
 		return SinglePlayerPresetRotTetrominoes()
 	case 1:
@@ -154,7 +154,7 @@ func SinglePlayerPresetHMTetrominoes() Setup {
 }
 
 func MultiPlayerPreset(idx int) Setup {
-	switch idx % MultiPlayerPresetCount {
+	switch byte(idx) % MultiPlayerPresetCount {
 	case 0:
 		return MultiPlayerPresetCoop2()
 	case 1:
@@ -170,7 +170,7 @@ func MultiPlayerPresetCoop2() Setup {
 			GameType:         GameTypeFallingPolyominoes,
 			FieldCount:       1,
 			TeamSize:         2,
-			PieceCollision:   false,
+			PieceCollision:   true,
 			PlayerZones:      false,
 			SamePiecesForAll: true,
 		},

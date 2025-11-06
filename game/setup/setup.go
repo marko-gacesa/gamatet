@@ -91,30 +91,27 @@ func (o *Setup) SanitizeName() bool {
 }
 
 func (o *Setup) Sanitize() bool {
-	sn := o.SanitizeName()
 	s1 := o.GameOptions.Sanitize()
 	s2 := o.FieldOptions.Sanitize()
 	s3 := o.PieceOptions.Sanitize()
 	s4 := o.MiscOptions.Sanitize()
-	return sn || s1 || s2 || s3 || s4
+	return s1 || s2 || s3 || s4
 }
 
 func (o *Setup) SanitizeSingle() bool {
-	sn := o.SanitizeName()
 	s1 := o.GameOptions.SanitizeSingle()
 	s2 := o.FieldOptions.Sanitize()
 	s3 := o.PieceOptions.Sanitize()
 	s4 := o.MiscOptions.Sanitize()
-	return sn || s1 || s2 || s3 || s4
+	return s1 || s2 || s3 || s4
 }
 
 func (o *Setup) SanitizeMulti() bool {
-	sn := o.SanitizeName()
 	s1 := o.GameOptions.SanitizeMulti()
 	s2 := o.FieldOptions.Sanitize()
 	s3 := o.PieceOptions.Sanitize()
 	s4 := o.MiscOptions.Sanitize()
-	return sn || s1 || s2 || s3 || s4
+	return s1 || s2 || s3 || s4
 }
 
 func (o *Setup) String() string {

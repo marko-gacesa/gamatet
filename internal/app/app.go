@@ -297,6 +297,10 @@ func (app *App) loadPresetSingle(idx int) {
 		s.MiscOptions.Seed = rand.Int64()
 	}
 
+	if s.SanitizeSingle() {
+		app.logger.Warn("loading preset multi: sanitation is required")
+	}
+
 	app.resultSetup = &s
 }
 
@@ -304,6 +308,10 @@ func (app *App) loadPresetMulti(idx int) {
 	s := app.cfg.Presets.Multi[idx]
 	if !s.MiscOptions.CustomSeed {
 		s.MiscOptions.Seed = rand.Int64()
+	}
+
+	if s.SanitizeMulti() {
+		app.logger.Warn("loading preset multi: sanitation is required")
 	}
 
 	app.resultSetup = &s

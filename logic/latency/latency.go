@@ -16,8 +16,12 @@ type Latency struct {
 func NewLatency(fn func() time.Duration) *Latency {
 	return &Latency{
 		cached: cache.NewString[time.Duration](
-			fn, func(l1 time.Duration, l2 time.Duration) bool {
-				return l1.Milliseconds() == l2.Milliseconds()
+			fn, func(prev *time.Duration, curr time.Duration) bool {
+				equal := (*prev).Milliseconds() == curr.Milliseconds()
+				if !equal {
+					*prev = curr
+				}
+				return equal
 			},
 			func(l time.Duration) string {
 				sb := strings.Builder{}
@@ -45,8 +49,12 @@ type LQValue struct {
 func NewLQCache(fn func() LQValue) *LQ {
 	return &LQ{
 		cached: cache.NewString[LQValue](
-			fn, func(l1 LQValue, l2 LQValue) bool {
-				return l1 == l2
+			fn, func(l1 *LQValue, l2 LQValue) bool {
+				equal := *l1 == l2
+				if !equal {
+					*l1 = l2
+				}
+				return equal
 			},
 			func(l LQValue) string {
 				sb := strings.Builder{}

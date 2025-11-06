@@ -63,7 +63,7 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 		return types.GameParams{}, fmt.Errorf("unable to unpack setup: %s", err)
 	}
 
-	if s.Sanitize() {
+	if s.SanitizeMulti() {
 		return types.GameParams{}, errors.New("sanitize is required")
 	}
 
@@ -112,8 +112,13 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 
 			session.Actors[actor.ActorIdx].InputCh = playerInputPipe.Out // [C] The network layer reads player inputs from here.
 
+			name := localPlayerInfo.Name
+			if name == "" {
+				name = fmt.Sprintf("P%d-%d", fieldIdx+1, storyActorIdx+1)
+			}
+
 			fieldPlayers[storyActorIdx] = core.PlayerSetup{
-				Name:    localPlayerInfo.Name,
+				Name:    name,
 				Config:  piece.Config(localPlayerInfo.PlayerConfig),
 				IsLocal: true,
 			}
@@ -174,6 +179,10 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 		}
 	}
 
+	latencies := latency.NewList(func() []udpstar.LatencyActor {
+		return cli.Latencies().Latencies
+	})
+
 	gameInterpreter := core.MakeInterpreter(core.Setup{
 		Name: session.Name,
 		Config: core.GameConfig{
@@ -194,6 +203,7 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 	}, core.InterpreterOptions{
 		LocalPlayerActionCh: localPlayerCh,
 		SinceLastContactFn:  cli.SinceLastServerMessage,
+		Latencies:           latencies,
 	})
 
 	// Go-routine for processing events for the field
@@ -205,10 +215,6 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 
 	_ = cli.Latency
 	_ = cli.Quality
-
-	latencies := latency.NewList(func() []udpstar.LatencyActor {
-		return cli.Latencies().Latencies
-	})
 
 	return types.GameParams{
 		PlayerInCh: playerInChs,

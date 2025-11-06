@@ -18,12 +18,24 @@ type List struct {
 func NewList(fn func() []udpstar.LatencyActor) *List {
 	return &List{
 		cached: cache.NewString[[]udpstar.LatencyActor](
-			fn, func(l1 []udpstar.LatencyActor, l2 []udpstar.LatencyActor) bool {
-				return slices.EqualFunc(l1, l2, func(l1 udpstar.LatencyActor, l2 udpstar.LatencyActor) bool {
-					return l1.State == l2.State && l1.Latency == l2.Latency
+			fn, func(prev *[]udpstar.LatencyActor, curr []udpstar.LatencyActor) bool {
+				equal := slices.EqualFunc(*prev, curr, func(l1 udpstar.LatencyActor, l2 udpstar.LatencyActor) bool {
+					return l1.State == l2.State && l1.Latency.Milliseconds() == l2.Latency.Milliseconds()
 				})
+				if !equal {
+					if len(*prev) != len(curr) {
+						*prev = make([]udpstar.LatencyActor, len(curr))
+					}
+					for i := range curr {
+						(*prev)[i] = curr[i]
+					}
+				}
+				return equal
 			},
 			func(l []udpstar.LatencyActor) string {
+				if len(l) == 0 {
+					return ""
+				}
 				sb := strings.Builder{}
 				sb.WriteString("Latencies:\n")
 				for i, v := range l {

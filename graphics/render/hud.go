@@ -48,17 +48,17 @@ func (hud *HUD) Prepare() {
 	const sideMargin = 0.1
 
 	switch hud.pos {
-	case HUDLowerLeft:
-		hud.model = mgl32.Translate3D(float32(-hudContentW)/2+sideMargin, -float32(hudContentH)/2+0.5, 0)
-	case HUDLowerRight:
-		tw, _ := hud.text.Dim(s)
-		hud.model = mgl32.Translate3D(float32(hudContentW)/2-sideMargin-tw, -float32(hudContentH)/2+0.5, 0)
 	case HUDUpperLeft:
-		_, th := hud.text.Dim(s)
-		hud.model = mgl32.Translate3D(float32(-hudContentW)/2+sideMargin, float32(hudContentH)/2+0.5-th, 0)
+		hud.model = mgl32.Translate3D(float32(-hudContentW)/2+sideMargin, float32(hudContentH)/2-0.5, 0)
 	case HUDUpperRight:
+		tw, _ := hud.text.Dim(s)
+		hud.model = mgl32.Translate3D(float32(hudContentW)/2-sideMargin-tw, float32(hudContentH)/2-0.5, 0)
+	case HUDLowerLeft:
+		_, th := hud.text.Dim(s)
+		hud.model = mgl32.Translate3D(float32(-hudContentW)/2+sideMargin, -float32(hudContentH)/2-0.5+th, 0)
+	case HUDLowerRight:
 		tw, th := hud.text.Dim(s)
-		hud.model = mgl32.Translate3D(float32(hudContentW)/2-sideMargin-tw, float32(hudContentH)/2+0.5-th, 0)
+		hud.model = mgl32.Translate3D(float32(hudContentW)/2-sideMargin-tw, -float32(hudContentH)/2-0.5+th, 0)
 	}
 }
 

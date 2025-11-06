@@ -65,7 +65,7 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 		return types.GameParams{}, fmt.Errorf("unable to unpack setup: %s", err)
 	}
 
-	if s.Sanitize() {
+	if s.SanitizeMulti() {
 		return types.GameParams{}, errors.New("sanitize is required")
 	}
 
@@ -113,8 +113,13 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 
 				session.Clients[actor.ClientIdx].Actors[actor.ClientActorIdx].Channel = actorInputPipe.In // [5] The network layer accepts remote player inputs here.
 
+				name := actor.Name
+				if name == "" {
+					name = fmt.Sprintf("P%d-%d", fieldIdx+1, storyActorIdx+1)
+				}
+
 				fieldPlayers[storyActorIdx] = core.PlayerSetup{
-					Name:    actor.Name,
+					Name:    name,
 					Config:  piece.Config(playerConfig),
 					IsLocal: false,
 					InCh:    actorInputPipe.Out, // [4] The game engine reads remote actors actions from here.
@@ -131,8 +136,13 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 			playerInputPipe := channel.MakePipe[[]byte]() // The "In" part of the pipe should be closed on UI component.
 			playerInChs[localPlayerIdx] = playerInputPipe.In
 
+			name := localPlayerInfo.Name
+			if name == "" {
+				name = fmt.Sprintf("P%d-%d", fieldIdx+1, storyActorIdx+1)
+			}
+
 			fieldPlayers[storyActorIdx] = core.PlayerSetup{
-				Name:    localPlayerInfo.Name,
+				Name:    name,
 				Config:  piece.Config(localPlayerInfo.PlayerConfig),
 				IsLocal: true,
 				InCh:    playerInputPipe.Out, // [3] The game engine reads local player actions from here (directly from the input device - keyboard).
@@ -158,10 +168,6 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 		}
 	}()
 
-	latencies := latency.NewList(func() []udpstar.LatencyActor {
-		return app.gameServer.Latencies(session.Token)
-	})
-
 	var (
 		zones          = s.GameOptions.PlayerZones
 		pieceCollision = s.GameOptions.PieceCollision
@@ -176,6 +182,10 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 	}
 
 	actionCh := make(chan action.Action)
+
+	latencies := latency.NewList(func() []udpstar.LatencyActor {
+		return app.gameServer.Latencies(session.Token)
+	})
 
 	gameHost := core.MakeHost(core.Setup{
 		Name: session.Name,

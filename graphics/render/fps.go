@@ -30,7 +30,11 @@ func NewFPS() FPS {
 				prev = curr
 				return value
 			},
-			func(v1 int, v2 int) bool { return v1 == v2 },
+			func(v1 *int, v2 int) bool {
+				equal := *v1 == v2
+				*v1 = v2
+				return equal
+			},
 			func(fps int) string { return "fps=" + strconv.Itoa(fps) },
 			0,
 		),
