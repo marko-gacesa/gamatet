@@ -52,13 +52,13 @@ const sidePanelBlockWidth = 5
 
 var t0 = time.Now()
 
-func GetExtendedContent(w, h int, infoPos []piece.DisplayPosition) (int, int) {
+func GetExtendedContent(w, h int, infoPos [field.MaxPieces]DisplayPosition) (int, int) {
 	w += 2 // left frame, right frame
 	h += 2 // top, bottom frame
 	var hasLeft, hasRight bool
 	for _, p := range infoPos {
-		hasLeft = hasLeft || p == piece.DisplayPositionTopLeft || p == piece.DisplayPositionBottomLeft
-		hasRight = hasRight || p == piece.DisplayPositionTopRight || p == piece.DisplayPositionBottomRight
+		hasLeft = hasLeft || p == DisplayPositionTopLeft || p == DisplayPositionBottomLeft
+		hasRight = hasRight || p == DisplayPositionTopRight || p == DisplayPositionBottomRight
 	}
 	if hasLeft {
 		w += sidePanelBlockWidth
@@ -76,6 +76,7 @@ type Field struct {
 
 	renderRequesterFieldIdx int
 	renderRequester         core.RenderRequester
+	preferredSide           PreferredSide
 
 	renderInfo   *field.RenderInfo
 	renderInfoWG sync.WaitGroup
@@ -107,6 +108,7 @@ func NewField(
 	text *Text,
 	renderRequesterFieldIdx int,
 	renderRequester core.RenderRequester,
+	preferredSide PreferredSide,
 ) *Field {
 	return &Field{
 		model:                   model,
@@ -114,6 +116,7 @@ func NewField(
 		text:                    text,
 		renderRequesterFieldIdx: renderRequesterFieldIdx,
 		renderRequester:         renderRequester,
+		preferredSide:           preferredSide,
 	}
 }
 
@@ -202,13 +205,10 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		lightPowShooter = 1.5
 	)
 
-	var infoPositions [field.MaxPieces]piece.DisplayPosition
-	for i := range renderInfo.Pieces {
-		infoPositions[i] = renderInfo.Pieces[i].Position
-	}
+	infoPositions := f.preferredSide.PosN(renderInfo.PieceCount)
 
-	hasLeftPad := slices.Contains(infoPositions[:], piece.DisplayPositionTopLeft) || slices.Contains(infoPositions[:], piece.DisplayPositionBottomLeft)
-	hasRightPad := slices.Contains(infoPositions[:], piece.DisplayPositionTopRight) || slices.Contains(infoPositions[:], piece.DisplayPositionBottomRight)
+	hasLeftPad := slices.Contains(infoPositions[:], DisplayPositionTopLeft) || slices.Contains(infoPositions[:], DisplayPositionBottomLeft)
+	hasRightPad := slices.Contains(infoPositions[:], DisplayPositionTopRight) || slices.Contains(infoPositions[:], DisplayPositionBottomRight)
 
 	contentWidth, contentHeight := renderInfo.W+2, renderInfo.H+2
 	if hasLeftPad {
@@ -296,7 +296,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		for pIdx := range renderInfo.Pieces {
 			p := &renderInfo.Pieces[pIdx]
 
-			if p.Position == piece.DisplayPositionOff {
+			if infoPositions[pIdx] == DisplayPositionOff {
 				continue
 			}
 
@@ -446,17 +446,17 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 		const edgeOffset = 0.75
 
-		switch p.Position {
-		case piece.DisplayPositionTopLeft:
+		switch infoPositions[idx] {
+		case DisplayPositionTopLeft:
 			modelInfo = modelField.Mul4(mgl32.Translate3D(-(1+sidePanelBlockWidth)-0.5, float32(renderInfo.H)-edgeOffset+1-0.5, 0.5))
 			hDir = -1
-		case piece.DisplayPositionTopRight:
+		case DisplayPositionTopRight:
 			modelInfo = modelField.Mul4(mgl32.Translate3D(float32(renderInfo.W)-0.5, float32(renderInfo.H)-edgeOffset+1-0.5, 0.5))
 			hDir = -1
-		case piece.DisplayPositionBottomLeft:
+		case DisplayPositionBottomLeft:
 			modelInfo = modelField.Mul4(mgl32.Translate3D(-(1+sidePanelBlockWidth)-0.5, edgeOffset-1-0.5, 0.5))
 			hDir = 1
-		case piece.DisplayPositionBottomRight:
+		case DisplayPositionBottomRight:
 			modelInfo = modelField.Mul4(mgl32.Translate3D(float32(renderInfo.W)-0.5, edgeOffset-1-0.5, 0.5))
 			hDir = 1
 		default:

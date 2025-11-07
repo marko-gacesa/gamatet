@@ -19,8 +19,8 @@ type RenderRequester interface {
 	// When rendering is completed the RenderInfo should be returned with a call to field.ReturnRenderInfo(renderInfo).
 	RenderRequest(fieldIdx int, t time.Time, ch chan<- *field.RenderInfo)
 
-	// GetSize return size of the field
-	GetSize(idx int) (int, int, []piece.DisplayPosition)
+	// GetSize return size of the field and number of players.
+	GetSize(idx int) (int, int, int)
 }
 
 type Setup struct {

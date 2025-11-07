@@ -339,9 +339,9 @@ func (g *GameHost) RenderRequest(fieldIdx int, t time.Time, ch chan<- *field.Ren
 	}
 }
 
-func (g *GameHost) GetSize(idx int) (int, int, []piece.DisplayPosition) {
+func (g *GameHost) GetSize(idx int) (int, int, int) {
 	f := g.fields[idx].Field
-	return f.GetWidth(), f.GetHeight(), f.CtrlInfoPositions()
+	return f.GetWidth(), f.GetHeight(), f.Ctrls()
 }
 
 func (g *GameHost) sendStop() {

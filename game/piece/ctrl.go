@@ -119,8 +119,6 @@ type Ctrl struct {
 
 	// PausedState holds state when State=StatePaused
 	PausedState State
-
-	InfoPosition DisplayPosition
 }
 
 func NewCtrl(idx int) *Ctrl {
@@ -138,7 +136,7 @@ func NewCtrl(idx int) *Ctrl {
 	c.LevelStr = zeroStr
 
 	c.State = StateInit
-	c.InfoPosition = DisplayPosition(idx + 1)
+
 	return c
 }
 

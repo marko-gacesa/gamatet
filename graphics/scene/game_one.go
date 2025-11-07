@@ -46,7 +46,10 @@ func NewGameOne(
 	textHUD := render.MakeText(tex, render.HudFont)
 	fpsHUD := render.NewHUD(render.NewFPS(), HUDPosFPS, textHUD)
 
-	w, h := render.GetExtendedContent(params.Game.GetSize(0))
+	preferredSide := render.PreferredSideTop
+
+	wf, hf, pf := params.Game.GetSize(0)
+	w, h := render.GetExtendedContent(wf, hf, preferredSide.PosN(pf))
 
 	g := &GameOne{
 		BlockBase: base.NewBlockBase(renderer, tex, w, h, false),
@@ -70,7 +73,7 @@ func NewGameOne(
 	g.playerInCh = params.PlayerInCh
 	g.model = mgl32.Ident4()
 	g.game = params.Game
-	g.fieldRender = render.NewField(g.model, &g.res, &g.text, 0, g.game)
+	g.fieldRender = render.NewField(g.model, &g.res, &g.text, 0, g.game, preferredSide)
 
 	return g
 }

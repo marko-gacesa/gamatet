@@ -199,7 +199,7 @@ func (g *GameInterpreter) RenderRequest(fieldIdx int, t time.Time, ch chan<- *fi
 	}
 }
 
-func (g *GameInterpreter) GetSize(idx int) (int, int, []piece.DisplayPosition) {
+func (g *GameInterpreter) GetSize(idx int) (int, int, int) {
 	f := g.fields[idx].Field
-	return f.GetWidth(), f.GetHeight(), f.CtrlInfoPositions()
+	return f.GetWidth(), f.GetHeight(), f.Ctrls()
 }

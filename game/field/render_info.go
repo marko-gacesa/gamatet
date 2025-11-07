@@ -27,8 +27,7 @@ type NextPieceRenderInfo struct {
 }
 
 type PieceRenderInfo struct {
-	Position piece.DisplayPosition
-	State    piece.State
+	State piece.State
 
 	PieceTextData
 	IsLimited bool
@@ -65,8 +64,12 @@ type RenderInfo struct {
 	W, H   int
 	Mode   Mode
 	Blocks []BlockRenderInfo
-	Pieces [MaxPieces]PieceRenderInfo
+
+	Pieces     [MaxPieces]PieceRenderInfo
+	PieceCount int
+
 	Result anim.Result
+
 	TextData
 }
 
@@ -104,12 +107,15 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 	showNextPieces := f.mode == ModeNormal
 	showBlocks := f.mode != ModePause && f.mode != ModeSuspended && f.mode != ModeServerLost
 
+	pieceCount := f.Ctrls()
+
 	// reset the RenderInfo
 
 	info.W = w
 	info.H = h
 	info.Mode = f.mode
 	info.Blocks = info.Blocks[:0] // empty it, but keep the memory
+	info.PieceCount = pieceCount
 	info.Result = f.animList.Process(now)
 
 	info.TextData = TextData{
@@ -175,10 +181,7 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 
 	// process each Piece of the Field
 
-	pieceCount := f.Ctrls()
-
 	for i := pieceCount; i < len(info.Pieces); i++ {
-		info.Pieces[i].Position = piece.DisplayPositionOff
 		info.Pieces[i].State = 0
 		info.Pieces[i].IsLimited = false
 		info.Pieces[i].PieceEmpty = true
@@ -194,7 +197,6 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 		pinfo := &info.Pieces[pIdx]
 		pinfo.PieceEmpty = false
 
-		pinfo.Position = ctrl.InfoPosition
 		pinfo.State = ctrl.State
 
 		pinfo.PieceTextData = PieceTextData{

@@ -55,65 +55,67 @@ func NewGame(
 	latenciesHUD := render.NewHUD(latencies, HUDPosLatencies, textHUD)
 
 	center := mgl32.Ident4()
-	fieldModels := make([]mgl32.Mat4, params.FieldCount)
 
-	// assuming all fields have identical dimensions
-	w1, h1 := render.GetExtendedContent(params.Game.GetSize(0))
-
+	fieldRenders := make([]*render.Field, 0, params.FieldCount)
 	var w, h int
 
 	switch params.FieldCount {
 	case 1:
-		w, h = w1, h1
-		fieldModels[0] = center
+		wf, hf, pf := params.Game.GetSize(0)
+		w, h = render.GetExtendedContent(wf, hf, render.PreferredSideTop.PosN(pf))
+		fieldRenders = append(fieldRenders, render.NewField(center, res, text, 0, params.Game, render.PreferredSideTop))
 	case 2:
-		w, h = 2*w1, h1
+		wf0, hf0, pf0 := params.Game.GetSize(0)
+		wf1, hf1, pf1 := params.Game.GetSize(1)
+		w0, h0 := render.GetExtendedContent(wf0, hf0, render.PreferredSideLeft.PosN(pf0))
+		w1, h1 := render.GetExtendedContent(wf1, hf1, render.PreferredSideRight.PosN(pf1))
+
+		w, h = w0+w1, max(h0, h1)
 		dx := 0.5 * (float32(w) - float32(w1))
-		fieldModels[0] = center.Mul4(mgl32.Translate3D(-dx, 0, 0))
-		fieldModels[1] = center.Mul4(mgl32.Translate3D(dx, 0, 0))
-	case 3:
-		w, h = 3*w1+2, h1
-		dx := 0.5 * (float32(w) - float32(w1))
-		fieldModels[0] = center.Mul4(mgl32.Translate3D(-dx, 0, 0))
-		fieldModels[1] = center
-		fieldModels[2] = center.Mul4(mgl32.Translate3D(dx, 0, 0))
-	case 4:
-		w, h = 2*w1+1, 2*h1+1
-		dx := 0.5 * (float32(w) - float32(w1))
-		dy := 0.5 * (float32(h) - float32(h1))
-		fieldModels[0] = center.Mul4(mgl32.Translate3D(-dx, dy, 0))
-		fieldModels[1] = center.Mul4(mgl32.Translate3D(dx, dy, 0))
-		fieldModels[2] = center.Mul4(mgl32.Translate3D(-dx, -dy, 0))
-		fieldModels[3] = center.Mul4(mgl32.Translate3D(dx, -dy, 0))
-	case 5:
-		w, h = 3*w1+2, 2*h1+1
-		dx := 0.5 * (float32(w) - float32(w1))
-		dy := 0.5 * (float32(h) - float32(h1))
-		fieldModels[0] = center.Mul4(mgl32.Translate3D(-dx, dy, 0))
-		fieldModels[1] = center.Mul4(mgl32.Translate3D(0, dy, 0))
-		fieldModels[2] = center.Mul4(mgl32.Translate3D(dx, dy, 0))
-		dx = 0.5 * (float32(2*w1+1) - float32(w1))
-		fieldModels[3] = center.Mul4(mgl32.Translate3D(-dx, -dy, 0))
-		fieldModels[4] = center.Mul4(mgl32.Translate3D(dx, -dy, 0))
-	case 6:
-		w, h = 3*w1+2, 2*h1+1
-		dx := 0.5 * (float32(w) - float32(w1))
-		dy := 0.5 * (float32(h) - float32(h1))
-		fieldModels[0] = center.Mul4(mgl32.Translate3D(-dx, dy, 0))
-		fieldModels[1] = center.Mul4(mgl32.Translate3D(0, dy, 0))
-		fieldModels[2] = center.Mul4(mgl32.Translate3D(dx, dy, 0))
-		fieldModels[3] = center.Mul4(mgl32.Translate3D(-dx, -dy, 0))
-		fieldModels[4] = center.Mul4(mgl32.Translate3D(0, -dy, 0))
-		fieldModels[5] = center.Mul4(mgl32.Translate3D(dx, -dy, 0))
-	case 7, 8:
-		panic("TODO")
+		fieldModel0 := center.Mul4(mgl32.Translate3D(-dx, 0, 0))
+		fieldModel1 := center.Mul4(mgl32.Translate3D(dx, 0, 0))
+		fieldRenders = append(fieldRenders, render.NewField(fieldModel0, res, text, 0, params.Game, render.PreferredSideLeft))
+		fieldRenders = append(fieldRenders, render.NewField(fieldModel1, res, text, 1, params.Game, render.PreferredSideRight))
+		/*
+			case 3:
+				w, h = 3*w1+2, h1
+				dx := 0.5 * (float32(w) - float32(w1))
+				fieldModels[0] = center.Mul4(mgl32.Translate3D(-dx, 0, 0))
+				fieldModels[1] = center
+				fieldModels[2] = center.Mul4(mgl32.Translate3D(dx, 0, 0))
+			case 4:
+				w, h = 2*w1+1, 2*h1+1
+				dx := 0.5 * (float32(w) - float32(w1))
+				dy := 0.5 * (float32(h) - float32(h1))
+				fieldModels[0] = center.Mul4(mgl32.Translate3D(-dx, dy, 0))
+				fieldModels[1] = center.Mul4(mgl32.Translate3D(dx, dy, 0))
+				fieldModels[2] = center.Mul4(mgl32.Translate3D(-dx, -dy, 0))
+				fieldModels[3] = center.Mul4(mgl32.Translate3D(dx, -dy, 0))
+			case 5:
+				w, h = 3*w1+2, 2*h1+1
+				dx := 0.5 * (float32(w) - float32(w1))
+				dy := 0.5 * (float32(h) - float32(h1))
+				fieldModels[0] = center.Mul4(mgl32.Translate3D(-dx, dy, 0))
+				fieldModels[1] = center.Mul4(mgl32.Translate3D(0, dy, 0))
+				fieldModels[2] = center.Mul4(mgl32.Translate3D(dx, dy, 0))
+				dx = 0.5 * (float32(2*w1+1) - float32(w1))
+				fieldModels[3] = center.Mul4(mgl32.Translate3D(-dx, -dy, 0))
+				fieldModels[4] = center.Mul4(mgl32.Translate3D(dx, -dy, 0))
+			case 6:
+				w, h = 3*w1+2, 2*h1+1
+				dx := 0.5 * (float32(w) - float32(w1))
+				dy := 0.5 * (float32(h) - float32(h1))
+				fieldModels[0] = center.Mul4(mgl32.Translate3D(-dx, dy, 0))
+				fieldModels[1] = center.Mul4(mgl32.Translate3D(0, dy, 0))
+				fieldModels[2] = center.Mul4(mgl32.Translate3D(dx, dy, 0))
+				fieldModels[3] = center.Mul4(mgl32.Translate3D(-dx, -dy, 0))
+				fieldModels[4] = center.Mul4(mgl32.Translate3D(0, -dy, 0))
+				fieldModels[5] = center.Mul4(mgl32.Translate3D(dx, -dy, 0))
+			case 7, 8:
+				panic("TODO")
+		*/
 	default:
 		panic("unsupported number of fields")
-	}
-
-	fieldRenders := make([]*render.Field, params.FieldCount)
-	for i := range params.FieldCount {
-		fieldRenders[i] = render.NewField(fieldModels[i], res, text, int(i), params.Game)
 	}
 
 	g := &Game{
