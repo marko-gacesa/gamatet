@@ -56,6 +56,7 @@ type PlayerSetup struct {
 	Config piece.Config
 
 	IsLocal bool
+	Index   int
 
 	// InCh is used for direct player input. Actions are read from the channel.
 	InCh <-chan []byte

@@ -20,7 +20,7 @@ func Feed(s setup.Setup) piece.Feed {
 	if isSingle {
 		color = piece.DefaultColor{}
 	} else {
-		color = piece.NewRandomColor(0.1, 0.5, 1.0, seed)
+		color = piece.NewRandomColor(setup.ColorRGB[:], seed)
 	}
 
 	switch s.PieceOptions.PieceType {

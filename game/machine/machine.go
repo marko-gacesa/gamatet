@@ -171,7 +171,7 @@ func HandleTimeout(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) bool {
 
 		pieceCount := ctrl.PieceCount
 
-		newPiece := ctrl.Feed.Get(pieceCount)
+		newPiece := ctrl.Feed.Get(pieceCount, ctrl.PlayerIndex)
 		success, x, y := f.GetPieceStartPosition(ctrl.Idx, ctrl, newPiece, !f.PieceCollision)
 		if !success && f.PieceCollision {
 			success, x, y = f.GetPieceStartPosition(ctrl.Idx, ctrl, newPiece, true)

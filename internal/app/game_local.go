@@ -49,6 +49,7 @@ func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {
 		playerInChs[i], playerOutChs[i] = pipe.In, pipe.Out
 	}
 
+	var playerIndex int
 	fields := make([]core.FieldSetup, fieldCount)
 	for i := range fields {
 		players := make([]core.PlayerSetup, teamSize)
@@ -57,10 +58,13 @@ func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {
 			playerIdx := i*int(teamSize) + j
 			players[j] = core.PlayerSetup{
 				Name:    app.cfg.LocalPlayers.Infos[playerIdx].Name,
-				IsLocal: true,
 				Config:  piece.Config(app.cfg.LocalPlayers.Infos[playerIdx].PlayerConfig),
+				IsLocal: true,
+				Index:   playerIndex,
 				InCh:    playerOutChs[playerIdx],
 			}
+
+			playerIndex++
 		}
 
 		fields[i] = core.FieldSetup{

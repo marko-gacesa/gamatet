@@ -10,7 +10,7 @@ import (
 )
 
 type Feed interface {
-	Get(idx int) Piece
+	Get(idx, playerIdx int) Piece
 }
 
 const (
@@ -27,21 +27,21 @@ const (
 // SamePieceFeed is the feed that always return the same piece. Useful for testing.
 type SamePieceFeed struct{ Piece }
 
-func (p SamePieceFeed) Get(int) Piece { return p.Piece }
+func (p SamePieceFeed) Get(int, int) Piece { return p.Piece }
 
 type QFeed struct{}
 
-func (p QFeed) Get(int) Piece { return &polyominoFlipH{shapeRect: shapeQ, block: block.Rock} }
+func (p QFeed) Get(int, int) Piece { return &polyominoFlipH{shapeRect: shapeQ, block: block.Rock} }
 
 type GenericFeed struct {
 	seed          int
 	pieceBagCount int
 	shapeCount    int
-	fn            func(idx int) Piece
+	fn            func(idx, playerIdx int) Piece
 	pool          *sync.Pool
 }
 
-func NewGenericFeed(bagSize int, seed int, shapeCount int, fn func(idx int) Piece) GenericFeed {
+func NewGenericFeed(bagSize int, seed int, shapeCount int, fn func(idx, playerIdx int) Piece) GenericFeed {
 	if bagSize < 1 || bagSize > MaxBagSize {
 		panic("bagSize must be from 1 to " + strconv.Itoa(MaxBagSize))
 	}
@@ -61,7 +61,7 @@ func NewGenericFeed(bagSize int, seed int, shapeCount int, fn func(idx int) Piec
 	}
 }
 
-func (f GenericFeed) Get(idx int) Piece {
+func (f GenericFeed) Get(idx, playerIdx int) Piece {
 	bagIdx := idx / f.pieceBagCount
 	idx = idx % f.pieceBagCount
 
@@ -72,7 +72,7 @@ func (f GenericFeed) Get(idx int) Piece {
 	shapeIdx := m[idx] % f.shapeCount
 	f.pool.Put(m)
 
-	return f.fn(shapeIdx)
+	return f.fn(shapeIdx, playerIdx)
 }
 
 var shapesRot = map[byte][]shapeSquare{
@@ -86,14 +86,14 @@ func NewRotTetrominoFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 		return QFeed{}
 	}
 	shapes := shapesRot[pieceSize]
-	return NewGenericFeed(bagSize, seed, len(shapes), func(idx int) Piece {
+	return NewGenericFeed(bagSize, seed, len(shapes), func(idx, playerIdx int) Piece {
 		return &polyominoRot{
 			shapeSquare: shapes[idx],
 			rot:         0,
 			block: block.Block{
 				Type:     block.TypeRock,
 				Hardness: 0,
-				Color:    c.Color(idx),
+				Color:    c.Color(idx, playerIdx),
 			},
 		}
 	})
@@ -110,13 +110,13 @@ func NewFlipVFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 		return QFeed{}
 	}
 	shapes := shapesFlipV[pieceSize]
-	return NewGenericFeed(bagSize, seed, len(shapes), func(idx int) Piece {
+	return NewGenericFeed(bagSize, seed, len(shapes), func(idx, playerIndex int) Piece {
 		return &polyominoFlipV{
 			shapeRect: shapes[idx],
 			block: block.Block{
 				Type:     block.TypeRock,
 				Hardness: 0,
-				Color:    c.Color(idx),
+				Color:    c.Color(idx, playerIndex),
 			},
 		}
 	})
@@ -133,13 +133,13 @@ func NewFlipHFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 		return QFeed{}
 	}
 	shapes := shapesFlipH[pieceSize]
-	return NewGenericFeed(bagSize, seed, len(shapes), func(idx int) Piece {
+	return NewGenericFeed(bagSize, seed, len(shapes), func(idx, playerIndex int) Piece {
 		return &polyominoFlipH{
 			shapeRect: shapes[idx],
 			block: block.Block{
 				Type:     block.TypeRock,
 				Hardness: 0,
-				Color:    c.Color(idx),
+				Color:    c.Color(idx, playerIndex),
 			},
 		}
 	})
@@ -161,9 +161,9 @@ func NewCtrlFeed(internal Feed, fIdx, ctrlIdx int, same bool) *CtrlFeed {
 	}
 }
 
-func (f *CtrlFeed) Get(idx int) Piece {
+func (f *CtrlFeed) Get(idx, playerIndex int) Piece {
 	if f.same {
-		return f.internal.Get(idx)
+		return f.internal.Get(idx, playerIndex)
 	}
-	return f.internal.Get(idx + f.fIdx*137 + f.ctrlIdx*5)
+	return f.internal.Get(idx+f.fIdx*137+f.ctrlIdx*5, playerIndex)
 }

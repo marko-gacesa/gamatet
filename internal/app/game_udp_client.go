@@ -77,6 +77,7 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 	// Input channels for local players. Closed on the UI component. Elements can be nil.
 	var playerInChs [setup.MaxLocalPlayers]chan<- []byte
 
+	var playerIndex int
 	fields := make([]core.FieldSetup, len(session.Stories))
 	for fieldIdx := range fields {
 		storyToken := session.Stories[fieldIdx].StoryInfo.Token
@@ -98,7 +99,9 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 					Name:    actor.Name,
 					Config:  piece.Config{},
 					IsLocal: false,
+					Index:   playerIndex,
 				}
+				playerIndex++
 				continue
 			}
 
@@ -121,7 +124,9 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 				Name:    name,
 				Config:  piece.Config(localPlayerInfo.PlayerConfig),
 				IsLocal: true,
+				Index:   playerIndex,
 			}
+			playerIndex++
 		}
 
 		fieldPipe := channel.MakePipe[[]byte]() // The "In" part of the pipe is closed by the network layer, in the client.

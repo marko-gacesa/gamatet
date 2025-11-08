@@ -123,7 +123,7 @@ func (e *PieceSet) Do(f *field.Field) {
 		animateNewPiece(ctrl, f.Config.Anim)
 		ctrl.Blocks = piece.GetBlocks(e.Piece, ctrl.Blocks[:0])
 		for i := range piece.NextBlockCount {
-			np := ctrl.Feed.Get(ctrl.PieceCount + i)
+			np := ctrl.Feed.Get(ctrl.PieceCount+i, ctrl.PlayerIndex)
 			ctrl.NextPieces[i].Type = np.Type()
 			ctrl.NextPieces[i].Blocks = piece.GetBlocks(np, ctrl.NextPieces[i].Blocks[:0])
 		}
@@ -146,7 +146,7 @@ func (e *PieceSet) Undo(f *field.Field) {
 		ctrl.PieceCountStr = strconv.Itoa(e.PieceCount)
 		ctrl.Blocks = piece.GetBlocks(e.Piece, ctrl.Blocks[:0])
 		for i := range piece.NextBlockCount {
-			np := ctrl.Feed.Get(ctrl.PieceCount + i)
+			np := ctrl.Feed.Get(ctrl.PieceCount+i, ctrl.PlayerIndex)
 			ctrl.NextPieces[i].Type = np.Type()
 			ctrl.NextPieces[i].Blocks = piece.GetBlocks(np, ctrl.NextPieces[i].Blocks[:0])
 		}

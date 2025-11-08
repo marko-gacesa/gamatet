@@ -52,7 +52,7 @@ func NewGameOne(
 	w, h := render.GetExtendedContent(wf, hf, preferredSide.PosN(pf))
 
 	g := &GameOne{
-		BlockBase: base.NewBlockBase(renderer, tex, w, h, false),
+		BlockBase: base.NewBlockBase(renderer, tex, w, h, true),
 		res:       *res,
 		text:      *text,
 

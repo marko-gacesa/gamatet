@@ -67,6 +67,9 @@ type Ctrl struct {
 	// Idx is an index of Ctrl in the field
 	Idx int
 
+	// PlayerIndex is index of the player in the game.
+	PlayerIndex int
+
 	// Name of the player
 	Name string
 

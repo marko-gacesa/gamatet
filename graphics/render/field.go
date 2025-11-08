@@ -7,6 +7,7 @@ import (
 	"gamatet/game/core"
 	"gamatet/game/field"
 	"gamatet/game/piece"
+	"gamatet/game/setup"
 	"gamatet/graphics/render/rendercache"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
@@ -25,21 +26,19 @@ var (
 	colorWave = colorVector(block.Wave.Color)
 	colorBomb = colorVector(block.Bomb.Color)
 
-	colorPlayerBack = []mgl32.Vec4{
-		{0.0, 0.1, 0.4, 1.0},
-		{0.4, 0.1, 0.1, 1.0},
-		{0.1, 0.3, 0.1, 1.0},
-		{0.3, 0.3, 0.1, 1.0},
-	}
-	colorPlayer = []mgl32.Vec4{
-		{0.0, 0.5, 1.0, 0.8},
-		{1.0, 0.3, 0.3, 0.8},
-		{0.0, 1.0, 0.2, 0.8},
-		{1.0, 1.0, 0.2, 0.8},
-	}
 	colorText  = mgl32.Vec4{1, 1, 1, 0.8}
 	colorLabel = mgl32.Vec4{1, 1, 1, 0.5}
+
+	colorPlayer     = [setup.MaxPlayers]mgl32.Vec4{}
+	colorPlayerBack = [setup.MaxPlayers]mgl32.Vec4{}
 )
+
+func init() {
+	for i := range setup.MaxPlayers {
+		colorPlayer[i] = mgl32.Vec3(setup.ColorRGB[i][:]).Vec4(1.0)
+		colorPlayerBack[i] = mgl32.Vec3(setup.ColorBackRGB[i][:]).Vec4(1.0)
+	}
+}
 
 const (
 	scaleLabel = 0.6
@@ -438,11 +437,9 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 	// prepare player info strings and next pieces
 
-	for idx, p := range renderInfo.Pieces {
+	for idx := range renderInfo.Pieces {
 		var modelInfo mgl32.Mat4
 		var hDir float32
-
-		colorPlayerText := colorPlayer[idx]
 
 		const edgeOffset = 0.75
 
@@ -476,11 +473,12 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		//		Mul4(mgl32.Scale3D(pulse*0.3, pulse*0.2, pulse*0.3)),
 		//	mgl32.Vec4{1, 1, 1, 1}, 0)
 
+		p := &renderInfo.Pieces[idx]
+		colorPlayerText := colorPlayer[p.PlayerIndex]
+
 		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "PLAYER", p.PieceTextData.Name, hDir)
 		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "SCORE", p.PieceTextData.Score, hDir)
 		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "PIECE", p.PieceTextData.PieceNum, hDir)
-		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "STATE", piece.StateName[p.State], hDir)
-		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "MODE", renderInfo.Mode.String(), hDir)
 
 		if len(p.NextPieces[0].Blocks) == 0 {
 			continue

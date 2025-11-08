@@ -98,6 +98,7 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 
 		teamSize := len(actors)
 
+		var playerIndex int
 		fieldPlayers := make([]core.PlayerSetup, teamSize)
 		for storyActorIdx, actor := range actors {
 			if !actor.IsLocal {
@@ -122,8 +123,10 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 					Name:    name,
 					Config:  piece.Config(playerConfig),
 					IsLocal: false,
+					Index:   playerIndex,
 					InCh:    actorInputPipe.Out, // [4] The game engine reads remote actors actions from here.
 				}
+				playerIndex++
 
 				continue
 			}
@@ -145,8 +148,10 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 				Name:    name,
 				Config:  piece.Config(localPlayerInfo.PlayerConfig),
 				IsLocal: true,
+				Index:   playerIndex,
 				InCh:    playerInputPipe.Out, // [3] The game engine reads local player actions from here (directly from the input device - keyboard).
 			}
+			playerIndex++
 		}
 
 		fieldPipe := channel.MakePipe[[]byte]() // The "In" part of the pipe is closed in the game host when it finishes.

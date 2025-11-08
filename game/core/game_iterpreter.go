@@ -74,6 +74,7 @@ func MakeInterpreter(setup Setup, options InterpreterOptions) *GameInterpreter {
 		for j := range players {
 			ctrl := f.Ctrl(byte(j))
 
+			ctrl.PlayerIndex = players[j].Index
 			ctrl.Name = players[j].Name
 			ctrl.Feed = piece.NewCtrlFeed(setup.Config.PieceFeed, i, j, setup.Config.SamePieces)
 			ctrl.Config = players[j].Config

@@ -51,6 +51,7 @@ func (app *App) gameSinglePlayer(ctx screen.Context) types.GameOneParams {
 						Name:    app.cfg.LocalPlayers.Infos[0].Name,
 						Config:  piece.Config(app.cfg.LocalPlayers.Infos[0].PlayerConfig),
 						IsLocal: true,
+						Index:   0,
 						InCh:    playerOutCh,
 					},
 				},

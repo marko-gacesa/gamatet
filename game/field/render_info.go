@@ -36,7 +36,8 @@ type PieceRenderInfo struct {
 	DirectionCW bool
 	NextPieces  [piece.NextBlockCount]NextPieceRenderInfo
 
-	PieceEmpty bool
+	PieceEmpty  bool
+	PlayerIndex int
 
 	Blocks     []block.XYB
 	X, Y       int
@@ -185,6 +186,7 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 		info.Pieces[i].State = 0
 		info.Pieces[i].IsLimited = false
 		info.Pieces[i].PieceEmpty = true
+		info.Pieces[i].PlayerIndex = -1
 		for j := range piece.NextBlockCount {
 			info.Pieces[i].NextPieces[j].Type = piece.TypeNone
 			info.Pieces[i].NextPieces[j].Blocks = info.Pieces[i].NextPieces[j].Blocks[:0]
@@ -196,6 +198,7 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 
 		pinfo := &info.Pieces[pIdx]
 		pinfo.PieceEmpty = false
+		pinfo.PlayerIndex = ctrl.PlayerIndex
 
 		pinfo.State = ctrl.State
 

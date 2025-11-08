@@ -2,15 +2,17 @@
 
 package piece
 
-import "math/rand/v2"
+import (
+	"math/rand/v2"
+)
 
 type Color interface {
-	Color(idx int) uint32
+	Color(idx, playerIdx int) uint32
 }
 
 type DefaultColor struct{}
 
-func (c DefaultColor) Color(idx int) uint32 {
+func (c DefaultColor) Color(idx, playerIdx int) uint32 {
 	return _colors[idx%len(_colors)]
 }
 
@@ -42,26 +44,28 @@ var _colors = []uint32{
 }
 
 type RandomColor struct {
-	r, g, b uint16
-	seed    int
-	pcg     rand.PCG
-	rand    rand.Rand
+	seed       int
+	colorTable [][3]float32
+	pcg        rand.PCG
+	rand       rand.Rand
 }
 
-func NewRandomColor(r, g, b float32, seed int) *RandomColor {
+func NewRandomColor(colorTable [][3]float32, seed int) *RandomColor {
 	c := &RandomColor{
-		r:    uint16(256 * r),
-		g:    uint16(256 * g),
-		b:    uint16(256 * b),
-		seed: seed,
-		pcg:  *rand.NewPCG(0, 0),
+		seed:       seed,
+		colorTable: colorTable,
+		pcg:        *rand.NewPCG(0, 0),
 	}
 	c.rand = *rand.New(&c.pcg)
 	return c
 }
 
-func (r *RandomColor) Color(idx int) uint32 {
-	r.pcg.Seed(uint64(r.seed), uint64(idx))
-	v := uint16(r.rand.Uint64())&0xFF | 0x80
-	return uint32(r.r*v)&0xFF00<<16 | uint32(r.g*v)&0xFF00<<8 | uint32(r.b*v)&0xFF00
+func (c *RandomColor) Color(idx, playerIdx int) uint32 {
+	rgb := c.colorTable[playerIdx%len(c.colorTable)]
+	r := uint16(256 * rgb[0])
+	g := uint16(256 * rgb[1])
+	b := uint16(256 * rgb[2])
+	c.pcg.Seed(uint64(c.seed), uint64(idx))
+	v := uint16(c.rand.Uint64())&0xFF | 0b11000000
+	return uint32(r*v)&0xFF00<<16 | uint32(g*v)&0xFF00<<8 | uint32(b*v)&0xFF00
 }
