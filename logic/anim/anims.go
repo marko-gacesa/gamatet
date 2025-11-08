@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2025 by Marko Gaćeša
 
 package anim
 
@@ -28,10 +28,6 @@ func (a *animTransLin) Translate() (dx, dy, dz float32) {
 	return
 }
 
-func (*animTransLin) Rotate() (rx, ry, rz float32) { return }
-func (*animTransLin) Scale() (sx, sy, sz float32)  { return }
-func (*animTransLin) Color() (r, g, b, a float32)  { return }
-
 type animTransQuad struct {
 	animBase
 	dx, dy, dz float32
@@ -52,10 +48,6 @@ func (a *animTransQuad) Translate() (dx, dy, dz float32) {
 	return
 }
 
-func (*animTransQuad) Rotate() (rx, ry, rz float32) { return }
-func (*animTransQuad) Scale() (sx, sy, sz float32)  { return }
-func (*animTransQuad) Color() (r, g, b, a float32)  { return }
-
 // Translation X - linear and quadratic
 
 type animXLin struct {
@@ -75,10 +67,6 @@ func (a *animXLin) Translate() (dx, dy, dz float32) {
 	return
 }
 
-func (*animXLin) Rotate() (rx, ry, rz float32) { return }
-func (*animXLin) Scale() (sx, sy, sz float32)  { return }
-func (*animXLin) Color() (r, g, b, a float32)  { return }
-
 type animXQuad struct {
 	animBase
 	dx float32
@@ -95,10 +83,6 @@ func (a *animXQuad) Translate() (dx, dy, dz float32) {
 	dx = a.dx * rt * rt
 	return
 }
-
-func (*animXQuad) Rotate() (rx, ry, rz float32) { return }
-func (*animXQuad) Scale() (sx, sy, sz float32)  { return }
-func (*animXQuad) Color() (r, g, b, a float32)  { return }
 
 // Translation Y - linear and quadratic
 
@@ -119,10 +103,6 @@ func (a *animYLin) Translate() (dx, dy, dz float32) {
 	return
 }
 
-func (*animYLin) Rotate() (rx, ry, rz float32) { return }
-func (*animYLin) Scale() (sx, sy, sz float32)  { return }
-func (*animYLin) Color() (r, g, b, a float32)  { return }
-
 type animYQuad struct {
 	animBase
 	dy float32
@@ -139,10 +119,6 @@ func (a *animYQuad) Translate() (dx, dy, dz float32) {
 	dy = a.dy * rt * rt
 	return
 }
-
-func (*animYQuad) Rotate() (rx, ry, rz float32) { return }
-func (*animYQuad) Scale() (sx, sy, sz float32)  { return }
-func (*animYQuad) Color() (r, g, b, a float32)  { return }
 
 // Translation Z - linear and quadratic
 
@@ -163,10 +139,6 @@ func (a *animZLin) Translate() (dx, dy, dz float32) {
 	return
 }
 
-func (*animZLin) Rotate() (rx, ry, rz float32) { return }
-func (*animZLin) Scale() (sx, sy, sz float32)  { return }
-func (*animZLin) Color() (r, g, b, a float32)  { return }
-
 type animZQuad struct {
 	animBase
 	dz float32
@@ -183,10 +155,6 @@ func (a *animZQuad) Translate() (dx, dy, dz float32) {
 	dz = a.dz * rt * rt
 	return
 }
-
-func (*animZQuad) Rotate() (rx, ry, rz float32) { return }
-func (*animZQuad) Scale() (sx, sy, sz float32)  { return }
-func (*animZQuad) Color() (r, g, b, a float32)  { return }
 
 // Fall
 
@@ -206,10 +174,6 @@ func (a *animFall) Translate() (dx, dy, dz float32) {
 	dy = a.dy * (1.0 - rt*rt)
 	return
 }
-
-func (*animFall) Rotate() (rx, ry, rz float32) { return }
-func (*animFall) Scale() (sx, sy, sz float32)  { return }
-func (*animFall) Color() (r, g, b, a float32)  { return }
 
 // Quake
 
@@ -242,10 +206,6 @@ func (a *animQuake) Translate() (dx, dy, dz float32) {
 	return
 }
 
-func (*animQuake) Rotate() (rx, ry, rz float32) { return }
-func (*animQuake) Scale() (sx, sy, sz float32)  { return }
-func (*animQuake) Color() (r, g, b, a float32)  { return }
-
 // Rotation X - linear and quadratic
 
 type animXRotLin struct {
@@ -265,10 +225,6 @@ func (a *animXRotLin) Rotate() (rx, ry, rz float32) {
 	return
 }
 
-func (*animXRotLin) Translate() (dx, dy, dz float32) { return }
-func (*animXRotLin) Scale() (sx, sy, sz float32)     { return }
-func (*animXRotLin) Color() (r, g, b, a float32)     { return }
-
 type animXRotQuad struct {
 	animBase
 	rx float32
@@ -285,10 +241,6 @@ func (a *animXRotQuad) Rotate() (rx, ry, rz float32) {
 	rx = a.rx * rt * rt
 	return
 }
-
-func (*animXRotQuad) Translate() (dx, dy, dz float32) { return }
-func (*animXRotQuad) Scale() (sx, sy, sz float32)     { return }
-func (*animXRotQuad) Color() (r, g, b, a float32)     { return }
 
 // Rotation Y - linear and quadratic
 
@@ -309,10 +261,6 @@ func (a *animYRotLin) Rotate() (rx, ry, rz float32) {
 	return
 }
 
-func (*animYRotLin) Translate() (dx, dy, dz float32) { return }
-func (*animYRotLin) Scale() (sx, sy, sz float32)     { return }
-func (*animYRotLin) Color() (r, g, b, a float32)     { return }
-
 type animYRotQuad struct {
 	animBase
 	ry float32
@@ -329,10 +277,6 @@ func (a *animYRotQuad) Rotate() (rx, ry, rz float32) {
 	ry = a.ry * rt * rt
 	return
 }
-
-func (*animYRotQuad) Translate() (dx, dy, dz float32) { return }
-func (*animYRotQuad) Scale() (sx, sy, sz float32)     { return }
-func (*animYRotQuad) Color() (r, g, b, a float32)     { return }
 
 // Rotation Z - linear and quadratic
 
@@ -353,10 +297,6 @@ func (a *animZRotLin) Rotate() (rx, ry, rz float32) {
 	return
 }
 
-func (*animZRotLin) Translate() (dx, dy, dz float32) { return }
-func (*animZRotLin) Scale() (sx, sy, sz float32)     { return }
-func (*animZRotLin) Color() (r, g, b, a float32)     { return }
-
 type animZRotQuad struct {
 	animBase
 	rz float32
@@ -373,10 +313,6 @@ func (a *animZRotQuad) Rotate() (rx, ry, rz float32) {
 	rz = a.rz * rt * rt
 	return
 }
-
-func (*animZRotQuad) Translate() (dx, dy, dz float32) { return }
-func (*animZRotQuad) Scale() (sx, sy, sz float32)     { return }
-func (*animZRotQuad) Color() (r, g, b, a float32)     { return }
 
 // PopIn
 
@@ -396,10 +332,6 @@ func (a *animPopIn) Scale() (sx, sy, sz float32) {
 	return t, t, t
 }
 
-func (*animPopIn) Translate() (dx, dy, dz float32) { return }
-func (*animPopIn) Rotate() (rx, ry, rz float32)    { return }
-func (*animPopIn) Color() (r, g, b, a float32)     { return }
-
 // PopOut
 
 type animPopOut struct {
@@ -417,10 +349,6 @@ func (a *animPopOut) Scale() (sx, sy, sz float32) {
 	t = t * t
 	return t, t, t
 }
-
-func (*animPopOut) Translate() (dx, dy, dz float32) { return }
-func (*animPopOut) Rotate() (rx, ry, rz float32)    { return }
-func (*animPopOut) Color() (r, g, b, a float32)     { return }
 
 // Spin
 
@@ -441,10 +369,6 @@ func (a *animSpin) Rotate() (rx, ry, rz float32) {
 	rz = 1.7 * t
 	return
 }
-
-func (*animSpin) Translate() (dx, dy, dz float32) { return }
-func (*animSpin) Scale() (sx, sy, sz float32)     { return }
-func (*animSpin) Color() (r, g, b, a float32)     { return }
 
 // SpinOnce
 
@@ -467,10 +391,6 @@ func (a *animSpinOnce) Rotate() (rx, ry, rz float32) {
 	return
 }
 
-func (*animSpinOnce) Translate() (dx, dy, dz float32) { return }
-func (*animSpinOnce) Scale() (sx, sy, sz float32)     { return }
-func (*animSpinOnce) Color() (r, g, b, a float32)     { return }
-
 // RotateZ
 
 type animRotateZ struct {
@@ -486,10 +406,6 @@ func (*animRotateZ) Feature() Feature { return Rotate }
 func (a *animRotateZ) Rotate() (rx, ry, rz float32) {
 	return 0, 0, 2 * math.Pi * a.T()
 }
-
-func (*animRotateZ) Translate() (dx, dy, dz float32) { return }
-func (*animRotateZ) Scale() (sx, sy, sz float32)     { return }
-func (*animRotateZ) Color() (r, g, b, a float32)     { return }
 
 // ColorTrans
 
@@ -522,10 +438,6 @@ func (q *animColorTrans) Color() (r, g, b, a float32) {
 	return
 }
 
-func (*animColorTrans) Translate() (dx, dy, dz float32) { return }
-func (*animColorTrans) Scale() (sx, sy, sz float32)     { return }
-func (*animColorTrans) Rotate() (rx, ry, rz float32)    { return }
-
 // Flash
 
 type animFlash struct {
@@ -537,10 +449,6 @@ func NewFlash(now time.Time, duration time.Duration) Anim {
 }
 
 func (*animFlash) Feature() Feature { return Color }
-
-func (*animFlash) Scale() (sx, sy, sz float32)     { return }
-func (*animFlash) Translate() (dx, dy, dz float32) { return }
-func (*animFlash) Rotate() (rx, ry, rz float32)    { return }
 
 func (q *animFlash) Color() (r, g, b, a float32) {
 	i := float32(0.7 + 0.9*math.Sin(float64(q.T()*8*math.Pi)))
@@ -563,10 +471,6 @@ func NewSlide(now time.Time, duration time.Duration) Anim {
 
 func (*animSlide) Feature() Feature { return Color }
 
-func (*animSlide) Scale() (sx, sy, sz float32)     { return }
-func (*animSlide) Translate() (dx, dy, dz float32) { return }
-func (*animSlide) Rotate() (rx, ry, rz float32)    { return }
-
 func (q *animSlide) Color() (r, g, b, a float32) {
 	t := 1.0 + 0.4*float32(math.Sin(float64(q.T())*4*math.Pi))
 	return t, t, t, 1
@@ -587,10 +491,6 @@ func NewMeld(now time.Time, duration time.Duration) Anim {
 }
 
 func (*animMeld) Feature() Feature { return Color }
-
-func (*animMeld) Scale() (sx, sy, sz float32)     { return }
-func (*animMeld) Translate() (dx, dy, dz float32) { return }
-func (*animMeld) Rotate() (rx, ry, rz float32)    { return }
 
 func (q *animMeld) Color() (r, g, b, a float32) {
 	t := 1 - q.T()
@@ -613,10 +513,6 @@ func NewRainbow(now time.Time, period time.Duration) Anim {
 }
 
 func (*animRainbow) Feature() Feature { return Color }
-
-func (*animRainbow) Scale() (sx, sy, sz float32)     { return }
-func (*animRainbow) Translate() (dx, dy, dz float32) { return }
-func (*animRainbow) Rotate() (rx, ry, rz float32)    { return }
 
 func (q *animRainbow) Color() (r, g, b, a float32) {
 	t := float64(q.T()) * 2 * math.Pi
@@ -644,7 +540,3 @@ func (q *animPulse) Scale() (sx, sy, sz float32) {
 	a = 0.5 + 0.5*a*a
 	return a, a, a
 }
-
-func (*animPulse) Translate() (dx, dy, dz float32) { return }
-func (*animPulse) Rotate() (rx, ry, rz float32)    { return }
-func (*animPulse) Color() (r, g, b, a float32)     { return }
