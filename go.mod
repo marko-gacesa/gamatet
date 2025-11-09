@@ -2,8 +2,6 @@ module gamatet
 
 go 1.23.0
 
-replace github.com/marko-gacesa/udpstar => ../udpstar
-
 require (
 	github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20250301202403-da16c1255728
@@ -12,7 +10,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/marko-gacesa/bitdata v0.0.0-20250629140544-0cf19430b1b6
 	github.com/marko-gacesa/channel v0.0.0-20251109114423-46abe59b4977
-	github.com/marko-gacesa/udpstar v0.0.0-20231130162919-86d574d6bdcb
+	github.com/marko-gacesa/udpstar v0.0.0-20251109131729-90e43c8920dc
 	golang.org/x/image v0.26.0
 	golang.org/x/text v0.24.0
 )
