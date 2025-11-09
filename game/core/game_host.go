@@ -13,7 +13,7 @@ import (
 	"gamatet/game/piece"
 	"gamatet/game/sweeper"
 	"gamatet/logic/latency"
-	"github.com/marko-gacesa/udpstar/channel"
+	"github.com/marko-gacesa/channel"
 	"github.com/marko-gacesa/udpstar/udpstar/controller"
 	"math/rand/v2"
 	"time"

@@ -13,7 +13,7 @@ import (
 	"gamatet/internal/types"
 	"gamatet/logic/latency"
 	"gamatet/logic/screen"
-	"github.com/marko-gacesa/udpstar/channel"
+	"github.com/marko-gacesa/channel"
 	"github.com/marko-gacesa/udpstar/udpstar"
 	"github.com/marko-gacesa/udpstar/udpstar/client"
 	"net"

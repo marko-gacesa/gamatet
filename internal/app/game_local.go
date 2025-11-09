@@ -10,7 +10,7 @@ import (
 	"gamatet/game/setup"
 	"gamatet/internal/types"
 	"gamatet/logic/screen"
-	"github.com/marko-gacesa/udpstar/channel"
+	"github.com/marko-gacesa/channel"
 )
 
 func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {

@@ -8,10 +8,10 @@ github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 h1:DACJavvAHhabrF0
 github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0/go.mod h1:E/TSTwGwJL78qG/PmXZO1EjYhfJinVAhrmmHX6Z8B9k=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
 github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
-github.com/marko-gacesa/bitdata v0.0.0-20250629114531-5ddb25473e8b h1:6bRqQVB8LE4fPAE7xLJLntsT5plpesofBru4Ov/ss70=
-github.com/marko-gacesa/bitdata v0.0.0-20250629114531-5ddb25473e8b/go.mod h1:zwuHtnK6+DRLQgd1lnbjw/JMi+iMOO3TKOPnt5zsra4=
 github.com/marko-gacesa/bitdata v0.0.0-20250629140544-0cf19430b1b6 h1:Cq3yaB+VCsoplHr7/Mi6KHtKJN7n0sAJy9rUcdYIeAM=
 github.com/marko-gacesa/bitdata v0.0.0-20250629140544-0cf19430b1b6/go.mod h1:qICc2lr8FvDeBZNMx12jj+Q8pAMeiZ9cdp9L5g0dhtY=
+github.com/marko-gacesa/channel v0.0.0-20251109114423-46abe59b4977 h1:wlLQ62QU4hNdiWimmN/vJb3luxsvDkzqPM8dwE6M4nc=
+github.com/marko-gacesa/channel v0.0.0-20251109114423-46abe59b4977/go.mod h1:6EEGwNBa9YIcrAV0WdtFQIns0cPhRRxspR/P0xjaG5o=
 golang.org/x/image v0.26.0 h1:4XjIFEZWQmCZi6Wv8BoxsDhRU3RVnLX04dToTDAEPlY=
 golang.org/x/image v0.26.0/go.mod h1:lcxbMFAovzpnJxzXS3nyL83K27tmqtKzIJpctK8YO5c=
 golang.org/x/net v0.36.0 h1:vWF2fRbw4qslQsQzgFqZff+BItCvGFQqKzKIzx1rmoA=

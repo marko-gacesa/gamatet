@@ -11,7 +11,7 @@ import (
 	"gamatet/game/field"
 	"gamatet/game/piece"
 	"gamatet/logic/latency"
-	"github.com/marko-gacesa/udpstar/channel"
+	"github.com/marko-gacesa/channel"
 	"log"
 	"time"
 )
