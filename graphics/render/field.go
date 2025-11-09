@@ -3,14 +3,14 @@
 package render
 
 import (
-	"gamatet/game/block"
-	"gamatet/game/core"
-	"gamatet/game/field"
-	"gamatet/game/piece"
-	"gamatet/game/setup"
-	"gamatet/graphics/render/rendercache"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/marko-gacesa/gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/game/core"
+	"github.com/marko-gacesa/gamatet/game/field"
+	"github.com/marko-gacesa/gamatet/game/piece"
+	"github.com/marko-gacesa/gamatet/game/setup"
+	"github.com/marko-gacesa/gamatet/graphics/render/rendercache"
 	"math"
 	"slices"
 	"sync"

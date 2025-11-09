@@ -3,8 +3,8 @@
 package app
 
 import (
-	"gamatet/logic/menu"
-	"gamatet/logic/screen"
+	"github.com/marko-gacesa/gamatet/logic/menu"
+	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
 const (

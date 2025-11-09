@@ -4,11 +4,11 @@ package app
 
 import (
 	"fmt"
-	"gamatet/game/setup"
-	"gamatet/internal/values"
-	"gamatet/logic/menu"
-	"gamatet/logic/screen"
 	"github.com/marko-gacesa/bitdata"
+	"github.com/marko-gacesa/gamatet/game/setup"
+	"github.com/marko-gacesa/gamatet/internal/values"
+	"github.com/marko-gacesa/gamatet/logic/menu"
+	"github.com/marko-gacesa/gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/udp"
 	"github.com/marko-gacesa/udpstar/udpstar"
 	"github.com/marko-gacesa/udpstar/udpstar/client"

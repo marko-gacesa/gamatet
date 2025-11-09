@@ -4,8 +4,8 @@ package piece
 
 import (
 	"errors"
-	"gamatet/game/block"
-	"gamatet/game/serialize"
+	"github.com/marko-gacesa/gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/game/serialize"
 	"io"
 	"math"
 )

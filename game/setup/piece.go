@@ -2,7 +2,7 @@
 
 package setup
 
-import "gamatet/game/piece"
+import "github.com/marko-gacesa/gamatet/game/piece"
 
 type PieceType byte
 

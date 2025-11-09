@@ -3,7 +3,7 @@
 package render
 
 import (
-	"gamatet/game/field"
+	"github.com/marko-gacesa/gamatet/game/field"
 )
 
 type DisplayPosition byte

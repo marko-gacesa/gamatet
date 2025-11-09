@@ -3,13 +3,13 @@
 package render
 
 import (
-	"gamatet/graphics/geometry"
-	"gamatet/graphics/material"
-	"gamatet/graphics/runeatlas"
-	"gamatet/graphics/texture"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/golang/freetype/truetype"
+	"github.com/marko-gacesa/gamatet/graphics/geometry"
+	"github.com/marko-gacesa/gamatet/graphics/material"
+	"github.com/marko-gacesa/gamatet/graphics/runeatlas"
+	"github.com/marko-gacesa/gamatet/graphics/texture"
 	"math"
 	"time"
 )

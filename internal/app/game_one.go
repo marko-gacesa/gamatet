@@ -3,14 +3,14 @@
 package app
 
 import (
-	"gamatet/game/action"
-	"gamatet/game/core"
-	"gamatet/game/field"
-	"gamatet/game/piece"
-	"gamatet/game/setup"
-	"gamatet/internal/types"
-	"gamatet/logic/screen"
 	"github.com/marko-gacesa/channel"
+	"github.com/marko-gacesa/gamatet/game/action"
+	"github.com/marko-gacesa/gamatet/game/core"
+	"github.com/marko-gacesa/gamatet/game/field"
+	"github.com/marko-gacesa/gamatet/game/piece"
+	"github.com/marko-gacesa/gamatet/game/setup"
+	"github.com/marko-gacesa/gamatet/internal/types"
+	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
 func (app *App) gameSinglePlayer(ctx screen.Context) types.GameOneParams {

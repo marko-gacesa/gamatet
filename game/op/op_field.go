@@ -5,10 +5,10 @@ package op
 import (
 	"bytes"
 	"encoding/binary"
-	"gamatet/game/block"
-	"gamatet/game/event"
-	"gamatet/game/field"
-	"gamatet/game/piece"
+	"github.com/marko-gacesa/gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/game/event"
+	"github.com/marko-gacesa/gamatet/game/field"
+	"github.com/marko-gacesa/gamatet/game/piece"
 	"io"
 )
 

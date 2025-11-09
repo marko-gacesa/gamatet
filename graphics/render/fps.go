@@ -3,8 +3,8 @@
 package render
 
 import (
-	"gamatet/logic/cache"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/marko-gacesa/gamatet/logic/cache"
 	"strconv"
 )
 

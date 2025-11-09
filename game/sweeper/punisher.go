@@ -3,10 +3,10 @@
 package sweeper
 
 import (
-	"gamatet/game/block"
-	"gamatet/game/event"
-	"gamatet/game/field"
-	"gamatet/game/op"
+	"github.com/marko-gacesa/gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/game/event"
+	"github.com/marko-gacesa/gamatet/game/field"
+	"github.com/marko-gacesa/gamatet/game/op"
 )
 
 var _ Sweeper = (*Punisher)(nil)

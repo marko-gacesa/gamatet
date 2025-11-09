@@ -4,9 +4,9 @@ package core
 
 import (
 	"context"
-	"gamatet/game/action"
-	"gamatet/game/field"
-	"gamatet/game/piece"
+	"github.com/marko-gacesa/gamatet/game/action"
+	"github.com/marko-gacesa/gamatet/game/field"
+	"github.com/marko-gacesa/gamatet/game/piece"
 	"time"
 )
 

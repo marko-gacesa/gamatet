@@ -4,8 +4,8 @@ package app
 
 import (
 	"fmt"
-	"gamatet/logic/menu"
-	"gamatet/logic/screen"
+	"github.com/marko-gacesa/gamatet/logic/menu"
+	"github.com/marko-gacesa/gamatet/logic/screen"
 	"strconv"
 )
 

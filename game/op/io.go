@@ -4,8 +4,8 @@ package op
 
 import (
 	"fmt"
-	"gamatet/game/event"
-	"gamatet/game/serialize"
+	"github.com/marko-gacesa/gamatet/game/event"
+	"github.com/marko-gacesa/gamatet/game/serialize"
 	"io"
 )
 

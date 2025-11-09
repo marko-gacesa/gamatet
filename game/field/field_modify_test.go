@@ -4,7 +4,7 @@ package field
 
 import (
 	"fmt"
-	"gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/game/block"
 	"testing"
 )
 

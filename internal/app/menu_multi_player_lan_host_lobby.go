@@ -4,9 +4,9 @@ package app
 
 import (
 	"fmt"
-	"gamatet/internal/values"
-	"gamatet/logic/menu"
-	"gamatet/logic/screen"
+	"github.com/marko-gacesa/gamatet/internal/values"
+	"github.com/marko-gacesa/gamatet/logic/menu"
+	"github.com/marko-gacesa/gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/udpstar"
 	"github.com/marko-gacesa/udpstar/udpstar/message"
 	"github.com/marko-gacesa/udpstar/udpstar/server"

@@ -1,4 +1,4 @@
-module gamatet
+module github.com/marko-gacesa/gamatet
 
 go 1.23.0
 

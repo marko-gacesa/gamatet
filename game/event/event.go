@@ -3,7 +3,7 @@
 package event
 
 import (
-	"gamatet/game/field"
+	"github.com/marko-gacesa/gamatet/game/field"
 	"io"
 )
 

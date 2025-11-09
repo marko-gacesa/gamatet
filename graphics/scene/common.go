@@ -2,7 +2,7 @@
 
 package scene
 
-import "gamatet/graphics/render"
+import "github.com/marko-gacesa/gamatet/graphics/render"
 
 const (
 	HUDPosFPS       = render.HUDUpperRight

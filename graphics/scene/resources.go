@@ -3,11 +3,11 @@
 package scene
 
 import (
-	"gamatet/graphics/render"
-	"gamatet/graphics/texture"
-	"gamatet/internal/types"
-	"gamatet/logic/menu"
-	"gamatet/logic/screen"
+	"github.com/marko-gacesa/gamatet/graphics/render"
+	"github.com/marko-gacesa/gamatet/graphics/texture"
+	"github.com/marko-gacesa/gamatet/internal/types"
+	"github.com/marko-gacesa/gamatet/logic/menu"
+	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
 type Resources struct {

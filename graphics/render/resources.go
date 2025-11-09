@@ -3,9 +3,9 @@
 package render
 
 import (
-	"gamatet/graphics/geometry"
-	"gamatet/graphics/material"
-	"gamatet/graphics/texture"
+	"github.com/marko-gacesa/gamatet/graphics/geometry"
+	"github.com/marko-gacesa/gamatet/graphics/material"
+	"github.com/marko-gacesa/gamatet/graphics/texture"
 )
 
 type FieldResources struct {

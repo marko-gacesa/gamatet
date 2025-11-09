@@ -3,8 +3,8 @@
 package app
 
 import (
-	"gamatet/game/setup"
-	"gamatet/logic/menu"
+	"github.com/marko-gacesa/gamatet/game/setup"
+	"github.com/marko-gacesa/gamatet/logic/menu"
 	"math"
 )
 

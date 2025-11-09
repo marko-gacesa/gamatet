@@ -5,9 +5,9 @@ package app
 import (
 	"context"
 	"fmt"
-	"gamatet/game/setup"
-	"gamatet/internal/config"
-	"gamatet/logic/screen"
+	"github.com/marko-gacesa/gamatet/game/setup"
+	"github.com/marko-gacesa/gamatet/internal/config"
+	"github.com/marko-gacesa/gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/udp"
 	"github.com/marko-gacesa/udpstar/udpstar"
 	"github.com/marko-gacesa/udpstar/udpstar/client"

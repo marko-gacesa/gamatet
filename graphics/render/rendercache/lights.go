@@ -3,8 +3,8 @@
 package rendercache
 
 import (
-	"gamatet/graphics/material"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/marko-gacesa/gamatet/graphics/material"
 	"sync"
 )
 

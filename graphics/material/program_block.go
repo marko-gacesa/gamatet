@@ -3,10 +3,10 @@
 package material
 
 import (
-	"gamatet/graphics/camera"
-	"gamatet/graphics/geometry"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/marko-gacesa/gamatet/graphics/camera"
+	"github.com/marko-gacesa/gamatet/graphics/geometry"
 )
 
 var _ Material = (*programBlock)(nil)

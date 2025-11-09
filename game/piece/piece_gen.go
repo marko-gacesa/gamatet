@@ -2,7 +2,7 @@
 
 package piece
 
-import "gamatet/game/block"
+import "github.com/marko-gacesa/gamatet/game/block"
 
 // See: https://en.wikipedia.org/wiki/Polyomino
 const (

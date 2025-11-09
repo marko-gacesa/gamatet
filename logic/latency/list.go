@@ -4,7 +4,7 @@ package latency
 
 import (
 	"fmt"
-	"gamatet/logic/cache"
+	"github.com/marko-gacesa/gamatet/logic/cache"
 	"github.com/marko-gacesa/udpstar/udpstar"
 	"slices"
 	"strings"

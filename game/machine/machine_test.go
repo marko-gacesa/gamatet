@@ -3,13 +3,13 @@
 package machine
 
 import (
-	"gamatet/game/block"
-	"gamatet/game/event"
-	"gamatet/game/field"
-	"gamatet/game/op"
-	"gamatet/game/piece"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/marko-gacesa/gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/game/event"
+	"github.com/marko-gacesa/gamatet/game/field"
+	"github.com/marko-gacesa/gamatet/game/op"
+	"github.com/marko-gacesa/gamatet/game/piece"
 	"testing"
 )
 

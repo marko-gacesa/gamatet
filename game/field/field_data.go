@@ -3,7 +3,7 @@
 package field
 
 import (
-	"gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/game/block"
 )
 
 type DestroyBlockInfo struct {

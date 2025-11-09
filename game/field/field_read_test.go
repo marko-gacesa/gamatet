@@ -3,8 +3,8 @@
 package field
 
 import (
-	"gamatet/game/block"
-	"gamatet/game/piece"
+	"github.com/marko-gacesa/gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/game/piece"
 	"reflect"
 	"testing"
 )

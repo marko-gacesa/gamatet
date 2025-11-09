@@ -4,9 +4,9 @@ package app
 
 import (
 	"fmt"
-	"gamatet/game/setup"
-	"gamatet/logic/menu"
-	"gamatet/logic/screen"
+	"github.com/marko-gacesa/gamatet/game/setup"
+	"github.com/marko-gacesa/gamatet/logic/menu"
+	"github.com/marko-gacesa/gamatet/logic/screen"
 	"math/rand/v2"
 	"strconv"
 )

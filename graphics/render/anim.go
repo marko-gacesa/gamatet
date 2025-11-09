@@ -3,8 +3,8 @@
 package render
 
 import (
-	"gamatet/logic/anim"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/marko-gacesa/gamatet/logic/anim"
 )
 
 func animListUpdate(r *anim.Result) (matrix mgl32.Mat4, color mgl32.Vec4) {

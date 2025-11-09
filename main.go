@@ -4,10 +4,10 @@ package main
 
 import (
 	"context"
-	"gamatet/graphics/loop"
-	"gamatet/internal/app"
-	"gamatet/internal/config"
-	"gamatet/logic/appctx"
+	"github.com/marko-gacesa/gamatet/graphics/loop"
+	"github.com/marko-gacesa/gamatet/internal/app"
+	"github.com/marko-gacesa/gamatet/internal/config"
+	"github.com/marko-gacesa/gamatet/logic/appctx"
 	"os"
 )
 

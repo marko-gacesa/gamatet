@@ -3,7 +3,7 @@
 package sweeper
 
 import (
-	"gamatet/game/field"
+	"github.com/marko-gacesa/gamatet/game/field"
 	"time"
 )
 

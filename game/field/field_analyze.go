@@ -2,7 +2,7 @@
 
 package field
 
-import "gamatet/game/block"
+import "github.com/marko-gacesa/gamatet/game/block"
 
 func (f *Field) FindTops() []block.XY {
 	tops := make([]block.XY, 0, f.w)

@@ -3,13 +3,13 @@
 package scene
 
 import (
-	"gamatet/graphics/render"
-	"gamatet/graphics/scene/base"
-	"gamatet/graphics/texture"
-	"gamatet/logic/menu"
-	"gamatet/logic/screen"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/marko-gacesa/gamatet/graphics/render"
+	"github.com/marko-gacesa/gamatet/graphics/scene/base"
+	"github.com/marko-gacesa/gamatet/graphics/texture"
+	"github.com/marko-gacesa/gamatet/logic/menu"
+	"github.com/marko-gacesa/gamatet/logic/screen"
 	"math"
 	"time"
 	"unicode"

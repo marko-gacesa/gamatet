@@ -3,8 +3,8 @@
 package piece
 
 import (
-	"gamatet/game/block"
-	"gamatet/logic/anim"
+	"github.com/marko-gacesa/gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/logic/anim"
 	"time"
 )
 

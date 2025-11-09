@@ -3,8 +3,8 @@
 package config
 
 import (
-	"gamatet/game/piece"
-	"gamatet/game/setup"
+	"github.com/marko-gacesa/gamatet/game/piece"
+	"github.com/marko-gacesa/gamatet/game/setup"
 	"os"
 	"strings"
 )

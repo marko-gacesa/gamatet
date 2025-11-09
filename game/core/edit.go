@@ -3,10 +3,10 @@
 package core
 
 import (
-	"gamatet/game/block"
-	"gamatet/game/event"
-	"gamatet/game/field"
-	"gamatet/game/op"
+	"github.com/marko-gacesa/gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/game/event"
+	"github.com/marko-gacesa/gamatet/game/field"
+	"github.com/marko-gacesa/gamatet/game/op"
 )
 
 func conjureBlock(p event.Pusher, x, y int, b block.Block) {

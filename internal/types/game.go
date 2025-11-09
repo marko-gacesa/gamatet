@@ -3,10 +3,10 @@
 package types
 
 import (
-	"gamatet/game/action"
-	"gamatet/game/core"
-	"gamatet/game/setup"
-	"gamatet/logic/latency"
+	"github.com/marko-gacesa/gamatet/game/action"
+	"github.com/marko-gacesa/gamatet/game/core"
+	"github.com/marko-gacesa/gamatet/game/setup"
+	"github.com/marko-gacesa/gamatet/logic/latency"
 )
 
 type GameOneParams struct {

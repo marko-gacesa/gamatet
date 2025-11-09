@@ -3,9 +3,9 @@
 package app
 
 import (
-	"gamatet/internal/values"
-	"gamatet/logic/menu"
-	"gamatet/logic/screen"
+	"github.com/marko-gacesa/gamatet/internal/values"
+	"github.com/marko-gacesa/gamatet/logic/menu"
+	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
 func (app *App) menuShowError(m *menu.Menu, err error) {

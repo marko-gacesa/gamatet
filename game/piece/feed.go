@@ -3,7 +3,7 @@
 package piece
 
 import (
-	"gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/game/block"
 	"slices"
 	"strconv"
 	"sync"

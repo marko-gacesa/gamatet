@@ -3,10 +3,10 @@
 package sweeper
 
 import (
-	"gamatet/game/event"
-	"gamatet/game/field"
-	"gamatet/game/op"
-	"gamatet/game/piece"
+	"github.com/marko-gacesa/gamatet/game/event"
+	"github.com/marko-gacesa/gamatet/game/field"
+	"github.com/marko-gacesa/gamatet/game/op"
+	"github.com/marko-gacesa/gamatet/game/piece"
 )
 
 var _ Sweeper = (*Row)(nil)

@@ -4,7 +4,7 @@ package piece
 
 import (
 	"fmt"
-	"gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/game/block"
 	"reflect"
 	"strings"
 	"testing"

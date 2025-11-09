@@ -3,10 +3,10 @@
 package render
 
 import (
-	"gamatet/graphics/camera"
-	"gamatet/graphics/geometry"
-	"gamatet/graphics/material"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/marko-gacesa/gamatet/graphics/camera"
+	"github.com/marko-gacesa/gamatet/graphics/geometry"
+	"github.com/marko-gacesa/gamatet/graphics/material"
 )
 
 // Renderer is an object that holds the current render state:

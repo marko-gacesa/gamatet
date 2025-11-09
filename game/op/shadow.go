@@ -3,9 +3,9 @@
 package op
 
 import (
-	"gamatet/game/block"
-	"gamatet/game/field"
-	"gamatet/game/piece"
+	"github.com/marko-gacesa/gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/game/field"
+	"github.com/marko-gacesa/gamatet/game/piece"
 )
 
 func updatePieceShadow(f *field.Field, ctrl *piece.Ctrl) {

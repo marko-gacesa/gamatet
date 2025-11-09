@@ -3,7 +3,7 @@
 package latency
 
 import (
-	"gamatet/logic/cache"
+	"github.com/marko-gacesa/gamatet/logic/cache"
 	"strconv"
 	"strings"
 	"time"

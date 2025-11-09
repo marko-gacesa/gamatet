@@ -4,9 +4,9 @@ package field
 
 import (
 	"fmt"
-	"gamatet/game/block"
-	"gamatet/game/piece"
-	"gamatet/logic/anim"
+	"github.com/marko-gacesa/gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/game/piece"
+	"github.com/marko-gacesa/gamatet/logic/anim"
 	"math/rand/v2"
 )
 

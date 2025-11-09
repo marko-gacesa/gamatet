@@ -3,7 +3,7 @@
 package texture
 
 import (
-	"gamatet/graphics/gutil"
+	"github.com/marko-gacesa/gamatet/graphics/gutil"
 	"math"
 	"math/rand"
 )

@@ -3,8 +3,8 @@
 package field
 
 import (
-	"gamatet/game/block"
 	"github.com/google/go-cmp/cmp"
+	"github.com/marko-gacesa/gamatet/game/block"
 	"testing"
 )
 

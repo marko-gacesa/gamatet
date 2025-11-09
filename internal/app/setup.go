@@ -4,7 +4,7 @@ package app
 
 import (
 	"fmt"
-	"gamatet/game/setup"
+	"github.com/marko-gacesa/gamatet/game/setup"
 )
 
 type setupSections struct {

@@ -3,8 +3,8 @@
 package app
 
 import (
-	"gamatet/game/piece"
-	"gamatet/game/setup"
+	"github.com/marko-gacesa/gamatet/game/piece"
+	"github.com/marko-gacesa/gamatet/game/setup"
 )
 
 func Feed(s setup.Setup) piece.Feed {

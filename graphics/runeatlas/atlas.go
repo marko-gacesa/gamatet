@@ -3,8 +3,8 @@
 package runeatlas
 
 import (
-	"gamatet/graphics/gutil"
 	"github.com/golang/freetype"
+	"github.com/marko-gacesa/gamatet/graphics/gutil"
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
 	"image"
