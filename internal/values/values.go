@@ -2,4 +2,10 @@
 
 package values
 
-var ProgramName = "GaMaTeT"
+var (
+	ProgramName = "GaMaTeT"
+
+	BuildTime  string
+	GitSHA     string
+	VersionTag string
+)
