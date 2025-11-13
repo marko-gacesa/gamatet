@@ -5,6 +5,7 @@ package material
 import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
+
 	"github.com/marko-gacesa/gamatet/graphics/runeatlas"
 )
 

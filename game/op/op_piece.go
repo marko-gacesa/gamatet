@@ -3,12 +3,13 @@
 package op
 
 import (
+	"io"
+	"strconv"
+
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/gamatet/game/serialize"
-	"io"
-	"strconv"
 )
 
 func NewPieceState(pIdx int, oldState, newState piece.State, oldParam, newParam int) *PieceState {
@@ -156,7 +157,7 @@ func (e *PieceSet) Undo(f *field.Field) {
 
 func (e *PieceSet) Equals(ev event.Event) bool {
 	q, ok := ev.(*PieceSet)
-	return ok && e.PieceIdx == e.PieceIdx &&
+	return ok && e.PieceIdx == q.PieceIdx &&
 		e.Op == q.Op && e.X == q.X && e.Y == q.Y && e.Piece.Equals(q.Piece) && e.PieceCount != q.PieceCount
 }
 

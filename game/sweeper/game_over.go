@@ -3,11 +3,12 @@
 package sweeper
 
 import (
+	"time"
+
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/op"
 	"github.com/marko-gacesa/gamatet/game/piece"
-	"time"
 )
 
 var _ Sweeper = (*GameOver)(nil)

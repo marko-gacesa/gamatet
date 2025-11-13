@@ -4,8 +4,9 @@ package material
 
 import (
 	"fmt"
-	"github.com/go-gl/gl/v4.1-core/gl"
 	"unsafe"
+
+	"github.com/go-gl/gl/v4.1-core/gl"
 )
 
 const z = "\000"

@@ -3,9 +3,10 @@
 package app
 
 import (
+	"math"
+
 	"github.com/marko-gacesa/gamatet/game/setup"
 	"github.com/marko-gacesa/gamatet/logic/menu"
-	"math"
 )
 
 func setupMultiPlayer(s *setup.Setup, sections *setupSections) []menu.Item {

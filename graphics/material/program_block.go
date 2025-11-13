@@ -5,6 +5,7 @@ package material
 import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
+
 	"github.com/marko-gacesa/gamatet/graphics/camera"
 	"github.com/marko-gacesa/gamatet/graphics/geometry"
 )

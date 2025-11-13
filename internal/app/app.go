@@ -5,6 +5,14 @@ package app
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"math/rand/v2"
+	"net"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/marko-gacesa/gamatet/game/setup"
 	"github.com/marko-gacesa/gamatet/internal/config"
 	"github.com/marko-gacesa/gamatet/logic/screen"
@@ -13,13 +21,6 @@ import (
 	"github.com/marko-gacesa/udpstar/udpstar/client"
 	"github.com/marko-gacesa/udpstar/udpstar/message"
 	"github.com/marko-gacesa/udpstar/udpstar/server"
-	"log/slog"
-	"math/rand/v2"
-	"net"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
 )
 
 type App struct {

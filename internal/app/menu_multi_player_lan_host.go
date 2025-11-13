@@ -4,9 +4,10 @@ package app
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/marko-gacesa/gamatet/logic/menu"
 	"github.com/marko-gacesa/gamatet/logic/screen"
-	"strconv"
 )
 
 func (app *App) menuMultiPlayerLANHostMenu(ctx screen.Context) *menu.Menu {

@@ -3,10 +3,11 @@
 package config
 
 import (
-	"github.com/marko-gacesa/gamatet/game/piece"
-	"github.com/marko-gacesa/gamatet/game/setup"
 	"os"
 	"strings"
+
+	"github.com/marko-gacesa/gamatet/game/piece"
+	"github.com/marko-gacesa/gamatet/game/setup"
 )
 
 const (

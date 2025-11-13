@@ -4,11 +4,12 @@ package latency
 
 import (
 	"fmt"
-	"github.com/marko-gacesa/gamatet/logic/cache"
-	"github.com/marko-gacesa/udpstar/udpstar"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/marko-gacesa/gamatet/logic/cache"
+	"github.com/marko-gacesa/udpstar/udpstar"
 )
 
 type List struct {

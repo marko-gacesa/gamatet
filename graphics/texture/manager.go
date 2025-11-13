@@ -3,8 +3,9 @@
 package texture
 
 import (
-	"github.com/go-gl/gl/v4.1-core/gl"
 	"image"
+
+	"github.com/go-gl/gl/v4.1-core/gl"
 )
 
 type Manager struct {

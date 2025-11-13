@@ -3,9 +3,10 @@
 package texture
 
 import (
-	"github.com/marko-gacesa/gamatet/graphics/gutil"
 	"math"
 	"math/rand"
+
+	"github.com/marko-gacesa/gamatet/graphics/gutil"
 )
 
 func Perlin2D(nDim, mDim int, seed int64) []float32 {

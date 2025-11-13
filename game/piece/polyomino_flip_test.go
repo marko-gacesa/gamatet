@@ -3,8 +3,9 @@
 package piece
 
 import (
-	"github.com/marko-gacesa/gamatet/game/block"
 	"testing"
+
+	"github.com/marko-gacesa/gamatet/game/block"
 )
 
 func TestPolyomino_FlipV(t *testing.T) {

@@ -3,10 +3,12 @@
 package field
 
 import (
-	"github.com/google/go-cmp/cmp"
-	"github.com/marko-gacesa/gamatet/game/block"
 	"sort"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+
+	"github.com/marko-gacesa/gamatet/game/block"
 )
 
 func TestField_Blizzard(t *testing.T) {

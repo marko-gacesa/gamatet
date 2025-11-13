@@ -6,11 +6,12 @@ import (
 	"bytes"
 	"compress/gzip"
 	"errors"
-	"github.com/marko-gacesa/gamatet/game/event"
-	"github.com/marko-gacesa/gamatet/game/op"
 	"io"
 	"log"
 	"slices"
+
+	"github.com/marko-gacesa/gamatet/game/event"
+	"github.com/marko-gacesa/gamatet/game/op"
 )
 
 type serializer struct {

@@ -3,10 +3,11 @@
 package field
 
 import (
+	"time"
+
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/gamatet/logic/anim"
-	"time"
 )
 
 func (f *Field) clearBlock(x, y int) (b block.Block) {

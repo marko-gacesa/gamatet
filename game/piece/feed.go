@@ -3,10 +3,11 @@
 package piece
 
 import (
-	"github.com/marko-gacesa/gamatet/game/block"
 	"slices"
 	"strconv"
 	"sync"
+
+	"github.com/marko-gacesa/gamatet/game/block"
 )
 
 type Feed interface {

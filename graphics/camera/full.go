@@ -3,8 +3,9 @@
 package camera
 
 import (
-	"github.com/go-gl/mathgl/mgl32"
 	"math"
+
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 // PerspectiveFull sets the camera to the location (0, 0, Z) so that the thin content at XY plane can be fully seen.

@@ -3,8 +3,9 @@
 package geometry
 
 import (
-	"github.com/go-gl/gl/v4.1-core/gl"
 	"unsafe"
+
+	"github.com/go-gl/gl/v4.1-core/gl"
 )
 
 type VertexArray interface {

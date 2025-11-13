@@ -3,14 +3,16 @@
 package machine
 
 import (
+	"testing"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/op"
 	"github.com/marko-gacesa/gamatet/game/piece"
-	"testing"
 )
 
 func TestPieceMeld(t *testing.T) {

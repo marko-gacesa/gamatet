@@ -4,10 +4,11 @@ package piece
 
 import (
 	"errors"
-	"github.com/marko-gacesa/gamatet/game/block"
-	"github.com/marko-gacesa/gamatet/game/serialize"
 	"io"
 	"math"
+
+	"github.com/marko-gacesa/gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/game/serialize"
 )
 
 type polyominoRot struct {

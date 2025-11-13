@@ -3,9 +3,10 @@
 package sweeper
 
 import (
+	"time"
+
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
-	"time"
 )
 
 type Sweeper interface {

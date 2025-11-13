@@ -5,15 +5,17 @@ package loop
 import (
 	"context"
 	"fmt"
+	"math"
+	"runtime"
+	"time"
+
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+
 	"github.com/marko-gacesa/gamatet/graphics/scene"
 	"github.com/marko-gacesa/gamatet/internal/app"
 	"github.com/marko-gacesa/gamatet/internal/values"
 	"github.com/marko-gacesa/gamatet/logic/screen"
-	"math"
-	"runtime"
-	"time"
 )
 
 func Loop(globalCtx context.Context, app *app.App) error {
@@ -51,14 +53,14 @@ func Loop(globalCtx context.Context, app *app.App) error {
 	log := app.Log()
 
 	version := gl.GoStr(gl.GetString(gl.VERSION))
-	log.Info("OpenGL initialized", "version", version)
+	log.Info("OpenGL", "version", version)
 
 	func() {
 		w, h := window.GetFramebufferSize()
-		log.Info("Framebuffer size", "width", w, "height", h)
+		log.Info("Framebuffer", "width", w, "height", h)
 
 		w, h = window.GetSize()
-		log.Info("Window size", "width", w, "height", h)
+		log.Info("Window", "width", w, "height", h)
 
 		var videoMode *glfw.VidMode
 
@@ -66,7 +68,7 @@ func Loop(globalCtx context.Context, app *app.App) error {
 		if monitor != nil {
 			sizeW, sizeH := monitor.GetPhysicalSize()
 			d := math.Sqrt(float64(sizeW*sizeW+sizeH*sizeH)) / 25.4
-			log.Info("Monitor info",
+			log.Info("Monitor",
 				"name", monitor.GetName(),
 				"width[mm]", sizeW, "height[mm]", sizeH,
 				"diagonal[inch]", fmt.Sprintf("%.2f", d))
@@ -75,7 +77,7 @@ func Loop(globalCtx context.Context, app *app.App) error {
 		}
 
 		if videoMode != nil {
-			log.Info("Video mode",
+			log.Info("Video",
 				"resolution", fmt.Sprintf("%dx%d", videoMode.Width, videoMode.Height),
 				"refresh", fmt.Sprintf("%dHz", videoMode.RefreshRate),
 				"color", fmt.Sprintf("%dx%dx%d", videoMode.RedBits, videoMode.GreenBits, videoMode.BlueBits))

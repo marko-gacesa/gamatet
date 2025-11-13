@@ -4,14 +4,15 @@ package setup
 
 import (
 	"fmt"
+	"slices"
+	"strconv"
+	"strings"
+
 	"github.com/marko-gacesa/bitdata"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/udpstar/udpstar/message"
 	"github.com/marko-gacesa/udpstar/udpstar/message/lobby"
-	"slices"
-	"strconv"
-	"strings"
 )
 
 const (

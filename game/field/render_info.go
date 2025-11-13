@@ -3,11 +3,12 @@
 package field
 
 import (
+	"sync"
+	"time"
+
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/gamatet/logic/anim"
-	"sync"
-	"time"
 )
 
 type RenderRequest struct {

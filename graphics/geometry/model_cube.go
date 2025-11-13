@@ -3,8 +3,9 @@
 package geometry
 
 import (
-	"github.com/go-gl/mathgl/mgl32"
 	"math"
+
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 func CubeSideSimple(model mgl32.Mat3, v *[]blockVertex) {

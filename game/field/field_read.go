@@ -3,9 +3,10 @@
 package field
 
 import (
+	"strings"
+
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/piece"
-	"strings"
 )
 
 func (f *Field) GetWidth() int {

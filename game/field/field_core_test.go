@@ -3,9 +3,10 @@
 package field
 
 import (
+	"testing"
+
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/piece"
-	"testing"
 )
 
 func TestMake(t *testing.T) {

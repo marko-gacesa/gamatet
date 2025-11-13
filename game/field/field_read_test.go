@@ -3,10 +3,11 @@
 package field
 
 import (
-	"github.com/marko-gacesa/gamatet/game/block"
-	"github.com/marko-gacesa/gamatet/game/piece"
 	"reflect"
 	"testing"
+
+	"github.com/marko-gacesa/gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/game/piece"
 )
 
 func TestField_GetRow(t *testing.T) {

@@ -3,10 +3,11 @@
 package op
 
 import (
-	"github.com/marko-gacesa/gamatet/game/piece"
-	"github.com/marko-gacesa/gamatet/logic/anim"
 	"math"
 	"time"
+
+	"github.com/marko-gacesa/gamatet/game/piece"
+	"github.com/marko-gacesa/gamatet/logic/anim"
 )
 
 func animateNewPiece(ctrl *piece.Ctrl, isAnim bool) {

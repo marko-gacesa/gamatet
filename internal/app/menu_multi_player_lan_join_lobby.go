@@ -3,6 +3,11 @@
 package app
 
 import (
+	"net"
+	"slices"
+	"time"
+	"unicode"
+
 	"github.com/marko-gacesa/bitdata"
 	"github.com/marko-gacesa/gamatet/game/setup"
 	"github.com/marko-gacesa/gamatet/internal/values"
@@ -10,10 +15,6 @@ import (
 	"github.com/marko-gacesa/gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/udpstar/client"
 	"github.com/marko-gacesa/udpstar/udpstar/message"
-	"net"
-	"slices"
-	"time"
-	"unicode"
 )
 
 func (app *App) menuMultiPlayerLANJoinLobby(ctx screen.Context) *menu.Menu {

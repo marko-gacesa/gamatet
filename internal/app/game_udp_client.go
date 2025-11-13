@@ -5,6 +5,8 @@ package app
 import (
 	"errors"
 	"fmt"
+	"net"
+
 	"github.com/marko-gacesa/channel"
 	"github.com/marko-gacesa/gamatet/game/action"
 	"github.com/marko-gacesa/gamatet/game/core"
@@ -16,7 +18,6 @@ import (
 	"github.com/marko-gacesa/gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/udpstar"
 	"github.com/marko-gacesa/udpstar/udpstar/client"
-	"net"
 )
 
 // gameUDPClient function is a glue that links the game engine with the network layer.

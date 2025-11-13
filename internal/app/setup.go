@@ -4,6 +4,7 @@ package app
 
 import (
 	"fmt"
+
 	"github.com/marko-gacesa/gamatet/game/setup"
 )
 

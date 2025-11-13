@@ -3,8 +3,9 @@
 package geometry
 
 import (
-	"github.com/go-gl/mathgl/mgl32"
 	"unsafe"
+
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 type vertexGeometry struct {

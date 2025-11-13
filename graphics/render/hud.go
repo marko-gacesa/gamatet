@@ -4,6 +4,7 @@ package render
 
 import (
 	"fmt"
+
 	"github.com/go-gl/mathgl/mgl32"
 )
 

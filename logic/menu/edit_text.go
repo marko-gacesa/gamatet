@@ -3,10 +3,11 @@
 package menu
 
 import (
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/norm"
 	"unicode"
 	"unicode/utf8"
+
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 )
 
 var _ Item = (*Text)(nil)

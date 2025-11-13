@@ -3,11 +3,12 @@
 package field
 
 import (
+	"math/rand"
+	"time"
+
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/gamatet/logic/anim"
-	"math/rand"
-	"time"
 )
 
 const (

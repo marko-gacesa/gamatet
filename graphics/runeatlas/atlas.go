@@ -3,16 +3,18 @@
 package runeatlas
 
 import (
-	"github.com/golang/freetype"
-	"github.com/marko-gacesa/gamatet/graphics/gutil"
-	"golang.org/x/image/font"
-	"golang.org/x/image/math/fixed"
 	"image"
 	"image/color"
 	"image/draw"
 	"image/png"
 	"os"
 	"sync"
+
+	"github.com/golang/freetype"
+	"golang.org/x/image/font"
+	"golang.org/x/image/math/fixed"
+
+	"github.com/marko-gacesa/gamatet/graphics/gutil"
 )
 
 type RuneAtlas struct {

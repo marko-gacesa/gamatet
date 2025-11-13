@@ -4,9 +4,10 @@ package rendercache
 
 import (
 	"cmp"
-	"github.com/go-gl/mathgl/mgl32"
 	"sort"
 	"sync"
+
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 type modelColorValue[T cmp.Ordered] struct {

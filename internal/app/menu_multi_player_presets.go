@@ -4,11 +4,12 @@ package app
 
 import (
 	"fmt"
+	"math/rand/v2"
+	"strconv"
+
 	"github.com/marko-gacesa/gamatet/game/setup"
 	"github.com/marko-gacesa/gamatet/logic/menu"
 	"github.com/marko-gacesa/gamatet/logic/screen"
-	"math/rand/v2"
-	"strconv"
 )
 
 func (app *App) menuMultiPlayerEditPresets(ctx screen.Context) *menu.Menu {

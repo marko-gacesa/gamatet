@@ -3,8 +3,9 @@
 package rendercache
 
 import (
-	"github.com/go-gl/mathgl/mgl32"
 	"sync"
+
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 type modelColor struct {

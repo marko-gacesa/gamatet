@@ -4,6 +4,10 @@ package app
 
 import (
 	"fmt"
+	"net"
+	"sync"
+	"time"
+
 	"github.com/marko-gacesa/bitdata"
 	"github.com/marko-gacesa/gamatet/game/setup"
 	"github.com/marko-gacesa/gamatet/internal/values"
@@ -12,9 +16,6 @@ import (
 	"github.com/marko-gacesa/udpstar/udp"
 	"github.com/marko-gacesa/udpstar/udpstar"
 	"github.com/marko-gacesa/udpstar/udpstar/client"
-	"net"
-	"sync"
-	"time"
 )
 
 const maxClientLobbyEntries = 20
@@ -155,17 +156,13 @@ func (l *clientLobbyList) Update(newData []udpstar.LobbyListenerInfo, newVersion
 	if newVersion != l.version {
 		oldCount := l.entryCount
 
-		l.version = newVersion
-
 		if len(newData) > maxClientLobbyEntries {
 			newData = newData[:maxClientLobbyEntries]
 		}
 
+		l.version = newVersion
 		l.entryCount = len(newData)
-
-		for i := range newData {
-			l.entryList[i] = newData[i]
-		}
+		copy(l.entryList[:], newData)
 
 		if oldCount == 0 && l.entryCount > 0 {
 			needsFocus = 0

@@ -4,6 +4,7 @@ package render
 
 import (
 	"github.com/go-gl/mathgl/mgl32"
+
 	"github.com/marko-gacesa/gamatet/graphics/camera"
 	"github.com/marko-gacesa/gamatet/graphics/geometry"
 	"github.com/marko-gacesa/gamatet/graphics/material"

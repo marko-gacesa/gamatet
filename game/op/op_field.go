@@ -5,11 +5,12 @@ package op
 import (
 	"bytes"
 	"encoding/binary"
+	"io"
+
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/piece"
-	"io"
 )
 
 // FieldStop is a signal that not more events will be fired

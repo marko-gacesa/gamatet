@@ -3,8 +3,9 @@
 package event
 
 import (
-	"github.com/marko-gacesa/gamatet/game/field"
 	"io"
+
+	"github.com/marko-gacesa/gamatet/game/field"
 )
 
 type Code byte

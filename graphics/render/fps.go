@@ -3,9 +3,11 @@
 package render
 
 import (
-	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/marko-gacesa/gamatet/logic/cache"
 	"strconv"
+
+	"github.com/go-gl/glfw/v3.3/glfw"
+
+	"github.com/marko-gacesa/gamatet/logic/cache"
 )
 
 type FPS struct {

@@ -5,6 +5,9 @@ package core
 import (
 	"context"
 	"fmt"
+	"math/rand/v2"
+	"time"
+
 	"github.com/marko-gacesa/channel"
 	"github.com/marko-gacesa/gamatet/game/action"
 	"github.com/marko-gacesa/gamatet/game/event"
@@ -15,8 +18,6 @@ import (
 	"github.com/marko-gacesa/gamatet/game/sweeper"
 	"github.com/marko-gacesa/gamatet/logic/latency"
 	"github.com/marko-gacesa/udpstar/udpstar/controller"
-	"math/rand/v2"
-	"time"
 )
 
 var _ interface {

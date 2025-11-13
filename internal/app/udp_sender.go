@@ -3,8 +3,9 @@
 package app
 
 import (
-	"github.com/marko-gacesa/udpstar/udp"
 	"net"
+
+	"github.com/marko-gacesa/udpstar/udp"
 )
 
 type udpSender struct {

@@ -4,9 +4,10 @@ package op
 
 import (
 	"fmt"
+	"io"
+
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/serialize"
-	"io"
 )
 
 const (

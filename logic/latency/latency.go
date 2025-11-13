@@ -3,10 +3,11 @@
 package latency
 
 import (
-	"github.com/marko-gacesa/gamatet/logic/cache"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/marko-gacesa/gamatet/logic/cache"
 )
 
 type Latency struct {

@@ -4,9 +4,10 @@ package piece
 
 import (
 	"fmt"
+	"io"
+
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/serialize"
-	"io"
 )
 
 type Type byte

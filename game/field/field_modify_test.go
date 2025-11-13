@@ -4,8 +4,9 @@ package field
 
 import (
 	"fmt"
-	"github.com/marko-gacesa/gamatet/game/block"
 	"testing"
+
+	"github.com/marko-gacesa/gamatet/game/block"
 )
 
 func TestField_ShiftColumnDownByN(t *testing.T) {

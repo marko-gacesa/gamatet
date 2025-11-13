@@ -3,8 +3,9 @@
 package sweeper
 
 import (
-	"github.com/marko-gacesa/gamatet/game/field"
 	"time"
+
+	"github.com/marko-gacesa/gamatet/game/field"
 )
 
 func newBase(f *field.Field) *base {

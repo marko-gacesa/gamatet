@@ -3,9 +3,10 @@
 package piece
 
 import (
+	"time"
+
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/logic/anim"
-	"time"
 )
 
 const MaxLevel = 15

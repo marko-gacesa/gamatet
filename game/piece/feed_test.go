@@ -4,10 +4,11 @@ package piece
 
 import (
 	"fmt"
-	"github.com/marko-gacesa/gamatet/game/block"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/marko-gacesa/gamatet/game/block"
 )
 
 func TestGenericFeed(t *testing.T) {

@@ -3,9 +3,10 @@
 package geometry
 
 import (
+	"unsafe"
+
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
-	"unsafe"
 )
 
 // NewSquare creates a square geometry from (-0.5, -0.5) to (0.5, 0.5), z=0.

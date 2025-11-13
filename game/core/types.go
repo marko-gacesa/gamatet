@@ -4,10 +4,11 @@ package core
 
 import (
 	"context"
+	"time"
+
 	"github.com/marko-gacesa/gamatet/game/action"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/piece"
-	"time"
 )
 
 type Performer interface {

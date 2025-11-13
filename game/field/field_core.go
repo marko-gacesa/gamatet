@@ -4,10 +4,11 @@ package field
 
 import (
 	"fmt"
+	"math/rand/v2"
+
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/gamatet/logic/anim"
-	"math/rand/v2"
 )
 
 type Field struct {

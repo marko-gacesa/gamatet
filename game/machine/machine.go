@@ -3,14 +3,15 @@
 package machine
 
 import (
+	"reflect"
+	"time"
+
 	"github.com/marko-gacesa/gamatet/game/action"
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/op"
 	"github.com/marko-gacesa/gamatet/game/piece"
-	"reflect"
-	"time"
 )
 
 // Description for player action state machine:

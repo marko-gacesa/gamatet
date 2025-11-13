@@ -3,8 +3,9 @@
 package piece
 
 import (
-	"github.com/marko-gacesa/gamatet/game/block"
 	"io"
+
+	"github.com/marko-gacesa/gamatet/game/block"
 )
 
 type shooter struct {
