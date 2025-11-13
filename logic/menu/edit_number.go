@@ -19,7 +19,7 @@ type Number struct {
 // NewNumber creates new Number menu item.
 func NewNumber(ptr *int64, vmin, vmax int64, label, description string, options ...func(Item)) *Number {
 	if ptr == nil {
-		panic("need non-nil pointer")
+		panic(strNilPointer)
 	}
 	t := &Number{
 		textBase: makeTextBase(20, 20, label, description),

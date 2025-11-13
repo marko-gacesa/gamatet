@@ -33,6 +33,8 @@ type Item interface {
 	b() *base
 }
 
+const strNilPointer = "need non-nil pointer"
+
 func makeBase(label, description string) base {
 	return base{
 		label:       label,

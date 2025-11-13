@@ -21,7 +21,7 @@ type Text struct {
 // NewText creates new Text menu item.
 func NewText(ptr *string, maxLen, maxSize int, label, description string, options ...func(Item)) *Text {
 	if ptr == nil {
-		panic("need non-nil pointer")
+		panic(strNilPointer)
 	}
 	t := &Text{
 		textBase: makeTextBase(maxLen, maxSize, label, description),

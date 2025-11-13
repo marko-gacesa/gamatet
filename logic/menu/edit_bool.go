@@ -13,7 +13,7 @@ type Bool struct {
 // NewBool creates new Bool menu item.
 func NewBool(ptr *bool, label, description string, options ...func(Item)) *Bool {
 	if ptr == nil {
-		panic("need non-nil pointer")
+		panic(strNilPointer)
 	}
 	b := &Bool{
 		base: makeBase(label, description),

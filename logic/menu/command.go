@@ -15,7 +15,7 @@ type Command[T any] struct {
 // The activation means write of the provided value to the provided pointer.
 func NewCommand[T any](ptr *T, value T, label, description string, options ...func(Item)) *Command[T] {
 	if ptr == nil {
-		panic("need non-nil pointer")
+		panic(strNilPointer)
 	}
 	cmd := &Command[T]{
 		base:  makeBase(label, description),

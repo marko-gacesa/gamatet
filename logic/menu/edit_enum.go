@@ -22,7 +22,7 @@ type Enum[T comparable] struct {
 // NewEnum creates new Enum menu item.
 func NewEnum[T comparable](ptr *T, values []T, nameMap map[T]string, label, description string, options ...func(Item)) *Enum[T] {
 	if ptr == nil {
-		panic("need non-nil pointer")
+		panic(strNilPointer)
 	}
 	if len(values) == 0 {
 		panic("no enum values provided")

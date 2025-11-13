@@ -24,7 +24,7 @@ type integer interface {
 // NewInteger creates new Integer menu item.
 func NewInteger[T integer](ptr *T, vmin, vmax T, label, description string, options ...func(Item)) *Integer[T] {
 	if ptr == nil {
-		panic("need non-nil pointer")
+		panic(strNilPointer)
 	}
 	if vmin > vmax {
 		panic("invalid integer limits provided")

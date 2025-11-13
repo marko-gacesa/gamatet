@@ -16,7 +16,7 @@ type Hidden[T any] struct {
 // The activation means write of the provided value to the provided pointer.
 func NewHidden[T any](key rune, ptr *T, value T) *Hidden[T] {
 	if ptr == nil {
-		panic("need non-nil pointer")
+		panic(strNilPointer)
 	}
 	hidden := &Hidden[T]{
 		base:  makeBase("", ""),
