@@ -204,12 +204,13 @@ func TestField_CanRotatePiece_WallKick(t *testing.T) {
 		y := 4
 		ctrl.SetXYP(x, y, test.p)
 
-		if test.wall == 'R' {
+		switch test.wall {
+		case 'R':
 			for f._canPlacePiece(x+1, y, colMin, colMax, test.p, false, 0) {
 				x++
 				ctrl.X = x
 			}
-		} else if test.wall == 'L' {
+		case 'L':
 			for f._canPlacePiece(x-1, y, colMin, colMax, test.p, false, 0) {
 				x--
 				ctrl.X = x
@@ -237,6 +238,7 @@ func TestField_GetDropHeight(t *testing.T) {
 
 	p0 := piece.NewStandardTetromino(piece.TetrominoO)
 	p1 := piece.NewStandardTetromino(piece.TetrominoI)
+
 	p0x := int(p0.LeftEmptyColumns())
 	p0y := int(p0.TopEmptyRows())
 	p1x := int(p1.LeftEmptyColumns())

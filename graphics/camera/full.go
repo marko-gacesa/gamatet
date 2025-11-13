@@ -1,4 +1,4 @@
-// Copyright (c) 2023,2024 by Marko Gaćeša
+// Copyright (c) 2023-2025 by Marko Gaćeša
 
 package camera
 
@@ -29,8 +29,6 @@ func (c *Camera) PerspectiveFull(displayW, displayH, contentW, contentH, content
 
 	c.LookAt(mgl32.Vec3{0, 0, cameraDistance}, mgl32.Vec3{0, 0, 0}, mgl32.Vec3{0, 1, 0})
 	c.Perspective(fovY, aspectRatio, cameraDistance-z, cameraDistance+z)
-
-	//fmt.Printf("camera distance: %6.2f\n", cameraDistance)
 }
 
 // OrthogonalFull sets the orthogonal projection so that the entire content is visible.
@@ -52,6 +50,4 @@ func (c *Camera) OrthogonalFull(displayW, displayH, contentW, contentH, contentZ
 	cameraDistance := z
 	c.LookAt(mgl32.Vec3{0, 0, cameraDistance}, mgl32.Vec3{0, 0, 0}, mgl32.Vec3{0, 1, 0})
 	c.Projection(mgl32.Ortho(-w, w, -h, h, cameraDistance-z, cameraDistance+z))
-
-	//fmt.Printf("orthogonal projection: w=%6.2f h=%6.2f\n", w, h)
 }

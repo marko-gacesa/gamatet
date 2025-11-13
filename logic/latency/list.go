@@ -27,9 +27,7 @@ func NewList(fn func() []udpstar.LatencyActor) *List {
 					if len(*prev) != len(curr) {
 						*prev = make([]udpstar.LatencyActor, len(curr))
 					}
-					for i := range curr {
-						(*prev)[i] = curr[i]
-					}
+					copy(*prev, curr)
 				}
 				return equal
 			},

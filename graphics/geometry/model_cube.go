@@ -29,7 +29,7 @@ func CubeSideDent(model mgl32.Mat3, v *[]blockVertex) {
 		nn := model.Mul3x1(mgl32.Vec3{0.0, 0.0, 1.0}).Normalize()
 		n0 := model.Mul3x1(mgl32.Vec3{0.5, -0.5, 1.0}).Normalize()
 		n1 := model.Mul3x1(mgl32.Vec3{0.5, 0.5, 1.0}).Normalize()
-		nc := model.Mul3x1(mgl32.Vec3{-0.0, 0.0, 1.0}).Normalize()
+		nc := model.Mul3x1(mgl32.Vec3{0.0, 0.0, 1.0}).Normalize()
 
 		pOuter0 := model.Mul3x1(mgl32.Vec3{-0.5, -0.5, 0.5})
 		pOuter1 := model.Mul3x1(mgl32.Vec3{-0.5, 0.5, 0.5})

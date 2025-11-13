@@ -13,7 +13,7 @@ import (
 var Context = func() context.Context {
 	ctx, cancelFn := context.WithCancel(context.Background())
 	go func() {
-		signalStop := make(chan os.Signal)
+		signalStop := make(chan os.Signal, 1)
 		signal.Notify(signalStop, syscall.SIGINT, syscall.SIGTERM)
 
 		defer func() {
