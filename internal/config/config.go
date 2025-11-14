@@ -8,6 +8,7 @@ import (
 
 	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/gamatet/game/setup"
+	"github.com/marko-gacesa/gamatet/internal/config/key"
 )
 
 const (
@@ -53,8 +54,9 @@ type LocalPlayers struct {
 func (cfg *LocalPlayers) Sanitize() {
 	cfg.Infos = SliceFixLen(cfg.Infos, setup.MaxLocalPlayers, func(idx int) PlayerInfo {
 		return PlayerInfo{
-			Name: "",
-			PlayerConfig: PlayerConfig{
+			Name:  "",
+			Input: key.DefaultInput[idx%len(key.DefaultInput)],
+			GameConfig: PlayerConfig{
 				RotationDirectionCW: false,
 				SlideDisabled:       false,
 				WallKick:            piece.WallKickDefault,
@@ -63,30 +65,32 @@ func (cfg *LocalPlayers) Sanitize() {
 	})
 
 	for i := range cfg.Infos {
-		if cfg.Infos[i].Name == "" || len(cfg.Infos[i].Name) > setup.MaxLenName {
-			switch i % 4 {
-			case 0:
-				cfg.Infos[i].Name = string('\u0394') // delta
-			case 1:
-				cfg.Infos[i].Name = string('\u0398') // theta
-			case 2:
-				cfg.Infos[i].Name = string('\u03A8') // psi
-			case 3:
-				cfg.Infos[i].Name = string('\u03A9') // omega
-			}
-		}
-
-		cfg.Infos[i].Sanitize()
+		cfg.Infos[i].Sanitize(i)
 	}
+
 }
 
 type PlayerInfo struct {
-	Name string `json:"name"`
-	PlayerConfig
+	Name       string       `json:"name"`
+	Input      key.Input    `json:"input"`
+	GameConfig PlayerConfig `json:"game_config"`
 }
 
-func (cfg *PlayerInfo) Sanitize() {
-	cfg.PlayerConfig.Sanitize()
+func (cfg *PlayerInfo) Sanitize(idx int) {
+	if cfg.Name == "" || len(cfg.Name) > setup.MaxLenName {
+		switch idx % 4 {
+		case 0:
+			cfg.Name = string('\u0394') // delta
+		case 1:
+			cfg.Name = string('\u0398') // theta
+		case 2:
+			cfg.Name = string('\u03A8') // psi
+		case 3:
+			cfg.Name = string('\u03A9') // omega
+		}
+	}
+	cfg.Input.Sanitize(idx)
+	cfg.GameConfig.Sanitize()
 }
 
 type Presets struct {

@@ -58,7 +58,7 @@ func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {
 			playerIdx := i*int(teamSize) + j
 			players[j] = core.PlayerSetup{
 				Name:    app.cfg.LocalPlayers.Infos[playerIdx].Name,
-				Config:  piece.Config(app.cfg.LocalPlayers.Infos[playerIdx].PlayerConfig),
+				Config:  piece.Config(app.cfg.LocalPlayers.Infos[playerIdx].GameConfig),
 				IsLocal: true,
 				Index:   playerIndex,
 				InCh:    playerOutChs[playerIdx],

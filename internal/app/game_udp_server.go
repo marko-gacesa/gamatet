@@ -147,7 +147,7 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 
 			fieldPlayers[storyActorIdx] = core.PlayerSetup{
 				Name:    name,
-				Config:  piece.Config(localPlayerInfo.PlayerConfig),
+				Config:  piece.Config(localPlayerInfo.GameConfig),
 				IsLocal: true,
 				Index:   playerIndex,
 				InCh:    playerInputPipe.Out, // [3] The game engine reads local player actions from here (directly from the input device - keyboard).

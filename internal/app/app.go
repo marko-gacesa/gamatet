@@ -111,7 +111,7 @@ func (app *App) LocalPlayerName(i byte) string {
 }
 
 func (app *App) LocalPlayerConfig(i byte) config.PlayerConfig {
-	return app.cfg.LocalPlayers.Infos[i].PlayerConfig
+	return app.cfg.LocalPlayers.Infos[i].GameConfig
 }
 
 func (app *App) LocalPlayer(token message.Token) (config.PlayerInfo, int) {
@@ -149,7 +149,7 @@ const (
 	routeMultiPayerLocalCustomGame   = routeMultiPlayerLocalPrefix + "custom-game"
 
 	routeMultiPlayerLANPrefix         = "mp-lan|"
-	routeMultiPlayerLANMain           = routeMultiPlayerLANPrefix + "main"
+	routeMultiPlayerLANMenu           = routeMultiPlayerLANPrefix + "menu"
 	routeMultiPlayerLANHostMenu       = routeMultiPlayerLANPrefix + "host-menu"
 	routeMultiPlayerLANHostPresetN    = routeMultiPlayerLANPrefix + "host-preset:"
 	routeMultiPayerLANHostCustomSetup = routeMultiPlayerLANPrefix + "host-custom-setup"
@@ -159,6 +159,17 @@ const (
 
 	routeMultiPlayerLANHostGame = routeMultiPlayerLANPrefix + "host-game"
 	routeMultiPlayerLANJoinGame = routeMultiPlayerLANPrefix + "join-game"
+
+	routeConfigPrefix           = "config|"
+	routeConfigMenu             = routeConfigPrefix + "menu"
+	routeConfigLocalPlayerN     = routeConfigPrefix + "local-player:"
+	routeConfigLocalPlayerSetup = routeConfigPrefix + "local-player-setup"
+
+	routeConfigVideoPrefix = "config-video|"
+	routeConfigVideoSetup  = routeConfigVideoPrefix + "setup"
+
+	routeAboutPrefix = "about|"
+	routeAboutMenu   = routeAboutPrefix + "menu"
 )
 
 func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan struct{}) {
@@ -241,7 +252,7 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 
 	// Multi-player LAN
 
-	case id == routeMultiPlayerLANMain:
+	case id == routeMultiPlayerLANMenu:
 		data = app.menuMultiPlayerLANMain(ctx)
 	case id == routeMultiPlayerLANHostMenu:
 		data = app.menuMultiPlayerLANHostMenu(ctx)
@@ -268,6 +279,22 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 		data = app.gameUDPServer(ctx)
 	case id == routeMultiPlayerLANJoinGame:
 		data = app.gameUDPClient(ctx)
+
+	case id == routeConfigMenu:
+		data = app.menuConfig(ctx)
+	case strings.HasPrefix(string(id), routeConfigLocalPlayerN):
+		s := strings.TrimPrefix(string(id), routeConfigLocalPlayerN)
+		idx, err := strconv.Atoi(s)
+		if err != nil {
+			data = app.menuError(ctx, err)
+		} else {
+			data = app.menuConfigLocalPlayer(ctx, idx)
+		}
+	case id == routeConfigVideoSetup:
+		data = app.menuConfigVideo(ctx)
+
+	case id == routeAboutMenu:
+		data = app.menuAbout(ctx)
 	}
 
 	return app.screener.Screen(ctx, data), ctx.Done()

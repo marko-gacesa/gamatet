@@ -13,7 +13,9 @@ func (app *App) menuMain(ctx screen.Context) *menu.Menu {
 		app.menuItemEscape(),
 		menu.NewCommand(&app.screenIDNext, routeSinglePlayerMenu, "Single player", ""),
 		menu.NewCommand(&app.screenIDNext, routeMultiPlayerLocalMenu, "Multiplayer local", "Multiplayer game on this machine"),
-		menu.NewCommand(&app.screenIDNext, routeMultiPlayerLANMain, "Multiplayer LAN game", "Multiplayer game on the local area network"),
-		menu.NewCommand(&app.screenIDNext, routeQuit, "Exit", "Exit application"),
+		menu.NewCommand(&app.screenIDNext, routeMultiPlayerLANMenu, "Multiplayer LAN game", "Multiplayer game on the local area network"),
+		menu.NewCommand(&app.screenIDNext, routeConfigMenu, "Configure", ""),
+		menu.NewCommand(&app.screenIDNext, routeAboutMenu, "About", ""),
+		menu.NewCommand(&app.screenIDNext, routeQuit, "Exit", "Exit game"),
 	}...)
 }

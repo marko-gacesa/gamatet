@@ -123,7 +123,7 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 
 			fieldPlayers[storyActorIdx] = core.PlayerSetup{
 				Name:    name,
-				Config:  piece.Config(localPlayerInfo.PlayerConfig),
+				Config:  piece.Config(localPlayerInfo.GameConfig),
 				IsLocal: true,
 				Index:   playerIndex,
 			}
