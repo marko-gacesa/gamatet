@@ -110,7 +110,7 @@ func (app *App) LocalPlayerName(i byte) string {
 	return app.cfg.LocalPlayers.Infos[i].Name
 }
 
-func (app *App) LocalPlayerConfig(i byte) config.PlayerConfig {
+func (app *App) LocalPlayerConfig(i byte) config.Player {
 	return app.cfg.LocalPlayers.Infos[i].GameConfig
 }
 
@@ -279,6 +279,8 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 	case id == routeMultiPlayerLANJoinGame:
 		data = app.gameUDPClient(ctx)
 
+	// Configure
+
 	case id == routeConfigMenu:
 		data = app.menuConfig(ctx)
 	case strings.HasPrefix(string(id), routeConfigLocalPlayerSetupN):
@@ -291,6 +293,8 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 		}
 	case id == routeConfigVideoSetup:
 		data = app.menuConfigVideo(ctx)
+
+	// About
 
 	case id == routeAboutMenu:
 		data = app.menuAbout(ctx)

@@ -21,7 +21,7 @@ func (app *App) setupLocalPlayer(ctx screen.Context, idx int) *menu.Menu {
 		true:  "Clockwise",
 	}
 
-	stringFn := func(k key.Key) string { return string(key.Map[k]) }
+	stringFn := func(k key.Key) string { return key.Map[k] }
 	convertFn := func(b byte) key.Key { return key.Key(b) }
 
 	info := &app.cfg.LocalPlayers.Infos[idx]
