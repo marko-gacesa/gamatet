@@ -6,6 +6,7 @@ type Config struct {
 	Locale       Locale       `json:"locale"`
 	LocalPlayers LocalPlayers `json:"local_players"`
 	Network      Network      `json:"network"`
+	Video        Video        `json:"video"`
 	Presets      Presets      `json:"presets"`
 }
 
@@ -13,6 +14,7 @@ func (cfg *Config) Sanitize() {
 	cfg.Locale.Sanitize()
 	cfg.LocalPlayers.Sanitize()
 	cfg.Presets.Sanitize()
+	cfg.Video.Sanitize()
 	cfg.Network.Sanitize()
 }
 

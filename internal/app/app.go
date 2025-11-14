@@ -124,6 +124,10 @@ func (app *App) LocalPlayer(token message.Token) (config.PlayerInfo, int) {
 	return config.PlayerInfo{}, -1
 }
 
+func (app *App) VideoConfig() config.Video {
+	return app.cfg.Video
+}
+
 const (
 	routeMain = "main"
 	routeQuit = "quit"

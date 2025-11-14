@@ -5,7 +5,6 @@ package loop
 import (
 	"context"
 	"fmt"
-	"math"
 	"runtime"
 	"time"
 
@@ -33,9 +32,13 @@ func Loop(globalCtx context.Context, app *app.App) error {
 
 	var window *glfw.Window
 
+	videoConfig := app.VideoConfig()
 	if err := func() (err error) {
-		//window, err = windowFullscreen(values.ProgramName, nil)
-		window, err = windowResizable(900, 600, values.ProgramName)
+		if videoConfig.Fullscreen {
+			window, err = windowFullscreen(values.ProgramName, nil)
+		} else {
+			window, err = windowResizable(videoConfig.WindowWidth, videoConfig.WindowHeight, values.ProgramName)
+		}
 		return
 	}(); err != nil {
 		return fmt.Errorf("failed to create window: %w", err)
@@ -44,7 +47,7 @@ func Loop(globalCtx context.Context, app *app.App) error {
 	defer window.Destroy()
 
 	window.MakeContextCurrent()
-	//window.SetOpacity(0.5)
+	window.SetOpacity(videoConfig.WindowOpacity)
 
 	if err := gl.Init(); err != nil {
 		return fmt.Errorf("failed to initialize OpenGL bindings: %w", err)
@@ -54,35 +57,6 @@ func Loop(globalCtx context.Context, app *app.App) error {
 
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	log.Info("OpenGL", "version", version)
-
-	func() {
-		w, h := window.GetFramebufferSize()
-		log.Info("Framebuffer", "width", w, "height", h)
-
-		w, h = window.GetSize()
-		log.Info("Window", "width", w, "height", h)
-
-		var videoMode *glfw.VidMode
-
-		monitor := window.GetMonitor()
-		if monitor != nil {
-			sizeW, sizeH := monitor.GetPhysicalSize()
-			d := math.Sqrt(float64(sizeW*sizeW+sizeH*sizeH)) / 25.4
-			log.Info("Monitor",
-				"name", monitor.GetName(),
-				"width[mm]", sizeW, "height[mm]", sizeH,
-				"diagonal[inch]", fmt.Sprintf("%.2f", d))
-
-			videoMode = monitor.GetVideoMode()
-		}
-
-		if videoMode != nil {
-			log.Info("Video",
-				"resolution", fmt.Sprintf("%dx%d", videoMode.Width, videoMode.Height),
-				"refresh", fmt.Sprintf("%dHz", videoMode.RefreshRate),
-				"color", fmt.Sprintf("%dx%dx%d", videoMode.RedBits, videoMode.GreenBits, videoMode.BlueBits))
-		}
-	}()
 
 	// Configure global settings
 
