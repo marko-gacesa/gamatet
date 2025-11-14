@@ -3,18 +3,19 @@
 package key
 
 import (
+	"fmt"
 	"slices"
 )
 
 type Input struct {
-	Left   Key `json:"left"`
-	Right  Key `json:"right"`
-	Action Key `json:"action"`
-	Drop   Key `json:"drop"`
+	Left     Key `json:"left"`
+	Right    Key `json:"right"`
+	Activate Key `json:"activate"`
+	Drop     Key `json:"drop"`
 }
 
 func (in *Input) Sanitize(idx int) {
-	keys := [4]Key{in.Left, in.Right, in.Action, in.Drop}
+	keys := [4]Key{in.Left, in.Right, in.Activate, in.Drop}
 	slices.Sort(keys[:])
 	uq := slices.Compact(keys[:])
 	if len(uq) != len(keys) {
@@ -22,14 +23,23 @@ func (in *Input) Sanitize(idx int) {
 	}
 }
 
+func (in *Input) String() string {
+	return fmt.Sprintf("%s=%s %s=%s %s=%s %s=%s",
+		"Left", Map[in.Left],
+		"Right", Map[in.Right],
+		"Activate", Map[in.Activate],
+		"Drop", Map[in.Drop],
+	)
+}
+
 var (
-	InputWASD        = Input{Left: A, Right: D, Action: W, Drop: S}
-	InputWASDSpace   = Input{Left: A, Right: D, Action: W, Drop: Space}
-	InputHJKL        = Input{Left: H, Right: L, Action: K, Drop: J}
-	InputArrows      = Input{Left: Left, Right: Right, Action: Up, Drop: Down}
-	InputArrowsSpace = Input{Left: Left, Right: Right, Action: Up, Drop: Space}
-	InputNumPad      = Input{Left: KP4, Right: KP6, Action: KP8, Drop: KP5}
-	InputNumPad0     = Input{Left: KP4, Right: KP6, Action: KP8, Drop: KP0}
+	InputWASD        = Input{Left: A, Right: D, Activate: W, Drop: S}
+	InputWASDSpace   = Input{Left: A, Right: D, Activate: W, Drop: Space}
+	InputHJKL        = Input{Left: H, Right: L, Activate: K, Drop: J}
+	InputArrows      = Input{Left: Left, Right: Right, Activate: Up, Drop: Down}
+	InputArrowsSpace = Input{Left: Left, Right: Right, Activate: Up, Drop: Space}
+	InputNumPad      = Input{Left: KP4, Right: KP6, Activate: KP8, Drop: KP5}
+	InputNumPad0     = Input{Left: KP4, Right: KP6, Activate: KP8, Drop: KP0}
 
 	DefaultInput = []Input{InputArrows, InputWASD, InputHJKL, InputNumPad}
 )

@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/marko-gacesa/gamatet/game/setup"
+	"github.com/marko-gacesa/gamatet/internal/config/key"
+
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 
@@ -27,7 +30,9 @@ type Game struct {
 	fpsHUD       render.HUD
 	latenciesHUD render.HUD
 
-	playersInCh  [4]chan<- []byte
+	playersInCh [setup.MaxLocalPlayers]chan<- []byte
+	inputs      [setup.MaxLocalPlayers]key.Input
+
 	model        mgl32.Mat4
 	game         core.RenderRequester
 	fieldRenders []*render.Field
@@ -129,8 +134,9 @@ func NewGame(
 		fpsHUD:       *fpsHUD,
 		latenciesHUD: *latenciesHUD,
 
-		// these are set below
-		playersInCh:  params.PlayerInCh,
+		playersInCh: params.PlayerInCh,
+		inputs:      params.PlayerInputs,
+
 		model:        center,
 		game:         params.Game,
 		fieldRenders: fieldRenders,
@@ -163,41 +169,27 @@ func (ft *Game) Release() {
 func (ft *Game) InputKeyPress(key, scancode int) {
 	ft.BlockBase.InputKeyPress(key, scancode)
 
-	var a1, a2, a3, a4 action.Action
+	k := glfw.Key(key)
 
-	switch glfw.Key(key) {
+	switch k {
 	case glfw.KeyEscape:
 		ft.actionCh <- action.Abort
 	case glfw.KeyPause:
 		ft.actionCh <- action.Pause
-
-	case glfw.KeyLeft:
-		a1 = action.MoveLeft
-	case glfw.KeyRight:
-		a1 = action.MoveRight
-	case glfw.KeyUp:
-		a1 = action.Activate
-	case glfw.KeyDown:
-		a1 = action.MoveDown
-	case glfw.KeyRightShift:
-		a1 = action.Drop
-
-	case glfw.KeyA:
-		a2 = action.MoveLeft
-	case glfw.KeyD:
-		a2 = action.MoveRight
-	case glfw.KeyW:
-		a2 = action.Activate
-	case glfw.KeyS:
-		a2 = action.MoveDown
-	case glfw.KeyLeftShift:
-		a2 = action.Drop
 	}
 
-	base.SendAction(a1, ft.waitDoneCh, ft.playersInCh[0])
-	base.SendAction(a2, ft.waitDoneCh, ft.playersInCh[1])
-	base.SendAction(a3, ft.waitDoneCh, ft.playersInCh[2])
-	base.SendAction(a4, ft.waitDoneCh, ft.playersInCh[3])
+	for i := range setup.MaxLocalPlayers {
+		switch k {
+		case KeyMap[ft.inputs[i].Left]:
+			base.SendAction(action.MoveLeft, ft.waitDoneCh, ft.playersInCh[i])
+		case KeyMap[ft.inputs[i].Right]:
+			base.SendAction(action.MoveRight, ft.waitDoneCh, ft.playersInCh[i])
+		case KeyMap[ft.inputs[i].Activate]:
+			base.SendAction(action.Activate, ft.waitDoneCh, ft.playersInCh[i])
+		case KeyMap[ft.inputs[i].Drop]:
+			base.SendAction(action.Drop, ft.waitDoneCh, ft.playersInCh[i])
+		}
+	}
 }
 
 func (ft *Game) Prepare(now time.Time) {

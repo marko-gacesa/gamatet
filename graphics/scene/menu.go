@@ -96,6 +96,10 @@ func (m *Menu) UpdateViewSize(w, h int) {
 }
 
 func (m *Menu) InputKeyPress(key, scancode int) {
+	if m.menu.Key(byte(KeyMapReverse[glfw.Key(key)])) {
+		return
+	}
+
 	switch glfw.Key(key) {
 	case glfw.KeyUp:
 		m.menu.Previous()

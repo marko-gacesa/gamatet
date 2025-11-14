@@ -175,6 +175,33 @@ func (m *Menu) Increase() {
 	}
 }
 
+func (m *Menu) Key(k byte) bool {
+	shouldCallback := func() bool {
+		m.mx.Lock()
+		defer m.mx.Unlock()
+
+		if len(m.itemsVisible) > 0 {
+			if item := m.itemsVisible[m.currentIdx]; !item.IsDisabled() && item.inputKey(k) && item.isDirty() {
+				m.updateItems()
+				return true
+			}
+		}
+
+		for _, item := range m.itemsAll {
+			if item.b().global && item.inputKey(k) {
+				m.updateItems()
+				return true
+			}
+		}
+
+		return false
+	}()
+	if shouldCallback {
+		m.callback()
+	}
+	return shouldCallback
+}
+
 func (m *Menu) Input(r rune) {
 	shouldCallback := func() bool {
 		m.mx.Lock()

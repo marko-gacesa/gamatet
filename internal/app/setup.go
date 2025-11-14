@@ -5,6 +5,8 @@ package app
 import (
 	"fmt"
 
+	"github.com/marko-gacesa/gamatet/internal/config/key"
+
 	"github.com/marko-gacesa/gamatet/game/setup"
 )
 
@@ -35,4 +37,21 @@ func (sections *setupSections) refresh(s *setup.Setup) {
 	sections.showPieceMap[true] = "Show"
 	sections.showMiscMap[false] = fmt.Sprintf("%s (%s)", "Hide", s.MiscOptions.String())
 	sections.showMiscMap[true] = "Show"
+}
+
+type setupKeySection struct {
+	showKeys    bool
+	showKeysMap map[bool]string
+}
+
+func newSetupKeySection() *setupKeySection {
+	return &setupKeySection{
+		showKeys:    false,
+		showKeysMap: make(map[bool]string),
+	}
+}
+
+func (k *setupKeySection) refresh(i *key.Input) {
+	k.showKeysMap[false] = i.String()
+	k.showKeysMap[true] = "Redefine"
 }

@@ -20,6 +20,7 @@ type Item interface {
 	increase()
 	decrease()
 	input(r rune) bool
+	inputKey(key byte) bool
 
 	focus()
 	focusLost()
@@ -86,6 +87,8 @@ func (*base) focusLost() {}
 func (*base) fix()      {}
 func (*base) increase() {}
 func (*base) decrease() {}
+
+func (*base) inputKey(byte) bool { return false }
 
 func (b *base) updateDisabled() {
 	if b.disabledFn != nil {

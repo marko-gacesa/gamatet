@@ -5,6 +5,8 @@ package scene
 import (
 	"time"
 
+	"github.com/marko-gacesa/gamatet/internal/config/key"
+
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 
@@ -25,7 +27,9 @@ type GameOne struct {
 	textHUD render.Text
 	fpsHUD  render.HUD
 
-	playerInCh  chan<- []byte
+	playerInCh chan<- []byte
+	input      key.Input
+
 	model       mgl32.Mat4
 	game        core.RenderRequester
 	fieldRender *render.Field
@@ -61,10 +65,11 @@ func NewGameOne(
 		textHUD: *textHUD,
 		fpsHUD:  *fpsHUD,
 
-		// these are set below
-		playerInCh:  nil,
-		model:       mgl32.Mat4{},
-		game:        nil,
+		playerInCh: params.PlayerInCh,
+		input:      params.PlayerInput,
+
+		model:       mgl32.Ident4(),
+		game:        params.Game,
 		fieldRender: nil,
 
 		actionCh: params.ActionCh,
@@ -72,9 +77,6 @@ func NewGameOne(
 		waitDoneCh: params.Done,
 	}
 
-	g.playerInCh = params.PlayerInCh
-	g.model = mgl32.Ident4()
-	g.game = params.Game
 	g.fieldRender = render.NewField(g.model, &g.res, &g.text, 0, g.game, preferredSide)
 
 	return g
@@ -93,27 +95,21 @@ func (ft *GameOne) Release() {
 func (ft *GameOne) InputKeyPress(key, scancode int) {
 	ft.BlockBase.InputKeyPress(key, scancode)
 
-	var a action.Action
-
 	switch glfw.Key(key) {
 	case glfw.KeyEscape:
 		ft.actionCh <- action.Abort
-	case glfw.KeyPause, glfw.KeyP:
+	case glfw.KeyPause:
 		ft.actionCh <- action.Pause
 
-	case glfw.KeyLeft:
-		a = action.MoveLeft
-	case glfw.KeyRight:
-		a = action.MoveRight
-	case glfw.KeyUp:
-		a = action.Activate
-	case glfw.KeyDown:
-		a = action.MoveDown
-	case glfw.KeySpace:
-		a = action.Drop
+	case KeyMap[ft.input.Left]:
+		base.SendAction(action.MoveLeft, ft.waitDoneCh, ft.playerInCh)
+	case KeyMap[ft.input.Right]:
+		base.SendAction(action.MoveRight, ft.waitDoneCh, ft.playerInCh)
+	case KeyMap[ft.input.Activate]:
+		base.SendAction(action.Activate, ft.waitDoneCh, ft.playerInCh)
+	case KeyMap[ft.input.Drop]:
+		base.SendAction(action.Drop, ft.waitDoneCh, ft.playerInCh)
 	}
-
-	base.SendAction(a, ft.waitDoneCh, ft.playerInCh)
 }
 
 func (ft *GameOne) Prepare(now time.Time) {

@@ -9,6 +9,7 @@ import (
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/gamatet/game/setup"
+	"github.com/marko-gacesa/gamatet/internal/config/key"
 	"github.com/marko-gacesa/gamatet/internal/types"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
@@ -75,7 +76,7 @@ func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {
 
 	actionCh := make(chan action.Action)
 
-	setup := core.Setup{
+	gameSetup := core.Setup{
 		Name: s.Name,
 		Config: core.GameConfig{
 			WidthPerPlayer: int(fieldW),
@@ -94,7 +95,7 @@ func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {
 		ActionCh: actionCh,
 	}
 
-	g := core.MakeHost(setup, core.HostOptions{})
+	g := core.MakeHost(gameSetup, core.HostOptions{})
 
 	// go-routine for processing events for the field
 	go func() {
@@ -110,11 +111,17 @@ func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {
 
 	app.returnToMainScreen()
 
+	var inputs [setup.MaxLocalPlayers]key.Input
+	for i := range min(len(app.cfg.LocalPlayers.Infos), setup.MaxLocalPlayers) {
+		inputs[i] = app.cfg.LocalPlayers.Infos[i].Input
+	}
+
 	return types.GameParams{
-		PlayerInCh: playerInChs,
-		FieldCount: fieldCount,
-		ActionCh:   actionCh,
-		Game:       g,
-		Done:       ctx.Done(),
+		PlayerInCh:   playerInChs,
+		PlayerInputs: inputs,
+		FieldCount:   fieldCount,
+		ActionCh:     actionCh,
+		Game:         g,
+		Done:         ctx.Done(),
 	}
 }

@@ -75,9 +75,10 @@ func (app *App) gameSinglePlayer(ctx screen.Context) types.GameOneParams {
 	app.returnToMainScreen()
 
 	return types.GameOneParams{
-		PlayerInCh: playerInCh,
-		ActionCh:   actionCh,
-		Game:       g,
-		Done:       ctx.Done(),
+		PlayerInCh:  playerInCh,
+		PlayerInput: app.cfg.LocalPlayers.Infos[0].Input,
+		ActionCh:    actionCh,
+		Game:        g,
+		Done:        ctx.Done(),
 	}
 }

@@ -160,10 +160,9 @@ const (
 	routeMultiPlayerLANHostGame = routeMultiPlayerLANPrefix + "host-game"
 	routeMultiPlayerLANJoinGame = routeMultiPlayerLANPrefix + "join-game"
 
-	routeConfigPrefix           = "config|"
-	routeConfigMenu             = routeConfigPrefix + "menu"
-	routeConfigLocalPlayerN     = routeConfigPrefix + "local-player:"
-	routeConfigLocalPlayerSetup = routeConfigPrefix + "local-player-setup"
+	routeConfigPrefix            = "config|"
+	routeConfigMenu              = routeConfigPrefix + "menu"
+	routeConfigLocalPlayerSetupN = routeConfigPrefix + "local-player-setup:"
 
 	routeConfigVideoPrefix = "config-video|"
 	routeConfigVideoSetup  = routeConfigVideoPrefix + "setup"
@@ -282,13 +281,13 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 
 	case id == routeConfigMenu:
 		data = app.menuConfig(ctx)
-	case strings.HasPrefix(string(id), routeConfigLocalPlayerN):
-		s := strings.TrimPrefix(string(id), routeConfigLocalPlayerN)
+	case strings.HasPrefix(string(id), routeConfigLocalPlayerSetupN):
+		s := strings.TrimPrefix(string(id), routeConfigLocalPlayerSetupN)
 		idx, err := strconv.Atoi(s)
 		if err != nil {
 			data = app.menuError(ctx, err)
 		} else {
-			data = app.menuConfigLocalPlayer(ctx, idx)
+			data = app.setupLocalPlayer(ctx, idx)
 		}
 	case id == routeConfigVideoSetup:
 		data = app.menuConfigVideo(ctx)
