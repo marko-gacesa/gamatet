@@ -11,7 +11,7 @@ import (
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
-func (app *App) setupLocalPlayer(ctx screen.Context, idx int) *menu.Menu {
+func (app *App) menuConfigLocalPlayer(ctx screen.Context, idx int) *menu.Menu {
 	if idx < 0 || idx >= setup.MaxLocalPlayers {
 		return app.menuErrorText(ctx, "player index out of range")
 	}
@@ -51,11 +51,7 @@ func (app *App) setupLocalPlayer(ctx screen.Context, idx int) *menu.Menu {
 		app.menuItemBack(),
 	)
 	return menu.New(fmt.Sprintf("Player: %d", idx+1), func(m *menu.Menu) {
-		if app.screenIDNext != "" {
-			ctx.Stop()
-			return
-		}
-
+		app.configStopper(ctx)(m)
 		section.refresh(&info.Input)
 	}, items...)
 }

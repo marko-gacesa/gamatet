@@ -3,6 +3,7 @@
 package app
 
 import (
+	"github.com/marko-gacesa/gamatet/internal/config"
 	"github.com/marko-gacesa/gamatet/logic/menu"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
@@ -16,6 +17,16 @@ func (app *App) menuStopper(ctx screen.Context) func(*menu.Menu) {
 	return func(*menu.Menu) {
 		if app.screenIDNext != "" {
 			ctx.Stop()
+		}
+	}
+}
+
+func (app *App) configStopper(ctx screen.Context) func(*menu.Menu) {
+	return func(*menu.Menu) {
+		if app.screenIDNext != "" {
+			_ = config.Save(app.logger, app.cfgPath, &app.cfg)
+			ctx.Stop()
+			return
 		}
 	}
 }

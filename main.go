@@ -25,6 +25,8 @@ func main() {
 
 	cfg, cfgPath := config.Load(logger)
 
+	cfg.Sanitize()
+
 	globalCtx := appctx.Context
 	appCtx, appCtxStop := context.WithCancel(globalCtx)
 

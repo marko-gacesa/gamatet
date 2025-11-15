@@ -4,7 +4,6 @@ package app
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/marko-gacesa/gamatet/internal/values"
 	"github.com/marko-gacesa/gamatet/logic/menu"
@@ -12,14 +11,12 @@ import (
 )
 
 func (app *App) menuAbout(ctx screen.Context) *menu.Menu {
-	t, _ := time.Parse(time.RFC3339Nano, values.BuildTime)
-
 	var createdBy string
 
-	if y := t.Year(); y < 2000 {
-		createdBy = "by Marko Gaćeša"
+	if t := values.BuildTime; len(t) >= 4 {
+		createdBy = fmt.Sprintf("Copyright (c) %s Marko Gaćeša", t[:4])
 	} else {
-		createdBy = fmt.Sprintf("Copyright (c) %d Marko Gaćeša", t.Year())
+		createdBy = "by Marko Gaćeša"
 	}
 
 	return menu.New("About", app.menuStopper(ctx), []menu.Item{

@@ -48,6 +48,9 @@ type Key byte
 
 func (k *Key) UnmarshalJSON(b []byte) error {
 	s := string(b)
+	if len(s) < 2 || s[0] != '"' || s[len(s)-1] != '"' {
+		return fmt.Errorf("invalid key: %s", s)
+	}
 	for kk, v := range Map {
 		if v == s {
 			*k = kk
@@ -60,10 +63,10 @@ func (k *Key) UnmarshalJSON(b []byte) error {
 func (k Key) MarshalJSON() ([]byte, error) {
 	s, ok := Map[k]
 	if !ok {
-		return []byte(StrUnknown), nil
+		s = StrUnknown
 	}
 
-	return []byte(s), nil
+	return fmt.Appendf(nil, `"%s"`, s), nil
 }
 
 const (

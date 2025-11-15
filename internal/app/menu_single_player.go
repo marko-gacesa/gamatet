@@ -93,10 +93,8 @@ func (app *App) menuSinglePlayerSetup(ctx screen.Context, presetIdx int, nextRou
 	items = append(items, app.menuItemBack())
 
 	return menu.New("Single Player: Setup", func(m *menu.Menu) {
-		if app.screenIDNext != "" {
-			ctx.Stop()
-			return
-		}
+		app.menuStopper(ctx)(m)
+		sections.refresh(&s)
 
 		if app.resultSetup != nil {
 			if app.resultSetup.SanitizeSingle() {
@@ -107,12 +105,11 @@ func (app *App) menuSinglePlayerSetup(ctx screen.Context, presetIdx int, nextRou
 			} else {
 				app.cfg.Presets.SingleCustom = *app.resultSetup
 			}
+			app.saveConfig()
 
 			app.screenIDNext = nextRoute
 			ctx.Stop()
 			return
 		}
-
-		sections.refresh(&s)
 	}, items...)
 }

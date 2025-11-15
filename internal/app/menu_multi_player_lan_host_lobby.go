@@ -88,11 +88,8 @@ func (app *App) menuMultiPlayerLANHostLobby(ctx screen.Context) *menu.Menu {
 	items = append(items, app.menuItemEscape())
 	items = append(items, app.menuItemBack())
 
-	m := menu.New(values.ProgramName, func(*menu.Menu) {
-		if app.screenIDNext != "" {
-			ctx.Stop()
-			return
-		}
+	m := menu.New(values.ProgramName, func(m *menu.Menu) {
+		app.menuStopper(ctx)(m)
 
 		if start == 1 {
 			start++

@@ -293,7 +293,7 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 		if err != nil {
 			data = app.menuError(ctx, err)
 		} else {
-			data = app.setupLocalPlayer(ctx, idx)
+			data = app.menuConfigLocalPlayer(ctx, idx)
 		}
 	case id == routeConfigVideoSetup:
 		data = app.menuConfigVideo(ctx)
@@ -350,4 +350,8 @@ func (app *App) loadPresetMulti(idx int) {
 	}
 
 	app.resultSetup = &s
+}
+
+func (app *App) saveConfig() {
+	_ = config.Save(app.logger, app.cfgPath, &app.cfg)
 }

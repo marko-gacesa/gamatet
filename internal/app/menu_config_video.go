@@ -9,7 +9,7 @@ import (
 )
 
 func (app *App) menuConfigVideo(ctx screen.Context) *menu.Menu {
-	return menu.New("Video Options", app.menuStopper(ctx), []menu.Item{
+	return menu.New("Video Options", app.configStopper(ctx), []menu.Item{
 		menu.NewBool(&app.cfg.Video.Fullscreen, "Fullscreen", ""),
 		menu.NewNumber(&app.cfg.Video.WindowWidth, config.WindowWidthMin, config.WindowWidthMax, "Window width", ""),
 		menu.NewNumber(&app.cfg.Video.WindowHeight, config.WindowHeightMin, config.WindowHeightMax, "Window height", ""),

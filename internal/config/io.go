@@ -33,16 +33,39 @@ func Load(log *slog.Logger) (Config, string) {
 			log.Error("failed to load config", "error", err, "path", filePath)
 		}
 
-		return cfg, dir
+		return cfg, filePath
 	}
-
-	cfg.Sanitize()
 
 	if len(dirs) > 0 {
 		return cfg, path.Join(dirs[0], filename)
 	}
 
 	return cfg, filename
+}
+
+func Save(log *slog.Logger, filePath string, cfg *Config) error {
+	f, err := os.Create(filePath)
+	if err != nil {
+		log.Error("failed to create config file", "error", err, "path", filePath)
+		return err
+	}
+
+	defer f.Close()
+
+	cfg.Sanitize()
+
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "  ")
+	enc.SetEscapeHTML(false)
+	err = enc.Encode(cfg)
+	if err != nil {
+		log.Error("failed to save config file", "error", err, "path", filePath)
+		return err
+	}
+
+	log.Info("config file saved", "path", filePath)
+
+	return nil
 }
 
 func getDirList() []string {

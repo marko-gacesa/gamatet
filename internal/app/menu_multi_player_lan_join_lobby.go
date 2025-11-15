@@ -145,15 +145,12 @@ func (app *App) menuMultiPlayerLANJoinLobby(ctx screen.Context) *menu.Menu {
 	items = append(items, app.menuItemEscape())
 	items = append(items, app.menuItemBack())
 
-	m := menu.New(values.ProgramName, func(*menu.Menu) {
-		if app.screenIDNext != "" {
-			if app.screenIDNext == routeBack {
-				lobbyClient.LeaveAll()
-			}
-
-			ctx.Stop()
-			return
+	m := menu.New(values.ProgramName, func(m *menu.Menu) {
+		if app.screenIDNext == routeBack {
+			lobbyClient.LeaveAll()
+			time.Sleep(10 * time.Millisecond)
 		}
+		app.menuStopper(ctx)(m)
 	}, items...)
 
 	return m
