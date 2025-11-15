@@ -38,7 +38,6 @@ type App struct {
 	resultClientMap           map[message.Token]server.ClientData
 	resultClientSession       *client.Session
 	resultServerAddress       net.UDPAddr
-	resultLock                sync.Mutex
 
 	screenIDHistory *routes // screen history, the last entry is the id currently active screen
 	screenIDNext    route

@@ -214,6 +214,7 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 
 		pinfo.Blocks = pinfo.Blocks[:0]
 		pinfo.DrawShadow = false
+		pinfo.Shadow.Blocks = pinfo.Shadow.Blocks[:0]
 		pinfo.DirectionCW = ctrl.Config.RotationDirectionCW
 
 		if !showBlocks || ctrl.State.IsTerminal() {
@@ -243,6 +244,8 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 		pinfo.Blocks = append(pinfo.Blocks, ctrl.Blocks...)
 
 		pinfo.DrawShadow = ctrl.IsShadowShown
-		pinfo.Shadow = ctrl.Shadow
+		pinfo.Shadow.ColL = ctrl.Shadow.ColL
+		pinfo.Shadow.ColR = ctrl.Shadow.ColR
+		pinfo.Shadow.Blocks = append(pinfo.Shadow.Blocks, ctrl.Shadow.Blocks...)
 	}
 }
