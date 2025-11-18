@@ -206,7 +206,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		lightPowShooter = 1.5
 	)
 
-	infoPositions := f.preferredSide.PosN(renderInfo.PieceCount)
+	infoPositions := f.preferredSide.PieceCorners(renderInfo.PieceCount)
 
 	hasLeftPad := slices.Contains(infoPositions[:], DisplayPositionTopLeft) || slices.Contains(infoPositions[:], DisplayPositionBottomLeft)
 	hasRightPad := slices.Contains(infoPositions[:], DisplayPositionTopRight) || slices.Contains(infoPositions[:], DisplayPositionBottomRight)

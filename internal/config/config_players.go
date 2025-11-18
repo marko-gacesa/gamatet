@@ -31,6 +31,14 @@ func (cfg *LocalPlayers) Sanitize() {
 
 }
 
+func (cfg *LocalPlayers) Inputs() [setup.MaxLocalPlayers]key.Input {
+	var inputs [setup.MaxLocalPlayers]key.Input
+	for i := range min(len(cfg.Infos), setup.MaxLocalPlayers) {
+		inputs[i] = cfg.Infos[i].Input
+	}
+	return inputs
+}
+
 type PlayerInfo struct {
 	Name       string    `json:"name"`
 	Input      key.Input `json:"input"`

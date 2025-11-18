@@ -52,10 +52,10 @@ func NewGameOne(
 	textHUD := render.MakeText(tex, render.HudFont)
 	fpsHUD := render.NewHUD(render.NewFPS(), HUDPosFPS, textHUD)
 
-	preferredSide := render.PreferredSideTop
+	preferredSide := render.PreferredSideTopL2R
 
 	wf, hf, pf := params.Game.GetSize(0)
-	w, h := render.GetExtendedContent(wf, hf, preferredSide.PosN(pf))
+	w, h := render.GetExtendedContent(wf, hf, preferredSide.PieceCorners(pf))
 
 	g := &GameOne{
 		BlockBase: base.NewBlockBase(renderer, tex, w, h, true),

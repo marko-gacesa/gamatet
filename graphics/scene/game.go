@@ -63,64 +63,64 @@ func NewGame(
 
 	center := mgl32.Ident4()
 
-	fieldRenders := make([]*render.Field, 0, params.FieldCount)
+	var fieldRenders []*render.Field
 	var w, h int
 
 	switch params.FieldCount {
 	case 1:
 		wf, hf, pf := params.Game.GetSize(0)
-		w, h = render.GetExtendedContent(wf, hf, render.PreferredSideTop.PosN(pf))
-		fieldRenders = append(fieldRenders, render.NewField(center, res, text, 0, params.Game, render.PreferredSideTop))
+		w, h = render.GetExtendedContent(wf, hf, render.PreferredSideTopL2R.PieceCorners(pf))
+		fieldRenders = []*render.Field{
+			render.NewField(center, res, text, 0, params.Game, render.PreferredSideTopL2R),
+		}
 	case 2:
-		wf0, hf0, pf0 := params.Game.GetSize(0)
-		wf1, hf1, pf1 := params.Game.GetSize(1)
-		w0, h0 := render.GetExtendedContent(wf0, hf0, render.PreferredSideLeft.PosN(pf0))
-		w1, h1 := render.GetExtendedContent(wf1, hf1, render.PreferredSideRight.PosN(pf1))
-
-		w, h = w0+w1, max(h0, h1)
-		dx := 0.5 * (float32(w) - float32(w1))
-		fieldModel0 := center.Mul4(mgl32.Translate3D(-dx, 0, 0))
-		fieldModel1 := center.Mul4(mgl32.Translate3D(dx, 0, 0))
-		fieldRenders = append(fieldRenders, render.NewField(fieldModel0, res, text, 0, params.Game, render.PreferredSideLeft))
-		fieldRenders = append(fieldRenders, render.NewField(fieldModel1, res, text, 1, params.Game, render.PreferredSideRight))
-		/*
-			case 3:
-				w, h = 3*w1+2, h1
-				dx := 0.5 * (float32(w) - float32(w1))
-				fieldModels[0] = center.Mul4(mgl32.Translate3D(-dx, 0, 0))
-				fieldModels[1] = center
-				fieldModels[2] = center.Mul4(mgl32.Translate3D(dx, 0, 0))
-			case 4:
-				w, h = 2*w1+1, 2*h1+1
-				dx := 0.5 * (float32(w) - float32(w1))
-				dy := 0.5 * (float32(h) - float32(h1))
-				fieldModels[0] = center.Mul4(mgl32.Translate3D(-dx, dy, 0))
-				fieldModels[1] = center.Mul4(mgl32.Translate3D(dx, dy, 0))
-				fieldModels[2] = center.Mul4(mgl32.Translate3D(-dx, -dy, 0))
-				fieldModels[3] = center.Mul4(mgl32.Translate3D(dx, -dy, 0))
-			case 5:
-				w, h = 3*w1+2, 2*h1+1
-				dx := 0.5 * (float32(w) - float32(w1))
-				dy := 0.5 * (float32(h) - float32(h1))
-				fieldModels[0] = center.Mul4(mgl32.Translate3D(-dx, dy, 0))
-				fieldModels[1] = center.Mul4(mgl32.Translate3D(0, dy, 0))
-				fieldModels[2] = center.Mul4(mgl32.Translate3D(dx, dy, 0))
-				dx = 0.5 * (float32(2*w1+1) - float32(w1))
-				fieldModels[3] = center.Mul4(mgl32.Translate3D(-dx, -dy, 0))
-				fieldModels[4] = center.Mul4(mgl32.Translate3D(dx, -dy, 0))
-			case 6:
-				w, h = 3*w1+2, 2*h1+1
-				dx := 0.5 * (float32(w) - float32(w1))
-				dy := 0.5 * (float32(h) - float32(h1))
-				fieldModels[0] = center.Mul4(mgl32.Translate3D(-dx, dy, 0))
-				fieldModels[1] = center.Mul4(mgl32.Translate3D(0, dy, 0))
-				fieldModels[2] = center.Mul4(mgl32.Translate3D(dx, dy, 0))
-				fieldModels[3] = center.Mul4(mgl32.Translate3D(-dx, -dy, 0))
-				fieldModels[4] = center.Mul4(mgl32.Translate3D(0, -dy, 0))
-				fieldModels[5] = center.Mul4(mgl32.Translate3D(dx, -dy, 0))
-			case 7, 8:
-				panic("TODO")
-		*/
+		psides := []render.PreferredSide{
+			render.PreferredSideLeftT2B, render.PreferredSideRightT2B,
+		}
+		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 2)
+	case 3:
+		psides := []render.PreferredSide{
+			render.PreferredSideLeftT2B, render.PreferredSideLeftB2T, render.PreferredSideLeftT2B,
+		}
+		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 3)
+	case 4:
+		w0, h0, _ := params.Game.GetSize(0)
+		if h0 >= 2*w0 {
+			psides := []render.PreferredSide{
+				render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R,
+			}
+			w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 4)
+		} else {
+			psides := []render.PreferredSide{
+				render.PreferredSideTopL2R, render.PreferredSideTopR2L,
+				render.PreferredSideBottomL2R, render.PreferredSideBottomR2L,
+			}
+			w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 2)
+		}
+	case 5:
+		psides := []render.PreferredSide{
+			render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R,
+			render.PreferredSideBottomR2L, render.PreferredSideBottomR2L,
+		}
+		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 3)
+	case 6:
+		psides := []render.PreferredSide{
+			render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R,
+			render.PreferredSideBottomL2R, render.PreferredSideBottomL2R, render.PreferredSideBottomL2R,
+		}
+		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 3)
+	case 7:
+		psides := []render.PreferredSide{
+			render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R,
+			render.PreferredSideBottomL2R, render.PreferredSideBottomL2R, render.PreferredSideBottomL2R,
+		}
+		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 4)
+	case 8:
+		psides := []render.PreferredSide{
+			render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R,
+			render.PreferredSideBottomL2R, render.PreferredSideBottomL2R, render.PreferredSideBottomL2R, render.PreferredSideBottomL2R,
+		}
+		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 4)
 	default:
 		panic("unsupported number of fields")
 	}
@@ -211,4 +211,66 @@ func (ft *Game) Render() {
 
 	ft.fpsHUD.Render(r)
 	ft.latenciesHUD.Render(r)
+}
+
+func positionFieldRenderers(
+	rr core.RenderRequester,
+	res *render.FieldResources,
+	text *render.Text,
+	psides []render.PreferredSide,
+	fieldsInRow int,
+) (int, int, []*render.Field) {
+	n := len(psides)
+
+	fieldSizes := make([]struct{ w, h int }, n)
+	for idx := range n {
+		fw, fh, fpc := rr.GetSize(idx)
+		w, h := render.GetExtendedContent(fw, fh, psides[idx].PieceCorners(fpc))
+		fieldSizes[idx] = struct{ w, h int }{w: w, h: h}
+	}
+
+	var gridW, gridH int
+	var gridWCurr, gridHCurr, k int
+
+	gridWCurr, gridHCurr, k = 0, 0, 0
+	for idx := range n {
+		gridWCurr += fieldSizes[idx].w
+		gridHCurr = max(fieldSizes[idx].h, gridHCurr)
+		k++
+		if k >= fieldsInRow {
+			gridW = max(gridWCurr, gridW)
+			gridH += gridHCurr
+			gridWCurr, k = 0, 0
+		}
+	}
+
+	fieldsInColumn := len(fieldSizes) / fieldsInRow
+	if len(fieldSizes)%fieldsInRow > 0 {
+		fieldsInColumn++
+	}
+
+	center := mgl32.Ident4()
+	pos0 := center.Mul4(mgl32.Translate3D(-0.5*float32(gridW), 0.5*float32(gridH), 0))
+
+	fieldRenderers := make([]*render.Field, n)
+
+	curr := pos0
+	gridWCurr, gridHCurr, k = 0, 0, 0
+	for idx := range n {
+		gridWCurr = fieldSizes[idx].w
+		gridHCurr = max(fieldSizes[idx].h, gridHCurr)
+		k++
+
+		curr = curr.Mul4(mgl32.Translate3D(0.5*float32(gridWCurr), -0.5*float32(gridHCurr), 0))
+		fieldRenderers[idx] = render.NewField(curr, res, text, idx, rr, psides[idx])
+		curr = curr.Mul4(mgl32.Translate3D(0.5*float32(gridWCurr), 0.5*float32(gridHCurr), 0))
+
+		if k >= fieldsInRow {
+			pos0 = pos0.Mul4(mgl32.Translate3D(0, -float32(gridHCurr), 0))
+			curr = pos0
+			gridWCurr, k = 0, 0
+		}
+	}
+
+	return gridW, gridH, fieldRenderers
 }

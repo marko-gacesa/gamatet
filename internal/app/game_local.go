@@ -9,7 +9,6 @@ import (
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/gamatet/game/setup"
-	"github.com/marko-gacesa/gamatet/internal/config/key"
 	"github.com/marko-gacesa/gamatet/internal/types"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
@@ -111,14 +110,9 @@ func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {
 
 	app.returnToMainScreen()
 
-	var inputs [setup.MaxLocalPlayers]key.Input
-	for i := range min(len(app.cfg.LocalPlayers.Infos), setup.MaxLocalPlayers) {
-		inputs[i] = app.cfg.LocalPlayers.Infos[i].Input
-	}
-
 	return types.GameParams{
 		PlayerInCh:   playerInChs,
-		PlayerInputs: inputs,
+		PlayerInputs: app.cfg.LocalPlayers.Inputs(),
 		FieldCount:   fieldCount,
 		ActionCh:     actionCh,
 		Game:         g,

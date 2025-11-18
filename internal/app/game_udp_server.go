@@ -77,6 +77,8 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 
 	pieceFeed := Feed(s)
 
+	fieldHasLocalPlayers := make(map[int]struct{})
+
 	// Input channels for local players. Closed on the UI component. Elements can be nil.
 	var playerInChs [setup.MaxLocalPlayers]chan<- []byte
 
@@ -131,6 +133,8 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 
 				continue
 			}
+
+			fieldHasLocalPlayers[fieldIdx] = struct{}{}
 
 			localPlayerInfo, localPlayerIdx := app.LocalPlayer(actor.Token)
 			if localPlayerIdx < 0 {
@@ -233,11 +237,13 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 	}
 
 	return types.GameParams{
-		PlayerInCh: playerInChs,
-		FieldCount: byte(len(fields)),
-		ActionCh:   actionCh,
-		Latencies:  latencies,
-		Game:       gameHost,
-		Done:       ctx.Done(),
+		PlayerInCh:           playerInChs,
+		PlayerInputs:         app.cfg.LocalPlayers.Inputs(),
+		FieldHasLocalPlayers: fieldHasLocalPlayers,
+		FieldCount:           byte(len(fields)),
+		ActionCh:             actionCh,
+		Latencies:            latencies,
+		Game:                 gameHost,
+		Done:                 ctx.Done(),
 	}, nil
 }
