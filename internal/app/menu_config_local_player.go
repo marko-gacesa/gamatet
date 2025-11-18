@@ -16,11 +16,6 @@ func (app *App) menuConfigLocalPlayer(ctx screen.Context, idx int) *menu.Menu {
 		return app.menuErrorText(ctx, "player index out of range")
 	}
 
-	dirMap := map[bool]string{
-		false: "Counter clockwise",
-		true:  "Clockwise",
-	}
-
 	stringFn := func(k key.Key) string { return key.Map[k] }
 	convertFn := func(b byte) key.Key { return key.Key(b) }
 
@@ -35,7 +30,7 @@ func (app *App) menuConfigLocalPlayer(ctx screen.Context, idx int) *menu.Menu {
 	items := make([]menu.Item, 0, 10)
 	items = append(items,
 		menu.NewText(&info.Name, setup.MaxLenName, setup.MaxLenName, "Name", ""),
-		menu.NewEnum(&section.showKeys, []bool{false, true}, section.showKeysMap,
+		menu.NewEnum(&section.showKeys, []bool{false, true}, section.showKeysStr,
 			"Control", ""),
 		menu.NewKey(&info.Input.Left,
 			"\tMove piece left key", "", stringFn, convertFn, menu.WithVisible(showKeysFn)),
@@ -46,7 +41,7 @@ func (app *App) menuConfigLocalPlayer(ctx screen.Context, idx int) *menu.Menu {
 		menu.NewKey(&info.Input.Drop,
 			"\tDrop piece down key", "", stringFn, convertFn, menu.WithVisible(showKeysFn)),
 		menu.NewEnum(&info.GameConfig.RotationDirectionCW,
-			[]bool{false, true}, dirMap, "Rotation Direction", ""),
+			[]bool{false, true}, rotationDirCWStr, "Rotation Direction", ""),
 		app.menuItemEscape(),
 		app.menuItemBack(),
 	)

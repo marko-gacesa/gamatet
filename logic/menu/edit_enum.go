@@ -14,13 +14,13 @@ var _ Item = (*Enum[int])(nil)
 // The variable can have only one value from the provided list.
 type Enum[T comparable] struct {
 	base
-	ptr     *T
-	values  []T
-	nameMap map[T]string
+	ptr    *T
+	values []T
+	nameFn func(T) string
 }
 
 // NewEnum creates new Enum menu item.
-func NewEnum[T comparable](ptr *T, values []T, nameMap map[T]string, label, description string, options ...func(Item)) *Enum[T] {
+func NewEnum[T comparable](ptr *T, values []T, nameFn func(T) string, label, description string, options ...func(Item)) *Enum[T] {
 	if ptr == nil {
 		panic(strNilPointer)
 	}
@@ -28,10 +28,10 @@ func NewEnum[T comparable](ptr *T, values []T, nameMap map[T]string, label, desc
 		panic("no enum values provided")
 	}
 	e := &Enum[T]{
-		base:    makeBase(label, description),
-		ptr:     ptr,
-		values:  values,
-		nameMap: nameMap,
+		base:   makeBase(label, description),
+		ptr:    ptr,
+		values: values,
+		nameFn: nameFn,
 	}
 	e.fix()
 	applyOptions(e, options...)
@@ -44,8 +44,8 @@ func (e *Enum[T]) Text() string {
 	}
 
 	var text string
-	if e.nameMap != nil {
-		text = e.nameMap[*e.ptr]
+	if e.nameFn != nil {
+		text = e.nameFn(*e.ptr)
 	} else {
 		text = fmt.Sprintf("%v", *e.ptr)
 	}

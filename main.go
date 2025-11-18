@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"github.com/marko-gacesa/gamatet/internal/i18n"
 	"os"
 
 	"github.com/marko-gacesa/gamatet/graphics/loop"
@@ -23,8 +24,9 @@ func main() {
 		"build_time", values.BuildTime,
 		"pid", pid)
 
-	cfg, cfgPath := config.Load(logger)
+	i18n.ParseEmbeddedLanguages(logger)
 
+	cfg, cfgPath := config.Load(logger)
 	cfg.Sanitize()
 
 	globalCtx := appctx.Context

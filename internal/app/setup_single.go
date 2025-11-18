@@ -11,9 +11,7 @@ import (
 
 func setupSingle(s *setup.Setup, sections *setupSections) []menu.Item {
 	return []menu.Item{
-		//menu.NewEnum(&s.GameOptions.GameType, setup.GameTypeAll, setup.GameTypeNameMap,
-		//	"Game type", ""),
-		menu.NewEnum(&sections.showField, []bool{false, true}, sections.showFieldMap,
+		menu.NewEnum(&sections.showField, []bool{false, true}, sections.showFieldsStr,
 			"Show field options", ""),
 		menu.NewInteger(&s.FieldOptions.WidthSingle, setup.MinFieldWidthPerPlayer, setup.MaxFieldWidthSingle,
 			"\tField width", "",
@@ -32,14 +30,14 @@ func setupSingle(s *setup.Setup, sections *setupSections) []menu.Item {
 				return sections.showField
 			})),
 
-		menu.NewEnum(&sections.showPiece, []bool{false, true}, sections.showPieceMap,
+		menu.NewEnum(&sections.showPiece, []bool{false, true}, sections.showPieceStr,
 			"Show piece options", ""),
-		menu.NewEnum(&s.PieceOptions.PieceType, setup.PieceTypeAll, setup.PieceTypeNameMap,
+		menu.NewEnum(&s.PieceOptions.PieceType, setup.PieceTypeAll, pieceTypeStr,
 			"\tPieces type", "",
 			menu.WithVisible(func() bool {
 				return sections.showPiece
 			})),
-		menu.NewEnum(&s.PieceOptions.PieceSize, setup.PieceSizeAll, setup.PieceSizeNameMap,
+		menu.NewEnum(&s.PieceOptions.PieceSize, setup.PieceSizeAll, pieceSizeStr,
 			"\tPieces size", "",
 			menu.WithVisible(func() bool {
 				return sections.showPiece
@@ -50,7 +48,7 @@ func setupSingle(s *setup.Setup, sections *setupSections) []menu.Item {
 				return sections.showPiece
 			})),
 
-		menu.NewEnum(&sections.showMisc, []bool{false, true}, sections.showMiscMap,
+		menu.NewEnum(&sections.showMisc, []bool{false, true}, sections.showMiscStr,
 			"Show misc options", ""),
 		menu.NewBool(&s.MiscOptions.CustomSeed,
 			"\tCustom random number seed", "",

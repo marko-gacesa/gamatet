@@ -18,12 +18,6 @@ var PieceTypeAll = []PieceType{
 	PieceTypeVMirroringPolyominoes,
 }
 
-var PieceTypeNameMap = map[PieceType]string{
-	PieceTypeRotatingPolyominoes:   "Rotating Polyominoes",
-	PieceTypeHMirroringPolyominoes: "Horizontal Mirroring Polyominoes",
-	PieceTypeVMirroringPolyominoes: "Vertical Mirroring Polyominoes",
-}
-
 const (
 	PieceSizeMin     = piece.SizeMin
 	PieceSizeMax     = piece.SizeMax
@@ -34,12 +28,6 @@ const (
 )
 
 var PieceSizeAll = []byte{PieceSize3, PieceSize4, PieceSize5}
-
-var PieceSizeNameMap = map[byte]string{
-	PieceSize3: "Miniminoes",
-	PieceSize4: "Tetrominoes",
-	PieceSize5: "Pentominoes",
-}
 
 const (
 	BagSizeDefault = 2

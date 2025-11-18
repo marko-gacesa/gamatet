@@ -1,0 +1,12 @@
+program_name=GaMaTeT
+
+piece_type_rotating_polyominoes    = Rotating Polyominoes
+piece_type_h_mirroring_polyominoes = Horizontal Mirroring Polyominoes
+piece_type_v_mirroring_polyominoes = Vertical Mirroring Polyominoes
+
+piece_size_3 = Miniminoes
+piece_size_4 = Tetrominoes
+piece_size_5 = Pentominoes
+
+rotation_dir_cw  = Clockwise
+rotation_dir_ccw = Counterclockwise
