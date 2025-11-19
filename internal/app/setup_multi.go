@@ -6,27 +6,28 @@ import (
 	"math"
 
 	"github.com/marko-gacesa/gamatet/game/setup"
+	. "github.com/marko-gacesa/gamatet/internal/i18n"
 	"github.com/marko-gacesa/gamatet/logic/menu"
 )
 
 func setupMultiPlayer(s *setup.Setup, sections *setupSections) []menu.Item {
 	return []menu.Item{
 		menu.NewInteger(&s.GameOptions.FieldCount, 1, setup.MaxFieldCount,
-			"Number of teams (game fields)", ""),
+			T(KeySetupTeamCount), T(KeySetupTeamCountDesc)),
 		menu.NewBool(&s.GameOptions.SamePiecesForAll,
-			"All players get the same pieces", "",
+			T(KeySetupSamePieces), T(KeySetupSamePiecesDesc),
 			menu.WithVisible(func() bool {
 				return s.FieldCount*s.TeamSize > 1
 			})),
 		menu.NewInteger(&s.GameOptions.TeamSize, 1, setup.MaxTeamSize,
-			"Players per field (team size)", ""),
+			T(KeySetupTeamSize), T(KeySetupTeamSizeDesc)),
 		menu.NewBool(&s.GameOptions.PlayerZones,
-			"\tTeam member zones", "",
+			"\t"+T(KeySetupPlayerZones), T(KeySetupPlayerZonesDesc),
 			menu.WithVisible(func() bool {
 				return s.TeamSize > 1
 			})),
 		menu.NewBool(&s.GameOptions.PieceCollision,
-			"\tTeam members' piece collision", "",
+			"\t"+T(KeySetupPieceCollision), T(KeySetupPieceCollisionDesc),
 			menu.WithVisible(func() bool {
 				return s.TeamSize > 1 && !s.GameOptions.PlayerZones
 			}),
@@ -35,57 +36,57 @@ func setupMultiPlayer(s *setup.Setup, sections *setupSections) []menu.Item {
 			})),
 
 		menu.NewEnum(&sections.showField, []bool{false, true}, sections.showFieldsStr,
-			"Show field options", ""),
+			T(KeySetupShowFieldOptions), T(KeySetupShowFieldOptionsDesc)),
 		menu.NewInteger(&s.FieldOptions.WidthSingle, setup.MinFieldWidthPerPlayer, setup.MaxFieldWidthSingle,
-			"\tField width", "",
+			"\t"+T(KeySetupFieldWidth), T(KeySetupFieldWidthDesc),
 			menu.WithVisible(func() bool {
 				return sections.showField && s.GameOptions.TeamSize == 1
 			}),
 		),
 		menu.NewInteger(&s.FieldOptions.WidthPerPlayer, setup.MinFieldWidthPerPlayer, setup.MaxFieldWidthPerPlayer,
-			"\tField width (per team member)", "",
+			"\t"+T(KeySetupFieldWidthPerPlayer), T(KeySetupFieldWidthPerPlayerDesc),
 			menu.WithVisible(func() bool {
 				return sections.showField && s.GameOptions.TeamSize > 1
 			}),
 		),
 		menu.NewInteger(&s.FieldOptions.Height, setup.MinFieldHeight, setup.MaxFieldHeight,
-			"\tField height", "",
+			"\t"+T(KeySetupFieldHeight), T(KeySetupFieldHeightDesc),
 			menu.WithVisible(func() bool {
 				return sections.showField
 			})),
 		menu.NewInteger(&s.FieldOptions.Speed, setup.MinSpeed, setup.MaxSpeed,
-			"\tInitial speed", "",
+			"\t"+T(KeySetupFieldSpeed), T(KeySetupFieldSpeedDesc),
 			menu.WithVisible(func() bool {
 				return sections.showField
 			})),
 
 		menu.NewEnum(&sections.showPiece, []bool{false, true}, sections.showPieceStr,
-			"Show piece options", ""),
+			T(KeySetupShowPieceOptions), T(KeySetupShowPieceOptionsDesc)),
 		menu.NewEnum(&s.PieceOptions.PieceType, setup.PieceTypeAll, pieceTypeStr,
-			"\tPieces type", "",
+			"\t"+T(KeySetupPieceType), T(KeySetupPieceTypeDesc),
 			menu.WithVisible(func() bool {
 				return sections.showPiece
 			})),
 		menu.NewEnum(&s.PieceOptions.PieceSize, setup.PieceSizeAll, pieceSizeStr,
-			"\tPieces size", "",
+			"\t"+T(KeySetupPieceSize), T(KeySetupPieceSizeDesc),
 			menu.WithVisible(func() bool {
 				return sections.showPiece
 			})),
 		menu.NewInteger(&s.PieceOptions.BagSize, 1, setup.BagSizeMax,
-			"\tBag size", "",
+			"\t"+T(KeySetupBagSize), T(KeySetupBagSizeDesc),
 			menu.WithVisible(func() bool {
 				return sections.showPiece
 			})),
 
 		menu.NewEnum(&sections.showMisc, []bool{false, true}, sections.showMiscStr,
-			"Show misc options", ""),
+			T(KeySetupShowMiscOptions), T(KeySetupShowMiscOptionsDesc)),
 		menu.NewBool(&s.MiscOptions.CustomSeed,
-			"\tCustom random number seed", "",
+			"\t"+T(KeySetupCustomRandomSeed), T(KeySetupCustomRandomSeedDesc),
 			menu.WithVisible(func() bool {
 				return sections.showMisc
 			})),
 		menu.NewNumber(&s.MiscOptions.Seed, math.MinInt64, math.MaxInt64,
-			"\tRandom number seed", "",
+			"\t"+T(KeySetupRandomSeed), T(KeySetupRandomSeedDesc),
 			menu.WithVisible(func() bool {
 				return sections.showMisc && s.MiscOptions.CustomSeed
 			})),
@@ -95,9 +96,9 @@ func setupMultiPlayer(s *setup.Setup, sections *setupSections) []menu.Item {
 func setupResultMulti(s *setup.Setup, target **setup.Setup, maxPlayers byte, save bool) []menu.Item {
 	var action string
 	if save {
-		action = "Save"
+		action = T(KeySetupSave)
 	} else {
-		action = "Start"
+		action = T(KeySetupStart)
 	}
 	return []menu.Item{
 		menu.NewCommand(target, s,
@@ -110,13 +111,13 @@ func setupResultMulti(s *setup.Setup, target **setup.Setup, maxPlayers byte, sav
 				return action + " (" + s.String() + ")"
 			})),
 		menu.NewStatic(
-			"Invalid setup: Too many players - Maximum is "+string('0'+rune(maxPlayers)), "", nil,
+			Tf(KeySetupIssueTooManyPlayers, string('0'+rune(maxPlayers))), T(KeySetupIssueTooManyPlayersDesc), nil,
 			menu.WithVisible(func() bool {
 				return s.GameOptions.FieldCount*s.GameOptions.TeamSize > maxPlayers
 			}),
 			menu.WithDisabled(func() bool { return true })),
 		menu.NewStatic(
-			"Invalid setup: Need at least 2 players", "", nil,
+			T(KeySetupIssueNeedAtLeast2), T(KeySetupIssueNeedAtLeast2Desc), nil,
 			menu.WithVisible(func() bool {
 				return s.GameOptions.FieldCount*s.GameOptions.TeamSize <= 1
 			}),

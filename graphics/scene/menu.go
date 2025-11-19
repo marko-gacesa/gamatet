@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	screenContentW      = 32
-	screenContentH      = 20
+	screenContentW      = 48
+	screenContentH      = 30
 	screenMaxShownItems = 16
 	currItemMarker      = '●' //'◦'
 )

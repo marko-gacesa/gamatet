@@ -7,17 +7,17 @@ import (
 
 	"github.com/marko-gacesa/gamatet/game/setup"
 	"github.com/marko-gacesa/gamatet/internal/config/key"
-	"github.com/marko-gacesa/gamatet/internal/i18n"
+	. "github.com/marko-gacesa/gamatet/internal/i18n"
 )
 
 func pieceTypeStr(t setup.PieceType) string {
 	switch t {
 	case setup.PieceTypeRotatingPolyominoes:
-		return i18n.T(i18n.KeyPieceTypeRotatingPolyominoes)
+		return T(KeyPieceTypeRotatingPolyominoes)
 	case setup.PieceTypeHMirroringPolyominoes:
-		return i18n.T(i18n.KeyPieceTypeHMirroringPolyominoes)
+		return T(KeyPieceTypeHMirroringPolyominoes)
 	case setup.PieceTypeVMirroringPolyominoes:
-		return i18n.T(i18n.KeyPieceTypeVMirroringPolyominoes)
+		return T(KeyPieceTypeVMirroringPolyominoes)
 	default:
 		return "?"
 	}
@@ -26,11 +26,11 @@ func pieceTypeStr(t setup.PieceType) string {
 func pieceSizeStr(s byte) string {
 	switch s {
 	case setup.PieceSize3:
-		return i18n.T(i18n.KeyPieceSize3)
+		return T(KeyPieceSize3)
 	case setup.PieceSize4:
-		return i18n.T(i18n.KeyPieceSize4)
+		return T(KeyPieceSize4)
 	case setup.PieceSize5:
-		return i18n.T(i18n.KeyPieceSize5)
+		return T(KeyPieceSize5)
 	default:
 		return "?"
 	}
@@ -38,9 +38,9 @@ func pieceSizeStr(s byte) string {
 
 func rotationDirCWStr(dir bool) string {
 	if dir {
-		return i18n.T(i18n.KeyRotationDirCW)
+		return T(KeyRotationDirCW)
 	} else {
-		return i18n.T(i18n.KeyRotationDirCCW)
+		return T(KeyRotationDirCCW)
 	}
 }
 
@@ -65,12 +65,12 @@ func newSetupSections() *setupSections {
 }
 
 func (sections *setupSections) refresh(s *setup.Setup) {
-	sections.showFieldMap[false] = fmt.Sprintf("%s (%s)", "Hide", s.FieldOptions.String(s.GameOptions.TeamSize))
-	sections.showFieldMap[true] = "Show"
-	sections.showPieceMap[false] = fmt.Sprintf("%s (%s)", "Hide", s.PieceOptions.String())
-	sections.showPieceMap[true] = "Show"
-	sections.showMiscMap[false] = fmt.Sprintf("%s (%s)", "Hide", s.MiscOptions.String())
-	sections.showMiscMap[true] = "Show"
+	sections.showFieldMap[false] = fmt.Sprintf("%s (%s)", T(KeySetupHide), s.FieldOptions.String(s.GameOptions.TeamSize))
+	sections.showFieldMap[true] = T(KeySetupShow)
+	sections.showPieceMap[false] = fmt.Sprintf("%s (%s)", T(KeySetupHide), s.PieceOptions.String())
+	sections.showPieceMap[true] = T(KeySetupShow)
+	sections.showMiscMap[false] = fmt.Sprintf("%s (%s)", T(KeySetupHide), s.MiscOptions.String())
+	sections.showMiscMap[true] = T(KeySetupShow)
 }
 
 func (sections *setupSections) showFieldsStr(b bool) string { return sections.showFieldMap[b] }
@@ -91,7 +91,7 @@ func newSetupKeySection() *setupKeySection {
 
 func (k *setupKeySection) refresh(i *key.Input) {
 	k.showKeysMap[false] = i.String()
-	k.showKeysMap[true] = "Redefine"
+	k.showKeysMap[true] = T(KeySetupRedefine)
 }
 
 func (k *setupKeySection) showKeysStr(b bool) string { return k.showKeysMap[b] }

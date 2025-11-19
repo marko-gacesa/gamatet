@@ -3,9 +3,10 @@
 package app
 
 import (
-	"fmt"
 	"strconv"
 
+	"github.com/marko-gacesa/gamatet/game/setup"
+	. "github.com/marko-gacesa/gamatet/internal/i18n"
 	"github.com/marko-gacesa/gamatet/logic/menu"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
@@ -20,16 +21,20 @@ func (app *App) menuMultiPlayerLANHostMenu(ctx screen.Context) *menu.Menu {
 	}
 
 	for i := range app.cfg.Presets.Multi {
-		name := fmt.Sprintf("Host Preset %d: %s [%s]",
+		name := Tf(KeyMenuHostLANPreset,
 			i+1,
 			app.cfg.Presets.Multi[i].Name,
 			app.cfg.Presets.Multi[i].String(),
 		)
-		items = append(items, menu.NewCommand(&app.screenIDNext, presetRoutes[i], name, ""))
+		items = append(items, menu.NewCommand(&app.screenIDNext, presetRoutes[i], name, T(KeyMenuHostLANPresetDesc)))
 	}
-	items = append(items, menu.NewCommand(&app.screenIDNext, routeMultiPayerLANHostCustomSetup, "Host custom game", ""))
-	items = append(items, menu.NewCommand(&app.screenIDNext, routeMultiPlayerPresetEditMenu, "Edit presets", ""))
+
+	items = append(items, menu.NewCommand(&app.screenIDNext, routeMultiPayerLANHostCustomSetup,
+		T(KeyMenuHostLANCustom), T(KeyMenuHostLANCustomDesc)))
+	items = append(items, menu.NewCommand(&app.screenIDNext, routeMultiPlayerPresetEditMenu,
+		T(KeyMenuHostLANEditPresets), Tf(KeyMenuHostLANEditPresetsDesc, setup.MultiPlayerPresetCount)))
+
 	items = append(items, app.menuItemBack())
 
-	return menu.New("Multi Player LAN", app.menuStopper(ctx), items...)
+	return menu.New(T(KeyMenuHostLANTitle), app.menuStopper(ctx), items...)
 }

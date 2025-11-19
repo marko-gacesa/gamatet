@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"net"
 	"slices"
+	"strconv"
 	"sync"
 	"time"
 	"unicode"
 
-	"github.com/marko-gacesa/gamatet/internal/values"
+	. "github.com/marko-gacesa/gamatet/internal/i18n"
 	"github.com/marko-gacesa/gamatet/logic/menu"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/udpstar"
@@ -20,7 +21,7 @@ import (
 
 func (app *App) menuMultiPlayerLANHostLobby(ctx screen.Context) *menu.Menu {
 	if app.resultSetup == nil {
-		return app.menuErrorText(ctx, "Input missing")
+		return app.menuErrorText(ctx, T(KeyErrorInputMissing))
 	}
 
 	app.resultServerSession = nil
@@ -52,7 +53,7 @@ func (app *App) menuMultiPlayerLANHostLobby(ctx screen.Context) *menu.Menu {
 				case '1', '2', '3', '4':
 					idx := byte(r - '1')
 					app.gameServer.JoinLocal(lobbyToken, app.actorTokens[idx], i, idx, app.LocalPlayerName(idx))
-				case 'x', '\b', '\xFF':
+				case '\b', '\xFF':
 					app.gameServer.EvictIdx(lobbyToken, i)
 				}
 				return false
@@ -65,30 +66,30 @@ func (app *App) menuMultiPlayerLANHostLobby(ctx screen.Context) *menu.Menu {
 			})))
 	}
 	items = append(items, menu.NewCommand(&start, 1,
-		"Start game", "",
+		T(KeyLobbyStartGame), T(KeyLobbyStartGameDesc),
 		menu.WithVisible(blocker.CanStart),
 		menu.WithDisabled(func() bool { return start > 0 })))
 	items = append(items, menu.NewStatic(
-		"Can't start - players are missing", "", nil,
+		T(KeyLobbyIssueMissingPlayers), T(KeyLobbyIssueMissingPlayersDesc), nil,
 		menu.WithVisible(blocker.NeedPlayers),
 		menu.WithDisabled(func() bool { return true })))
 	items = append(items, menu.NewStatic(
-		"Can't start - no remote players", "", nil,
+		T(KeyLobbyIssueNoRemotePlayers), T(KeyLobbyIssueNoRemotePlayersDesc), nil,
 		menu.WithVisible(blocker.NeedRemotesProblem),
 		menu.WithDisabled(func() bool { return true })))
 	items = append(items, menu.NewStatic(
-		"Starting 3...", "", nil,
+		T(KeyLobbyStarting3), "", nil,
 		menu.WithVisible(blocker.Starting3)))
 	items = append(items, menu.NewStatic(
-		"Starting 2...", "", nil,
+		T(KeyLobbyStarting2), "", nil,
 		menu.WithVisible(blocker.Starting2)))
 	items = append(items, menu.NewStatic(
-		"Starting 1...", "", nil,
+		T(KeyLobbyStarting1), "", nil,
 		menu.WithVisible(blocker.Starting1)))
 	items = append(items, app.menuItemEscape())
 	items = append(items, app.menuItemBack())
 
-	m := menu.New(values.ProgramName, func(m *menu.Menu) {
+	m := menu.New(T(KeyLobbyTitle), func(m *menu.Menu) {
 		app.menuStopper(ctx)(m)
 
 		if start == 1 {
@@ -181,12 +182,12 @@ func makeLobbyEntries(slotStories []message.Token, isHost bool, localActors []me
 	teams := map[message.Token]string{}
 	for _, storyToken := range slotStories {
 		if _, ok := teams[storyToken]; !ok {
-			teams[storyToken] = fmt.Sprintf("Team %d", len(teams)+1)
+			teams[storyToken] = T(KeyLobbyTeam) + " " + strconv.Itoa(len(teams)+1)
 		}
 	}
 	if len(teams) == 1 {
 		for storyToken := range teams {
-			teams[storyToken] = "Team"
+			teams[storyToken] = T(KeyLobbyTeam)
 		}
 	}
 
@@ -212,20 +213,23 @@ func (l *lobbyEntries) setAll(lobby *udpstar.Lobby) {
 		team := l.teams[lobby.Slots[i].StoryToken]
 		switch avail {
 		case udpstar.SlotAvailable:
-			l.entries[i].text = fmt.Sprintf("\t%s: <Available>", team)
-			l.entries[i].description = "Press '1', '2', '3' or '4' to join game as a local player"
+			l.entries[i].text = fmt.Sprintf("\t%s: <%s>",
+				team, T(KeyLobbySlotAvailable))
+			l.entries[i].description = T(KeyLobbySlotAvailableDesc)
 		case udpstar.SlotLocal0, udpstar.SlotLocal1, udpstar.SlotLocal2, udpstar.SlotLocal3:
-			l.entries[i].text = fmt.Sprintf("\t%s: %s [local %d]", team, name, avail-udpstar.SlotLocal0+1)
+			l.entries[i].text = fmt.Sprintf("\t%s: %s [%s %d]",
+				team, name, T(KeyLobbySlotLocal), avail-udpstar.SlotLocal0+1)
 			if l.isHost {
-				l.entries[i].description = "Press X to leave and make the place available to other players"
+				l.entries[i].description = T(KeyLobbySlotLocalDesc)
 			}
 		case udpstar.SlotRemote:
 			latency := lobby.Slots[i].Latency
-			l.entries[i].text = fmt.Sprintf("\t%s: %s [latency %dms]", team, name, latency.Milliseconds())
+			l.entries[i].text = fmt.Sprintf("\t%s: %s [%s, %s=%dms]",
+				team, name, T(KeyLobbySlotRemote), T(KeyLobbyLatency), latency.Milliseconds())
 			if l.isHost {
-				l.entries[i].description = "Press X to evict the remote player"
+				l.entries[i].description = T(KeyLobbySlotRemoteDesc)
 			} else if slices.Contains(l.localActors, actor) {
-				l.entries[i].description = "Press X to leave and make the place available to other players"
+				l.entries[i].description = T(KeyLobbySlotLocalDesc)
 			}
 		}
 	}

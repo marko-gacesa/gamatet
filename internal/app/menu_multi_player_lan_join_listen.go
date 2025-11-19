@@ -10,7 +10,7 @@ import (
 
 	"github.com/marko-gacesa/bitdata"
 	"github.com/marko-gacesa/gamatet/game/setup"
-	"github.com/marko-gacesa/gamatet/internal/values"
+	. "github.com/marko-gacesa/gamatet/internal/i18n"
 	"github.com/marko-gacesa/gamatet/logic/menu"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/udp"
@@ -35,12 +35,12 @@ func (app *App) menuMultiPlayerLANJoinListen(ctx screen.Context) *menu.Menu {
 			menu.WithVisible(func() bool { return list.Exists(i) }),
 		))
 	}
-	items = append(items, menu.NewStatic("listening for nearby games...", "", nil,
+	items = append(items, menu.NewStatic(T(KeyMenuJoinLANListening), T(KeyMenuJoinLANListeningDesc), nil,
 		menu.WithVisible(list.Empty)))
 	items = append(items, app.menuItemEscape())
 	items = append(items, app.menuItemBack())
 
-	m := menu.New(values.ProgramName, func(*menu.Menu) {
+	m := menu.New(T(KeyMenuJoinLANTitle), func(*menu.Menu) {
 		if app.screenIDNext != "" {
 			ctx.Stop()
 			return

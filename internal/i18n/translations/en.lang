@@ -19,21 +19,133 @@ menu_main_about_desc             = Display information about this game.
 menu_main_exit                   = Exit
 menu_main_exit_desc              = Exit the game.
 
+menu_single_title             = Single player
+menu_single_start_preset      = Start preset %d: %s [%s]
+menu_single_start_preset_desc = Start a game using this preset.
+menu_single_custom            = Custom game
+menu_single_custom_desc       = Set up a new single player game.
+menu_single_edit_presets      = Edit presets
+menu_single_edit_presets_desc = There are %d presets for single player games. Modify them here.
+
+menu_single_edit_presets_title = Single Player: Edit presets
+menu_single_edit_preset        = Edit preset %d: %s [%s]
+menu_single_edit_preset_desc   = Modify this single player game preset.
+
+menu_local_title             = Multiplayer local
+menu_local_start_preset      = Start preset %d: %s [%s]
+menu_local_start_preset_desc = Start a game using this preset.
+menu_local_custom            = Custom game
+menu_local_custom_desc       = Set up a new multiplayer game.
+menu_local_edit_presets      = Edit presets
+menu_local_edit_presets_desc = There are %d presets for multiplayer games. Modify them here.
+
+menu_multi_edit_presets_title = Multiplayer: Edit presets
+menu_multi_edit_preset        = Edit preset %d: %s [%s]
+menu_multi_edit_preset_desc   = Modify this multiplayer game preset.
+
 menu_lan_title     = LAN game
 menu_lan_host      = Host LAN game
 menu_lan_host_desc = Set up game rules and wait for players from the local network to join.
 menu_lan_join      = Join LAN game
 menu_lan_join_desc = Join a game hosted by someone else.
 
+menu_host_lan_title             = Host LAN game
+menu_host_lan_preset            = Host preset %d: %s [%s]
+menu_host_lan_preset_desc       = Start a game lobby using this preset.
+menu_host_lan_custom            = Host custom game
+menu_host_lan_custom_desc       = Set up a game that would be hosted on the local network.
+menu_host_lan_edit_presets      = Edit presets
+menu_host_lan_edit_presets_desc = There are %d presets for multiplayer games. Modify them here.
+menu_join_lan_title             = LAN listener
+menu_join_lan_listening         = listening to nearby games...
+menu_join_lan_listening_desc    = Listening to game lobbies hosted on the local area network.
+
+lobby_title                        = Lobby
+lobby_start_game                   = Start game
+lobby_start_game_desc              = Close the lobby and start the game.
+lobby_issue_missing_players        = Can't start - players are missing
+lobby_issue_missing_players_desc   = To start the game, all player slots must be populated.
+lobby_issue_no_remote_players      = Can't start - no remote players
+lobby_issue_no_remote_players_desc = To start the game, there should be at least one remote player.
+lobby_issue_incomplete             = Waiting for players to join...
+lobby_issue_incomplete_desc        = For the game to start, all player slots must be populated.
+lobby_issue_waiting_for_host       = Waiting for the host to start...
+lobby_issue_waiting_for_host_desc  = Everything is ready. The game host should start the game.
+lobby_starting_3                   = Starting 3...
+lobby_starting_2                   = Starting 2...
+lobby_starting_1                   = Starting 1...
+lobby_team                         = Team
+lobby_slot_available               = available
+lobby_slot_available_desc          = Press '1', '2', '3' or '4' to join the game as a local player.
+lobby_slot_local                   = local
+lobby_slot_local_desc              = Press DELETE to leave and make the place available to other players.
+lobby_slot_remote                  = remote
+lobby_slot_remote_desc             = Press DELETE to evict the remote player.
+lobby_latency                      = latency
+
 menu_about_title      = About
 menu_about_build_time = Build time
 menu_about_git_sha    = Git commit
 menu_about_version    = Version
 
+# Setup
+
+setup_title_single      = Game setup: Single player
+setup_title_multi       = Game setup: Multiplayer
+setup_default_game_name = Game
+setup_hide              = Hide
+setup_show              = Show
+setup_redefine          = Redefine
+setup_save              = Save
+setup_start             = Start
+
+setup_game_name                   = Game name
+setup_game_name_desc              = The name of this game preset.
+setup_team_count                  = Number of teams (game fields)
+setup_team_count_desc             = Teams play against each other. Having just one team means a co-operative game.
+setup_same_pieces                 = Same pieces for all
+setup_same_pieces_desc            = All players get the same pieces in the same order.
+setup_team_size                   = Players per field (team size)
+setup_team_size_desc              = The number of players playing on the same field.
+setup_player_zones                = Team member zones
+setup_player_zones_desc           = Every player has a dedicated swimlane. This requires more coordination from the team members.
+setup_piece_collision             = Team members' piece collision
+setup_piece_collision_desc        = If turned off, team members' pieces can pass through each other.
+setup_show_field_options          = Show field options
+setup_show_field_options_desc     = Show options for game field size.
+setup_field_width                 = Field width
+setup_field_width_desc            = Width of the playing field.
+setup_field_width_per_player      = Field width (per team member)
+setup_field_width_per_player_desc = Width of the playing field per each team member. Total width is the team size times this number.
+setup_field_height                = Field height
+setup_field_height_desc           = Height of the playing field.
+setup_field_speed                 = Initial speed
+setup_field_speed_desc            = The speed level with which player pieces fall during a game.
+setup_show_piece_options          = Show piece options
+setup_show_piece_options_desc     = Show options for player pieces.
+setup_piece_type                  = Pieces type
+setup_piece_type_desc             = Type of pieces used during a game.
+setup_piece_size                  = Pieces size
+setup_piece_size_desc             = Size of the pieces. Miniminoes include the monomino, dominoes and trominoes.
+setup_bag_size                    = Bag size
+setup_bag_size_desc               = The number of unique pieces guaranteed to appear within a specific sequence during gameplay.
+setup_show_misc_options           = Show misc options
+setup_show_misc_options_desc      = Show miscellaneous game options.
+setup_custom_random_seed          = Use custom random number seed
+setup_custom_random_seed_desc     = Use custom random number seed or use random number.
+setup_random_seed                 = Random number seed
+setup_random_seed_desc            = Random number seed is used for piece selection and random events.
+setup_issue_too_many_players      = Invalid setup: Too many players - Maximum is %s
+setup_issue_too_many_players_desc = There is a limit how many players can play at once.
+setup_issue_need_at_least_2       = Invalid setup: Need at least 2 players
+setup_issue_need_at_least_2_desc  = Multiplayer games require at least two players.
+
 # Errors
 
-error                  = Error
-error_too_many_players = The preset defined too many players. Maximum is %d
+error                           = Error
+error_too_many_players          = The preset defined too many players: Maximum is %d
+error_input_missing             = Input missing
+error_preset_index_out_of_range = Preset index out of range
 
 # Piece enumerations
 

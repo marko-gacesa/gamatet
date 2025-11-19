@@ -3,11 +3,11 @@
 package app
 
 import (
-	"fmt"
 	"math/rand/v2"
 	"strconv"
 
 	"github.com/marko-gacesa/gamatet/game/setup"
+	. "github.com/marko-gacesa/gamatet/internal/i18n"
 	"github.com/marko-gacesa/gamatet/logic/menu"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
@@ -22,18 +22,20 @@ func (app *App) menuSinglePlayer(ctx screen.Context) *menu.Menu {
 	}
 
 	for i := range app.cfg.Presets.Single {
-		name := fmt.Sprintf("Start Preset %d: %s [%s]",
+		name := Tf(KeyMenuSingleStartPreset,
 			i+1,
 			app.cfg.Presets.Single[i].Name,
 			app.cfg.Presets.Single[i].String(),
 		)
-		items = append(items, menu.NewCommand(&app.screenIDNext, presetRoutes[i], name, ""))
+		items = append(items, menu.NewCommand(&app.screenIDNext, presetRoutes[i], name, T(KeyMenuSingleStartPresetDesc)))
 	}
-	items = append(items, menu.NewCommand(&app.screenIDNext, routeSinglePayerCustomSetup, "Custom game", ""))
-	items = append(items, menu.NewCommand(&app.screenIDNext, routeSinglePlayerPresetEditMenu, "Edit presets", ""))
+	items = append(items, menu.NewCommand(&app.screenIDNext, routeSinglePayerCustomSetup,
+		T(KeyMenuSingleCustom), T(KeyMenuSingleCustomDesc)))
+	items = append(items, menu.NewCommand(&app.screenIDNext, routeSinglePlayerPresetEditMenu,
+		T(KeyMenuSingleEditPresets), Tf(KeyMenuSingleEditPresetsDesc, setup.SinglePlayerPresetCount)))
 	items = append(items, app.menuItemBack())
 
-	return menu.New("Single Player", app.menuStopper(ctx), items...)
+	return menu.New(T(KeyMenuSingleTitle), app.menuStopper(ctx), items...)
 }
 
 func (app *App) menuSingleEditPresets(ctx screen.Context) *menu.Menu {
@@ -46,30 +48,30 @@ func (app *App) menuSingleEditPresets(ctx screen.Context) *menu.Menu {
 	}
 
 	for i := range app.cfg.Presets.Single {
-		name := fmt.Sprintf("Edit Preset %d: %s [%s]",
+		name := Tf(KeyMenuSingleEditPreset,
 			i+1,
 			app.cfg.Presets.Single[i].Name,
 			app.cfg.Presets.Single[i].String(),
 		)
-		items = append(items, menu.NewCommand(&app.screenIDNext, presetRoutes[i], name, ""))
+		items = append(items, menu.NewCommand(&app.screenIDNext, presetRoutes[i], name, T(KeyMenuSingleEditPresetDesc)))
 	}
 	items = append(items, app.menuItemBack())
 
-	return menu.New("Single Player: Edit presets", app.menuStopper(ctx), items...)
+	return menu.New(T(KeyMenuSingleEditPresetsTitle), app.menuStopper(ctx), items...)
 }
 
 func (app *App) menuSinglePlayerSetup(ctx screen.Context, presetIdx int, nextRoute route) *menu.Menu {
 	app.resultSetup = nil // Clear result of this input
 
 	if presetIdx >= len(app.cfg.Presets.Single) {
-		return app.menuErrorText(ctx, "Preset index out of range")
+		return app.menuErrorText(ctx, T(KeyErrorPresetIndexOutOfRange))
 	}
 
 	var s setup.Setup
 	if presetIdx >= 0 {
 		s = app.cfg.Presets.Single[presetIdx]
 		if s.Name == "" {
-			s.Name = "Game"
+			s.Name = T(KeySetupDefaultGameName)
 		}
 	} else {
 		s = app.cfg.Presets.SingleCustom
@@ -86,13 +88,13 @@ func (app *App) menuSinglePlayerSetup(ctx screen.Context, presetIdx int, nextRou
 	items = append(items, app.menuItemEscape())
 	if presetIdx >= 0 {
 		items = append(items, menu.NewText(&s.Name, setup.MaxLenName, setup.MaxLenName,
-			"Game name", ""))
+			T(KeySetupGameName), T(KeySetupGameNameDesc)))
 	}
 	items = append(items, setupSingle(&s, sections)...)
 	items = append(items, setupResultSingle(&s, &app.resultSetup, presetIdx >= 0)...)
 	items = append(items, app.menuItemBack())
 
-	return menu.New("Single Player: Setup", func(m *menu.Menu) {
+	return menu.New(T(KeySetupTitleSingle), func(m *menu.Menu) {
 		app.menuStopper(ctx)(m)
 		sections.refresh(&s)
 

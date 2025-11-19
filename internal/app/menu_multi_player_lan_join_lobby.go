@@ -10,7 +10,7 @@ import (
 
 	"github.com/marko-gacesa/bitdata"
 	"github.com/marko-gacesa/gamatet/game/setup"
-	"github.com/marko-gacesa/gamatet/internal/values"
+	. "github.com/marko-gacesa/gamatet/internal/i18n"
 	"github.com/marko-gacesa/gamatet/logic/menu"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/udpstar/client"
@@ -19,7 +19,7 @@ import (
 
 func (app *App) menuMultiPlayerLANJoinLobby(ctx screen.Context) *menu.Menu {
 	if app.resultClientLobbySelected == nil {
-		return app.menuErrorText(ctx, "Input missing")
+		return app.menuErrorText(ctx, T(KeyErrorInputMissing))
 	}
 
 	app.resultClientSession = nil
@@ -111,7 +111,7 @@ func (app *App) menuMultiPlayerLANJoinLobby(ctx screen.Context) *menu.Menu {
 					name := app.LocalPlayerName(idx)
 					cfg := app.LocalPlayerConfig(idx).Serialize()
 					lobbyClient.Join(app.actorTokens[idx], i, name, cfg)
-				case 'x':
+				case '\b', '\xFF':
 					if idx := slices.Index(app.actorTokens[:], slots.GetActor(i)); idx >= 0 {
 						lobbyClient.Leave(app.actorTokens[idx])
 					}
@@ -126,26 +126,26 @@ func (app *App) menuMultiPlayerLANJoinLobby(ctx screen.Context) *menu.Menu {
 			})))
 	}
 	items = append(items, menu.NewStatic(
-		"Waiting for players to join...", "", nil,
+		T(KeyLobbyIssueIncomplete), T(KeyLobbyIssueIncompleteDesc), nil,
 		menu.WithVisible(blocker.NeedPlayers),
 		menu.WithDisabled(func() bool { return true })))
 	items = append(items, menu.NewStatic(
-		"Waiting for the host to start...", "", nil,
+		T(KeyLobbyIssueWaitingForHost), T(KeyLobbyIssueWaitingForHostDesc), nil,
 		menu.WithVisible(blocker.HavePlayers),
 		menu.WithDisabled(func() bool { return true })))
 	items = append(items, menu.NewStatic(
-		"Starting 3...", "", nil,
+		T(KeyLobbyStarting3), "", nil,
 		menu.WithVisible(blocker.Starting3)))
 	items = append(items, menu.NewStatic(
-		"Starting 2...", "", nil,
+		T(KeyLobbyStarting2), "", nil,
 		menu.WithVisible(blocker.Starting2)))
 	items = append(items, menu.NewStatic(
-		"Starting 1...", "", nil,
+		T(KeyLobbyStarting1), "", nil,
 		menu.WithVisible(blocker.Starting1)))
 	items = append(items, app.menuItemEscape())
 	items = append(items, app.menuItemBack())
 
-	m := menu.New(values.ProgramName, func(m *menu.Menu) {
+	m := menu.New(T(KeyLobbyTitle), func(m *menu.Menu) {
 		if app.screenIDNext == routeBack {
 			lobbyClient.LeaveAll()
 			time.Sleep(10 * time.Millisecond)
