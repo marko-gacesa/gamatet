@@ -4,7 +4,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"math/rand/v2"
 	"net"
@@ -15,6 +14,7 @@ import (
 
 	"github.com/marko-gacesa/gamatet/game/setup"
 	"github.com/marko-gacesa/gamatet/internal/config"
+	"github.com/marko-gacesa/gamatet/internal/i18n"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 	"github.com/marko-gacesa/udpstar/udp"
 	"github.com/marko-gacesa/udpstar/udpstar"
@@ -242,7 +242,7 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 		} else {
 			app.loadPresetMulti(idx)
 			if app.resultSetup != nil && app.resultSetup.PlayerCount() > setup.MaxLocalPlayers {
-				data = app.menuErrorText(ctx, fmt.Sprintf("The preset defined too many players. Maximum is %d", setup.MaxLocalPlayers))
+				data = app.menuErrorText(ctx, i18n.Tf(i18n.KeyErrorTooManyPlayers, setup.MaxLocalPlayers))
 			} else {
 				data = app.gameMultiPlayerLocal(ctx)
 			}

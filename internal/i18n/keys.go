@@ -5,7 +5,36 @@ package i18n
 const (
 	KeyLanguageName = "language_name"
 
-	KeyProgramName = "program_name"
+	KeyMenuBack     = "menu_back"
+	KeyMenuBackDesc = "menu_back_desc"
+
+	KeyMenuMainTitle                = "menu_main_title"
+	KeyMenuMainSinglePlayer         = "menu_main_single_player"
+	KeyMenuMainSinglePlayerDesc     = "menu_main_single_player_desc"
+	KeyMenuMainMultiplayerLocal     = "menu_main_multiplayer_local"
+	KeyMenuMainMultiplayerLocalDesc = "menu_main_multiplayer_local_desc"
+	KeyMenuMainMultiplayerLAN       = "menu_main_multiplayer_lan"
+	KeyMenuMainMultiplayerLANDesc   = "menu_main_multiplayer_lan_desc"
+	KeyMenuMainConfigure            = "menu_main_configure"
+	KeyMenuMainConfigureDesc        = "menu_main_configure_desc"
+	KeyMenuMainAbout                = "menu_main_about"
+	KeyMenuMainAboutDesc            = "menu_main_about_desc"
+	KeyMenuMainExit                 = "menu_main_exit"
+	KeyMenuMainExitDesc             = "menu_main_exit_desc"
+
+	KeyMenuLANTitle    = "menu_lan_title"
+	KeyMenuLANHost     = "menu_lan_host"
+	KeyMenuLANHostDesc = "menu_lan_host_desc"
+	KeyMenuLANJoin     = "menu_lan_join"
+	KeyMenuLANJoinDesc = "menu_lan_join_desc"
+
+	KeyMenuAboutTitle     = "menu_about_title"
+	KeyMenuAboutBuildTime = "menu_about_build_time"
+	KeyMenuAboutGitSHA    = "menu_about_git_sha"
+	KeyMenuAboutVersion   = "menu_about_version"
+
+	KeyError               = "error"
+	KeyErrorTooManyPlayers = "error_too_many_players"
 
 	KeyPieceTypeRotatingPolyominoes   = "piece_type_rotating_polyominoes"
 	KeyPieceTypeHMirroringPolyominoes = "piece_type_h_mirroring_polyominoes"

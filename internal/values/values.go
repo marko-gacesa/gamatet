@@ -2,9 +2,12 @@
 
 package values
 
-var (
+const (
 	ProgramName = "GaMaTeT"
+	ProgramDate = "2025"
+)
 
+var (
 	BuildTime  string
 	GitSHA     string
 	VersionTag string

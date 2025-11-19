@@ -5,10 +5,9 @@ package scene
 import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 
-	. "github.com/marko-gacesa/gamatet/internal/i18n"
-
 	"github.com/marko-gacesa/gamatet/graphics/render"
 	"github.com/marko-gacesa/gamatet/internal/config/key"
+	. "github.com/marko-gacesa/gamatet/internal/i18n"
 )
 
 const (

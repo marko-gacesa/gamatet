@@ -9,13 +9,13 @@ import (
 )
 
 func (app *App) menuMain(ctx screen.Context) *menu.Menu {
-	return menu.New(T(KeyProgramName), app.menuStopper(ctx), []menu.Item{
+	return menu.New(T(KeyMenuMainTitle), app.menuStopper(ctx), []menu.Item{
 		app.menuItemEscape(),
-		menu.NewCommand(&app.screenIDNext, routeSinglePlayerMenu, "Single player", ""),
-		menu.NewCommand(&app.screenIDNext, routeMultiPlayerLocalMenu, "Multiplayer local", "Multiplayer game on this machine"),
-		menu.NewCommand(&app.screenIDNext, routeMultiPlayerLANMenu, "Multiplayer LAN game", "Multiplayer game on the local area network"),
-		menu.NewCommand(&app.screenIDNext, routeConfigMenu, "Configure", ""),
-		menu.NewCommand(&app.screenIDNext, routeAboutMenu, "About", ""),
-		menu.NewCommand(&app.screenIDNext, routeQuit, "Exit", "Exit game"),
+		menu.NewCommand(&app.screenIDNext, routeSinglePlayerMenu, T(KeyMenuMainSinglePlayer), T(KeyMenuMainSinglePlayerDesc)),
+		menu.NewCommand(&app.screenIDNext, routeMultiPlayerLocalMenu, T(KeyMenuMainMultiplayerLocal), T(KeyMenuMainMultiplayerLocalDesc)),
+		menu.NewCommand(&app.screenIDNext, routeMultiPlayerLANMenu, T(KeyMenuMainMultiplayerLAN), T(KeyMenuMainMultiplayerLANDesc)),
+		menu.NewCommand(&app.screenIDNext, routeConfigMenu, T(KeyMenuMainConfigure), T(KeyMenuMainConfigureDesc)),
+		menu.NewCommand(&app.screenIDNext, routeAboutMenu, T(KeyMenuMainAbout), T(KeyMenuMainAboutDesc)),
+		menu.NewCommand(&app.screenIDNext, routeQuit, T(KeyMenuMainExit), T(KeyMenuMainExitDesc)),
 	}...)
 }

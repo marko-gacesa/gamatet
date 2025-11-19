@@ -4,6 +4,7 @@ package app
 
 import (
 	"github.com/marko-gacesa/gamatet/internal/config"
+	. "github.com/marko-gacesa/gamatet/internal/i18n"
 	"github.com/marko-gacesa/gamatet/logic/menu"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
@@ -31,5 +32,5 @@ func (app *App) menuItemEscape() *menu.Hidden[route] {
 }
 
 func (app *App) menuItemBack() *menu.Command[route] {
-	return menu.NewCommand(&app.screenIDNext, routeBack, "Back", "")
+	return menu.NewCommand(&app.screenIDNext, routeBack, T(KeyMenuBack), T(KeyMenuBackDesc))
 }

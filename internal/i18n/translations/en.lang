@@ -1,10 +1,39 @@
-# The name of this language
-
 language_name=English
 
-# Global
+# Menu
 
-program_name=GaMaTeT
+menu_back = Back
+menu_back_desc = Go back to the previous menu.
+
+menu_main_title                  = GaMaTeT
+menu_main_single_player          = Single player game
+menu_main_single_player_desc     = Play a game for one player.
+menu_main_multiplayer_local      = Multiplayer local game
+menu_main_multiplayer_local_desc = Play a multiplayer game played on this computer only.
+menu_main_multiplayer_lan        = Multiplayer LAN game
+menu_main_multiplayer_lan_desc   = Play a multiplayer game played on the local area network.
+menu_main_configure              = Configure
+menu_main_configure_desc         = Modify game settings.
+menu_main_about                  = About
+menu_main_about_desc             = Display information about this game.
+menu_main_exit                   = Exit
+menu_main_exit_desc              = Exit the game.
+
+menu_lan_title     = LAN game
+menu_lan_host      = Host LAN game
+menu_lan_host_desc = Set up game rules and wait for players from the local network to join.
+menu_lan_join      = Join LAN game
+menu_lan_join_desc = Join a game hosted by someone else.
+
+menu_about_title      = About
+menu_about_build_time = Build time
+menu_about_git_sha    = Git commit
+menu_about_version    = Version
+
+# Errors
+
+error                  = Error
+error_too_many_players = The preset defined too many players. Maximum is %d
 
 # Piece enumerations
 
