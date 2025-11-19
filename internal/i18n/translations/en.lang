@@ -2,22 +2,19 @@ language_name=English
 
 # Menu
 
-menu_back = Back
-menu_back_desc = Go back to the previous menu.
-
-menu_main_title                  = GaMaTeT
-menu_main_single_player          = Single player game
-menu_main_single_player_desc     = Play a game for one player.
-menu_main_multiplayer_local      = Multiplayer local game
-menu_main_multiplayer_local_desc = Play a multiplayer game played on this computer only.
-menu_main_multiplayer_lan        = Multiplayer LAN game
-menu_main_multiplayer_lan_desc   = Play a multiplayer game played on the local area network.
-menu_main_configure              = Configure
-menu_main_configure_desc         = Modify game settings.
-menu_main_about                  = About
-menu_main_about_desc             = Display information about this game.
-menu_main_exit                   = Exit
-menu_main_exit_desc              = Exit the game.
+menu_main_title                   = GaMaTeT
+menu_main_single_player           = Single-player game
+menu_main_single_player_desc      = Play a game for one player.
+menu_main_multi_player_local      = Multi-player local game
+menu_main_multi_player_local_desc = Play a multi-player game played on this computer only.
+menu_main_multi_player_lan        = Multi-player LAN game
+menu_main_multi_player_lan_desc   = Play a multi-player game played on the local area network.
+menu_main_configure               = Configure
+menu_main_configure_desc          = Modify game settings.
+menu_main_about                   = About
+menu_main_about_desc              = Display information about this game.
+menu_main_exit                    = Exit
+menu_main_exit_desc               = Exit the game.
 
 menu_single_title             = Single player
 menu_single_start_preset      = Start preset %d: %s [%s]
@@ -31,17 +28,17 @@ menu_single_edit_presets_title = Single Player: Edit presets
 menu_single_edit_preset        = Edit preset %d: %s [%s]
 menu_single_edit_preset_desc   = Modify this single player game preset.
 
-menu_local_title             = Multiplayer local
+menu_local_title             = Multi-player local
 menu_local_start_preset      = Start preset %d: %s [%s]
 menu_local_start_preset_desc = Start a game using this preset.
 menu_local_custom            = Custom game
-menu_local_custom_desc       = Set up a new multiplayer game.
+menu_local_custom_desc       = Set up a new multi-player game.
 menu_local_edit_presets      = Edit presets
-menu_local_edit_presets_desc = There are %d presets for multiplayer games. Modify them here.
+menu_local_edit_presets_desc = There are %d presets for multi-player games. Modify them here.
 
-menu_multi_edit_presets_title = Multiplayer: Edit presets
+menu_multi_edit_presets_title = Multi-player: Edit presets
 menu_multi_edit_preset        = Edit preset %d: %s [%s]
-menu_multi_edit_preset_desc   = Modify this multiplayer game preset.
+menu_multi_edit_preset_desc   = Modify this multi-player game preset.
 
 menu_lan_title     = LAN game
 menu_lan_host      = Host LAN game
@@ -55,7 +52,7 @@ menu_host_lan_preset_desc       = Start a game lobby using this preset.
 menu_host_lan_custom            = Host custom game
 menu_host_lan_custom_desc       = Set up a game that would be hosted on the local network.
 menu_host_lan_edit_presets      = Edit presets
-menu_host_lan_edit_presets_desc = There are %d presets for multiplayer games. Modify them here.
+menu_host_lan_edit_presets_desc = There are %d presets for multi-player games. Modify them here.
 menu_join_lan_title             = LAN listener
 menu_join_lan_listening         = listening to nearby games...
 menu_join_lan_listening_desc    = Listening to game lobbies hosted on the local area network.
@@ -69,8 +66,8 @@ lobby_issue_no_remote_players      = Can't start - no remote players
 lobby_issue_no_remote_players_desc = To start the game, there should be at least one remote player.
 lobby_issue_incomplete             = Waiting for players to join...
 lobby_issue_incomplete_desc        = For the game to start, all player slots must be populated.
-lobby_issue_waiting_for_host       = Waiting for the host to start...
-lobby_issue_waiting_for_host_desc  = Everything is ready. The game host should start the game.
+lobby_issue_waiting_for_host       = Waiting for the host to start the game...
+lobby_issue_waiting_for_host_desc  = Everything is ready. The game host should start the game now.
 lobby_starting_3                   = Starting 3...
 lobby_starting_2                   = Starting 2...
 lobby_starting_1                   = Starting 1...
@@ -87,11 +84,12 @@ menu_about_title      = About
 menu_about_build_time = Build time
 menu_about_git_sha    = Git commit
 menu_about_version    = Version
+menu_about_author     = Author
 
 # Setup
 
-setup_title_single      = Game setup: Single player
-setup_title_multi       = Game setup: Multiplayer
+setup_title_single      = Game setup: Single-player
+setup_title_multi       = Game setup: Multi-player
 setup_default_game_name = Game
 setup_hide              = Hide
 setup_show              = Show
@@ -105,7 +103,7 @@ setup_team_count                  = Number of teams (game fields)
 setup_team_count_desc             = Teams play against each other. Having just one team means a co-operative game.
 setup_same_pieces                 = Same pieces for all
 setup_same_pieces_desc            = All players get the same pieces in the same order.
-setup_team_size                   = Players per field (team size)
+setup_team_size                   = Team size (players per field)
 setup_team_size_desc              = The number of players playing on the same field.
 setup_player_zones                = Team member zones
 setup_player_zones_desc           = Every player has a dedicated swimlane. This requires more coordination from the team members.
@@ -138,7 +136,48 @@ setup_random_seed_desc            = Random number seed is used for piece selecti
 setup_issue_too_many_players      = Invalid setup: Too many players - Maximum is %s
 setup_issue_too_many_players_desc = There is a limit how many players can play at once.
 setup_issue_need_at_least_2       = Invalid setup: Need at least 2 players
-setup_issue_need_at_least_2_desc  = Multiplayer games require at least two players.
+setup_issue_need_at_least_2_desc  = Multi-player games require at least two players.
+
+# Config
+
+config_title                          = Configuration
+config_language                       = Language
+config_language_desc                  = Change the active language.
+config_video_options                  = Video options
+config_video_options_desc             = Modify display related options.
+config_single_presets                 = Edit single player game presets
+config_single_presets_desc            = There are %d presets for single player games. Modify them here.
+config_multi_presets                  = Edit multi-player game presets
+config_multi_presets_desc             = There are %d presets for multi-player games. Modify them here.
+config_edit_player                    = Edit local player %d: %s
+config_edit_player_desc               = The game supports four players that can play locally. The first player is used in single player games.
+config_player_title                   = Edit player %d
+config_player_name                    = Name
+config_player_name_desc               = Name of the player. Important for multi-player games over network.
+config_player_control                 = Control
+config_player_control_desc            = Keyboard keys used to control the active piece during a game.
+config_player_key_left                = Left
+config_player_key_left_desc           = Key to move the current piece left.
+config_player_key_right               = Right
+config_player_key_right_desc          = Key to move the current piece right.
+config_player_key_activate            = Activate
+config_player_key_activate_desc       = Key to activate/rotate/transform the current piece (depending on the piece type).
+config_player_key_drop                = Drop
+config_player_key_drop_desc           = Key to drop the current piece down.
+config_player_rotation_direction      = Rotation direction
+config_player_rotation_direction_desc = The direction in which rotational polyominoes would rotate.
+config_video_title                    = Video options
+config_video_fullscreen               = Fullscreen
+config_video_fullscreen_desc          = Open the game in full screen or windowed. Requires restart.
+config_video_window_width             = Window width
+config_video_window_width_desc        = The width of the window, if the game opens in a window.
+config_video_window_height            = Window height
+config_video_window_height_desc       = The height of the window, if the game opens in a window.
+config_video_opacity                  = Opacity
+config_video_opacity_desc             = Window opacity. 100% means an opaque window.
+
+menu_back = Back
+menu_back_desc = Go back to the previous menu.
 
 # Errors
 
@@ -146,6 +185,7 @@ error                           = Error
 error_too_many_players          = The preset defined too many players: Maximum is %d
 error_input_missing             = Input missing
 error_preset_index_out_of_range = Preset index out of range
+error_player_index_out_of_range = Player index out of range
 
 # Piece enumerations
 

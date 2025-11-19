@@ -5,6 +5,8 @@ package key
 import (
 	"fmt"
 	"slices"
+
+	"github.com/marko-gacesa/gamatet/internal/i18n"
 )
 
 type Input struct {
@@ -25,10 +27,10 @@ func (in *Input) Sanitize(idx int) {
 
 func (in *Input) String() string {
 	return fmt.Sprintf("%s=%s %s=%s %s=%s %s=%s",
-		"Left", Map[in.Left],
-		"Right", Map[in.Right],
-		"Activate", Map[in.Activate],
-		"Drop", Map[in.Drop],
+		i18n.T(i18n.KeyConfigPlayerKeyLeft), Map[in.Left],
+		i18n.T(i18n.KeyConfigPlayerKeyRight), Map[in.Right],
+		i18n.T(i18n.KeyConfigPlayerKeyActivate), Map[in.Activate],
+		i18n.T(i18n.KeyConfigPlayerKeyDrop), Map[in.Drop],
 	)
 }
 

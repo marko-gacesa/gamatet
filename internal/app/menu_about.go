@@ -14,17 +14,13 @@ import (
 func (app *App) menuAbout(ctx screen.Context) *menu.Menu {
 	var items []menu.Item
 
-	if values.BuildTime != "" {
-		items = append(items, menu.NewStatic(T(KeyMenuAboutBuildTime)+": "+values.BuildTime, "", nil))
-	}
-	if values.GitSHA != "" {
-		items = append(items, menu.NewStatic(T(KeyMenuAboutGitSHA)+": "+values.GitSHA, "", nil))
-	}
+	items = append(items, menu.NewStatic(T(KeyMenuAboutAuthor)+fmt.Sprintf(": %s © Marko Gaćeša", values.ProgramDate), "", nil))
 	if values.VersionTag != "" {
-		items = append(items, menu.NewStatic(T(KeyMenuAboutVersion)+": "+values.VersionTag, "", nil))
+		items = append(items,
+			menu.NewStatic(T(KeyMenuAboutVersion)+": "+values.VersionTag,
+				T(KeyMenuAboutGitSHA)+": "+values.GitSHA+". "+T(KeyMenuAboutBuildTime)+": "+values.BuildTime,
+				nil))
 	}
-
-	items = append(items, menu.NewStatic(fmt.Sprintf("Copyright (c) %s Marko Gaćeša", values.ProgramDate), "", nil))
 
 	items = append(items, app.menuItemEscape())
 	items = append(items, app.menuItemBack())

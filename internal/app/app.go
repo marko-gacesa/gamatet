@@ -167,6 +167,8 @@ const (
 	routeConfigMenu              = routeConfigPrefix + "menu"
 	routeConfigLocalPlayerSetupN = routeConfigPrefix + "local-player-setup:"
 
+	routeConfigLanguage = routeConfigPrefix + "lang"
+
 	routeConfigVideoPrefix = "config-video|"
 	routeConfigVideoSetup  = routeConfigVideoPrefix + "setup"
 
@@ -294,6 +296,8 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 		} else {
 			data = app.menuConfigLocalPlayer(ctx, idx)
 		}
+	case id == routeConfigLanguage:
+		data = app.menuConfigLanguage(ctx)
 	case id == routeConfigVideoSetup:
 		data = app.menuConfigVideo(ctx)
 

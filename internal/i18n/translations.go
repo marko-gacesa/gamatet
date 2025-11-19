@@ -38,16 +38,14 @@ var escaper = strings.NewReplacer(
 	"\\n", "\n",
 	"\\t", "\t")
 
-func ParseEmbeddedLanguages(logger *slog.Logger) map[lang.Lang]string {
+func ParseEmbeddedLanguages(logger *slog.Logger) {
 	const directory = "translations"
 
 	translations, err := translationsFS.ReadDir(directory)
 	if err != nil {
 		logger.Error("Failed to list embedded files", "error", err)
-		return nil
+		return
 	}
-
-	languages := make(map[lang.Lang]string)
 
 	for _, translation := range translations {
 		if translation.IsDir() {
@@ -78,7 +76,7 @@ func ParseEmbeddedLanguages(logger *slog.Logger) map[lang.Lang]string {
 			lineNumber++
 
 			line = strings.TrimSpace(line)
-			if strings.HasPrefix(line, "#") {
+			if line == "" || strings.HasPrefix(line, "#") {
 				continue
 			}
 
@@ -109,13 +107,6 @@ func ParseEmbeddedLanguages(logger *slog.Logger) map[lang.Lang]string {
 			continue
 		}
 
-		languages[language] = name
-
 		lang.Define(language, m)
 	}
-
-	lang.DefineFallbackFromExisting("en")
-	lang.Set("en")
-
-	return languages
 }

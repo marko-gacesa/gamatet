@@ -6,6 +6,8 @@ import (
 	"context"
 	"os"
 
+	"github.com/marko-gacesa/gamatet/logic/lang"
+
 	"github.com/marko-gacesa/gamatet/internal/i18n"
 
 	"github.com/marko-gacesa/gamatet/graphics/loop"
@@ -26,9 +28,12 @@ func main() {
 		"pid", pid)
 
 	i18n.ParseEmbeddedLanguages(logger)
+	lang.DefineFallbackFromExisting("en")
 
 	cfg, cfgPath := config.Load(logger)
 	cfg.Sanitize()
+
+	lang.Set(lang.Lang(cfg.Locale.Language))
 
 	globalCtx := appctx.Context
 	appCtx, appCtxStop := context.WithCancel(globalCtx)

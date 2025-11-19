@@ -5,6 +5,8 @@ package config
 import (
 	"os"
 	"strings"
+
+	"github.com/marko-gacesa/gamatet/logic/lang"
 )
 
 const (
@@ -30,5 +32,14 @@ func (cfg *Locale) Sanitize() {
 
 	cfg.Language = strings.ToLower(cfg.Language)
 
-	// TODO: Check if lang is supported
+	var found bool
+	for _, l := range lang.Supported() {
+		if cfg.Language == string(l) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		cfg.Language = defaultLanguage
+	}
 }

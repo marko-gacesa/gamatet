@@ -3,17 +3,16 @@
 package app
 
 import (
-	"fmt"
-
 	"github.com/marko-gacesa/gamatet/game/setup"
 	"github.com/marko-gacesa/gamatet/internal/config/key"
+	. "github.com/marko-gacesa/gamatet/internal/i18n"
 	"github.com/marko-gacesa/gamatet/logic/menu"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
 func (app *App) menuConfigLocalPlayer(ctx screen.Context, idx int) *menu.Menu {
 	if idx < 0 || idx >= setup.MaxLocalPlayers {
-		return app.menuErrorText(ctx, "player index out of range")
+		return app.menuErrorText(ctx, T(KeyErrorPlayerIndexOutOfRange))
 	}
 
 	stringFn := func(k key.Key) string { return key.Map[k] }
@@ -29,23 +28,29 @@ func (app *App) menuConfigLocalPlayer(ctx screen.Context, idx int) *menu.Menu {
 
 	items := make([]menu.Item, 0, 10)
 	items = append(items,
-		menu.NewText(&info.Name, setup.MaxLenName, setup.MaxLenName, "Name", ""),
+		menu.NewText(&info.Name, setup.MaxLenName, setup.MaxLenName,
+			T(KeyConfigPlayerName), T(KeyConfigPlayerNameDesc)),
 		menu.NewEnum(&section.showKeys, []bool{false, true}, section.showKeysStr,
-			"Control", ""),
+			T(KeyConfigPlayerControl), T(KeyConfigPlayerControlDesc)),
 		menu.NewKey(&info.Input.Left,
-			"\tMove piece left key", "", stringFn, convertFn, menu.WithVisible(showKeysFn)),
+			"\t"+T(KeyConfigPlayerKeyLeft), T(KeyConfigPlayerKeyLeftDesc),
+			stringFn, convertFn, menu.WithVisible(showKeysFn)),
 		menu.NewKey(&info.Input.Right,
-			"\tMove piece right key", "", stringFn, convertFn, menu.WithVisible(showKeysFn)),
+			"\t"+T(KeyConfigPlayerKeyRight), T(KeyConfigPlayerKeyRightDesc),
+			stringFn, convertFn, menu.WithVisible(showKeysFn)),
 		menu.NewKey(&info.Input.Activate,
-			"\tActivate piece (rotate/transform) key", "", stringFn, convertFn, menu.WithVisible(showKeysFn)),
+			"\t"+T(KeyConfigPlayerKeyActivate), T(KeyConfigPlayerKeyActivateDesc),
+			stringFn, convertFn, menu.WithVisible(showKeysFn)),
 		menu.NewKey(&info.Input.Drop,
-			"\tDrop piece down key", "", stringFn, convertFn, menu.WithVisible(showKeysFn)),
+			"\t"+T(KeyConfigPlayerKeyDrop), T(KeyConfigPlayerKeyDropDesc),
+			stringFn, convertFn, menu.WithVisible(showKeysFn)),
 		menu.NewEnum(&info.GameConfig.RotationDirectionCW,
-			[]bool{false, true}, rotationDirCWStr, "Rotation Direction", ""),
+			[]bool{false, true}, rotationDirCWStr,
+			T(KeyConfigPlayerRotationDirection), T(KeyConfigPlayerRotationDirectionDesc)),
 		app.menuItemEscape(),
 		app.menuItemBack(),
 	)
-	return menu.New(fmt.Sprintf("Player: %d", idx+1), func(m *menu.Menu) {
+	return menu.New(Tf(KeyConfigPlayerTitle, idx+1), func(m *menu.Menu) {
 		app.configStopper(ctx)(m)
 		section.refresh(&info.Input)
 	}, items...)

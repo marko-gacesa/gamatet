@@ -3,29 +3,38 @@
 package app
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/marko-gacesa/gamatet/game/setup"
+	. "github.com/marko-gacesa/gamatet/internal/i18n"
 	"github.com/marko-gacesa/gamatet/logic/menu"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
 func (app *App) menuConfig(ctx screen.Context) *menu.Menu {
 	items := make([]menu.Item, 0, setup.MaxLocalPlayers+6)
+
+	items = append(items,
+		menu.NewCommand(&app.screenIDNext, routeConfigLanguage,
+			T(KeyConfigLanguage), T(KeyConfigLanguageDesc)),
+	)
+
 	for i := range setup.MaxLocalPlayers {
 		info := app.cfg.LocalPlayers.Infos[i].Name
 		items = append(items, menu.NewCommand(&app.screenIDNext,
 			route(routeConfigLocalPlayerSetupN+strconv.Itoa(i)),
-			fmt.Sprintf("Edit local player %d: %s", i+1, info),
-			""))
+			Tf(KeyConfigEditPlayer, i+1, info),
+			T(KeyConfigEditPlayerDesc)))
 	}
 	items = append(items,
-		menu.NewCommand(&app.screenIDNext, routeConfigVideoSetup, "Video options", ""),
-		menu.NewCommand(&app.screenIDNext, routeSinglePlayerPresetEditMenu, "Edit single game presets", ""),
-		menu.NewCommand(&app.screenIDNext, routeMultiPlayerPresetEditMenu, "Edit multiplayer game presets", ""),
+		menu.NewCommand(&app.screenIDNext, routeConfigVideoSetup,
+			T(KeyConfigVideoOptions), T(KeyConfigVideoOptionsDesc)),
+		menu.NewCommand(&app.screenIDNext, routeSinglePlayerPresetEditMenu,
+			T(KeyConfigSinglePresets), Tf(KeyConfigSinglePresetsDesc, setup.SinglePlayerPresetCount)),
+		menu.NewCommand(&app.screenIDNext, routeMultiPlayerPresetEditMenu,
+			T(KeyConfigMultiPresets), Tf(KeyConfigMultiPresetsDesc, setup.MultiPlayerPresetCount)),
 		app.menuItemEscape(),
 		app.menuItemBack(),
 	)
-	return menu.New("Configuration", app.menuStopper(ctx), items...)
+	return menu.New(T(KeyConfigTitle), app.menuStopper(ctx), items...)
 }

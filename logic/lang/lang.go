@@ -12,7 +12,7 @@ type Lang string
 
 var fallback *sync.Map // map[string]string
 var current atomic.Pointer[sync.Map]
-var supported *sync.Map // map[string]*sync.Map
+var supported *sync.Map // map[Lang]*sync.Map
 
 func DefineFallback(m map[string]string) {
 	if fallback != nil {
@@ -94,4 +94,17 @@ func Str(key string) string {
 	}
 
 	return key
+}
+
+func StrInAll(key string) map[Lang]string {
+	m := make(map[Lang]string)
+	supported.Range(func(k, v interface{}) bool {
+		curr := v.(*sync.Map)
+		v, ok := curr.Load(key)
+		if ok {
+			m[k.(Lang)] = v.(string)
+		}
+		return true
+	})
+	return m
 }
