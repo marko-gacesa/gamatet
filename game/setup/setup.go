@@ -335,7 +335,7 @@ func (o *FieldOptions) String(teamSize byte) string {
 		sb.WriteString(strconv.Itoa(int(o.WidthPerPlayer)))
 	}
 
-	sb.WriteByte('x')
+	sb.WriteString("×")
 
 	sb.WriteString(strconv.Itoa(int(o.Height)))
 
@@ -395,9 +395,9 @@ func (o *PieceOptions) String() string {
 	case PieceTypeRotatingPolyominoes:
 		sb.WriteByte('R')
 	case PieceTypeHMirroringPolyominoes:
-		sb.WriteString("HM")
+		sb.WriteByte('H')
 	case PieceTypeVMirroringPolyominoes:
-		sb.WriteString("VM")
+		sb.WriteByte('V')
 	}
 
 	sb.WriteString(strconv.Itoa(int(o.PieceSize)))

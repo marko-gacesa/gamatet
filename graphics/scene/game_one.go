@@ -52,6 +52,8 @@ func NewGameOne(
 	textHUD := render.MakeText(tex, render.HudFont)
 	fpsHUD := render.NewHUD(render.NewFPS(), HUDPosFPS, textHUD)
 
+	str := fieldStrings()
+
 	preferredSide := render.PreferredSideTopL2R
 
 	wf, hf, pf := params.Game.GetSize(0)
@@ -77,7 +79,7 @@ func NewGameOne(
 		waitDoneCh: params.Done,
 	}
 
-	g.fieldRender = render.NewField(g.model, &g.res, &g.text, 0, g.game, preferredSide)
+	g.fieldRender = render.NewField(g.model, &g.res, &g.text, str, 0, g.game, preferredSide)
 
 	return g
 }

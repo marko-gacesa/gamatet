@@ -11,8 +11,8 @@ import (
 func (app *App) menuMultiPlayerLANMain(ctx screen.Context) *menu.Menu {
 	return menu.New(values.ProgramName, app.menuStopper(ctx), []menu.Item{
 		app.menuItemEscape(),
-		menu.NewCommand(&app.screenIDNext, routeMultiPlayerLANHostMenu, itemTextPrefixForward+"Host LAN game", ""),
-		menu.NewCommand(&app.screenIDNext, routeMultiPlayerLANJoinListen, itemTextPrefixForward+"Join LAN game", ""),
+		menu.NewCommand(&app.screenIDNext, routeMultiPlayerLANHostMenu, "Host LAN game", ""),
+		menu.NewCommand(&app.screenIDNext, routeMultiPlayerLANJoinListen, "Join LAN game", ""),
 		app.menuItemBack(),
 	}...)
 }

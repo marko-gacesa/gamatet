@@ -70,10 +70,33 @@ func GetExtendedContent(w, h int, infoPos [field.MaxPieces]DisplayPosition) (int
 	return w, h
 }
 
+type FieldStrings struct {
+	TitlePanel struct {
+		Score  string
+		Blocks string
+	}
+	SidePanel struct {
+		Player string
+		Score  string
+		Piece  string
+		Next   string
+	}
+	Message struct {
+		GameOver   string
+		Victory    string
+		Defeat     string
+		Pause      string
+		Suspended  string
+		ServerLost string
+	}
+}
+
 type Field struct {
 	model     mgl32.Mat4
 	resources *FieldResources
 	text      *Text
+
+	str FieldStrings
 
 	renderRequesterFieldIdx int
 	renderRequester         core.RenderRequester
@@ -107,6 +130,7 @@ func NewField(
 	model mgl32.Mat4,
 	resources *FieldResources,
 	text *Text,
+	str FieldStrings,
 	renderRequesterFieldIdx int,
 	renderRequester core.RenderRequester,
 	preferredSide PreferredSide,
@@ -115,6 +139,7 @@ func NewField(
 		model:                   model,
 		resources:               resources,
 		text:                    text,
+		str:                     str,
 		renderRequesterFieldIdx: renderRequesterFieldIdx,
 		renderRequester:         renderRequester,
 		preferredSide:           preferredSide,
@@ -250,7 +275,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 	//	modelTitleLeft,
 	//	colorLabel,
 	//	scaleLabel,
-	//	"SCORE:")
+	//	f.str.TitlePanel.Score)
 	//f.printText(
 	//	modelTitleLeft.Mul4(mgl32.Translate3D(d+0.25, 0, 0)),
 	//	colorText,
@@ -265,7 +290,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		modelTitleRight.Mul4(mgl32.Translate3D(-d-0.25, 0, 0)),
 		colorLabel,
 		scaleLabel,
-		"BLOCKS:")
+		f.str.TitlePanel.Blocks)
 
 	for y := 1; y < contentHeight-1; y++ {
 		var m mgl32.Mat4
@@ -478,16 +503,16 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		p := &renderInfo.Pieces[idx]
 		colorPlayerText := colorPlayer[p.PlayerIndex]
 
-		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "PLAYER", p.PieceTextData.Name, hDir)
-		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "SCORE", p.PieceTextData.Score, hDir)
-		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, "PIECE", p.PieceTextData.PieceNum, hDir)
+		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, f.str.SidePanel.Player, p.PieceTextData.Name, hDir)
+		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, f.str.SidePanel.Score, p.PieceTextData.Score, hDir)
+		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, f.str.SidePanel.Piece, p.PieceTextData.PieceNum, hDir)
 
 		if len(p.NextPieces[0].Blocks) == 0 {
 			continue
 		}
 
 		modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, 0.5*hDir, 0))
-		f.printLabel(&modelInfo, colorLabel, "NEXT", hDir)
+		f.printLabel(&modelInfo, colorLabel, f.str.SidePanel.Next, hDir)
 
 		modelNextBlocks := modelInfo.
 			Mul4(mgl32.Translate3D((1.0+sidePanelBlockWidth)/2, 0.3*hDir, 0.5))
@@ -554,17 +579,17 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 	switch renderInfo.Mode {
 	case field.ModeNormal:
 	case field.ModeGameOver:
-		message = "GAME OVER"
+		message = f.str.Message.GameOver
 	case field.ModeVictory:
-		message = "VICTORY"
+		message = f.str.Message.Victory
 	case field.ModeDefeat:
-		message = "DEFEAT"
+		message = f.str.Message.Defeat
 	case field.ModePause:
-		message = "PAUSED"
+		message = f.str.Message.Pause
 	case field.ModeSuspended:
-		message = "NETWORK\nPROBLEM"
+		message = f.str.Message.Suspended
 	case field.ModeServerLost:
-		message = "SERVER LOST"
+		message = f.str.Message.ServerLost
 	}
 
 	if message != "" {

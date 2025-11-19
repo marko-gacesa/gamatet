@@ -4,6 +4,7 @@ package app
 
 import (
 	"fmt"
+
 	"github.com/marko-gacesa/gamatet/internal/config"
 	"github.com/marko-gacesa/gamatet/logic/menu"
 	"github.com/marko-gacesa/gamatet/logic/screen"

@@ -79,14 +79,18 @@ func Supported() []Lang {
 }
 
 func Str(key string) string {
-	value, ok := current.Load().Load(key)
-	if ok {
-		return value.(string)
+	if curr := current.Load(); curr != nil {
+		value, ok := curr.Load(key)
+		if ok {
+			return value.(string)
+		}
 	}
 
-	value, ok = fallback.Load(key)
-	if ok {
-		return value.(string)
+	if fallback != nil {
+		value, ok := fallback.Load(key)
+		if ok {
+			return value.(string)
+		}
 	}
 
 	return key

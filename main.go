@@ -4,8 +4,9 @@ package main
 
 import (
 	"context"
-	"github.com/marko-gacesa/gamatet/internal/i18n"
 	"os"
+
+	"github.com/marko-gacesa/gamatet/internal/i18n"
 
 	"github.com/marko-gacesa/gamatet/graphics/loop"
 	"github.com/marko-gacesa/gamatet/internal/app"

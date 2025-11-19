@@ -61,6 +61,8 @@ func NewGame(
 	fpsHUD := render.NewHUD(render.NewFPS(), HUDPosFPS, textHUD)
 	latenciesHUD := render.NewHUD(latencies, HUDPosLatencies, textHUD)
 
+	str := fieldStrings()
+
 	center := mgl32.Ident4()
 
 	var fieldRenders []*render.Field
@@ -71,56 +73,56 @@ func NewGame(
 		wf, hf, pf := params.Game.GetSize(0)
 		w, h = render.GetExtendedContent(wf, hf, render.PreferredSideTopL2R.PieceCorners(pf))
 		fieldRenders = []*render.Field{
-			render.NewField(center, res, text, 0, params.Game, render.PreferredSideTopL2R),
+			render.NewField(center, res, text, str, 0, params.Game, render.PreferredSideTopL2R),
 		}
 	case 2:
 		psides := []render.PreferredSide{
 			render.PreferredSideLeftT2B, render.PreferredSideRightT2B,
 		}
-		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 2)
+		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, str, psides, 2)
 	case 3:
 		psides := []render.PreferredSide{
 			render.PreferredSideLeftT2B, render.PreferredSideLeftB2T, render.PreferredSideLeftT2B,
 		}
-		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 3)
+		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, str, psides, 3)
 	case 4:
 		w0, h0, _ := params.Game.GetSize(0)
 		if h0 >= 2*w0 {
 			psides := []render.PreferredSide{
 				render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R,
 			}
-			w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 4)
+			w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, str, psides, 4)
 		} else {
 			psides := []render.PreferredSide{
 				render.PreferredSideTopL2R, render.PreferredSideTopR2L,
 				render.PreferredSideBottomL2R, render.PreferredSideBottomR2L,
 			}
-			w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 2)
+			w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, str, psides, 2)
 		}
 	case 5:
 		psides := []render.PreferredSide{
 			render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R,
 			render.PreferredSideBottomR2L, render.PreferredSideBottomR2L,
 		}
-		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 3)
+		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, str, psides, 3)
 	case 6:
 		psides := []render.PreferredSide{
 			render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R,
 			render.PreferredSideBottomL2R, render.PreferredSideBottomL2R, render.PreferredSideBottomL2R,
 		}
-		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 3)
+		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, str, psides, 3)
 	case 7:
 		psides := []render.PreferredSide{
 			render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R,
 			render.PreferredSideBottomL2R, render.PreferredSideBottomL2R, render.PreferredSideBottomL2R,
 		}
-		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 4)
+		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, str, psides, 4)
 	case 8:
 		psides := []render.PreferredSide{
 			render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R, render.PreferredSideTopL2R,
 			render.PreferredSideBottomL2R, render.PreferredSideBottomL2R, render.PreferredSideBottomL2R, render.PreferredSideBottomL2R,
 		}
-		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, psides, 4)
+		w, h, fieldRenders = positionFieldRenderers(params.Game, res, text, str, psides, 4)
 	default:
 		panic("unsupported number of fields")
 	}
@@ -217,6 +219,7 @@ func positionFieldRenderers(
 	rr core.RenderRequester,
 	res *render.FieldResources,
 	text *render.Text,
+	str render.FieldStrings,
 	psides []render.PreferredSide,
 	fieldsInRow int,
 ) (int, int, []*render.Field) {
@@ -262,7 +265,7 @@ func positionFieldRenderers(
 		k++
 
 		curr = curr.Mul4(mgl32.Translate3D(0.5*float32(gridWCurr), -0.5*float32(gridHCurr), 0))
-		fieldRenderers[idx] = render.NewField(curr, res, text, idx, rr, psides[idx])
+		fieldRenderers[idx] = render.NewField(curr, res, text, str, idx, rr, psides[idx])
 		curr = curr.Mul4(mgl32.Translate3D(0.5*float32(gridWCurr), 0.5*float32(gridHCurr), 0))
 
 		if k >= fieldsInRow {

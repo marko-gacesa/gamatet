@@ -65,7 +65,7 @@ func (app *App) menuMultiPlayerLANHostLobby(ctx screen.Context) *menu.Menu {
 			})))
 	}
 	items = append(items, menu.NewCommand(&start, 1,
-		itemTextPrefixForward+"Start game", "",
+		"Start game", "",
 		menu.WithVisible(blocker.CanStart),
 		menu.WithDisabled(func() bool { return start > 0 })))
 	items = append(items, menu.NewStatic(

@@ -8,11 +8,6 @@ import (
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
-const (
-	itemTextPrefixBack    = "← "
-	itemTextPrefixForward = "→ "
-)
-
 func (app *App) menuStopper(ctx screen.Context) func(*menu.Menu) {
 	return func(*menu.Menu) {
 		if app.screenIDNext != "" {
@@ -36,5 +31,5 @@ func (app *App) menuItemEscape() *menu.Hidden[route] {
 }
 
 func (app *App) menuItemBack() *menu.Command[route] {
-	return menu.NewCommand(&app.screenIDNext, routeBack, itemTextPrefixBack+"Back", "")
+	return menu.NewCommand(&app.screenIDNext, routeBack, "Back", "")
 }

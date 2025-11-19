@@ -5,6 +5,8 @@ package scene
 import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 
+	. "github.com/marko-gacesa/gamatet/internal/i18n"
+
 	"github.com/marko-gacesa/gamatet/graphics/render"
 	"github.com/marko-gacesa/gamatet/internal/config/key"
 )
@@ -260,4 +262,42 @@ var KeyMapReverse = map[glfw.Key]key.Key{
 	glfw.KeyRightAlt:     key.RightAlt,
 	glfw.KeyRightSuper:   key.RightSuper,
 	glfw.KeyMenu:         key.Menu,
+}
+
+func fieldStrings() render.FieldStrings {
+	return render.FieldStrings{
+		TitlePanel: struct {
+			Score  string
+			Blocks string
+		}{
+			Score:  T(KeyFieldTitlePanelScore),
+			Blocks: T(KeyFieldTitlePanelBlocks),
+		},
+		SidePanel: struct {
+			Player string
+			Score  string
+			Piece  string
+			Next   string
+		}{
+			Player: T(KeyFieldSidePanelPlayer),
+			Score:  T(KeyFieldSidePanelScore),
+			Piece:  T(KeyFieldSidePanelPiece),
+			Next:   T(KeyFieldSidePanelNext),
+		},
+		Message: struct {
+			GameOver   string
+			Victory    string
+			Defeat     string
+			Pause      string
+			Suspended  string
+			ServerLost string
+		}{
+			GameOver:   T(KeyFieldMessageGameOver),
+			Victory:    T(KeyFieldMessageVictory),
+			Defeat:     T(KeyFieldMessageDefeat),
+			Pause:      T(KeyFieldMessagePause),
+			Suspended:  T(KeyFieldMessageSuspended),
+			ServerLost: T(KeyFieldMessageServerLost),
+		},
+	}
 }

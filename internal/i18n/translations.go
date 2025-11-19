@@ -14,7 +14,7 @@ import (
 	"github.com/marko-gacesa/gamatet/logic/lang"
 )
 
-//go:embed translations/*
+//go:embed translations/*.lang
 var translationsFS embed.FS
 
 type Key string
@@ -34,14 +34,20 @@ func Tf(key Key, args ...any) string {
 var reFileName = regexp.MustCompile(`^(\w+)\.lang$`)
 var reLine = regexp.MustCompile(`^(\w+)\s*=\s*(.*)\s*$`)
 
-func ParseEmbeddedLanguages(logger *slog.Logger) {
+var escaper = strings.NewReplacer(
+	"\\n", "\n",
+	"\\t", "\t")
+
+func ParseEmbeddedLanguages(logger *slog.Logger) map[lang.Lang]string {
 	const directory = "translations"
 
 	translations, err := translationsFS.ReadDir(directory)
 	if err != nil {
 		logger.Error("Failed to list embedded files", "error", err)
-		return
+		return nil
 	}
+
+	languages := make(map[lang.Lang]string)
 
 	for _, translation := range translations {
 		if translation.IsDir() {
@@ -59,7 +65,7 @@ func ParseEmbeddedLanguages(logger *slog.Logger) {
 
 		data, err := translationsFS.ReadFile(directory + "/" + fileName)
 		if err != nil {
-			logger.Error("Failed to open embedded file", "file_name", fileName, "error", err)
+			logger.Warn("Failed to open embedded file", "file_name", fileName, "error", err)
 			continue
 		}
 
@@ -85,6 +91,9 @@ func ParseEmbeddedLanguages(logger *slog.Logger) {
 
 			key := parts[1]
 			value := parts[2]
+
+			value = escaper.Replace(value)
+
 			if _, ok := m[key]; ok {
 				logger.Warn("Duplicate entry",
 					"language", language, "line_number", lineNumber, "key", key, "value", value)
@@ -94,8 +103,19 @@ func ParseEmbeddedLanguages(logger *slog.Logger) {
 			m[key] = value
 		}
 
+		name := m[KeyLanguageName]
+		if name == "" {
+			logger.Warn("Language name is missing", "language", language)
+			continue
+		}
+
+		languages[language] = name
+
 		lang.Define(language, m)
 	}
 
 	lang.DefineFallbackFromExisting("en")
+	lang.Set("en")
+
+	return languages
 }

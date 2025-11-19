@@ -1,12 +1,34 @@
+# The name of this language
+
+language_name=English
+
+# Global
+
 program_name=GaMaTeT
+
+# Piece enumerations
 
 piece_type_rotating_polyominoes    = Rotating Polyominoes
 piece_type_h_mirroring_polyominoes = Horizontal Mirroring Polyominoes
 piece_type_v_mirroring_polyominoes = Vertical Mirroring Polyominoes
-
 piece_size_3 = Miniminoes
 piece_size_4 = Tetrominoes
 piece_size_5 = Pentominoes
 
 rotation_dir_cw  = Clockwise
 rotation_dir_ccw = Counterclockwise
+
+# Field strings
+
+field_title_panel_score   = Score:
+field_title_panel_blocks  = Blocks:
+field_side_panel_player   = PLAYER
+field_side_panel_score    = SCORE
+field_side_panel_piece    = PIECE
+field_side_panel_next     = NEXT
+field_message_game_over   = GAME\nOVER
+field_message_victory     = VICTORY
+field_message_defeat      = DEFEAT
+field_message_pause       = PAUSE
+field_message_suspended   = NETWORK\nPROBLEM
+field_message_server_lost = SERVER LOST

@@ -95,9 +95,9 @@ func setupMultiPlayer(s *setup.Setup, sections *setupSections) []menu.Item {
 func setupResultMulti(s *setup.Setup, target **setup.Setup, maxPlayers byte, save bool) []menu.Item {
 	var action string
 	if save {
-		action = itemTextPrefixBack + "Save"
+		action = "Save"
 	} else {
-		action = itemTextPrefixForward + "Start"
+		action = "Start"
 	}
 	return []menu.Item{
 		menu.NewCommand(target, s,

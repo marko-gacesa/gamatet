@@ -36,7 +36,7 @@ func NewList(fn func() []udpstar.LatencyActor) *List {
 					return ""
 				}
 				sb := strings.Builder{}
-				sb.WriteString("Latencies:\n")
+				sb.WriteString("Latency:\n")
 				for i, v := range l {
 					sb.WriteString(fmt.Sprintf("%d. %s [%s] %dms\n",
 						i+1, v.Name, clientState(v.State), v.Latency.Milliseconds()))

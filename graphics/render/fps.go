@@ -37,7 +37,7 @@ func NewFPS() FPS {
 				*v1 = v2
 				return equal
 			},
-			func(fps int) string { return "fps=" + strconv.Itoa(fps) },
+			func(fps int) string { return "FPS=" + strconv.Itoa(fps) + "Hz" },
 			0,
 		),
 	}
