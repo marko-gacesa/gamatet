@@ -1,0 +1,215 @@
+language_name=Српски
+
+# Menu
+
+menu_main_title                   = ГаМаТеТ
+menu_main_single_player           = Игра једног играча
+menu_main_single_player_desc      = Играјте игру за једног играча.
+menu_main_multi_player_local      = Игра више играча, локално
+menu_main_multi_player_local_desc = Играјте игру за више играча само на овом рачунару.
+menu_main_multi_player_lan        = Игра више играча, у локалној мрежи
+menu_main_multi_player_lan_desc   = Играјте игру за више играча на локалној мрежи рачунара.
+menu_main_configure               = Подешавања
+menu_main_configure_desc          = Измените подешавања игре.
+menu_main_about                   = О игри
+menu_main_about_desc              = Погледајте податке о овој игри.
+menu_main_exit                    = Излаз
+menu_main_exit_desc               = Изађите из игре.
+
+menu_single_title             = Игра једног играча
+menu_single_start_preset      = Почетак игре, поставка %d: %s [%s]
+menu_single_start_preset_desc = Започните нову игру са овом унапред-подешеном поставком.
+menu_single_custom            = Прилагођена игра
+menu_single_custom_desc       = Прилагодите правила игре за нову игру једног играча.
+menu_single_edit_presets      = Измена унапред-подешених поставки
+menu_single_edit_presets_desc = Постоји %d унапред-подешених поставки за игре једног играча. Измените их овде.
+
+menu_single_edit_presets_title = Игра једног играча: Измена поставки
+menu_single_edit_preset        = Измена поставке %d: %s [%s]
+menu_single_edit_preset_desc   = Измените ову унапред-подешену поставку за игру једног играча.
+
+menu_local_title             = Игра више играча на једном рачунару
+menu_local_start_preset      = Почетак игре, поставка %d: %s [%s]
+menu_local_start_preset_desc = Започните нову игру са овом унапред-подешеном поставком.
+menu_local_custom            = Прилагођена игра
+menu_local_custom_desc       = Прилагодите правила игре за нову игру више играча.
+menu_local_edit_presets      = Измена унапред-подешених поставки
+menu_local_edit_presets_desc = Постоји %d унапред-подешених поставки за игре више играча. Измените их овде.
+
+menu_multi_edit_presets_title = Игра више играча: Измена поставки
+menu_multi_edit_preset        = Измена поставке %d: %s [%s]
+menu_multi_edit_preset_desc   = Измените ову унапред-подешену поставку за игру више играча.
+
+menu_lan_title     = Игра у локалној мрежи
+menu_lan_host      = Домаћин
+menu_lan_host_desc = Припремите поставке игре и чекајте да се придруже други играчи са локалне мреже рачунара.
+menu_lan_join      = Гост
+menu_lan_join_desc = Придружите се игри коју је неко други припремио.
+
+menu_host_lan_title             = Игра на локалној мрежи
+menu_host_lan_preset            = Почетак, поставка %d: %s [%s]
+menu_host_lan_preset_desc       = Отворите нову чекаоницу користећи ову поставку.
+menu_host_lan_custom            = Прилагођена игра
+menu_host_lan_custom_desc       = Прилагодите правила игре за нову игру више играча.
+menu_host_lan_edit_presets      = Измена унапред-подешених поставки
+menu_host_lan_edit_presets_desc = Постоји %d унапред-подешених поставки за игре више играча. Измените их овде.
+menu_join_lan_title             = Ослушкивање локалне мреже
+menu_join_lan_listening         = тражење оближњих игара...
+menu_join_lan_listening_desc    = Игра тражи чекаонице које су направили други играчи у локалној мрежи рачунара.
+
+lobby_title                        = Чекаоница
+lobby_start_game                   = Почетак игре
+lobby_start_game_desc              = Напустите чекаоницу и започните игру.
+lobby_issue_missing_players        = Игра се не може се започети - играчи недостају
+lobby_issue_missing_players_desc   = Да би сте могли да започете игру, сва места за играче морају бити попуњена.
+lobby_issue_no_remote_players      = Игра се не може се започети - нема удаљених играча
+lobby_issue_no_remote_players_desc = Да би сте могли да започете игру, мора да постоји бар један удаљени играч.
+lobby_issue_incomplete             = Чека се да се играчи придруже...
+lobby_issue_incomplete_desc        = Да би игра могла да почне, сва места за играче морају бити попуњена.
+lobby_issue_waiting_for_host       = Чека се да домаћин започне игру...
+lobby_issue_waiting_for_host_desc  = Све је спремно. Домаћин би требало да започне игру сада.
+lobby_starting_3                   = Почиње за 3...
+lobby_starting_2                   = Почиње за 2...
+lobby_starting_1                   = Почиње за 1...
+lobby_team                         = Тим
+lobby_slot_available               = слободно
+lobby_slot_available_desc          = Притисните '1', '2', '3' или '4' да се придружите игри као локални играч.
+lobby_slot_local                   = локално
+lobby_slot_local_desc              = Притисните тастер за брисање да ослободите ово место за друге играче.
+lobby_slot_remote                  = удаљено
+lobby_slot_remote_desc             = Притисните тастер за брисање да избаците овог удаљеног играча.
+lobby_latency                      = кашњење
+
+menu_about_title      = О игри
+menu_about_build_time = Компајлирано
+menu_about_git_sha    = Гит комит
+menu_about_version    = Верзија
+menu_about_author     = Аутор
+
+# Setup
+
+setup_title_single      = Поставка игре: један играч
+setup_title_multi       = Поставка игре: више играча
+setup_default_game_name = Игра
+setup_hide              = Скривено
+setup_show              = Приказано
+setup_redefine          = Измена
+setup_save              = Чување поставке
+setup_start             = Почетак
+
+setup_game_name                   = Име поставке
+setup_game_name_desc              = Изаберите име ове поставке.
+setup_team_count                  = Број тимова (поља)
+setup_team_count_desc             = Тимови играју један против другог. Постојање само једног тима значи да је игра задружна.
+setup_same_pieces                 = Исте фигуре за све
+setup_same_pieces_desc            = Сви играчи добијају исте фигуре у истом редоследу.
+setup_team_size                   = Бројност тима (играча на истом пољу)
+setup_team_size_desc              = Број играча који играју на истом пољу.
+setup_player_zones                = Зоне за чланове тима
+setup_player_zones_desc           = Сваки члан тима има своју траку. Фигура не може ван траке. Ово захтева већу уиграност тима.
+setup_piece_collision             = Сударање тимских фигура
+setup_piece_collision_desc        = Ако се искључи, фигуре чланова тима могу да пролазе једна кроз другу.
+setup_show_field_options          = Подешавања поља
+setup_show_field_options_desc     = Приказ подешавања за величину поља за игру.
+setup_field_width                 = Ширина поља
+setup_field_width_desc            = Ширина поља за игру.
+setup_field_width_per_player      = Ширина поља (по члану тима)
+setup_field_width_per_player_desc = Ширина поља за игру по сваком члану тима. Укупна ширина је бројност тима пута овај број.
+setup_field_height                = Висина поља
+setup_field_height_desc           = Висина поља за игру.
+setup_field_speed                 = Почетна брзина
+setup_field_speed_desc            = Ниво брзине којим фигуре играча падају током игре.
+setup_show_piece_options          = Подешавања фигура
+setup_show_piece_options_desc     = Приказ подешавања фигура за играче.
+setup_piece_type                  = Врста фигура
+setup_piece_type_desc             = Врста фигура које се користе током игре.
+setup_piece_size                  = Величина фигура
+setup_piece_size_desc             = Величина фигура. Минимине укључују мономино, домине и тромине.
+setup_bag_size                    = Величина џака
+setup_bag_size_desc               = Број јединствених фигура које се сигурно појављују у једној секвенци током игре.
+setup_show_misc_options           = Разна подешавања
+setup_show_misc_options_desc      = Приказ разних подешавања.
+setup_custom_random_seed          = Прилагођено семе случајних бројева
+setup_custom_random_seed_desc     = Подесите прилагођено семе случајних бројева или насумично изабран број.
+setup_random_seed                 = Семе случајних бројева
+setup_random_seed_desc            = Случајних бројеви се користе за избор фигура и случајне догађаје.
+setup_issue_too_many_players      = Невалидна поставка: Превише играча. Дозвољено је највише %s
+setup_issue_too_many_players_desc = Постоји ограничење у броју играча који могу да играју истовремено.
+setup_issue_need_at_least_2       = Невалидна поставка: Потребна су бар два играча.
+setup_issue_need_at_least_2_desc  = Игра више играча захтева бар два играча.
+
+# Config
+
+config_title                          = Подешавања
+config_language                       = Језик
+config_language_desc                  = Промените тренутан језик.
+config_video_options                  = Подешавања приказа
+config_video_options_desc             = Измените подешавања везана за приказ.
+config_single_presets                 = Измена поставки за игре једног играча
+config_single_presets_desc            = Постоји %d унапред-подешених поставки за игре једног играча. Измените их овде.
+config_multi_presets                  = Измена поставки за игре више играча
+config_multi_presets_desc             = Постоји %d унапред-подешених поставки за игре више играча. Измените их овде.
+config_edit_player                    = Измени локалног играча %d: %s
+config_edit_player_desc               = Четири играча могу да играју на једном рачунару. Играч 1 ће бити коришћен у играма једног играча.
+config_player_title                   = Измена играча %d
+config_player_name                    = Име
+config_player_name_desc               = Име играча је важно за игре више играча преко мреже.
+config_player_control                 = Контрола
+config_player_control_desc            = Тастери који је користе за управљање тренутне фигуре током игре.
+config_player_key_left                = Лево
+config_player_key_left_desc           = Тастер да се тренутна фигура помери у лево.
+config_player_key_right               = Десно
+config_player_key_right_desc          = Тастер да се тренутна фигура помери у десно.
+config_player_key_activate            = Активација
+config_player_key_activate_desc       = Тастер да се активира/окрене/измени тренутна фигура (у зависности од врсте фигуре).
+config_player_key_drop                = Спуштање
+config_player_key_drop_desc           = Тастер да се тренутна фигура пусти да падне.
+config_player_rotation_direction      = Смер окретања
+config_player_rotation_direction_desc = Смер окретања фигура које могу да се окрећу.
+config_video_title                    = Подешавања приказа
+config_video_fullscreen               = Пун екран
+config_video_fullscreen_desc          = Да ли се програм отвара у пуном екрану или у прозору. Захтева поновно покретање.
+config_video_window_width             = Ширина прозора
+config_video_window_width_desc        = Ширина прозора ако се програм покреће у прозору.
+config_video_window_height            = Висина прозора
+config_video_window_height_desc       = Висина прозора ако се програм покреће у прозору.
+config_video_opacity                  = Непрозирност
+config_video_opacity_desc             = Непрозирност прозора. 100% значи потпуно непрозиран прозор.
+
+menu_back = Назад
+menu_back_desc = Врати се на претходни мени.
+
+# Errors
+
+error                           = Грешка
+error_too_many_players          = Поставка игре има превише играча: Дозвољњно је највише %d
+error_input_missing             = Улаз недостаје
+error_preset_index_out_of_range = Индекс поставке је ван опсега
+error_player_index_out_of_range = Индекс играча је ван опсега
+
+# Piece enumerations
+
+piece_type_rotating_polyominoes    = Обртне полимине
+piece_type_h_mirroring_polyominoes = Хоризонтало-пресликавајуће полимине
+piece_type_v_mirroring_polyominoes = Вертикално-пресликавајуће полимине
+piece_size_3 = Минимине
+piece_size_4 = Тетромине
+piece_size_5 = Пентамине
+
+rotation_dir_cw  = У смеру казаљке на сату
+rotation_dir_ccw = Супротно од смера казаљке на сату
+
+# Field strings
+
+field_title_panel_score   = Поени:
+field_title_panel_blocks  = Блокови:
+field_side_panel_player   = ИГРАЧ
+field_side_panel_score    = ПОЕНИ
+field_side_panel_piece    = ФИГУРА
+field_side_panel_next     = СЛЕДЕЋЕ
+field_message_game_over   = КРАЈ\nИГРЕ
+field_message_victory     = ПОБЕДА
+field_message_defeat      = ПОРАЗ
+field_message_pause       = ПАУЗА
+field_message_suspended   = ПРОБЛЕМ\nСА\nМРЕЖОМ
+field_message_server_lost = СЕРВЕР\nИЗГУБЉЕН
