@@ -28,7 +28,7 @@ type Iron struct {
 func (p *Iron) Lights(lights []PointLight) {
 	n := min(int32(len(lights)), MaxLights)
 
-	for i := int32(0); i < n; i++ {
+	for i := range n {
 		uniformVec3(p.uniPointLights+i*3, lights[i].Position)
 		uniformVec3(p.uniPointLights+i*3+1, lights[i].Color)
 		uniform1f(p.uniPointLights+i*3+2, lights[i].Intensity)

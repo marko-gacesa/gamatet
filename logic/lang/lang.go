@@ -4,7 +4,6 @@ package lang
 
 import (
 	"slices"
-	"sort"
 	"sync"
 	"sync/atomic"
 )

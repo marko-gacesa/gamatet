@@ -18,6 +18,8 @@ import (
 )
 
 func Loop(globalCtx context.Context, app *app.App) error {
+	log := app.Log()
+
 	runtime.LockOSThread() // GLFW event handling must run on the main OS thread
 
 	if err := glfw.Init(); err != nil {
@@ -35,9 +37,12 @@ func Loop(globalCtx context.Context, app *app.App) error {
 	videoConfig := app.VideoConfig()
 	if err := func() (err error) {
 		if videoConfig.Fullscreen {
+			log.Info("Starting fullscreen")
 			window, err = windowFullscreen(values.ProgramName, nil)
 		} else {
+			log.Info("Creating window", "width", videoConfig.WindowWidth, "height", videoConfig.WindowHeight)
 			window, err = windowResizable(videoConfig.WindowWidth, videoConfig.WindowHeight, values.ProgramName)
+			window.SetOpacity(videoConfig.WindowOpacity)
 		}
 		return
 	}(); err != nil {
@@ -46,14 +51,15 @@ func Loop(globalCtx context.Context, app *app.App) error {
 
 	defer window.Destroy()
 
+	log.Info("Setting current OpenGL context")
+
 	window.MakeContextCurrent()
-	window.SetOpacity(videoConfig.WindowOpacity)
+
+	log.Info("Initializing OpenGL")
 
 	if err := gl.Init(); err != nil {
 		return fmt.Errorf("failed to initialize OpenGL bindings: %w", err)
 	}
-
-	log := app.Log()
 
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	log.Info("OpenGL", "version", version)
@@ -130,7 +136,7 @@ func Loop(globalCtx context.Context, app *app.App) error {
 				memstats2 := &runtime.MemStats{}
 				runtime.ReadMemStats(memstats2)
 
-				app.Log().Info("Screen done",
+				log.Info("Screen done",
 					"memory.before.inuse", memstats1.HeapInuse,
 					"memory.before.alloc", memstats1.HeapAlloc,
 					"memory.after.inuse", memstats2.HeapInuse,
