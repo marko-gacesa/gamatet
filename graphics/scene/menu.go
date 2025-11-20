@@ -38,9 +38,11 @@ func init() {
 			Mul4(mgl32.Translate3D(0.4, 0, 0))
 	}
 
+	const descScale = 0.75
+
 	screenModelDesc = mgl32.Ident4().
 		Mul4(mgl32.Translate3D(-screenContentW/2+1, float32(-screenContentH/2+0.5), 0)).
-		Mul4(mgl32.Scale3D(0.6, 0.6, 0.6))
+		Mul4(mgl32.Scale3D(descScale, descScale, 1))
 }
 
 type Menu struct {
