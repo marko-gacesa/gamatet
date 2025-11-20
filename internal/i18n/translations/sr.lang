@@ -213,3 +213,6 @@ field_message_defeat      = ПОРАЗ
 field_message_pause       = ПАУЗА
 field_message_suspended   = ПРОБЛЕМ\nСА\nМРЕЖОМ
 field_message_server_lost = СЕРВЕР\nИЗГУБЉЕН
+
+bool_true  = ДА
+bool_false = НЕ

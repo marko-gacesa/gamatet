@@ -3,6 +3,7 @@
 package lang
 
 import (
+	"slices"
 	"sort"
 	"sync"
 	"sync/atomic"
@@ -68,13 +69,11 @@ func Set(l Lang) {
 
 func Supported() []Lang {
 	var l []Lang
-	supported.Range(func(k, v interface{}) bool {
+	supported.Range(func(k, v any) bool {
 		l = append(l, k.(Lang))
 		return true
 	})
-	sort.Slice(l, func(i, j int) bool {
-		return l[i] < l[j]
-	})
+	slices.Sort(l)
 	return l
 }
 
@@ -98,7 +97,7 @@ func Str(key string) string {
 
 func StrInAll(key string) map[Lang]string {
 	m := make(map[Lang]string)
-	supported.Range(func(k, v interface{}) bool {
+	supported.Range(func(k, v any) bool {
 		curr := v.(*sync.Map)
 		v, ok := curr.Load(key)
 		if ok {

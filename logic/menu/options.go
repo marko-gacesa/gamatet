@@ -26,6 +26,17 @@ func WithDescriptionFn(fn func() string) func(Item) {
 	}
 }
 
+func WithBoolValues(strValues [2]string) func(Item) {
+	return func(item Item) {
+		b, ok := item.(*Bool)
+		if !ok {
+			panic("not a boolean item")
+		}
+
+		b.strValues = strValues
+	}
+}
+
 func applyOptions(item Item, options ...func(Item)) {
 	for _, opt := range options {
 		opt(item)

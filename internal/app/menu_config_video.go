@@ -15,27 +15,25 @@ func (app *App) menuConfigVideo(ctx screen.Context) *menu.Menu {
 	return menu.New(T(KeyConfigVideoTitle), app.configStopper(ctx), []menu.Item{
 		menu.NewBool(&app.cfg.Video.Fullscreen,
 			T(KeyConfigVideoFullscreen), T(KeyConfigVideoFullscreenDesc),
-			menu.WithVisible(func() bool {
-				return app.cfg.Video.Fullscreen
-			})),
+			withBoolStr()),
 		menu.NewNumber(&app.cfg.Video.WindowWidth, config.WindowWidthMin, config.WindowWidthMax,
-			T(KeyConfigVideoWindowWidth), T(KeyConfigVideoWindowWidthDesc),
+			"\t"+T(KeyConfigVideoWindowWidth), T(KeyConfigVideoWindowWidthDesc),
 			menu.WithVisible(func() bool {
-				return app.cfg.Video.Fullscreen
+				return !app.cfg.Video.Fullscreen
 			})),
 		menu.NewNumber(&app.cfg.Video.WindowHeight, config.WindowHeightMin, config.WindowHeightMax,
-			T(KeyConfigVideoWindowHeight), T(KeyConfigVideoWindowHeightDesc),
+			"\t"+T(KeyConfigVideoWindowHeight), T(KeyConfigVideoWindowHeightDesc),
 			menu.WithVisible(func() bool {
-				return app.cfg.Video.Fullscreen
+				return !app.cfg.Video.Fullscreen
 			})),
 		menu.NewEnum[float32](&app.cfg.Video.WindowOpacity,
 			[]float32{1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.33},
 			func(f float32) string {
 				return fmt.Sprintf("%.0f%%", f*100)
 			},
-			T(KeyConfigVideoOpacity), T(KeyConfigVideoOpacityDesc),
+			"\t"+T(KeyConfigVideoOpacity), T(KeyConfigVideoOpacityDesc),
 			menu.WithVisible(func() bool {
-				return app.cfg.Video.Fullscreen
+				return !app.cfg.Video.Fullscreen
 			})),
 		app.menuItemEscape(),
 		app.menuItemBack(),

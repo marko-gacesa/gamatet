@@ -34,3 +34,7 @@ func (app *App) menuItemEscape() *menu.Hidden[route] {
 func (app *App) menuItemBack() *menu.Command[route] {
 	return menu.NewCommand(&app.screenIDNext, routeBack, T(KeyMenuBack), T(KeyMenuBackDesc))
 }
+
+func withBoolStr() func(menu.Item) {
+	return menu.WithBoolValues([2]string{T(KeyBoolFalse), T(KeyBoolTrue)})
+}

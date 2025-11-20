@@ -206,4 +206,7 @@ const (
 	KeyFieldMessagePause      = "field_message_pause"
 	KeyFieldMessageSuspended  = "field_message_suspended"
 	KeyFieldMessageServerLost = "field_message_server_lost"
+
+	KeyBoolTrue  = "bool_true"
+	KeyBoolFalse = "bool_false"
 )

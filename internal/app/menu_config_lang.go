@@ -26,7 +26,7 @@ func (app *App) menuConfigLanguage(ctx screen.Context) *menu.Menu {
 	}
 	items[len(supportedMap)] = app.menuItemEscape()
 
-	return menu.New(T(KeyConfigTitle), func(*menu.Menu) {
+	return menu.New(T(KeyConfigLanguage), func(*menu.Menu) {
 		if app.screenIDNext == "" {
 			lang.Set(lang.Lang(app.cfg.Locale.Language))
 			_ = config.Save(app.logger, app.cfgPath, &app.cfg)

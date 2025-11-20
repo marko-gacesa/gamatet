@@ -55,7 +55,8 @@ func setupSingle(s *setup.Setup, sections *setupSections) []menu.Item {
 			"\t"+T(KeySetupCustomRandomSeed), T(KeySetupCustomRandomSeedDesc),
 			menu.WithVisible(func() bool {
 				return sections.showMisc
-			})),
+			}),
+			withBoolStr()),
 		menu.NewNumber(&s.MiscOptions.Seed, math.MinInt64, math.MaxInt64,
 			"\t"+T(KeySetupRandomSeed), T(KeySetupRandomSeedDesc),
 			menu.WithVisible(func() bool {

@@ -213,3 +213,6 @@ field_message_defeat      = DEFEAT
 field_message_pause       = PAUSE
 field_message_suspended   = NETWORK\nPROBLEM
 field_message_server_lost = SERVER LOST
+
+bool_true  = ON
+bool_false = OFF

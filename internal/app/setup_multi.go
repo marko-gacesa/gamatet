@@ -18,14 +18,16 @@ func setupMultiPlayer(s *setup.Setup, sections *setupSections) []menu.Item {
 			T(KeySetupSamePieces), T(KeySetupSamePiecesDesc),
 			menu.WithVisible(func() bool {
 				return s.FieldCount*s.TeamSize > 1
-			})),
+			}),
+			withBoolStr()),
 		menu.NewInteger(&s.GameOptions.TeamSize, 1, setup.MaxTeamSize,
 			T(KeySetupTeamSize), T(KeySetupTeamSizeDesc)),
 		menu.NewBool(&s.GameOptions.PlayerZones,
 			"\t"+T(KeySetupPlayerZones), T(KeySetupPlayerZonesDesc),
 			menu.WithVisible(func() bool {
 				return s.TeamSize > 1
-			})),
+			}),
+			withBoolStr()),
 		menu.NewBool(&s.GameOptions.PieceCollision,
 			"\t"+T(KeySetupPieceCollision), T(KeySetupPieceCollisionDesc),
 			menu.WithVisible(func() bool {
@@ -33,7 +35,8 @@ func setupMultiPlayer(s *setup.Setup, sections *setupSections) []menu.Item {
 			}),
 			menu.WithDisabled(func() bool {
 				return s.GameOptions.PlayerZones
-			})),
+			}),
+			withBoolStr()),
 
 		menu.NewEnum(&sections.showField, []bool{false, true}, sections.showFieldsStr,
 			T(KeySetupShowFieldOptions), T(KeySetupShowFieldOptionsDesc)),
@@ -84,7 +87,8 @@ func setupMultiPlayer(s *setup.Setup, sections *setupSections) []menu.Item {
 			"\t"+T(KeySetupCustomRandomSeed), T(KeySetupCustomRandomSeedDesc),
 			menu.WithVisible(func() bool {
 				return sections.showMisc
-			})),
+			}),
+			withBoolStr()),
 		menu.NewNumber(&s.MiscOptions.Seed, math.MinInt64, math.MaxInt64,
 			"\t"+T(KeySetupRandomSeed), T(KeySetupRandomSeedDesc),
 			menu.WithVisible(func() bool {
