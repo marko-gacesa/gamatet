@@ -48,12 +48,15 @@ const (
 func (t Type) IsImmovable() bool     { return t == TypeWall || t == TypeRuby }
 func (t Type) SupportsExBlock() bool { return t == TypeRock }
 
-// Destroyable returns true f the block type is directly destroyable by shooter pieces.
-func (t Type) Destroyable() bool { return t == TypeRock || t == TypeRuby }
+// Shootable returns true f the block type is directly destroyable by shooter pieces.
+func (t Type) Shootable() bool { return t == TypeRock || t == TypeRuby }
 
 func (t Type) NoSlide() bool {
 	return t == TypeAcid || t == TypeLava || t == TypeCurl || t == TypeWave || t == TypeBomb
 }
+
+// Destructible returns true f the block type is directly destroyable.
+func (t Type) Destructible() bool { return t == TypeRock || t == TypeRuby || t == TypeGoal }
 
 const (
 	// HardnessMax is special, maximum, value for block hardness that can't be reduced.

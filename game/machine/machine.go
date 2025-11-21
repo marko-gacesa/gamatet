@@ -379,7 +379,7 @@ func _dropAcid(f *field.Field, p event.Pusher, x, y int) bool {
 		p.Push(op.NewFieldExBlock(x, y0, field.AnimFall, h, block.Acid))
 	}
 
-	if b.Hardness == block.HardnessMax || !b.Type.Destroyable() {
+	if b.Hardness == block.HardnessMax || !b.Type.Shootable() {
 		return true
 	}
 

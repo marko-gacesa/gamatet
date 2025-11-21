@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/marko-gacesa/gamatet/game/block"
+	"github.com/marko-gacesa/gamatet/logic/random"
 )
 
 type Feed interface {
@@ -66,10 +67,10 @@ func (f GenericFeed) Get(idx, playerIdx int) Piece {
 	bagIdx := idx / f.pieceBagCount
 	idx = idx % f.pieceBagCount
 
-	r := random{uint32(f.seed + 857*bagIdx + 13), uint32(f.seed + 328*bagIdx + 17)}
+	r := random.New(uint32(f.seed+857*bagIdx+13), uint32(f.seed+328*bagIdx+17))
 
 	m := f.pool.Get().([]int)
-	r.perm(m)
+	r.Perm(m)
 	shapeIdx := m[idx] % f.shapeCount
 	f.pool.Put(m)
 

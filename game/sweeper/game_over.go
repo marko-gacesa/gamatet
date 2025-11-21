@@ -5,6 +5,7 @@ package sweeper
 import (
 	"time"
 
+	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/op"
@@ -20,10 +21,18 @@ func NewGameOver(f *field.Field) *GameOver {
 	}
 }
 
+type gameOverMethod byte
+
+const (
+	gameOverMethodVanish gameOverMethod = iota
+	gameOverMethodBurn
+	gameOverMethodFall
+)
+
 type GameOver struct {
-	animFn func(*base, event.Pusher)
-	state  *piece.State
 	base
+	state  *piece.State
+	method gameOverMethod
 }
 
 func (s *GameOver) Start(analyzer *Analyzer) bool {
@@ -33,11 +42,11 @@ func (s *GameOver) Start(analyzer *Analyzer) bool {
 
 	switch *analyzer.endMode {
 	case field.ModeGameOver:
-		s.animFn = blockVanish
+		s.method = gameOverMethodVanish
 	case field.ModeVictory:
-		s.animFn = blockBurn
+		s.method = gameOverMethodBurn
 	case field.ModeDefeat:
-		s.animFn = blockFall
+		s.method = gameOverMethodFall
 	default:
 		return false
 	}
@@ -46,13 +55,43 @@ func (s *GameOver) Start(analyzer *Analyzer) bool {
 }
 
 func (s *GameOver) Sweep(p event.Pusher) {
-	s.animFn(&s.base, p)
+	switch s.method {
+	case gameOverMethodVanish:
+		s.blockVanish(p)
+	case gameOverMethodBurn:
+		s.blockBurn(p)
+	case gameOverMethodFall:
+		s.blockFall(p)
+	}
 }
 
-func blockBurn(s *base, p event.Pusher) {
+func (s *GameOver) blockVanish(p event.Pusher) {
 	const n = 4
 
-	xybs := s.field.AllXY(n)
+	xybs := s.findAllDestructible(n)
+	if len(xybs) == 0 {
+		s.endIteration()
+		return
+	}
+
+	for _, xyb := range xybs {
+		p.Push(&op.FieldBlockSet{
+			Col:       byte(xyb.X),
+			Row:       byte(xyb.Y),
+			Op:        op.TypeClear,
+			AnimType:  field.AnimPop,
+			AnimParam: 0,
+			Block:     xyb.Block,
+		})
+	}
+
+	s.reschedule(50 * time.Millisecond)
+}
+
+func (s *GameOver) blockBurn(p event.Pusher) {
+	const n = 4
+
+	xybs := s.findAllDestructible(n)
 	if len(xybs) == 0 {
 		s.endIteration()
 		return
@@ -72,10 +111,10 @@ func blockBurn(s *base, p event.Pusher) {
 	s.reschedule(50 * time.Millisecond)
 }
 
-func blockFall(s *base, p event.Pusher) {
+func (s *GameOver) blockFall(p event.Pusher) {
 	const n = 4
 
-	xybs := s.field.AllXY(n)
+	xybs := s.findAllDestructible(n)
 	if len(xybs) == 0 {
 		s.endIteration()
 		return
@@ -95,25 +134,17 @@ func blockFall(s *base, p event.Pusher) {
 	s.reschedule(50 * time.Millisecond)
 }
 
-func blockVanish(s *base, p event.Pusher) {
-	const n = 4
+func (s *GameOver) findAllDestructible(max int) []block.XYB {
+	result := make([]block.XYB, 0, max)
 
-	xybs := s.field.AllXY(n)
-	if len(xybs) == 0 {
-		s.endIteration()
-		return
-	}
+	s.field.RangeBlocks(func(xyb block.XYB) bool {
+		if !xyb.Block.Type.Destructible() {
+			return true
+		}
 
-	for _, xyb := range xybs {
-		p.Push(&op.FieldBlockSet{
-			Col:       byte(xyb.X),
-			Row:       byte(xyb.Y),
-			Op:        op.TypeClear,
-			AnimType:  field.AnimPop,
-			AnimParam: 0,
-			Block:     xyb.Block,
-		})
-	}
+		result = append(result, xyb)
+		return len(result) < max
+	})
 
-	s.reschedule(50 * time.Millisecond)
+	return result
 }

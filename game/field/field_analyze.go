@@ -4,6 +4,30 @@ package field
 
 import "github.com/marko-gacesa/gamatet/game/block"
 
+// RangeBlocks goes over every block on the field and runs inspect function for each.
+// The operation is terminated when inspect function returns false.
+func (f *Field) RangeBlocks(inspect func(xyb block.XYB) bool) {
+	idx := 0
+	w := f.w
+	h := f.h
+	for y := range h {
+		for x := range w {
+			b := f.blocks[idx].Block
+			idx++
+
+			if b.Type == block.TypeEmpty {
+				continue
+			}
+			if !inspect(block.XYB{
+				XY:    block.XY{X: x, Y: y},
+				Block: b,
+			}) {
+				return
+			}
+		}
+	}
+}
+
 func (f *Field) FindTops() []block.XY {
 	tops := make([]block.XY, 0, f.w)
 

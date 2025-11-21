@@ -28,6 +28,8 @@ var (
 	colorWave = colorVector(block.Wave.Color)
 	colorBomb = colorVector(block.Bomb.Color)
 
+	colorFrame = colorVector(block.Rock.Color)
+
 	colorText  = mgl32.Vec4{1, 1, 1, 0.8}
 	colorLabel = mgl32.Vec4{1, 1, 1, 0.5}
 
@@ -271,6 +273,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 	modelTitleLeft := modelField.Mul4(mgl32.Translate3D(-0.5, float32(contentHeight-2), 0.5))
 	modelTitleRight := modelTitleLeft.Mul4(mgl32.Translate3D(float32(f.w), 0, 0))
+
 	//d := f.printText(
 	//	modelTitleLeft,
 	//	colorLabel,
@@ -281,6 +284,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 	//	colorText,
 	//	scaleText,
 	//	"00234234")
+
 	d := f.printTextRight(
 		modelTitleRight,
 		colorText,
@@ -695,7 +699,7 @@ func (f *Field) renderAll(r *Renderer) {
 
 	if len(f.listFrame) > 0 {
 		r.Geometry(f.resources.GeomFrame)
-		f.resources.MatRock.Color(colorWall)
+		f.resources.MatRock.Color(colorFrame)
 		for i := range f.listFrame {
 			r.Render(&f.listFrame[i])
 		}

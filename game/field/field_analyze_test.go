@@ -10,6 +10,62 @@ import (
 	"github.com/marko-gacesa/gamatet/game/block"
 )
 
+func TestField_RangeBlocks(t *testing.T) {
+	const (
+		fieldW = 6
+		fieldH = 6
+	)
+
+	tests := []struct {
+		name   string
+		blocks []block.XYB
+	}{
+		{
+			name:   "empty",
+			blocks: []block.XYB{},
+		},
+		{
+			name: "corners",
+			blocks: []block.XYB{
+				{XY: block.XY{0, 0}, Block: block.Rock},
+				{XY: block.XY{fieldW - 1, 0}, Block: block.Ruby},
+				{XY: block.XY{0, fieldH - 1}, Block: block.Iron},
+				{XY: block.XY{fieldW - 1, fieldH - 1}, Block: block.Goal},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			f := Make(6, 6, 0)
+			for _, xyb := range test.blocks {
+				f.setXY(xyb.X, xyb.Y, xyb.Block)
+			}
+
+			idx := 0
+			f.RangeBlocks(func(xyb block.XYB) bool {
+				if test.blocks[idx] != xyb {
+					t.Errorf("block index mismatch: got %v, want %v", xyb, test.blocks[idx])
+				}
+				idx++
+				return true
+			})
+			if idx != len(test.blocks) {
+				t.Errorf("len mismatch: got %v, want %v", idx, len(test.blocks))
+			}
+
+			var called bool
+			f.RangeBlocks(func(xyb block.XYB) bool {
+				if called {
+					t.Error("already called")
+				}
+				called = true
+				return false
+			})
+		})
+	}
+}
+
 func TestField_FindTops(t *testing.T) {
 	b := block.Block{Type: block.TypeRock}
 

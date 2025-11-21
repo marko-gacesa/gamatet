@@ -2,14 +2,24 @@
 
 package block
 
+import "fmt"
+
 type Block struct {
 	Type     Type
 	Hardness byte
 	Color    uint32
 }
 
+func (b Block) String() string {
+	return fmt.Sprintf("[t=%d,h=%d,c=%08x]", b.Type, b.Hardness, b.Color)
+}
+
 type XY struct {
 	X, Y int
+}
+
+func (xy XY) String() string {
+	return fmt.Sprintf("(%d,%d)", xy.X, xy.Y)
 }
 
 type XYB struct {
@@ -17,15 +27,6 @@ type XYB struct {
 	Block
 }
 
-func SliceEqual(a, b []Block) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-
-	return true
+func (xyb XYB) String() string {
+	return xyb.Block.String() + "@" + xyb.XY.String()
 }

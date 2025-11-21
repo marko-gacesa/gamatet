@@ -1,6 +1,6 @@
 // Copyright (c) 2020 by Marko Gaćeša
 
-package piece
+package random
 
 import (
 	"slices"
@@ -19,7 +19,7 @@ func TestRandomPerm(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		r := random{z: test.z, w: test.w}
+		r := Random{z: test.z, w: test.w}
 
 		perm := make([]int, test.n)
 		r.perm(perm)
@@ -44,7 +44,7 @@ func TestRandomPerm(t *testing.T) {
 				test.n, test.n*(test.n-1)/2, sum)
 		}
 
-		r2 := random{z: test.z, w: test.w}
+		r2 := Random{z: test.z, w: test.w}
 		perm2 := make([]int, test.n)
 		r2.perm(perm2)
 
@@ -57,7 +57,7 @@ func TestRandomPerm(t *testing.T) {
 
 func BenchmarkPerm(b *testing.B) {
 	b.ReportAllocs()
-	r := random{z: 42, w: 66}
+	r := Random{z: 42, w: 66}
 	for i := 0; i < b.N; i++ {
 		var a [100]int
 		r.perm(a[:])

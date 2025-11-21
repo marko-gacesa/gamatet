@@ -3,6 +3,7 @@
 package sweeper
 
 import (
+	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/op"
@@ -12,7 +13,7 @@ type Analyzer struct {
 	Field *field.Field
 
 	blocks delta
-	stats  delta
+	stats  deltaStats
 
 	endMode *field.Mode
 }
@@ -21,6 +22,12 @@ type delta struct {
 	added    int
 	removed  int
 	hardened int
+	softened int
+	goal     byte
+}
+
+type deltaStats struct {
+	removed  int
 	softened int
 }
 
@@ -32,6 +39,9 @@ func (a *Analyzer) Analyze(e event.Event) {
 			a.blocks.added++
 		case op.TypeClear:
 			a.blocks.removed++
+			if v.Block.Type == block.TypeGoal {
+				a.blocks.goal++
+			}
 		}
 	case *op.FieldBlockHardness:
 		switch {
@@ -42,8 +52,16 @@ func (a *Analyzer) Analyze(e event.Event) {
 		}
 	case *op.FieldDestroyRow:
 		a.blocks.removed += a.Field.GetWidth()
+		for _, b := range v.Blocks {
+			if b.Type == block.TypeGoal {
+				a.blocks.goal++
+			}
+		}
 	case *op.FieldDestroyColumn:
 		a.blocks.removed++
+		if v.Block.Type == block.TypeGoal {
+			a.blocks.goal++
+		}
 	case *op.FieldStat:
 		a.stats.removed += int(v.BlocksRemoved)
 		a.stats.softened += int(v.BlocksSoftened)

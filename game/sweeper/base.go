@@ -17,9 +17,11 @@ func newBase(f *field.Field) *base {
 }
 
 type base struct {
-	field  *field.Field
-	timer  *time.Timer
-	active bool
+	field     *field.Field
+	timer     *time.Timer
+	startedAt time.Time     // When the timer was started
+	remaining time.Duration // Duration remaining if paused
+	active    bool
 }
 
 func (s *base) Timer() <-chan time.Time {
@@ -33,6 +35,7 @@ func (s *base) Start(*Analyzer) bool {
 	}
 
 	s.active = true
+	s.startedAt = time.Now()
 	s.timer.Reset(time.Microsecond)
 	return true
 }
@@ -42,6 +45,10 @@ func (s *base) Pause() {
 		return
 	}
 
+	s.remaining = time.Since(s.startedAt)
+	if s.remaining <= 0 {
+		s.remaining = time.Nanosecond
+	}
 	s.timer.Stop()
 	select {
 	default:
@@ -54,7 +61,8 @@ func (s *base) Unpause() {
 		return
 	}
 
-	s.timer.Reset(time.Millisecond)
+	s.startedAt = time.Now()
+	s.timer.Reset(s.remaining)
 }
 
 func (s *base) endIteration() {
@@ -62,5 +70,6 @@ func (s *base) endIteration() {
 }
 
 func (s *base) reschedule(d time.Duration) {
+	s.startedAt = time.Now()
 	s.timer.Reset(d)
 }

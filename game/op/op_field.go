@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
+	"slices"
 
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/event"
@@ -171,7 +172,7 @@ func (e *FieldDestroyRow) Undo(f *field.Field) {
 
 func (e *FieldDestroyRow) Equals(ev event.Event) bool {
 	q, ok := ev.(*FieldDestroyRow)
-	return ok && e.Row == q.Row && block.SliceEqual(e.Blocks, q.Blocks)
+	return ok && e.Row == q.Row && slices.Equal(e.Blocks, q.Blocks)
 }
 
 func (e *FieldDestroyRow) Write(w io.Writer) error {
