@@ -22,7 +22,7 @@ func TestRandomPerm(t *testing.T) {
 		r := Random{z: test.z, w: test.w}
 
 		perm := make([]int, test.n)
-		r.perm(perm)
+		r.Perm(perm)
 
 		var sum int
 		m := make(map[int]int, test.n)
@@ -46,7 +46,7 @@ func TestRandomPerm(t *testing.T) {
 
 		r2 := Random{z: test.z, w: test.w}
 		perm2 := make([]int, test.n)
-		r2.perm(perm2)
+		r2.Perm(perm2)
 
 		if !slices.Equal(perm, perm2) {
 			t.Errorf("second perm with the same random produced different result: n=%d\n",
@@ -60,6 +60,6 @@ func BenchmarkPerm(b *testing.B) {
 	r := Random{z: 42, w: 66}
 	for i := 0; i < b.N; i++ {
 		var a [100]int
-		r.perm(a[:])
+		r.Perm(a[:])
 	}
 }

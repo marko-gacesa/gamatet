@@ -4,12 +4,13 @@ package sweeper
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/op"
 	"github.com/marko-gacesa/gamatet/logic/random"
-	"time"
 )
 
 var _ Sweeper = (*Magic)(nil)
