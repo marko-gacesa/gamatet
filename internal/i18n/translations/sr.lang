@@ -62,8 +62,8 @@ lobby_start_game                   = Почетак игре
 lobby_start_game_desc              = Напустите чекаоницу и започните игру.
 lobby_issue_missing_players        = Игра се не може се започети - играчи недостају
 lobby_issue_missing_players_desc   = Да би сте могли да започете игру, сва места за играче морају бити попуњена.
-lobby_issue_no_remote_players      = Игра се не може се започети - нема удаљених играча
-lobby_issue_no_remote_players_desc = Да би сте могли да започете игру, мора да постоји бар један удаљени играч.
+lobby_issue_no_remote_players      = Игра се не може се започети - нема играча са мреже.
+lobby_issue_no_remote_players_desc = Да би сте могли да започете игру, мора да постоји бар један играч са мреже.
 lobby_issue_incomplete             = Чека се да се играчи придруже...
 lobby_issue_incomplete_desc        = Да би игра могла да почне, сва места за играче морају бити попуњена.
 lobby_issue_waiting_for_host       = Чека се да домаћин започне игру...
@@ -77,7 +77,7 @@ lobby_slot_available_desc          = Притисните '1', '2', '3' или '
 lobby_slot_local                   = локално
 lobby_slot_local_desc              = Притисните тастер за брисање да ослободите ово место за друге играче.
 lobby_slot_remote                  = удаљено
-lobby_slot_remote_desc             = Притисните тастер за брисање да избаците овог удаљеног играча.
+lobby_slot_remote_desc             = Притисните тастер за брисање да избаците овог играча са мреже.
 lobby_latency                      = кашњење
 
 menu_about_title      = О игри
@@ -184,7 +184,7 @@ menu_back_desc = Врати се на претходни мени.
 # Errors
 
 error                           = Грешка
-error_too_many_players          = Поставка игре има превише играча: Дозвољњно је највише %d
+error_too_many_players          = Поставка игре има превише играча: Дозвољено је највише %d
 error_input_missing             = Улаз недостаје
 error_preset_index_out_of_range = Индекс поставке је ван опсега
 error_player_index_out_of_range = Индекс играча је ван опсега
