@@ -5,7 +5,6 @@ package core
 import (
 	"context"
 	"fmt"
-	"math/rand/v2"
 	"time"
 
 	"github.com/marko-gacesa/channel"
@@ -72,17 +71,16 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 	var inputs []hostPlayerData
 	fields := make([]hostFieldData, len(setup.Fields))
 
-	r := rand.New(rand.NewPCG(uint64(setup.Config.RandomSeed), 0))
-
 	for i := range setup.Fields {
 		players := setup.Fields[i].Players
 
 		width := setup.Config.WidthPerPlayer * len(players)
 		height := setup.Config.Height
 
-		f := field.Make(width, height, len(players), field.WithRand(r))
+		f := field.Make(width, height, len(players))
 		f.Idx = i
 		f.Config = setup.Config.FieldConfig
+		f.Seed(setup.Config.RandomSeed)
 
 		var sweepers []sweeper.Sweeper
 		sweepers = append(sweepers, sweeper.NewRow(f))

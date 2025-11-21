@@ -4,8 +4,6 @@ package field
 
 import (
 	"fmt"
-	"math/rand/v2"
-
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/gamatet/logic/anim"
@@ -21,9 +19,9 @@ type Field struct {
 	animList anim.List
 	mode     Mode
 	doneCh   chan struct{}
+	seed     int
 	Config
 	stats
-	rand rand.Rand
 }
 
 const MaxPieces = 4
@@ -82,7 +80,7 @@ const (
 	MaxHeight = 40
 )
 
-func Make(dimW, dimH, pieceCount int, options ...func(f *Field)) (f *Field) {
+func Make(dimW, dimH, pieceCount int) (f *Field) {
 	if dimW < MinWidth {
 		panic("too narrow")
 	} else if dimW > MaxWidth {
@@ -105,15 +103,10 @@ func Make(dimW, dimH, pieceCount int, options ...func(f *Field)) (f *Field) {
 		blocks: make([]elem, dimW*dimH),
 		pieces: make([]*piece.Ctrl, pieceCount),
 		doneCh: make(chan struct{}),
-		rand:   *rand.New(rand.NewPCG(0, 0)),
 	}
 
 	for i := range pieceCount {
 		f.pieces[i] = piece.NewCtrl(i)
-	}
-
-	for _, option := range options {
-		option(f)
 	}
 
 	f.UpdateBlocksRemoved(0)
@@ -121,10 +114,8 @@ func Make(dimW, dimH, pieceCount int, options ...func(f *Field)) (f *Field) {
 	return
 }
 
-func WithRand(r *rand.Rand) func(f *Field) {
-	return func(f *Field) {
-		f.rand = *r
-	}
+func (f *Field) Seed(seed int) {
+	f.seed = seed
 }
 
 func (f *Field) Ctrls() int {
