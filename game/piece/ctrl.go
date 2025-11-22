@@ -108,8 +108,9 @@ type Ctrl struct {
 	PieceCountStr string
 
 	// Level is the speed at the player plays
-	Level    int
-	LevelStr string
+	Level      int
+	LevelStr   string
+	LevelBoost bool
 
 	// Config contains piece related configuration
 	Config
@@ -161,7 +162,7 @@ func (c *Ctrl) RestartTimer(param int) {
 	case StateNew:
 		dur = DurationNewPiece
 	case StateDescend:
-		dur = getDescendDuration(c.Level)
+		dur = getDescendDuration(c.ApparentLevel())
 	case StateFall:
 		if param > 0 {
 			dur = GetFallDuration(param)
@@ -198,6 +199,27 @@ func (c *Ctrl) StopTimer() {
 		case <-c.Timer.C:
 		}
 	}
+}
+
+func (c *Ctrl) ApparentLevel() int {
+	level := c.Level
+	if c.LevelBoost && level < MaxLevel {
+		switch level {
+		case 0, 1:
+			level += 6
+		case 2, 3:
+			level += 5
+		case 4, 5:
+			level += 4
+		case 6, 7:
+			level += 3
+		case 8, 9:
+			level += 2
+		default:
+			level += 1
+		}
+	}
+	return level
 }
 
 type Config struct {

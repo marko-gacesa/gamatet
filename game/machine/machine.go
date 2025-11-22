@@ -157,6 +157,11 @@ func HandleActionInput(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, a actio
 		p.Push(op.NewPieceFall(ctrl.Idx, height))
 
 		_changeStateWithParam(ctrl, p, piece.StateFall, height)
+
+	case action.SpeedUp:
+		p.Push(op.NewPieceLevelBoost(ctrl.Idx, true))
+	case action.SpeedDown:
+		p.Push(op.NewPieceLevelBoost(ctrl.Idx, false))
 	}
 }
 

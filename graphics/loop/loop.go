@@ -98,13 +98,21 @@ func Loop(globalCtx context.Context, app *app.App) error {
 		cancelLoopCtxFn()
 	})
 
-	window.SetKeyCallback(func(w *glfw.Window, key glfw.Key, scancode int, act glfw.Action, mods glfw.ModifierKey) {
-		if act != glfw.Press {
+	window.SetKeyCallback(func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+		act := screen.KeyActionNothing
+		switch action {
+		case glfw.Press:
+			act = screen.KeyActionPress
+		case glfw.Release:
+			act = screen.KeyActionRelease
+		case glfw.Repeat:
+			act = screen.KeyActionRepeat
+		default:
 			return
 		}
 
 		if scr != nil {
-			scr.InputKeyPress(int(key), scancode)
+			scr.InputKeyPress(int(key), scancode, act)
 		}
 	})
 

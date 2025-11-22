@@ -16,7 +16,7 @@ type Screen interface {
 	Release()
 
 	// InputKeyPress handles keyboard key press event
-	InputKeyPress(key, scancode int)
+	InputKeyPress(key, scancode int, act KeyAction)
 
 	// InputChar handles keyboard input.
 	InputChar(char rune)
@@ -31,3 +31,12 @@ type Screen interface {
 type Screener interface {
 	Screen(ctx Context, data any) Screen
 }
+
+type KeyAction byte
+
+const (
+	KeyActionNothing KeyAction = iota
+	KeyActionRelease
+	KeyActionPress
+	KeyActionRepeat
+)

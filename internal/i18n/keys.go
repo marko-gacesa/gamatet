@@ -167,6 +167,8 @@ const (
 	KeyConfigPlayerKeyActivateDesc       = "config_player_key_activate_desc"
 	KeyConfigPlayerKeyDrop               = "config_player_key_drop"
 	KeyConfigPlayerKeyDropDesc           = "config_player_key_drop_desc"
+	KeyConfigPlayerKeyBoost              = "config_player_key_boost"
+	KeyConfigPlayerKeyBoostDesc          = "config_player_key_boost_desc"
 	KeyConfigPlayerRotationDirection     = "config_player_rotation_direction"
 	KeyConfigPlayerRotationDirectionDesc = "config_player_rotation_direction_desc"
 	KeyConfigVideoTitle                  = "config_video_title"

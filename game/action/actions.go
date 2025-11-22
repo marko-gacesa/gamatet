@@ -14,6 +14,7 @@ const (
 	Pause Action = 11
 
 	SpeedUp   Action = 20
+	SpeedDown Action = 21
 	MoveLeft  Action = 30
 	MoveRight Action = 31
 	MoveDown  Action = 33
@@ -31,6 +32,8 @@ func (a Action) String() string {
 		return "Pause"
 	case SpeedUp:
 		return "SpeedUp"
+	case SpeedDown:
+		return "SpeedDown"
 	case MoveLeft:
 		return "MoveLeft"
 	case MoveRight:

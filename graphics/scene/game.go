@@ -169,28 +169,39 @@ func (ft *Game) Release() {
 	close(ft.actionCh)
 }
 
-func (ft *Game) InputKeyPress(key, scancode int) {
-	ft.BlockBase.InputKeyPress(key, scancode)
+func (ft *Game) InputKeyPress(key, scancode int, act screen.KeyAction) {
+	ft.BlockBase.InputKeyPress(key, scancode, act)
 
 	k := glfw.Key(key)
 
-	switch k {
-	case glfw.KeyEscape:
-		ft.actionCh <- action.Abort
-	case glfw.KeyPause:
-		ft.actionCh <- action.Pause
-	}
-
-	for i := range setup.MaxLocalPlayers {
+	if act == screen.KeyActionPress {
 		switch k {
-		case KeyMap[ft.inputs[i].Left]:
-			base.SendAction(action.MoveLeft, ft.waitDoneCh, ft.playersInCh[i])
-		case KeyMap[ft.inputs[i].Right]:
-			base.SendAction(action.MoveRight, ft.waitDoneCh, ft.playersInCh[i])
-		case KeyMap[ft.inputs[i].Activate]:
-			base.SendAction(action.Activate, ft.waitDoneCh, ft.playersInCh[i])
-		case KeyMap[ft.inputs[i].Drop]:
-			base.SendAction(action.Drop, ft.waitDoneCh, ft.playersInCh[i])
+		case glfw.KeyEscape:
+			ft.actionCh <- action.Abort
+		case glfw.KeyPause:
+			ft.actionCh <- action.Pause
+		}
+
+		for i := range setup.MaxLocalPlayers {
+			switch k {
+			case KeyMap[ft.inputs[i].Left]:
+				base.SendAction(action.MoveLeft, ft.waitDoneCh, ft.playersInCh[i])
+			case KeyMap[ft.inputs[i].Right]:
+				base.SendAction(action.MoveRight, ft.waitDoneCh, ft.playersInCh[i])
+			case KeyMap[ft.inputs[i].Activate]:
+				base.SendAction(action.Activate, ft.waitDoneCh, ft.playersInCh[i])
+			case KeyMap[ft.inputs[i].Boost]:
+				base.SendAction(action.SpeedUp, ft.waitDoneCh, ft.playersInCh[i])
+			case KeyMap[ft.inputs[i].Drop]:
+				base.SendAction(action.Drop, ft.waitDoneCh, ft.playersInCh[i])
+			}
+		}
+	} else if act == screen.KeyActionRelease {
+		for i := range setup.MaxLocalPlayers {
+			switch k {
+			case KeyMap[ft.inputs[i].Boost]:
+				base.SendAction(action.SpeedDown, ft.waitDoneCh, ft.playersInCh[i])
+			}
 		}
 	}
 }

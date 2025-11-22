@@ -14,11 +14,12 @@ type Input struct {
 	Left     Key `json:"left"`
 	Right    Key `json:"right"`
 	Activate Key `json:"activate"`
+	Boost    Key `json:"boost"`
 	Drop     Key `json:"drop"`
 }
 
 func (in *Input) Sanitize(idx int) {
-	keys := [4]Key{in.Left, in.Right, in.Activate, in.Drop}
+	keys := [5]Key{in.Left, in.Right, in.Activate, in.Boost, in.Drop}
 	slices.Sort(keys[:])
 	uq := slices.Compact(keys[:])
 	if len(uq) != len(keys) {
@@ -27,22 +28,20 @@ func (in *Input) Sanitize(idx int) {
 }
 
 func (in *Input) String() string {
-	return fmt.Sprintf("%s=%s %s=%s %s=%s %s=%s",
+	return fmt.Sprintf("%s=%s %s=%s %s=%s %s=%s %s=%s",
 		i18n.T(i18n.KeyConfigPlayerKeyLeft), Map[in.Left],
 		i18n.T(i18n.KeyConfigPlayerKeyRight), Map[in.Right],
 		i18n.T(i18n.KeyConfigPlayerKeyActivate), Map[in.Activate],
+		i18n.T(i18n.KeyConfigPlayerKeyBoost), Map[in.Boost],
 		i18n.T(i18n.KeyConfigPlayerKeyDrop), Map[in.Drop],
 	)
 }
 
 var (
-	InputWASD        = Input{Left: A, Right: D, Activate: W, Drop: S}
-	InputWASDSpace   = Input{Left: A, Right: D, Activate: W, Drop: Space}
-	InputHJKL        = Input{Left: H, Right: L, Activate: K, Drop: J}
-	InputArrows      = Input{Left: Left, Right: Right, Activate: Up, Drop: Down}
-	InputArrowsSpace = Input{Left: Left, Right: Right, Activate: Up, Drop: Space}
-	InputNumPad      = Input{Left: KP4, Right: KP6, Activate: KP8, Drop: KP5}
-	InputNumPad0     = Input{Left: KP4, Right: KP6, Activate: KP8, Drop: KP0}
+	InputWASD   = Input{Left: A, Right: D, Activate: W, Boost: S, Drop: Tab}
+	InputHJKL   = Input{Left: H, Right: L, Activate: K, Boost: J, Drop: Space}
+	InputArrows = Input{Left: Left, Right: Right, Activate: Up, Boost: Down, Drop: Space}
+	InputNumPad = Input{Left: KP4, Right: KP6, Activate: KP8, Boost: KP2, Drop: KP0}
 
 	DefaultInput = []Input{InputArrows, InputWASD, InputHJKL, InputNumPad}
 )

@@ -6,6 +6,8 @@ package base
 import (
 	"time"
 
+	"github.com/marko-gacesa/gamatet/logic/screen"
+
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 
@@ -80,8 +82,8 @@ type BlockBase struct {
 	viewH    int
 }
 
-func (b *BlockBase) InputKeyPress(key, scancode int) {
-	if glfw.Key(key) == glfw.KeyF12 {
+func (b *BlockBase) InputKeyPress(key, scancode int, act screen.KeyAction) {
+	if glfw.Key(key) == glfw.KeyF12 && act == screen.KeyActionPress {
 		b.usePerspective = !b.usePerspective
 		b.SetCamera()
 	}

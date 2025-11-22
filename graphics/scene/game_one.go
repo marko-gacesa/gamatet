@@ -95,24 +95,34 @@ func (ft *GameOne) Release() {
 	close(ft.actionCh)
 }
 
-func (ft *GameOne) InputKeyPress(key, scancode int) {
-	ft.BlockBase.InputKeyPress(key, scancode)
+func (ft *GameOne) InputKeyPress(key, scancode int, act screen.KeyAction) {
+	ft.BlockBase.InputKeyPress(key, scancode, act)
 
-	switch glfw.Key(key) {
-	case glfw.KeyEscape:
-		ft.actionCh <- action.Abort
-	case glfw.KeyPause:
-		ft.actionCh <- action.Pause
+	if act == screen.KeyActionPress {
+		switch glfw.Key(key) {
+		case glfw.KeyEscape:
+			ft.actionCh <- action.Abort
+		case glfw.KeyPause:
+			ft.actionCh <- action.Pause
 
-	case KeyMap[ft.input.Left]:
-		base.SendAction(action.MoveLeft, ft.waitDoneCh, ft.playerInCh)
-	case KeyMap[ft.input.Right]:
-		base.SendAction(action.MoveRight, ft.waitDoneCh, ft.playerInCh)
-	case KeyMap[ft.input.Activate]:
-		base.SendAction(action.Activate, ft.waitDoneCh, ft.playerInCh)
-	case KeyMap[ft.input.Drop]:
-		base.SendAction(action.Drop, ft.waitDoneCh, ft.playerInCh)
+		case KeyMap[ft.input.Left]:
+			base.SendAction(action.MoveLeft, ft.waitDoneCh, ft.playerInCh)
+		case KeyMap[ft.input.Right]:
+			base.SendAction(action.MoveRight, ft.waitDoneCh, ft.playerInCh)
+		case KeyMap[ft.input.Activate]:
+			base.SendAction(action.Activate, ft.waitDoneCh, ft.playerInCh)
+		case KeyMap[ft.input.Boost]:
+			base.SendAction(action.SpeedUp, ft.waitDoneCh, ft.playerInCh)
+		case KeyMap[ft.input.Drop]:
+			base.SendAction(action.Drop, ft.waitDoneCh, ft.playerInCh)
+		}
+	} else if act == screen.KeyActionRelease {
+		switch glfw.Key(key) {
+		case KeyMap[ft.input.Boost]:
+			base.SendAction(action.SpeedDown, ft.waitDoneCh, ft.playerInCh)
+		}
 	}
+
 }
 
 func (ft *GameOne) Prepare(now time.Time) {

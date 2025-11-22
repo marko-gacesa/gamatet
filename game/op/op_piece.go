@@ -444,3 +444,57 @@ func (e *PieceFall) Read(r io.Reader) error {
 }
 
 func (e *PieceFall) TypeID() event.Code { return codePieceFall }
+
+func NewPieceLevelBoost(pIdx int, boost bool) *PieceLevelBoost {
+	return &PieceLevelBoost{
+		PieceIdx: byte(pIdx),
+		Boost:    boost,
+	}
+}
+
+type PieceLevelBoost struct {
+	PieceIdx byte
+	Boost    bool
+}
+
+var _ event.Event = (*PieceLevelBoost)(nil)
+
+func (e *PieceLevelBoost) Do(f *field.Field) {
+	ctrl := f.Ctrl(e.PieceIdx)
+	ctrl.LevelBoost = e.Boost
+}
+
+func (e *PieceLevelBoost) Undo(f *field.Field) {
+	ctrl := f.Ctrl(e.PieceIdx)
+	ctrl.LevelBoost = e.Boost
+}
+
+func (e *PieceLevelBoost) Equals(ev event.Event) bool {
+	q, ok := ev.(*PieceLevelBoost)
+	return ok && e.PieceIdx == q.PieceIdx && e.Boost == q.Boost
+}
+
+func (e *PieceLevelBoost) Write(w io.Writer) error {
+	var b byte
+	if e.Boost {
+		b++
+	}
+	if _, err := w.Write([]byte{e.PieceIdx, b}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *PieceLevelBoost) Read(r io.Reader) error {
+	var buffer [2]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.PieceIdx = buffer[0]
+	e.Boost = buffer[1] != 0
+
+	return nil
+}
+
+func (e *PieceLevelBoost) TypeID() event.Code { return codePieceLevelBoost }
