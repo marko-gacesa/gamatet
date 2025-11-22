@@ -119,6 +119,12 @@ func Loop(globalCtx context.Context, app *app.App) error {
 		func(ctx context.Context) {
 			var done <-chan struct{}
 
+			var memstats runtime.MemStats
+			runtime.ReadMemStats(&memstats)
+			log.Debug("Screen create",
+				"memory", memstats.HeapAlloc,
+				"goroutines", runtime.NumGoroutine())
+
 			// create the screen
 			scr, done = app.MakeScreen(ctx)
 			if scr == nil { // no screen means exit the app
@@ -127,20 +133,12 @@ func Loop(globalCtx context.Context, app *app.App) error {
 			}
 
 			defer func() {
-				memstats1 := &runtime.MemStats{}
-				runtime.ReadMemStats(memstats1)
-
 				scr.Release()
 				runtime.GC()
 
-				memstats2 := &runtime.MemStats{}
-				runtime.ReadMemStats(memstats2)
-
-				log.Info("Screen done",
-					"memory.before.inuse", memstats1.HeapInuse,
-					"memory.before.alloc", memstats1.HeapAlloc,
-					"memory.after.inuse", memstats2.HeapInuse,
-					"memory.after.alloc", memstats2.HeapAlloc,
+				runtime.ReadMemStats(&memstats)
+				log.Debug("Screen done",
+					"memory", memstats.HeapAlloc,
 					"goroutines", runtime.NumGoroutine())
 			}()
 
