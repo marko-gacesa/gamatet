@@ -10,23 +10,23 @@ import (
 	"github.com/marko-gacesa/gamatet/game/op"
 )
 
-var _ Sweeper = (*Punisher)(nil)
+var _ Sweeper = (*Blizzard)(nil)
 
-func NewPunisher(f *field.Field, others []FieldPusher) *Punisher {
+func NewBlizzard(f *field.Field, others []FieldPusher) *Blizzard {
 	b := newBase(f)
-	return &Punisher{
+	return &Blizzard{
 		base:   *b,
 		others: others,
 	}
 }
 
-type Punisher struct {
+type Blizzard struct {
 	base
 	others    []FieldPusher
 	intensity int
 }
 
-func (s *Punisher) Start(analyzer *Analyzer) bool {
+func (s *Blizzard) Start(analyzer *Analyzer) bool {
 	w := s.field.GetWidth()
 
 	intensity := blockCount((analyzer.stats.removed + w>>1) / w)
@@ -39,7 +39,7 @@ func (s *Punisher) Start(analyzer *Analyzer) bool {
 	return s.base.Start(analyzer)
 }
 
-func (s *Punisher) Sweep(event.Pusher) {
+func (s *Blizzard) Sweep(event.Pusher) {
 	for i := range s.others {
 		f := s.others[i].Field
 		if f.IsFinished() {

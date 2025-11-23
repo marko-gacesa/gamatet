@@ -137,7 +137,7 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 
 	if len(fields) > 1 {
 		for i := range fields {
-			s := sweeper.NewPunisher(fields[i].Field, getFieldPushers(fields, i))
+			s := sweeper.NewBlizzard(fields[i].Field, getFieldPushers(fields, i))
 			fields[i].Sweepers = append(fields[i].Sweepers, s)
 		}
 	}
