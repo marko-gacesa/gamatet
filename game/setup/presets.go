@@ -4,7 +4,7 @@
 package setup
 
 const (
-	SinglePlayerPresetCount = 5
+	SinglePlayerPresetCount = 3
 	MultiPlayerPresetCount  = 2
 )
 
@@ -16,17 +16,13 @@ func SinglePlayerPreset(idx int) Setup {
 		return SinglePlayerPresetRotPentominoes()
 	case 2:
 		return SinglePlayerPresetRotMiniminoes()
-	case 3:
-		return SinglePlayerPresetVMTetrominoes()
-	case 4:
-		return SinglePlayerPresetHMTetrominoes()
 	}
 	panic("unreachable")
 }
 
 func SinglePlayerPresetRotTetrominoes() Setup {
 	return Setup{
-		Name: "Rotating Tetrominoes (Classic)",
+		Name: "Classic",
 		GameOptions: GameOptions{
 			GameType:         GameTypeFallingPolyominoes,
 			FieldCount:       1,
@@ -52,7 +48,7 @@ func SinglePlayerPresetRotTetrominoes() Setup {
 
 func SinglePlayerPresetRotPentominoes() Setup {
 	return Setup{
-		Name: "Rotating Pentominoes",
+		Name: "Pentix",
 		GameOptions: GameOptions{
 			GameType:         GameTypeFallingPolyominoes,
 			FieldCount:       1,
@@ -78,7 +74,7 @@ func SinglePlayerPresetRotPentominoes() Setup {
 
 func SinglePlayerPresetRotMiniminoes() Setup {
 	return Setup{
-		Name: "Rotating Miniminoes",
+		Name: "Speedway",
 		GameOptions: GameOptions{
 			GameType:         GameTypeFallingPolyominoes,
 			FieldCount:       1,
@@ -90,64 +86,12 @@ func SinglePlayerPresetRotMiniminoes() Setup {
 		FieldOptions: FieldOptions{
 			WidthSingle:    DefaultFieldWidth - 4,
 			WidthPerPlayer: DefaultFieldWidth,
-			Height:         DefaultFieldHeight,
-			Speed:          9,
+			Height:         DefaultFieldHeight + 5,
+			Speed:          10,
 		},
 		PieceOptions: PieceOptions{
 			PieceType: PieceTypeRotatingPolyominoes,
 			PieceSize: PieceSize3,
-			BagSize:   BagSizeDefault,
-		},
-		MiscOptions: MiscOptions{},
-	}
-}
-
-func SinglePlayerPresetVMTetrominoes() Setup {
-	return Setup{
-		Name: "V-Mirroring Tetrominoes",
-		GameOptions: GameOptions{
-			GameType:         GameTypeFallingPolyominoes,
-			FieldCount:       1,
-			TeamSize:         1,
-			PieceCollision:   false,
-			PlayerZones:      false,
-			SamePiecesForAll: false,
-		},
-		FieldOptions: FieldOptions{
-			WidthSingle:    DefaultFieldWidth,
-			WidthPerPlayer: DefaultFieldWidth,
-			Height:         DefaultFieldHeight,
-			Speed:          DefaultSpeed,
-		},
-		PieceOptions: PieceOptions{
-			PieceType: PieceTypeVMirroringPolyominoes,
-			PieceSize: PieceSize4,
-			BagSize:   BagSizeDefault,
-		},
-		MiscOptions: MiscOptions{},
-	}
-}
-
-func SinglePlayerPresetHMTetrominoes() Setup {
-	return Setup{
-		Name: "H-Mirroring Tetrominoes",
-		GameOptions: GameOptions{
-			GameType:         GameTypeFallingPolyominoes,
-			FieldCount:       1,
-			TeamSize:         1,
-			PieceCollision:   false,
-			PlayerZones:      false,
-			SamePiecesForAll: false,
-		},
-		FieldOptions: FieldOptions{
-			WidthSingle:    DefaultFieldWidth,
-			WidthPerPlayer: DefaultFieldWidth,
-			Height:         DefaultFieldHeight,
-			Speed:          DefaultSpeed,
-		},
-		PieceOptions: PieceOptions{
-			PieceType: PieceTypeHMirroringPolyominoes,
-			PieceSize: PieceSize4,
 			BagSize:   BagSizeDefault,
 		},
 		MiscOptions: MiscOptions{},
