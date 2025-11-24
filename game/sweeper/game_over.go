@@ -139,7 +139,7 @@ func (s *GameOver) findAllDestructible(max int) []block.XYB {
 	result := make([]block.XYB, 0, max)
 
 	s.field.RangeBlocks(func(xyb block.XYB) bool {
-		if !xyb.Block.Type.Destructible() {
+		if t := xyb.Block.Type; t != block.TypeRock && t != block.TypeRuby {
 			return true
 		}
 

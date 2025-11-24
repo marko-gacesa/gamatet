@@ -137,8 +137,11 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 
 	if len(fields) > 1 {
 		for i := range fields {
-			s := sweeper.NewBlizzard(fields[i].Field, getFieldPushers(fields, i))
-			fields[i].Sweepers = append(fields[i].Sweepers, s)
+			others := getFieldPushers(fields, i)
+
+			fields[i].Sweepers = append(fields[i].Sweepers,
+				sweeper.NewBlizzard(fields[i].Field, others),
+				sweeper.NewMagic(fields[i].Field, getFieldPushers(fields, i), setup.Config.RandomSeed, sweeper.MagicTypeAll))
 		}
 	}
 

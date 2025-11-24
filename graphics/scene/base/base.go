@@ -50,7 +50,7 @@ func NewBlockBase(
 	contentW, contentH int,
 	usePerspective bool,
 ) BlockBase {
-	return NewBlockBaseWithZ(renderer, tex, contentW, contentH, 2, usePerspective)
+	return NewBlockBaseWithZ(renderer, tex, contentW, contentH, 3, usePerspective)
 }
 
 func NewBlockBaseWithZ(

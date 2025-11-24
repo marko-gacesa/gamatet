@@ -197,8 +197,8 @@ const (
 	KeyRotationDirCW  = "rotation_dir_cw"
 	KeyRotationDirCCW = "rotation_dir_ccw"
 
-	KeyFieldTitlePanelScore   = "field_title_panel_score"
 	KeyFieldTitlePanelBlocks  = "field_title_panel_blocks"
+	KeyFieldTitlePanelMagic   = "field_title_panel_magic"
 	KeyFieldSidePanelPlayer   = "field_side_panel_player"
 	KeyFieldSidePanelScore    = "field_side_panel_score"
 	KeyFieldSidePanelPiece    = "field_side_panel_piece"

@@ -70,9 +70,14 @@ type elem struct {
 	anim.List
 }
 
+type Effect byte
+
 type stats struct {
 	blocksRemoved    int
 	blocksRemovedStr string
+	effect           Effect
+	effectSeconds    byte
+	effectStr        string
 }
 
 const (
@@ -128,10 +133,6 @@ func (f *Field) Ctrl(idx byte) *piece.Ctrl {
 	return f.pieces[idx]
 }
 
-func (f *Field) IsFinished() bool {
-	return len(f.pieces) == 0 || f.pieces[0].State.IsTerminal()
-}
-
 func (f *Field) GetDone() <-chan struct{} {
 	return f.doneCh
 }
@@ -160,6 +161,10 @@ func (f *Field) SetMode(m Mode) {
 	f.mode = m
 }
 
+func (f *Field) IsFinished() bool {
+	return len(f.pieces) == 0 || f.mode == ModeGameOver || f.mode == ModeVictory || f.mode == ModeDefeat
+}
+
 func (f *Field) Pause() {
 	for _, ctrl := range f.pieces {
 		ctrl.StopTimer()
@@ -183,6 +188,24 @@ func (f *Field) Anim(a anim.Anim) {
 func (f *Field) UpdateBlocksRemoved(delta int) {
 	f.stats.blocksRemoved += delta
 	f.stats.blocksRemovedStr = fmt.Sprintf("%06d", f.blocksRemoved)
+}
+
+func (f *Field) GetBlocksRemoved() int {
+	return f.stats.blocksRemoved
+}
+
+func (f *Field) UpdateEffect(effect Effect, effectSeconds byte) {
+	f.stats.effect = effect
+	f.stats.effectSeconds = effectSeconds
+	if effect == 0 && effectSeconds == 0 {
+		f.stats.effectStr = ""
+		return
+	}
+	f.stats.effectStr = fmt.Sprintf("%d @ %02d", f.effect, f.effectSeconds)
+}
+
+func (f *Field) GetEffect() (Effect, byte) {
+	return f.stats.effect, f.stats.effectSeconds
 }
 
 func (f *Field) setXY(x, y int, b block.Block) *anim.List {

@@ -60,6 +60,7 @@ type PieceTextData struct {
 
 type TextData struct {
 	BlocksRemoved string
+	Magic         string
 	Latencies     string
 }
 
@@ -123,6 +124,7 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 
 	info.TextData = TextData{
 		BlocksRemoved: f.stats.blocksRemovedStr,
+		Magic:         f.stats.effectStr,
 	}
 
 	// process all blocks of the Field

@@ -4,7 +4,7 @@
 package sweeper
 
 import (
-	"fmt"
+	"github.com/marko-gacesa/gamatet/game/piece"
 	"time"
 
 	"github.com/marko-gacesa/gamatet/game/block"
@@ -17,32 +17,54 @@ import (
 var _ Sweeper = (*Magic)(nil)
 
 const (
-	magicDurWait = 2 * time.Second
-	magicDur     = 5 * time.Second
-
-	magicEffectCount = 5
+	magicWaitSeconds   = 5
+	magicActiveSeconds = 15
 )
 
 type magicState byte
 
 const (
-	magicStateWaiting magicState = iota
-	magicStateRunning
+	magicStateRunning magicState = iota
 	magicStateActivated
+	magicStateFinished
 )
 
-func NewMagic(f *field.Field, others []FieldPusher, seed int) *Magic {
+type MagicType byte
+
+const (
+	MagicTypeSelf   MagicType = 1
+	MagicTypeOthers MagicType = 2
+	MagicTypeAll    MagicType = MagicTypeSelf | MagicTypeOthers
+)
+
+const (
+	magicEffectNone field.Effect = iota
+
+	magicEffectLid
+	magicEffectBigO
+
+	magicEffectPatchHoles
+
+	magicEffectTotal
+)
+
+var (
+	magicEffectsSelf   = []field.Effect{magicEffectPatchHoles}
+	magicEffectsOthers = []field.Effect{magicEffectLid, magicEffectBigO}
+)
+
+func NewMagic(f *field.Field, others []FieldPusher, seed int, types MagicType) *Magic {
 	b := newBase(f)
 
 	m := &Magic{
 		base:   *b,
 		others: others,
-		seed:   seed,
-		state:  magicStateWaiting,
+		seed:   uint32(seed),
+		state:  magicStateRunning,
+		types:  types,
 	}
 
 	m.base.Start(nil) // it's always active
-	m.waiting()
 
 	return m
 }
@@ -52,51 +74,97 @@ func NewMagic(f *field.Field, others []FieldPusher, seed int) *Magic {
 type Magic struct {
 	base
 	others []FieldPusher
-	seed   int
+	seed   uint32
 	state  magicState
+	types  MagicType
 
 	count    uint32
 	oldBlock block.Block
-	effect   byte
 }
 
 func (s *Magic) Start(analyzer *Analyzer) bool {
+	if analyzer.endMode != nil && s.state != magicStateFinished {
+		s.state = magicStateFinished
+		s.base.reschedule(time.Nanosecond)
+		return false
+	}
+
 	if analyzer.blocks.goal > 0 {
-		s.activate()
+		s.state = magicStateActivated
+		s.base.reschedule(time.Microsecond)
 	}
 
 	return false
 }
 
 func (s *Magic) Sweep(p event.Pusher) {
-	switch s.state {
-	case magicStateWaiting:
-		s.create(p)
-	case magicStateRunning:
-		s.expired(p)
-	case magicStateActivated:
-		s.activated(p)
-	}
-}
+	effect, seconds := s.field.GetEffect()
 
-func (s *Magic) activate() {
-	s.state = magicStateActivated
-	s.base.reschedule(time.Microsecond)
-}
-
-func (s *Magic) activated(p event.Pusher) {
-	fmt.Println("ACTIVATED", s.effect)
-	switch s.effect {
-	// TODO: Finish implementation of magic activation effects
-	default:
-		for _, o := range s.others {
-			o.Pusher.Push(op.NewFieldExBlock(0, 0, field.AnimDestroy, 0, block.Rock))
+	if s.state == magicStateFinished {
+		if effect != magicEffectNone {
+			s.restoreBlock(p)
 		}
+		p.Push(op.NewFieldEffect(effect, magicEffectNone, 0, 0))
+		s.endIteration()
+		return
 	}
-	s.waiting()
+
+	if s.state == magicStateActivated {
+		s.activated(effect, p)
+		s.state = magicStateRunning
+		p.Push(op.NewFieldEffect(effect, magicEffectNone, seconds, magicWaitSeconds))
+		s.base.reschedule(time.Second)
+		return
+	}
+
+	if seconds > 0 {
+		p.Push(op.NewFieldEffect(effect, effect, seconds, seconds-1))
+		s.base.reschedule(time.Second)
+		return
+	}
+
+	if effect != magicEffectNone {
+		s.restoreBlock(p)
+		p.Push(op.NewFieldEffect(effect, magicEffectNone, 0, magicWaitSeconds))
+		s.base.reschedule(time.Second)
+		return
+	}
+
+	xyb, ok := s.possessBlock()
+	if !ok {
+		p.Push(op.NewFieldEffect(magicEffectNone, magicEffectNone, 0, magicWaitSeconds))
+		s.base.reschedule(time.Second)
+		return
+	}
+
+	s.oldBlock = xyb.Block
+	effect = s.randomEffect()
+	if effect == magicEffectNone {
+		s.state = magicStateFinished
+		s.endIteration()
+		return
+	}
+
+	p.Push(op.NewFieldBlockTransform(xyb.X, xyb.Y, xyb.Block, block.Goal, field.AnimNo, 0))
+	p.Push(op.NewFieldExBlock(xyb.X, xyb.Y, field.AnimDestroy, 0, xyb.Block))
+	p.Push(op.NewFieldEffect(magicEffectNone, effect, 0, magicActiveSeconds))
+
+	s.count++
+	s.base.reschedule(time.Second)
 }
 
-func (s *Magic) expired(p event.Pusher) {
+func (s *Magic) activated(effect field.Effect, p event.Pusher) {
+	switch effect {
+	case magicEffectLid:
+		s.effectLid()
+	case magicEffectBigO:
+		s.effectBigO()
+	case magicEffectPatchHoles:
+		s.effectPatchHoles(p)
+	}
+}
+
+func (s *Magic) restoreBlock(p event.Pusher) {
 	s.field.RangeBlocks(func(xyb block.XYB) bool {
 		if xyb.Block.Type == block.TypeGoal {
 			p.Push(op.NewFieldBlockTransform(xyb.X, xyb.Y, xyb.Block, s.oldBlock, field.AnimNo, 0))
@@ -107,12 +175,10 @@ func (s *Magic) expired(p event.Pusher) {
 		}
 		return true
 	})
-	s.state = magicStateWaiting
-	s.base.reschedule(magicDurWait)
 }
 
-func (s *Magic) create(p event.Pusher) {
-	var buffer [64]block.XYB
+func (s *Magic) possessBlock() (block.XYB, bool) {
+	var buffer [128]block.XYB
 	blocks := buffer[:0]
 	s.field.RangeBlocks(func(xyb block.XYB) bool {
 		if xyb.Block.Type == block.TypeRock && xyb.Block.Hardness == 0 {
@@ -124,27 +190,104 @@ func (s *Magic) create(p event.Pusher) {
 		return true
 	})
 	if len(blocks) == 0 {
-		s.waiting()
-		return
+		return block.XYB{}, false
 	}
 
-	randomIndex := random.New(s.count, uint32(s.seed))
-
+	randomIndex := random.New(s.count, s.seed)
 	xyb := blocks[randomIndex.Int(len(blocks))]
 
-	s.oldBlock = xyb.Block
-	p.Push(op.NewFieldBlockTransform(xyb.X, xyb.Y, xyb.Block, block.Goal, field.AnimNo, 0))
-	p.Push(op.NewFieldExBlock(xyb.X, xyb.Y, field.AnimDestroy, 0, xyb.Block))
-
-	randomEffect := random.New(s.count, uint32(s.seed))
-	s.effect = byte(randomEffect.Int(magicEffectCount))
-
-	s.count++
-	s.state = magicStateRunning
-	s.base.reschedule(magicDur)
+	return xyb, true
 }
 
-func (s *Magic) waiting() {
-	s.state = magicStateWaiting
-	s.base.reschedule(magicDurWait)
+func (s *Magic) randomEffect() field.Effect {
+	var effectsBuffer [magicEffectTotal]field.Effect
+	effects := effectsBuffer[:0]
+	if s.types&MagicTypeSelf > 0 {
+		effects = append(effects, magicEffectsSelf...)
+	}
+	if s.types&MagicTypeOthers > 0 {
+		effects = append(effects, magicEffectsOthers...)
+	}
+	if len(effects) == 0 {
+		return magicEffectNone
+	}
+
+	r := random.New(s.count, s.seed)
+	return effects[r.Int(len(effects))]
+}
+
+func (s *Magic) effectLid() {
+	for idx, o := range s.others {
+		f := o.Field
+		if f.IsFinished() {
+			continue
+		}
+
+		r := random.New(s.count*10+uint32(idx), s.seed)
+
+		w := f.GetWidth()
+		h := f.GetHeight()
+
+		var topRow int
+		for col := range w {
+			topRow = max(f.GetTopmostEmpty(col), topRow)
+		}
+
+		for j := range 2 {
+			skipCol := r.Int(w)
+			if topRow+j >= h {
+				break
+			}
+			for col := range w {
+				if col != skipCol {
+					o.Pusher.Push(op.NewFieldBlockSet(col, topRow+j, op.TypeSet, field.AnimPop, 0, block.Rock))
+				}
+			}
+		}
+	}
+}
+
+func (s *Magic) effectBigO() {
+	for _, o := range s.others {
+		f := o.Field
+		if f.IsFinished() {
+			continue
+		}
+
+		ctrls := byte(f.Ctrls())
+		for ctrlIdx := range ctrls {
+			ctrl := f.Ctrl(ctrlIdx)
+			for pieceCount := ctrl.PieceCount; ; pieceCount++ {
+				if !ctrl.Feed.Overridden(pieceCount) {
+					o.Pusher.Push(op.NewPieceOverride(ctrlIdx, piece.NewO(block.Rock), pieceCount))
+					break
+				}
+			}
+		}
+	}
+}
+
+func (s *Magic) effectPatchHoles(p event.Pusher) {
+	var holesBuffer [64]block.XY
+	holes := holesBuffer[:0]
+
+	w := s.field.GetWidth()
+
+	for col := range w {
+		top := s.field.GetTopmostEmpty(col) - 2
+		for row := 0; row <= top; row++ {
+			if s.field.GetXY(col, row).Type == block.TypeEmpty {
+				holes = append(holes, block.XY{X: col, Y: row})
+			}
+		}
+	}
+
+	r := random.New(s.count, s.seed)
+	random.Shuffle(r, holes)
+
+	const patches = 10
+
+	for i := range min(patches, len(holes)) {
+		p.Push(op.NewFieldBlockSet(holes[i].X, holes[i].Y, op.TypeSet, field.AnimPop, 0, block.Rock))
+	}
 }

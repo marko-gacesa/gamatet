@@ -153,6 +153,7 @@ type CtrlFeed struct {
 	fIdx     int
 	ctrlIdx  int
 	same     bool
+	override map[int]Piece
 }
 
 func NewCtrlFeed(internal Feed, fIdx, ctrlIdx int, same bool) *CtrlFeed {
@@ -161,12 +162,32 @@ func NewCtrlFeed(internal Feed, fIdx, ctrlIdx int, same bool) *CtrlFeed {
 		fIdx:     fIdx,
 		ctrlIdx:  ctrlIdx,
 		same:     same,
+		override: map[int]Piece{},
 	}
 }
 
 func (f *CtrlFeed) Get(idx, playerIndex int) Piece {
+	if override, ok := f.override[idx]; ok {
+		return override
+	}
 	if f.same {
 		return f.internal.Get(idx, playerIndex)
 	}
 	return f.internal.Get(idx+f.fIdx*137+f.ctrlIdx*5, playerIndex)
+}
+
+func (f *CtrlFeed) Overridden(idx int) bool {
+	_, ok := f.override[idx]
+	return ok
+}
+
+func (f *CtrlFeed) Override(idx int, piece Piece) {
+	if _, ok := f.override[idx]; ok {
+		return
+	}
+	f.override[idx] = piece
+}
+
+func (f *CtrlFeed) OverrideClear(idx int) {
+	delete(f.override, idx)
 }

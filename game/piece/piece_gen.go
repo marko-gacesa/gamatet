@@ -50,3 +50,10 @@ func NewPentominos(id int, b block.Block) Piece {
 		block:       b,
 	}
 }
+
+func NewO(b block.Block) Piece {
+	return &polyominoDumb{
+		shapeRect: shapeO,
+		block:     b,
+	}
+}

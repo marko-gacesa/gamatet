@@ -31,3 +31,10 @@ func (r *Random) Perm(m []int) {
 		m[j] = i
 	}
 }
+
+func Shuffle[T any](r *Random, a []T) {
+	for i := len(a) - 1; i > 0; i-- {
+		j := r.Int(i + 1)
+		a[i], a[j] = a[j], a[i]
+	}
+}

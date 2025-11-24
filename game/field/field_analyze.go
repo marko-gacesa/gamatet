@@ -29,7 +29,7 @@ func (f *Field) RangeBlocks(inspect func(xyb block.XYB) bool) {
 	}
 }
 
-func (f *Field) FindTops() []block.XY {
+func (f *Field) FindBlizzardTops() []block.XY {
 	tops := make([]block.XY, 0, f.w)
 
 	for x := range f.w {

@@ -135,7 +135,7 @@ func HandleActionInput(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, a actio
 		}
 
 		switch ctrl.Piece.Type() {
-		case piece.TypeFlipV, piece.TypeFlipH, piece.TypeRotation:
+		case piece.TypeDumb, piece.TypeFlipV, piece.TypeFlipH, piece.TypeRotation:
 			if t := ctrl.Blocks[0].Type; t.NoSlide() {
 				_meldPiece(f, ctrl, p)
 				_clearPiece(ctrl, p)
@@ -249,7 +249,7 @@ func _clearPiece(ctrl *piece.Ctrl, p event.Pusher) {
 
 func _meldPiece(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 	switch ctrl.Piece.Type() {
-	case piece.TypeFlipV, piece.TypeFlipH, piece.TypeRotation:
+	case piece.TypeDumb, piece.TypeFlipV, piece.TypeFlipH, piece.TypeRotation:
 		switch ctrl.Blocks[0].Type {
 		case block.TypeLava, block.TypeAcid, block.TypeBomb, block.TypeCurl, block.TypeWave:
 			_meldLiquidPiece(f, ctrl, p)

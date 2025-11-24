@@ -67,7 +67,7 @@ func TestField_RangeBlocks(t *testing.T) {
 	}
 }
 
-func TestField_FindTops(t *testing.T) {
+func TestField_FindBlizzardTops(t *testing.T) {
 	b := block.Block{Type: block.TypeRock}
 
 	fillToH := func(f *Field, col, h int) {
@@ -120,7 +120,7 @@ func TestField_FindTops(t *testing.T) {
 			}
 
 			want := test.want
-			got := f.FindTops()
+			got := f.FindBlizzardTops()
 
 			if !cmp.Equal(got, want) {
 				t.Errorf("failed:\n%s\n", cmp.Diff(got, want))

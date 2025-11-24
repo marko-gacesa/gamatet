@@ -267,11 +267,11 @@ var KeyMapReverse = map[glfw.Key]key.Key{
 func fieldStrings() render.FieldStrings {
 	return render.FieldStrings{
 		TitlePanel: struct {
-			Score  string
 			Blocks string
+			Magic  string
 		}{
-			Score:  T(KeyFieldTitlePanelScore),
 			Blocks: T(KeyFieldTitlePanelBlocks),
+			Magic:  T(KeyFieldTitlePanelMagic),
 		},
 		SidePanel: struct {
 			Player string

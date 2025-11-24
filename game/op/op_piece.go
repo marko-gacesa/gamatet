@@ -498,3 +498,82 @@ func (e *PieceLevelBoost) Read(r io.Reader) error {
 }
 
 func (e *PieceLevelBoost) TypeID() event.Code { return codePieceLevelBoost }
+
+func NewPieceOverride(pIdx byte, p piece.Piece, pCount int) *PieceOverride {
+	return &PieceOverride{
+		PieceIdx:   pIdx,
+		Piece:      p,
+		PieceCount: pCount,
+	}
+}
+
+type PieceOverride struct {
+	PieceIdx   byte
+	Piece      piece.Piece
+	PieceCount int
+}
+
+var _ event.Event = (*PieceOverride)(nil)
+
+func (e *PieceOverride) Do(f *field.Field) {
+	ctrl := f.Ctrl(e.PieceIdx)
+	ctrl.Feed.Override(e.PieceCount, e.Piece)
+	for i := range piece.NextBlockCount {
+		np := ctrl.Feed.Get(ctrl.PieceCount+i, ctrl.PlayerIndex)
+		ctrl.NextPieces[i].Type = np.Type()
+		ctrl.NextPieces[i].Blocks = piece.GetBlocks(np, ctrl.NextPieces[i].Blocks[:0])
+	}
+}
+
+func (e *PieceOverride) Undo(f *field.Field) {
+	ctrl := f.Ctrl(e.PieceIdx)
+	ctrl.Feed.OverrideClear(e.PieceCount)
+	for i := range piece.NextBlockCount {
+		np := ctrl.Feed.Get(ctrl.PieceCount+i, ctrl.PlayerIndex)
+		ctrl.NextPieces[i].Type = np.Type()
+		ctrl.NextPieces[i].Blocks = piece.GetBlocks(np, ctrl.NextPieces[i].Blocks[:0])
+	}
+}
+
+func (e *PieceOverride) Equals(ev event.Event) bool {
+	q, ok := ev.(*PieceOverride)
+	return ok && e.PieceIdx == q.PieceIdx &&
+		e.Piece.Equals(q.Piece) && e.PieceCount != q.PieceCount
+}
+
+func (e *PieceOverride) Write(w io.Writer) error {
+	if _, err := w.Write([]byte{e.PieceIdx}); err != nil {
+		return err
+	}
+	if err := piece.Write(w, e.Piece); err != nil {
+		return err
+	}
+	if err := serialize.Write32(w, uint32(e.PieceCount)); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *PieceOverride) Read(r io.Reader) error {
+	var buffer [1]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.PieceIdx = buffer[0]
+
+	var err error
+	e.Piece, err = piece.Read(r)
+	if err != nil {
+		return err
+	}
+
+	e.PieceCount, err = serialize.ReadInt(r)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *PieceOverride) TypeID() event.Code { return codePieceOverride }

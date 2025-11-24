@@ -22,7 +22,7 @@ func updatePieceShadow(f *field.Field, ctrl *piece.Ctrl) {
 	ctrl.Shadow.Blocks = ctrl.Shadow.Blocks[:0]
 
 	switch p.Type() {
-	case piece.TypeFlipV, piece.TypeFlipH, piece.TypeRotation:
+	case piece.TypeDumb, piece.TypeFlipV, piece.TypeFlipH, piece.TypeRotation:
 		switch ctrl.Blocks[0].Type {
 		case block.TypeLava, block.TypeAcid, block.TypeBomb:
 			setLiquidPieceShadow(f, ctrl)

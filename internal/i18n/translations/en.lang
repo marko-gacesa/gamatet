@@ -203,8 +203,8 @@ rotation_dir_ccw = Counterclockwise
 
 # Field strings
 
-field_title_panel_score   = Score:
 field_title_panel_blocks  = Blocks:
+field_title_panel_magic   = Magic:
 field_side_panel_player   = PLAYER
 field_side_panel_score    = SCORE
 field_side_panel_piece    = PIECE

@@ -591,6 +591,72 @@ func (e *FieldStat) TypeID() event.Code {
 	return codeFieldStat
 }
 
+func NewFieldEffect(effectOld, effectNew field.Effect, secondsOld, secondsNew byte) *FieldEffect {
+	return &FieldEffect{
+		EffectOld:  effectOld,
+		EffectNew:  effectNew,
+		SecondsOld: secondsOld,
+		SecondsNew: secondsNew,
+	}
+}
+
+type FieldEffect struct {
+	EffectOld  field.Effect
+	EffectNew  field.Effect
+	SecondsOld byte
+	SecondsNew byte
+}
+
+var _ event.Event = (*FieldEffect)(nil)
+
+func (e *FieldEffect) Do(f *field.Field) {
+	f.UpdateEffect(e.EffectNew, e.SecondsNew)
+}
+
+func (e *FieldEffect) Undo(f *field.Field) {
+	f.UpdateEffect(e.EffectOld, e.SecondsOld)
+}
+
+func (e *FieldEffect) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldEffect)
+	return ok &&
+		e.EffectOld == q.EffectOld && e.EffectNew == q.EffectNew &&
+		e.SecondsOld == q.SecondsOld && e.SecondsNew == q.SecondsNew
+}
+
+func (e *FieldEffect) Read(r io.Reader) error {
+	var buffer [4]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.EffectOld = field.Effect(buffer[0])
+	e.EffectNew = field.Effect(buffer[1])
+	e.SecondsOld = buffer[2]
+	e.SecondsNew = buffer[3]
+
+	return nil
+}
+
+func (e *FieldEffect) Write(w io.Writer) error {
+	var buffer [4]byte
+
+	buffer[0] = byte(e.EffectOld)
+	buffer[1] = byte(e.EffectNew)
+	buffer[2] = e.SecondsOld
+	buffer[3] = e.SecondsNew
+
+	if _, err := w.Write(buffer[:]); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *FieldEffect) TypeID() event.Code {
+	return codeFieldEffect
+}
+
 func NewFieldQuake(intensity byte) *FieldQuake {
 	return &FieldQuake{
 		Intensity: intensity,

@@ -203,8 +203,8 @@ rotation_dir_ccw = Супротно од смера казаљке на сату
 
 # Field strings
 
-field_title_panel_score   = Поени:
 field_title_panel_blocks  = Блокови:
+field_title_panel_magic   = Магија:
 field_side_panel_player   = ИГРАЧ
 field_side_panel_score    = ПОЕНИ
 field_side_panel_piece    = ФИГУРА

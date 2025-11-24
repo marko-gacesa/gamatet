@@ -75,8 +75,8 @@ func GetExtendedContent(w, h int, infoPos [field.MaxPieces]DisplayPosition) (int
 
 type FieldStrings struct {
 	TitlePanel struct {
-		Score  string
 		Blocks string
+		Magic  string
 	}
 	SidePanel struct {
 		Player string
@@ -272,30 +272,33 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		f.listWall.Add(modelFrame.Mul4(mgl32.Translate3D(float32(x), float32(contentHeight-1), 0)))
 	}
 
-	modelTitleLeft := modelField.Mul4(mgl32.Translate3D(-0.5, float32(contentHeight-2), 0.5))
-	modelTitleRight := modelTitleLeft.Mul4(mgl32.Translate3D(float32(f.w), 0, 0))
+	if renderInfo.TextData.BlocksRemoved != "" {
+		modelTitleTopRight := modelField.Mul4(mgl32.Translate3D(float32(f.w)-0.5, float32(contentHeight-2), 0.5))
+		d := f.printTextRight(
+			modelTitleTopRight,
+			colorText,
+			scaleText,
+			renderInfo.TextData.BlocksRemoved)
+		f.printTextRight(
+			modelTitleTopRight.Mul4(mgl32.Translate3D(-d-0.1, 0, 0)),
+			colorLabel,
+			scaleLabel,
+			f.str.TitlePanel.Blocks)
+	}
 
-	//d := f.printText(
-	//	modelTitleLeft,
-	//	colorLabel,
-	//	scaleLabel,
-	//	f.str.TitlePanel.Score)
-	//f.printText(
-	//	modelTitleLeft.Mul4(mgl32.Translate3D(d+0.1, 0, 0)),
-	//	colorText,
-	//	scaleText,
-	//	"00234234")
-
-	d := f.printTextRight(
-		modelTitleRight,
-		colorText,
-		scaleText,
-		renderInfo.TextData.BlocksRemoved)
-	f.printTextRight(
-		modelTitleRight.Mul4(mgl32.Translate3D(-d-0.1, 0, 0)),
-		colorLabel,
-		scaleLabel,
-		f.str.TitlePanel.Blocks)
+	if renderInfo.TextData.Magic != "" {
+		modelTitleBottomLeft := modelField.Mul4(mgl32.Translate3D(-0.5, -1, 0.5))
+		d := f.printText(
+			modelTitleBottomLeft,
+			colorLabel,
+			scaleLabel,
+			f.str.TitlePanel.Magic)
+		f.printText(
+			modelTitleBottomLeft.Mul4(mgl32.Translate3D(d+0.1, 0, 0)),
+			colorText,
+			scaleText,
+			renderInfo.TextData.Magic)
+	}
 
 	for y := 1; y < contentHeight-1; y++ {
 		var m mgl32.Mat4
@@ -535,6 +538,8 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 				Mul4(mgl32.HomogRotate3DX(-0.4))
 
 			switch np.Type {
+			case piece.TypeDumb:
+				modelPieceN = modelPieceN.Mul4(mgl32.Translate3D(0.1*pulse, 0.1*(1-pulse), 1))
 			case piece.TypeFlipV:
 				modelPieceN = modelPieceN.Mul4(mgl32.HomogRotate3DX(float32(math.Mod(2*f.t, 2*math.Pi))))
 			case piece.TypeFlipH:

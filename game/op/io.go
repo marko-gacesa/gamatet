@@ -22,6 +22,7 @@ const (
 	codeFieldBlockTransform
 	codeFieldExBlock
 	codeFieldStat
+	codeFieldEffect
 	codeFieldQuake
 
 	// piece events
@@ -31,6 +32,7 @@ const (
 	codePieceActivate
 	codePieceFall
 	codePieceLevelBoost
+	codePieceOverride
 )
 
 type Type byte
@@ -90,6 +92,8 @@ func instance(code event.Code) event.Event {
 		e = &FieldExBlock{}
 	case codeFieldStat:
 		e = &FieldStat{}
+	case codeFieldEffect:
+		e = &FieldEffect{}
 	case codeFieldQuake:
 		e = &FieldQuake{}
 
@@ -105,6 +109,8 @@ func instance(code event.Code) event.Event {
 		e = &PieceFall{}
 	case codePieceLevelBoost:
 		e = &PieceLevelBoost{}
+	case codePieceOverride:
+		e = &PieceOverride{}
 
 	default:
 		panic(fmt.Sprintf("unrecognized event code=%d", code))

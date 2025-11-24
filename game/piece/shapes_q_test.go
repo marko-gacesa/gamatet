@@ -20,3 +20,16 @@ func TestShapesQ(t *testing.T) {
 		t.Errorf("want = %s, got %s", want.def(), got.def())
 	}
 }
+
+func TestShapesO(t *testing.T) {
+	o := _initShapeRect(5, 5, []bool{
+		__, XX, XX, XX, __,
+		XX, __, __, __, XX,
+		XX, __, __, __, XX,
+		XX, __, __, __, XX,
+		__, XX, XX, XX, __,
+	})
+	if want, got := o, shapeO; want != got {
+		t.Errorf("want = %s, got %s", want.def(), got.def())
+	}
+}

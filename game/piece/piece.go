@@ -16,6 +16,8 @@ type Type byte
 const (
 	TypeNone Type = iota
 
+	TypeDumb
+
 	TypeFlipV
 	TypeFlipH
 
@@ -78,6 +80,12 @@ func GetBlocks(p Piece, blocks []block.XYB) []block.XYB {
 
 func Write(w io.Writer, p Piece) (err error) {
 	switch v := p.(type) {
+	case *polyominoDumb:
+		err = serialize.Write8(w, 'D')
+		if err != nil {
+			return
+		}
+		err = v.Write(w)
 	case *polyominoFlipV:
 		err = serialize.Write8(w, 'V')
 		if err != nil {
@@ -116,6 +124,9 @@ func Read(r io.Reader) (p Piece, err error) {
 	}
 
 	switch code {
+	case 'D':
+		p = &polyominoDumb{}
+		err = p.Read(r)
 	case 'V':
 		p = &polyominoFlipV{}
 		err = p.Read(r)

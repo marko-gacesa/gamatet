@@ -13,7 +13,7 @@ func (f *Field) Blizzard(intensity int) []block.XY {
 		return nil
 	}
 
-	tops := f.FindTops()
+	tops := f.FindBlizzardTops()
 	result := make([]block.XY, 0, intensity)
 
 	var k int
