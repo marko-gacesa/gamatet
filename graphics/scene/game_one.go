@@ -127,7 +127,7 @@ func (ft *GameOne) InputKeyPress(key, scancode int, act screen.KeyAction) {
 
 func (ft *GameOne) Prepare(now time.Time) {
 	ft.fieldRender.Prepare(now)
-	ft.fpsHUD.Prepare()
+	ft.fpsHUD.Prepare(ft.ViewSize())
 }
 
 func (ft *GameOne) Render() {

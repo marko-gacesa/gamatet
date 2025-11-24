@@ -211,8 +211,8 @@ func (ft *Game) Prepare(now time.Time) {
 		ft.fieldRenders[i].Prepare(now)
 	}
 
-	ft.fpsHUD.Prepare()
-	ft.latenciesHUD.Prepare()
+	ft.fpsHUD.Prepare(ft.ViewSize())
+	ft.latenciesHUD.Prepare(ft.ViewSize())
 }
 
 func (ft *Game) Render() {

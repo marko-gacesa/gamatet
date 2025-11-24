@@ -102,6 +102,10 @@ func (b *BlockBase) UpdateViewSize(w, h int) {
 	b.SetCamera()
 }
 
+func (b *BlockBase) ViewSize() (w, h int) {
+	return b.viewW, b.viewH
+}
+
 func (b *BlockBase) TopLeft() mgl32.Mat4 {
 	return mgl32.Translate3D(float32(-b.contentW)/2, float32(b.contentH)/2, 0)
 }

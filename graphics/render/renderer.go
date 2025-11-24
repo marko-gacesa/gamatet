@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 by Marko Gaćeša
+// Copyright (c) 2023-2025 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package render
@@ -48,6 +48,13 @@ func (r *Renderer) CameraPerspective(fovy, aspect, near, far float32) {
 
 func (r *Renderer) OrthogonalFull(displayW, displayH, contentW, contentH, contentZ int) {
 	r.cam.OrthogonalFull(displayW, displayH, contentW, contentH, contentZ)
+	if r.mat != nil {
+		r.mat.Camera(&r.cam)
+	}
+}
+
+func (r *Renderer) Orthogonal2D(w, h float32) {
+	r.cam.Orthogonal2D(w, h)
 	if r.mat != nil {
 		r.mat.Camera(&r.cam)
 	}

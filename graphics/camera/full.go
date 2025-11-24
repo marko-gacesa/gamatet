@@ -48,7 +48,6 @@ func (c *Camera) OrthogonalFull(displayW, displayH, contentW, contentH, contentZ
 		h = float32(contentH) * (scaleY / scaleX) / 2
 	}
 
-	cameraDistance := z
-	c.LookAt(mgl32.Vec3{0, 0, cameraDistance}, mgl32.Vec3{0, 0, 0}, mgl32.Vec3{0, 1, 0})
-	c.Projection(mgl32.Ortho(-w, w, -h, h, cameraDistance-z, cameraDistance+z))
+	c.ResetLookAt()
+	c.Projection(mgl32.Ortho(-w, w, -h, h, -z, z))
 }

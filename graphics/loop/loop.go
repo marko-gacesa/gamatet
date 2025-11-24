@@ -86,11 +86,12 @@ func Loop(globalCtx context.Context, app *app.App) error {
 
 	// Callbacks
 
-	window.SetSizeCallback(func(window *glfw.Window, w int, h int) {})
-	window.SetFramebufferSizeCallback(func(window *glfw.Window, w int, h int) {
+	window.SetSizeCallback(func(window *glfw.Window, w int, h int) {
 		if scr != nil {
 			scr.UpdateViewSize(w, h)
 		}
+	})
+	window.SetFramebufferSizeCallback(func(window *glfw.Window, w int, h int) {
 		gl.Viewport(0, 0, int32(w), int32(h))
 	})
 

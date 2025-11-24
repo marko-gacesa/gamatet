@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020, 2025 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package camera
@@ -25,6 +25,11 @@ func Default() Camera {
 func (c *Camera) LookAt(eye, center, up mgl32.Vec3) {
 	c.lookAt = mgl32.LookAtV(eye, center, up)
 	c.view = c.projection.Mul4(c.lookAt)
+}
+
+func (c *Camera) ResetLookAt() {
+	c.lookAt = mgl32.Ident4()
+	c.view = c.projection
 }
 
 func (c *Camera) Projection(projection mgl32.Mat4) {

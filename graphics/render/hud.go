@@ -9,10 +9,7 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-const hudContentW = 80
-const hudContentH = hudContentW * 9 / 16
-
-var hudColor = mgl32.Vec4{0.5, 0.5, 0, 0.7}
+var hudColor = mgl32.Vec4{0.5, 0.5, 0, 0.5}
 
 type HUDPos byte
 
@@ -28,6 +25,9 @@ type HUD struct {
 	pos  HUDPos
 	text *Text
 
+	viewW float32
+	viewH float32
+
 	value string
 	model mgl32.Mat4
 }
@@ -36,7 +36,10 @@ func NewHUD(v fmt.Stringer, pos HUDPos, text *Text) *HUD {
 	return &HUD{v: v, pos: pos, text: text}
 }
 
-func (hud *HUD) Prepare() {
+func (hud *HUD) Prepare(viewW, viewH int) {
+	hud.viewW = float32(viewW)
+	hud.viewH = float32(viewH)
+
 	if hud.v == nil {
 		return
 	}
@@ -48,19 +51,29 @@ func (hud *HUD) Prepare() {
 	}
 
 	const sideMargin = 0.1
+	const runeDim = 48
 
 	switch hud.pos {
 	case HUDUpperLeft:
-		hud.model = mgl32.Translate3D(float32(-hudContentW)/2+sideMargin, float32(hudContentH)/2-0.5, 0)
+		hud.model = mgl32.Translate3D(-1, 1, 0).
+			Mul4(mgl32.Scale3D(runeDim/hud.viewW, runeDim/hud.viewH, 1)).
+			Mul4(mgl32.Translate3D(sideMargin, -0.5, 1))
+
 	case HUDUpperRight:
 		tw, _ := hud.text.Dim(s)
-		hud.model = mgl32.Translate3D(float32(hudContentW)/2-sideMargin-tw, float32(hudContentH)/2-0.5, 0)
+		hud.model = mgl32.Translate3D(1, 1, 0).
+			Mul4(mgl32.Scale3D(runeDim/hud.viewW, runeDim/hud.viewH, 1)).
+			Mul4(mgl32.Translate3D(-sideMargin-tw, -0.5, 1))
 	case HUDLowerLeft:
 		_, th := hud.text.Dim(s)
-		hud.model = mgl32.Translate3D(float32(-hudContentW)/2+sideMargin, -float32(hudContentH)/2-0.5+th, 0)
+		hud.model = mgl32.Translate3D(-1, -1, 0).
+			Mul4(mgl32.Scale3D(runeDim/hud.viewW, runeDim/hud.viewH, 1)).
+			Mul4(mgl32.Translate3D(sideMargin, -0.5+th, 1))
 	case HUDLowerRight:
 		tw, th := hud.text.Dim(s)
-		hud.model = mgl32.Translate3D(float32(hudContentW)/2-sideMargin-tw, -float32(hudContentH)/2-0.5+th, 0)
+		hud.model = mgl32.Translate3D(1, -1, 0).
+			Mul4(mgl32.Scale3D(runeDim/hud.viewW, runeDim/hud.viewH, 1)).
+			Mul4(mgl32.Translate3D(-sideMargin-tw, -0.5+th, 1))
 	}
 }
 
@@ -69,6 +82,6 @@ func (hud *HUD) Render(r *Renderer) {
 		return
 	}
 
-	r.OrthogonalFull(hudContentW, hudContentH, hudContentW, hudContentH, 1)
+	r.Orthogonal2D(2, 2)
 	hud.text.String(r, hud.model, hudColor, hud.value)
 }

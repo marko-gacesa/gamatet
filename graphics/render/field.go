@@ -281,7 +281,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 	//	scaleLabel,
 	//	f.str.TitlePanel.Score)
 	//f.printText(
-	//	modelTitleLeft.Mul4(mgl32.Translate3D(d+0.25, 0, 0)),
+	//	modelTitleLeft.Mul4(mgl32.Translate3D(d+0.1, 0, 0)),
 	//	colorText,
 	//	scaleText,
 	//	"00234234")
@@ -292,7 +292,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		scaleText,
 		renderInfo.TextData.BlocksRemoved)
 	f.printTextRight(
-		modelTitleRight.Mul4(mgl32.Translate3D(-d-0.25, 0, 0)),
+		modelTitleRight.Mul4(mgl32.Translate3D(-d-0.1, 0, 0)),
 		colorLabel,
 		scaleLabel,
 		f.str.TitlePanel.Blocks)
