@@ -277,11 +277,13 @@ func fieldStrings() render.FieldStrings {
 			Player string
 			Score  string
 			Piece  string
+			Level  string
 			Next   string
 		}{
 			Player: T(KeyFieldSidePanelPlayer),
 			Score:  T(KeyFieldSidePanelScore),
 			Piece:  T(KeyFieldSidePanelPiece),
+			Level:  T(KeyFieldSidePanelLevel),
 			Next:   T(KeyFieldSidePanelNext),
 		},
 		Message: struct {

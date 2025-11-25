@@ -33,6 +33,7 @@ const (
 	codePieceFall
 	codePieceLevelBoost
 	codePieceOverride
+	codePieceSpeedUp
 )
 
 type Type byte
@@ -111,6 +112,8 @@ func instance(code event.Code) event.Event {
 		e = &PieceLevelBoost{}
 	case codePieceOverride:
 		e = &PieceOverride{}
+	case codePieceSpeedUp:
+		e = &PieceSpeedUp{}
 
 	default:
 		panic(fmt.Sprintf("unrecognized event code=%d", code))

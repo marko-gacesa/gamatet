@@ -4,6 +4,7 @@
 package piece
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/marko-gacesa/gamatet/game/block"
@@ -199,6 +200,11 @@ func (c *Ctrl) StopTimer() {
 		case <-c.Timer.C:
 		}
 	}
+}
+
+func (c *Ctrl) SetLevel(l int) {
+	c.Level = l
+	c.LevelStr = strconv.Itoa(l)
 }
 
 func (c *Ctrl) ApparentLevel() int {

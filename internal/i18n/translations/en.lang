@@ -208,6 +208,7 @@ field_title_panel_magic   = Magic:
 field_side_panel_player   = PLAYER
 field_side_panel_score    = SCORE
 field_side_panel_piece    = PIECE
+field_side_panel_level    = SPEED
 field_side_panel_next     = NEXT
 field_message_game_over   = GAME\nOVER
 field_message_victory     = VICTORY

@@ -202,6 +202,7 @@ const (
 	KeyFieldSidePanelPlayer   = "field_side_panel_player"
 	KeyFieldSidePanelScore    = "field_side_panel_score"
 	KeyFieldSidePanelPiece    = "field_side_panel_piece"
+	KeyFieldSidePanelLevel    = "field_side_panel_level"
 	KeyFieldSidePanelNext     = "field_side_panel_next"
 	KeyFieldMessageGameOver   = "field_message_game_over"
 	KeyFieldMessageVictory    = "field_message_victory"

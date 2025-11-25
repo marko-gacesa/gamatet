@@ -80,7 +80,7 @@ func MakeInterpreter(setup Setup, options InterpreterOptions) *GameInterpreter {
 			ctrl.Name = players[j].Name
 			ctrl.Feed = piece.NewCtrlFeed(setup.Config.PieceFeed, i, j, setup.Config.SamePieces)
 			ctrl.Config = players[j].Config
-			ctrl.Level = setup.Config.Level
+			ctrl.SetLevel(setup.Config.Level)
 			ctrl.IsShadowShown = true
 
 			ctrl.IsColumnLimited = setup.Config.PlayerZones

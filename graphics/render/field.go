@@ -82,6 +82,7 @@ type FieldStrings struct {
 		Player string
 		Score  string
 		Piece  string
+		Level  string
 		Next   string
 	}
 	Message struct {
@@ -514,6 +515,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, f.str.SidePanel.Player, p.PieceTextData.Name, hDir)
 		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, f.str.SidePanel.Score, p.PieceTextData.Score, hDir)
 		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, f.str.SidePanel.Piece, p.PieceTextData.PieceNum, hDir)
+		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, f.str.SidePanel.Level, p.PieceTextData.Level, hDir)
 
 		if len(p.NextPieces[0].Blocks) == 0 {
 			continue

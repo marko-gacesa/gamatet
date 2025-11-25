@@ -577,3 +577,53 @@ func (e *PieceOverride) Read(r io.Reader) error {
 }
 
 func (e *PieceOverride) TypeID() event.Code { return codePieceOverride }
+
+func NewPieceSpeedUp(pIdx byte, delta int8) *PieceSpeedUp {
+	return &PieceSpeedUp{
+		PieceIdx: pIdx,
+		Delta:    delta,
+	}
+}
+
+type PieceSpeedUp struct {
+	PieceIdx byte
+	Delta    int8
+}
+
+var _ event.Event = (*PieceSpeedUp)(nil)
+
+func (e *PieceSpeedUp) Do(f *field.Field) {
+	ctrl := f.Ctrl(e.PieceIdx)
+	ctrl.SetLevel(ctrl.Level + int(e.Delta))
+}
+
+func (e *PieceSpeedUp) Undo(f *field.Field) {
+	ctrl := f.Ctrl(e.PieceIdx)
+	ctrl.SetLevel(ctrl.Level - int(e.Delta))
+}
+
+func (e *PieceSpeedUp) Equals(ev event.Event) bool {
+	q, ok := ev.(*PieceSpeedUp)
+	return ok && e.PieceIdx == q.PieceIdx
+}
+
+func (e *PieceSpeedUp) Write(w io.Writer) error {
+	if _, err := w.Write([]byte{e.PieceIdx, byte(e.Delta)}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *PieceSpeedUp) Read(r io.Reader) error {
+	var buffer [2]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.PieceIdx = buffer[0]
+	e.Delta = int8(buffer[1])
+
+	return nil
+}
+
+func (e *PieceSpeedUp) TypeID() event.Code { return codePieceSpeedUp }

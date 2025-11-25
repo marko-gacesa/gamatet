@@ -208,6 +208,7 @@ field_title_panel_magic   = Магија:
 field_side_panel_player   = ИГРАЧ
 field_side_panel_score    = ПОЕНИ
 field_side_panel_piece    = ФИГУРА
+field_side_panel_level    = БРЗИНА
 field_side_panel_next     = СЛЕДЕЋЕ
 field_message_game_over   = КРАЈ\nИГРЕ
 field_message_victory     = ПОБЕДА

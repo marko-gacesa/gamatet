@@ -94,7 +94,7 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 			ctrl.Name = players[j].Name
 			ctrl.Feed = piece.NewCtrlFeed(setup.Config.PieceFeed, i, j, setup.Config.SamePieces)
 			ctrl.Config = players[j].Config
-			ctrl.Level = setup.Config.Level
+			ctrl.SetLevel(setup.Config.Level)
 			ctrl.IsShadowShown = true
 
 			ctrl.IsColumnLimited = setup.Config.PlayerZones
@@ -138,6 +138,12 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 	if len(fields) > 1 {
 		for i := range fields {
 			others := getFieldPushers(fields, i)
+
+			if len(others) > 1 {
+				fields[i].Sweepers = append(fields[i].Sweepers,
+					sweeper.NewSpeedUpOnDefeat(fields[i].Field, others),
+				)
+			}
 
 			fields[i].Sweepers = append(fields[i].Sweepers,
 				sweeper.NewBlizzard(fields[i].Field, others),
