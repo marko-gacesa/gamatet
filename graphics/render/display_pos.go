@@ -4,6 +4,8 @@
 package render
 
 import (
+	"slices"
+
 	"github.com/marko-gacesa/gamatet/game/field"
 )
 
@@ -53,6 +55,12 @@ func (side PreferredSide) String() string {
 	default:
 		return "invalid"
 	}
+}
+
+func (side PreferredSide) IsLeftOrRight() bool {
+	return slices.Contains([]PreferredSide{
+		PreferredSideLeftT2B, PreferredSideLeftB2T, PreferredSideRightT2B, PreferredSideRightB2T,
+	}, side)
 }
 
 func (side PreferredSide) PieceCorners(playerCount int) PieceCornerList {

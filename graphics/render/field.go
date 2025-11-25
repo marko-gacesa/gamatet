@@ -473,6 +473,11 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 	// prepare player info strings and next pieces
 
+	nextShowCount := 3
+	if renderInfo.PieceCount == 2 && f.preferredSide.IsLeftOrRight() || renderInfo.PieceCount > 2 {
+		nextShowCount = 1
+	}
+
 	for idx := range renderInfo.Pieces {
 		var modelInfo mgl32.Mat4
 		var hDir float32
@@ -521,14 +526,14 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 			continue
 		}
 
-		modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, 0.5*hDir, 0))
+		modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, 0.2*hDir, 0))
 		f.printLabel(&modelInfo, colorLabel, f.str.SidePanel.Next, hDir)
 
 		modelNextBlocks := modelInfo.
-			Mul4(mgl32.Translate3D((1.0+sidePanelBlockWidth)/2, 0.3*hDir, 0.5))
+			Mul4(mgl32.Translate3D((1.0+sidePanelBlockWidth)/2, 0.1*hDir, 0.5))
 
 		var y float32
-		for i, np := range p.NextPieces {
+		for i, np := range p.NextPieces[:nextShowCount] {
 			dim, centerX, centerY := barycenter(np.Blocks)
 			dimScale := 0.3/(float32(3*i)+1.0) + 0.2
 

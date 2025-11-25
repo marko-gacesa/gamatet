@@ -4,13 +4,13 @@
 package sweeper
 
 import (
-	"github.com/marko-gacesa/gamatet/game/piece"
 	"time"
 
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/op"
+	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/gamatet/logic/random"
 )
 
