@@ -30,7 +30,7 @@ func (app *App) menuMultiPlayerLANHostMenu(ctx screen.Context) *menu.Menu {
 		items = append(items, menu.NewCommand(&app.screenIDNext, presetRoutes[i], name, T(KeyMenuHostLANPresetDesc)))
 	}
 
-	items = append(items, menu.NewCommand(&app.screenIDNext, routeMultiPayerLANHostCustomSetup,
+	items = append(items, menu.NewCommand(&app.screenIDNext, routeMultiPlayerLANHostCustomSetup,
 		T(KeyMenuHostLANCustom), T(KeyMenuHostLANCustomDesc)))
 	items = append(items, menu.NewCommand(&app.screenIDNext, routeMultiPlayerPresetEditMenu,
 		T(KeyMenuHostLANEditPresets), Tf(KeyMenuHostLANEditPresetsDesc, setup.MultiPlayerPresetCount)))

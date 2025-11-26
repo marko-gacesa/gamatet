@@ -136,8 +136,8 @@ const (
 	routeSinglePlayerPrefix      = "1p|"
 	routeSinglePlayerMenu        = routeSinglePlayerPrefix + "menu"
 	routeSinglePlayerPresetGameN = routeSinglePlayerPrefix + "preset-game:"
-	routeSinglePayerCustomSetup  = routeSinglePlayerPrefix + "custom-setup"
-	routeSinglePayerCustomGame   = routeSinglePlayerPrefix + "custom-game"
+	routeSinglePlayerCustomSetup = routeSinglePlayerPrefix + "custom-setup"
+	routeSinglePlayerCustomGame  = routeSinglePlayerPrefix + "custom-game"
 
 	routeSinglePlayerPresetEditMenu = routeSinglePlayerPrefix + "preset-edit-menu"
 	routeSinglePlayerPresetEditN    = routeSinglePlayerPrefix + "preset-edit:"
@@ -149,17 +149,17 @@ const (
 	routeMultiPlayerLocalPrefix      = "mp-local|"
 	routeMultiPlayerLocalMenu        = routeMultiPlayerLocalPrefix + "menu"
 	routeMultiPlayerLocalPresetGameN = routeMultiPlayerLocalPrefix + "preset-game:"
-	routeMultiPayerLocalCustomSetup  = routeMultiPlayerLocalPrefix + "custom-setup"
-	routeMultiPayerLocalCustomGame   = routeMultiPlayerLocalPrefix + "custom-game"
+	routeMultiPlayerLocalCustomSetup = routeMultiPlayerLocalPrefix + "custom-setup"
+	routeMultiPlayerLocalCustomGame  = routeMultiPlayerLocalPrefix + "custom-game"
 
-	routeMultiPlayerLANPrefix         = "mp-lan|"
-	routeMultiPlayerLANMenu           = routeMultiPlayerLANPrefix + "menu"
-	routeMultiPlayerLANHostMenu       = routeMultiPlayerLANPrefix + "host-menu"
-	routeMultiPlayerLANHostPresetN    = routeMultiPlayerLANPrefix + "host-preset:"
-	routeMultiPayerLANHostCustomSetup = routeMultiPlayerLANPrefix + "host-custom-setup"
-	routeMultiPayerLANHostLobby       = routeMultiPlayerLANPrefix + "host-lobby"
-	routeMultiPlayerLANJoinListen     = routeMultiPlayerLANPrefix + "join-listen"
-	routeMultiPlayerLANJoinLobby      = routeMultiPlayerLANPrefix + "join-lobby"
+	routeMultiPlayerLANPrefix          = "mp-lan|"
+	routeMultiPlayerLANMenu            = routeMultiPlayerLANPrefix + "menu"
+	routeMultiPlayerLANHostMenu        = routeMultiPlayerLANPrefix + "host-menu"
+	routeMultiPlayerLANHostPresetN     = routeMultiPlayerLANPrefix + "host-preset:"
+	routeMultiPlayerLANHostCustomSetup = routeMultiPlayerLANPrefix + "host-custom-setup"
+	routeMultiPlayerLANHostLobby       = routeMultiPlayerLANPrefix + "host-lobby"
+	routeMultiPlayerLANJoinListen      = routeMultiPlayerLANPrefix + "join-listen"
+	routeMultiPlayerLANJoinLobby       = routeMultiPlayerLANPrefix + "join-lobby"
 
 	routeMultiPlayerLANHostGame = routeMultiPlayerLANPrefix + "host-game"
 	routeMultiPlayerLANJoinGame = routeMultiPlayerLANPrefix + "join-game"
@@ -202,9 +202,9 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 			app.loadPresetSingle(idx)
 			data = app.gameSinglePlayer(ctx)
 		}
-	case id == routeSinglePayerCustomSetup:
-		data = app.menuSinglePlayerSetup(ctx, -1, routeSinglePayerCustomGame)
-	case id == routeSinglePayerCustomGame:
+	case id == routeSinglePlayerCustomSetup:
+		data = app.menuSinglePlayerSetup(ctx, -1, routeSinglePlayerCustomGame)
+	case id == routeSinglePlayerCustomGame:
 		data = app.gameSinglePlayer(ctx)
 
 	// Single player presets edit
@@ -250,9 +250,9 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 				data = app.gameMultiPlayerLocal(ctx)
 			}
 		}
-	case id == routeMultiPayerLocalCustomSetup:
-		data = app.menuMultiPlayerSetup(ctx, setup.MaxLocalPlayers, -1, routeMultiPayerLocalCustomGame)
-	case id == routeMultiPayerLocalCustomGame:
+	case id == routeMultiPlayerLocalCustomSetup:
+		data = app.menuMultiPlayerSetup(ctx, setup.MaxLocalPlayers, -1, routeMultiPlayerLocalCustomGame)
+	case id == routeMultiPlayerLocalCustomGame:
 		data = app.gameMultiPlayerLocal(ctx)
 
 	// Multi-player LAN
@@ -270,9 +270,9 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 			app.loadPresetMulti(idx)
 			data = app.menuMultiPlayerLANHostLobby(ctx)
 		}
-	case id == routeMultiPayerLANHostCustomSetup:
-		data = app.menuMultiPlayerSetup(ctx, setup.MaxPlayers, -1, routeMultiPayerLANHostLobby)
-	case id == routeMultiPayerLANHostLobby:
+	case id == routeMultiPlayerLANHostCustomSetup:
+		data = app.menuMultiPlayerSetup(ctx, setup.MaxPlayers, -1, routeMultiPlayerLANHostLobby)
+	case id == routeMultiPlayerLANHostLobby:
 		data = app.menuMultiPlayerLANHostLobby(ctx)
 
 	case id == routeMultiPlayerLANJoinListen:

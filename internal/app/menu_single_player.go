@@ -30,7 +30,7 @@ func (app *App) menuSinglePlayer(ctx screen.Context) *menu.Menu {
 		)
 		items = append(items, menu.NewCommand(&app.screenIDNext, presetRoutes[i], name, T(KeyMenuSingleStartPresetDesc)))
 	}
-	items = append(items, menu.NewCommand(&app.screenIDNext, routeSinglePayerCustomSetup,
+	items = append(items, menu.NewCommand(&app.screenIDNext, routeSinglePlayerCustomSetup,
 		T(KeyMenuSingleCustom), T(KeyMenuSingleCustomDesc)))
 	items = append(items, menu.NewCommand(&app.screenIDNext, routeSinglePlayerPresetEditMenu,
 		T(KeyMenuSingleEditPresets), Tf(KeyMenuSingleEditPresetsDesc, setup.SinglePlayerPresetCount)))

@@ -30,7 +30,7 @@ func (app *App) menuMultiPlayerLocal(ctx screen.Context) *menu.Menu {
 		)
 		items = append(items, menu.NewCommand(&app.screenIDNext, presetRoutes[i], name, T(KeyMenuLocalStartPresetDesc)))
 	}
-	items = append(items, menu.NewCommand(&app.screenIDNext, routeMultiPayerLocalCustomSetup,
+	items = append(items, menu.NewCommand(&app.screenIDNext, routeMultiPlayerLocalCustomSetup,
 		T(KeyMenuLocalCustom), T(KeyMenuLocalCustomDesc)))
 	items = append(items, menu.NewCommand(&app.screenIDNext, routeMultiPlayerPresetEditMenu,
 		T(KeyMenuLocalEditPresets), Tf(KeyMenuLocalEditPresetsDesc, setup.MultiPlayerPresetCount)))
