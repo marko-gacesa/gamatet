@@ -179,7 +179,7 @@ config_video_opacity                  = Непрозирност
 config_video_opacity_desc             = Непрозирност прозора. 100% значи потпуно непрозиран прозор.
 
 menu_back = Назад
-menu_back_desc = Врати се на претходни мени.
+menu_back_desc = Вратите се на претходни мени.
 
 # Errors
 
