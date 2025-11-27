@@ -4,10 +4,10 @@
 package app
 
 import (
+	"context"
 	"net"
-	"slices"
+	"sync/atomic"
 	"time"
-	"unicode"
 
 	"github.com/marko-gacesa/bitdata"
 	"github.com/marko-gacesa/gamatet/game/setup"
@@ -18,32 +18,26 @@ import (
 	"github.com/marko-gacesa/udpstar/udpstar/message"
 )
 
-func (app *App) menuMultiPlayerLANJoinLobby(ctx screen.Context) *menu.Menu {
-	if app.resultClientLobbySelected == nil {
+func (app *App) menuMultiPlayerDirectIPJoinLobby(ctx screen.Context) *menu.Menu {
+	addr, err := net.ResolveIPAddr("ip", app.cfg.Network.DirectIPAddress)
+	if err != nil || app.resultToken == 0 {
 		return app.menuErrorText(ctx, T(KeyErrorInputMissing))
 	}
 
 	app.resultClientSession = nil
 
-	lobbyToken := app.resultClientLobbySelected.Token
-	serverAddr := app.resultClientLobbySelected.Addr
-	slotCount := byte(len(app.resultClientLobbySelected.Lobby.Slots))
+	lobbyToken := app.resultToken
 
-	slotStories := make([]message.Token, slotCount)
-	for i := range app.resultClientLobbySelected.Lobby.Slots {
-		slotStories[i] = app.resultClientLobbySelected.Lobby.Slots[i].StoryToken
+	serverAddr := net.UDPAddr{
+		IP:   addr.IP,
+		Port: app.cfg.Network.Port,
+		Zone: addr.Zone,
 	}
 
-	r := bitdata.NewReaderError(app.resultClientLobbySelected.Lobby.Def)
-	var o setup.Setup
-	o.Read(r)
-	if err := r.Error(); err != nil {
-		return app.menuError(ctx, err)
-	}
+	playerName := app.LocalPlayerName(0)
+	playerCfg := app.LocalPlayerConfig(0).Serialize()
 
-	gameStr := o.String()
-
-	slots := makeLobbyEntries(slotStories, app.actorTokens[:])
+	slots := makeLobbyEntries([]message.Token{lobbyToken, lobbyToken}, app.actorTokens[:], withFixedSlots())
 	blocker := makeStartBlocker()
 
 	// lobby
@@ -54,6 +48,27 @@ func (app *App) menuMultiPlayerLANJoinLobby(ctx screen.Context) *menu.Menu {
 	}
 
 	lobbyClient := client.NewLobby(udpSender, lobbyToken, app.clientToken, client.WithLobbyLogger(app.logger))
+	lobbyJoin := func() {
+		lobbyClient.Join(app.actorTokens[0], 1, playerName, playerCfg)
+	}
+
+	ctxLobbyJoin, stopLobbyJoin := context.WithCancel(ctx)
+
+	go func(ctx context.Context) {
+		lobbyJoin()
+
+		t := time.NewTicker(time.Second)
+		defer t.Stop()
+
+		for {
+			select {
+			case <-t.C:
+				lobbyJoin()
+			case <-ctx.Done():
+				return
+			}
+		}
+	}(ctxLobbyJoin)
 
 	go func() {
 		gameSession := lobbyClient.Start(ctx)
@@ -69,13 +84,24 @@ func (app *App) menuMultiPlayerLANJoinLobby(ctx screen.Context) *menu.Menu {
 	}()
 
 	var version int
+	var gameStr atomic.Value
+	gameStr.Store("")
 
-	err := app.udpService.Handle(ctx, func(data []byte, addr net.UDPAddr) []byte {
+	err = app.udpService.Handle(ctx, func(data []byte, addr net.UDPAddr) []byte {
 		lobbyClient.HandleIncomingMessages(data)
 
 		lobby, age := lobbyClient.Get(version)
-		if lobby == nil {
+		if lobby == nil || len(lobby.Slots) != 2 {
 			return nil
+		}
+
+		r := bitdata.NewReaderError(lobby.Def)
+		var o setup.Setup
+		o.Read(r)
+		if err := r.Error(); err != nil {
+			gameStr.Store("?")
+		} else {
+			gameStr.Store(o.String())
 		}
 
 		if age > time.Minute {
@@ -85,8 +111,14 @@ func (app *App) menuMultiPlayerLANJoinLobby(ctx screen.Context) *menu.Menu {
 
 		version = lobby.Version
 
+		storyTokens := []message.Token{lobby.Slots[0].StoryToken, lobby.Slots[1].StoryToken}
+
+		slots.updateStoryTokens(storyTokens)
 		slots.setAll(lobby)
+
 		blocker.update(lobby)
+
+		stopLobbyJoin()
 
 		return nil
 	})
@@ -94,38 +126,20 @@ func (app *App) menuMultiPlayerLANJoinLobby(ctx screen.Context) *menu.Menu {
 		return app.menuError(ctx, err)
 	}
 
-	items := make([]menu.Item, 0, slotCount+2)
+	items := make([]menu.Item, 0, 12)
 
-	items = append(items, menu.NewStatic(
-		gameStr, "", nil,
+	items = append(items, menu.NewStatic("", "", nil,
+		menu.WithLabelFn(func() string { return gameStr.Load().(string) }),
+		menu.WithVisible(func() bool { return gameStr.Load().(string) != "" }),
 		menu.WithDisabled(func() bool { return true })))
-	for i := range slotCount {
-		items = append(items, menu.NewStatic("", "",
-			func(r rune) bool {
-				switch unicode.ToLower(r) {
-				case '\n':
-					name := app.LocalPlayerName(0)
-					cfg := app.LocalPlayerConfig(0).Serialize()
-					lobbyClient.Join(app.actorTokens[0], i, name, cfg)
-				case '1', '2', '3', '4':
-					idx := byte(r - '1')
-					name := app.LocalPlayerName(idx)
-					cfg := app.LocalPlayerConfig(idx).Serialize()
-					lobbyClient.Join(app.actorTokens[idx], i, name, cfg)
-				case '\b', '\xFF':
-					if idx := slices.Index(app.actorTokens[:], slots.GetActor(i)); idx >= 0 {
-						lobbyClient.Leave(app.actorTokens[idx])
-					}
-				}
-				return false
-			},
-			menu.WithLabelFn(func() string {
-				return slots.GetLabel(i)
-			}),
-			menu.WithDescriptionFn(func() string {
-				return slots.GetDescription(i)
-			})))
-	}
+	items = append(items, menu.NewStatic("", "", nil,
+		menu.WithLabelFn(func() string { return slots.GetLabel(0) }),
+		menu.WithDescriptionFn(func() string { return slots.GetDescription(0) }),
+		menu.WithVisible(func() bool { return gameStr.Load().(string) != "" })))
+	items = append(items, menu.NewStatic("", "", nil,
+		menu.WithLabelFn(func() string { return slots.GetLabel(1) }),
+		menu.WithDescriptionFn(func() string { return slots.GetDescription(1) }),
+		menu.WithVisible(func() bool { return gameStr.Load().(string) != "" })))
 	items = append(items, menu.NewStatic(
 		T(KeyLobbyIssueIncomplete), T(KeyLobbyIssueIncompleteDesc), nil,
 		menu.WithVisible(blocker.NeedPlayers),

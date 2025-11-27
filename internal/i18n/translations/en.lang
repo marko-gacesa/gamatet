@@ -2,19 +2,21 @@ language_name=English
 
 # Menu
 
-menu_main_title                   = GaMaTeT
-menu_main_single_player           = Single-player game
-menu_main_single_player_desc      = Play a game for one player.
-menu_main_multi_player_local      = Multi-player local game
-menu_main_multi_player_local_desc = Play a multi-player game played on this computer only.
-menu_main_multi_player_lan        = Multi-player LAN game
-menu_main_multi_player_lan_desc   = Play a multi-player game played on the local area network.
-menu_main_configure               = Configure
-menu_main_configure_desc          = Modify game settings.
-menu_main_about                   = About
-menu_main_about_desc              = Display information about this game.
-menu_main_exit                    = Exit
-menu_main_exit_desc               = Exit the game.
+menu_main_title                       = GaMaTeT
+menu_main_single_player               = Single-player game
+menu_main_single_player_desc          = Play a game for one player.
+menu_main_multi_player_local          = Multi-player local game
+menu_main_multi_player_local_desc     = Play a multi-player game played on this computer only.
+menu_main_multi_player_lan            = Multi-player LAN game
+menu_main_multi_player_lan_desc       = Play a multi-player game played on the local area network.
+menu_main_multi_player_direct_ip      = Two-player direct IP game
+menu_main_multi_player_direct_ip_desc = Play a game with a friend by specifying their IP address (direct connection, serverless).
+menu_main_configure                   = Configure
+menu_main_configure_desc              = Modify game settings.
+menu_main_about                       = About
+menu_main_about_desc                  = Display information about this game.
+menu_main_exit                        = Exit
+menu_main_exit_desc                   = Exit the game.
 
 menu_single_title             = Single player
 menu_single_start_preset      = Start preset %d: %s [%s]
@@ -48,14 +50,37 @@ menu_lan_join_desc = Join a game hosted by someone else.
 
 menu_host_lan_title             = Host LAN game
 menu_host_lan_preset            = Host preset %d: %s [%s]
-menu_host_lan_preset_desc       = Start a game lobby using this preset.
+menu_host_lan_preset_desc       = Start the game lobby using this preset.
 menu_host_lan_custom            = Host custom game
-menu_host_lan_custom_desc       = Set up a game that would be hosted on the local network.
+menu_host_lan_custom_desc       = Set up the game that would be hosted on the local network.
 menu_host_lan_edit_presets      = Edit presets
 menu_host_lan_edit_presets_desc = There are %d presets for multi-player games. Modify them here.
 menu_join_lan_title             = LAN listener
 menu_join_lan_listening         = listening to nearby games...
 menu_join_lan_listening_desc    = Listening to game lobbies hosted on the local area network.
+
+menu_direct_ip_title     = Direct IP two player game
+menu_direct_ip_host      = Host game by IP address
+menu_direct_ip_host_desc = Set up game rules and enter IP address of your friend. They will join you by entering your IP address.
+menu_direct_ip_join      = Join game by IP address
+menu_direct_ip_join_desc = Enter IP address of your friend who hosts the game and play together.
+
+menu_direct_ip_enter_ip              = Enter IP address
+menu_direct_ip_enter_ip_desc         = Please enter public IP address of the other player. The other player will have to enter yours.
+menu_direct_ip_enter_token           = Enter Game ID
+menu_direct_ip_enter_token_desc      = Please pick an arbitrary number of the game identifier. The other player must enter the same number.
+menu_direct_ip_proceed_to_lobby      = Proceed to the lobby
+menu_direct_ip_proceed_to_lobby_desc = Proceed to the lobby. An attempt to connect to the other computer would be made.
+menu_direct_ip_invalid_ip            = Please enter a valid IP address
+menu_direct_ip_invalid_ip_desc       = Enter the public IP address of the other player.
+
+menu_host_direct_ip_title             = Host direct IP game
+menu_host_direct_ip_preset            = Host preset %d: %s [%s]
+menu_host_direct_ip_preset_desc       = Start the game lobby using this preset.
+menu_host_direct_ip_custom            = Host custom game
+menu_host_direct_ip_custom_desc       = Set up the game and enter the lobby.
+menu_host_direct_ip_edit_presets      = Edit presets
+menu_host_direct_ip_edit_presets_desc = There are %d presets for multi-player games. Modify them here.
 
 lobby_title                        = Lobby
 lobby_start_game                   = Start game
@@ -79,6 +104,12 @@ lobby_slot_local_desc              = Press DELETE to leave and make the place av
 lobby_slot_remote                  = remote
 lobby_slot_remote_desc             = Press DELETE to evict the remote player.
 lobby_latency                      = latency
+lobby_fixed_slot_waiting           = waiting...
+lobby_fixed_slot_waiting_desc      = Waiting for the other player to join.
+lobby_fixed_slot_local             = local
+lobby_fixed_slot_local_desc        = You occupy this slot.
+lobby_fixed_slot_remote            = remote
+lobby_fixed_slot_remote_desc       = Your friend occupies this slot.
 
 menu_about_title      = About
 menu_about_build_time = Build time

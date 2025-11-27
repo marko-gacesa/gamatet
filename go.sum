@@ -14,6 +14,8 @@ github.com/marko-gacesa/channel v0.0.0-20251109114423-46abe59b4977 h1:wlLQ62QU4h
 github.com/marko-gacesa/channel v0.0.0-20251109114423-46abe59b4977/go.mod h1:6EEGwNBa9YIcrAV0WdtFQIns0cPhRRxspR/P0xjaG5o=
 github.com/marko-gacesa/udpstar v0.0.0-20251109131729-90e43c8920dc h1:2rTDi+Fygsqm9/IDOH2xiWhK5OMPOnNlQEb1jQQ/lPg=
 github.com/marko-gacesa/udpstar v0.0.0-20251109131729-90e43c8920dc/go.mod h1:tlYOGZ9wZRLR36nLYLPePAY4FsZ+BmUQ5Emb2UGGOfw=
+github.com/marko-gacesa/udpstar v0.0.0-20251128163835-fcaf93c9aea9 h1:oReYfp2IR1HXdZcPlb51UHWQRpKKWx4PU+qnjG+Gbtg=
+github.com/marko-gacesa/udpstar v0.0.0-20251128163835-fcaf93c9aea9/go.mod h1:tlYOGZ9wZRLR36nLYLPePAY4FsZ+BmUQ5Emb2UGGOfw=
 golang.org/x/image v0.26.0 h1:4XjIFEZWQmCZi6Wv8BoxsDhRU3RVnLX04dToTDAEPlY=
 golang.org/x/image v0.26.0/go.mod h1:lcxbMFAovzpnJxzXS3nyL83K27tmqtKzIJpctK8YO5c=
 golang.org/x/net v0.36.0 h1:vWF2fRbw4qslQsQzgFqZff+BItCvGFQqKzKIzx1rmoA=

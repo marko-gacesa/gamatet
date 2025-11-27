@@ -10,7 +10,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/marko-gacesa/bitdata v0.0.0-20250629140544-0cf19430b1b6
 	github.com/marko-gacesa/channel v0.0.0-20251109114423-46abe59b4977
-	github.com/marko-gacesa/udpstar v0.0.0-20251109131729-90e43c8920dc
+	github.com/marko-gacesa/udpstar v0.0.0-20251128163835-fcaf93c9aea9
 	golang.org/x/image v0.26.0
 	golang.org/x/text v0.24.0
 )

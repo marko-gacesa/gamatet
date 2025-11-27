@@ -6,7 +6,6 @@ package app
 import (
 	"fmt"
 	"net"
-	"slices"
 	"strconv"
 	"sync"
 	"time"
@@ -37,7 +36,7 @@ func (app *App) menuMultiPlayerLANHostLobby(ctx screen.Context) *menu.Menu {
 
 	var start int
 
-	slots := makeLobbyEntries(slotStories, true, app.actorTokens[:])
+	slots := makeLobbyEntries(slotStories, app.actorTokens[:], withHost())
 	blocker := makeStartBlocker()
 
 	// Prepare menu
@@ -97,7 +96,7 @@ func (app *App) menuMultiPlayerLANHostLobby(ctx screen.Context) *menu.Menu {
 			start++
 			go func() {
 				app.resultServerSession, app.resultClientMap, _ = app.gameServer.FinishLobby(ctx, lobbyToken)
-				app.screenIDNext = routeMultiPlayerLANHostGame
+				app.screenIDNext = routeMultiPlayerUDPHostGame
 				ctx.Stop()
 			}()
 		}
@@ -164,12 +163,18 @@ func (app *App) menuMultiPlayerLANHostLobby(ctx screen.Context) *menu.Menu {
 }
 
 type lobbyEntries struct {
-	isHost      bool
+	config lobbyEntriesConfig
+
 	localActors []message.Token
 
 	teams   map[message.Token]string
 	entries []lobbyEntry
 	mx      sync.Mutex
+}
+
+type lobbyEntriesConfig struct {
+	host       bool
+	fixedSlots bool
 }
 
 type lobbyEntry struct {
@@ -179,7 +184,41 @@ type lobbyEntry struct {
 	actor        message.Token
 }
 
-func makeLobbyEntries(slotStories []message.Token, isHost bool, localActors []message.Token) *lobbyEntries {
+func makeLobbyEntries(
+	slotStories []message.Token,
+	localActors []message.Token,
+	options ...func(entries *lobbyEntries),
+) *lobbyEntries {
+	l := &lobbyEntries{
+		config:      lobbyEntriesConfig{},
+		localActors: localActors,
+		teams:       nil,
+		entries:     make([]lobbyEntry, len(slotStories)),
+		mx:          sync.Mutex{},
+	}
+
+	l.updateStoryTokens(slotStories)
+
+	for _, option := range options {
+		option(l)
+	}
+
+	return l
+}
+
+func withHost() func(entries *lobbyEntries) {
+	return func(entries *lobbyEntries) {
+		entries.config.host = true
+	}
+}
+
+func withFixedSlots() func(entries *lobbyEntries) {
+	return func(entries *lobbyEntries) {
+		entries.config.fixedSlots = true
+	}
+}
+
+func (l *lobbyEntries) updateStoryTokens(slotStories []message.Token) {
 	teams := map[message.Token]string{}
 	for _, storyToken := range slotStories {
 		if _, ok := teams[storyToken]; !ok {
@@ -192,13 +231,9 @@ func makeLobbyEntries(slotStories []message.Token, isHost bool, localActors []me
 		}
 	}
 
-	return &lobbyEntries{
-		isHost:      isHost,
-		localActors: localActors,
-		teams:       teams,
-		entries:     make([]lobbyEntry, len(slotStories)),
-		mx:          sync.Mutex{},
-	}
+	l.mx.Lock()
+	l.teams = teams
+	l.mx.Unlock()
 }
 
 func (l *lobbyEntries) setAll(lobby *udpstar.Lobby) {
@@ -214,22 +249,50 @@ func (l *lobbyEntries) setAll(lobby *udpstar.Lobby) {
 		team := l.teams[lobby.Slots[i].StoryToken]
 		switch avail {
 		case udpstar.SlotAvailable:
-			l.entries[i].text = fmt.Sprintf("\t%s: <%s>",
-				team, T(KeyLobbySlotAvailable))
-			l.entries[i].description = T(KeyLobbySlotAvailableDesc)
+			if l.config.fixedSlots {
+				l.entries[i].text = fmt.Sprintf("\t%s: <%s>",
+					team, T(KeyLobbyFixedSlotWaiting))
+				l.entries[i].description = T(KeyLobbyFixedSlotWaitingDesc)
+			} else {
+				l.entries[i].text = fmt.Sprintf("\t%s: <%s>",
+					team, T(KeyLobbySlotAvailable))
+				l.entries[i].description = T(KeyLobbySlotAvailableDesc)
+			}
 		case udpstar.SlotLocal0, udpstar.SlotLocal1, udpstar.SlotLocal2, udpstar.SlotLocal3:
-			l.entries[i].text = fmt.Sprintf("\t%s: %s [%s %d]",
-				team, name, T(KeyLobbySlotLocal), avail-udpstar.SlotLocal0+1)
-			if l.isHost {
+			const fmtLocal = "\t%s: %s [%s %d]"
+
+			if l.config.fixedSlots {
+				l.entries[i].text = fmt.Sprintf(fmtLocal, team, name, T(KeyLobbyFixedSlotLocal), avail-udpstar.SlotLocal0+1)
+				if l.config.host {
+					l.entries[i].description = T(KeyLobbyFixedSlotLocalDesc)
+				} else {
+					l.entries[i].description = T(KeyLobbyFixedSlotRemoteDesc)
+				}
+			} else if l.config.host {
+				l.entries[i].text = fmt.Sprintf(fmtLocal, team, name, T(KeyLobbySlotLocal), avail-udpstar.SlotLocal0+1)
 				l.entries[i].description = T(KeyLobbySlotLocalDesc)
+			} else {
+				l.entries[i].text = fmt.Sprintf(fmtLocal, team, name, T(KeyLobbySlotLocal), avail-udpstar.SlotLocal0+1)
+				l.entries[i].description = ""
 			}
 		case udpstar.SlotRemote:
+			const fmtRemote = "\t%s: %s [%s, %s=%dms]"
 			latency := lobby.Slots[i].Latency
-			l.entries[i].text = fmt.Sprintf("\t%s: %s [%s, %s=%dms]",
-				team, name, T(KeyLobbySlotRemote), T(KeyLobbyLatency), latency.Milliseconds())
-			if l.isHost {
+
+			if l.config.fixedSlots {
+				l.entries[i].text = fmt.Sprintf(fmtRemote, team, name, T(KeyLobbyFixedSlotRemote), T(KeyLobbyLatency), latency.Milliseconds())
+				if l.config.host {
+					l.entries[i].description = T(KeyLobbyFixedSlotRemoteDesc)
+				} else {
+					l.entries[i].description = T(KeyLobbyFixedSlotLocalDesc)
+				}
+			} else if l.config.host {
+				l.entries[i].text = fmt.Sprintf(fmtRemote,
+					team, name, T(KeyLobbySlotRemote), T(KeyLobbyLatency), latency.Milliseconds())
 				l.entries[i].description = T(KeyLobbySlotRemoteDesc)
-			} else if slices.Contains(l.localActors, actor) {
+			} else {
+				l.entries[i].text = fmt.Sprintf(fmtRemote,
+					team, name, T(KeyLobbySlotRemote), T(KeyLobbyLatency), latency.Milliseconds())
 				l.entries[i].description = T(KeyLobbySlotLocalDesc)
 			}
 		}

@@ -17,6 +17,7 @@ const (
 
 type Network struct {
 	Port             int    `json:"port"`
+	DirectIPAddress  string `json:"direct_ip_address"`
 	MulticastPort    int    `json:"multicast_port"`
 	MulticastAddress string `json:"multicast_address"`
 }

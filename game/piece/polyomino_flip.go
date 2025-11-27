@@ -152,7 +152,7 @@ func readShapeRect(s *shapeRect, b *block.Block, r io.Reader) (err error) {
 		return
 	}
 
-	if n != 4 {
+	if n != 3 {
 		err = errors.New("failed to read polyomino rectangle")
 		return
 	}

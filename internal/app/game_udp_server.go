@@ -86,6 +86,8 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 	// Input channel pipes for remote players. Closed when the ctx closes.
 	playerRemoteInputPipeMap := map[message.Token]channel.Pipe[[]byte]{}
 
+	var playerIndex int
+
 	fields := make([]core.FieldSetup, len(session.Stories))
 	for fieldIdx := range fields {
 		storyToken := session.Stories[fieldIdx].StoryInfo.Token
@@ -102,7 +104,6 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 
 		teamSize := len(actors)
 
-		var playerIndex int
 		fieldPlayers := make([]core.PlayerSetup, teamSize)
 		for storyActorIdx, actor := range actors {
 			if !actor.IsLocal {

@@ -39,6 +39,7 @@ type App struct {
 	resultClientMap           map[message.Token]server.ClientData
 	resultClientSession       *client.Session
 	resultServerAddress       net.UDPAddr
+	resultToken               message.Token
 
 	screenIDHistory *routes // screen history, the last entry is the id currently active screen
 	screenIDNext    route
@@ -161,8 +162,18 @@ const (
 	routeMultiPlayerLANJoinListen      = routeMultiPlayerLANPrefix + "join-listen"
 	routeMultiPlayerLANJoinLobby       = routeMultiPlayerLANPrefix + "join-lobby"
 
-	routeMultiPlayerLANHostGame = routeMultiPlayerLANPrefix + "host-game"
-	routeMultiPlayerLANJoinGame = routeMultiPlayerLANPrefix + "join-game"
+	routeMultiPlayerDirectIPPrefix          = "mp-direct-ip|"
+	routeMultiPlayerDirectIPMenu            = routeMultiPlayerDirectIPPrefix + "menu"
+	routeMultiPlayerDirectIPHostMenu        = routeMultiPlayerDirectIPPrefix + "host-menu"
+	routeMultiPlayerDirectIPHostPresetN     = routeMultiPlayerDirectIPPrefix + "host-preset:"
+	routeMultiPlayerDirectIPHostCustomSetup = routeMultiPlayerDirectIPPrefix + "host-custom-setup"
+	routeMultiPlayerDirectIPHostEnterIP     = routeMultiPlayerDirectIPPrefix + "host-enter-ip"
+	routeMultiPlayerDirectIPHostLobby       = routeMultiPlayerDirectIPPrefix + "host-lobby"
+	routeMultiPlayerDirectIPJoinEnterIP     = routeMultiPlayerDirectIPPrefix + "join-enter-ip"
+	routeMultiPlayerDirectIPJoinLobby       = routeMultiPlayerDirectIPPrefix + "join-lobby"
+
+	routeMultiPlayerUDPHostGame = "udp-host-game"
+	routeMultiPlayerUDPJoinGame = "udp-join-game"
 
 	routeConfigPrefix            = "config|"
 	routeConfigMenu              = routeConfigPrefix + "menu"
@@ -280,9 +291,42 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 	case id == routeMultiPlayerLANJoinLobby:
 		data = app.menuMultiPlayerLANJoinLobby(ctx)
 
-	case id == routeMultiPlayerLANHostGame:
+	// Multi-player Direct IP
+
+	case id == routeMultiPlayerDirectIPMenu:
+		data = app.menuMultiPlayerDirectIPMain(ctx)
+	case id == routeMultiPlayerDirectIPHostMenu:
+		data = app.menuMultiPlayerDirectIPHostMenu(ctx)
+	case strings.HasPrefix(string(id), routeMultiPlayerDirectIPHostPresetN):
+		s := strings.TrimPrefix(string(id), routeMultiPlayerDirectIPHostPresetN)
+		idx, err := strconv.Atoi(s)
+		if err != nil {
+			data = app.menuError(ctx, err)
+		} else {
+			app.loadPresetMulti(idx)
+			if app.resultSetup != nil && app.resultSetup.PlayerCount() > 2 {
+				data = app.menuErrorText(ctx, i18n.Tf(i18n.KeyErrorTooManyPlayers, 2))
+			} else {
+				data = app.menuMultiPlayerDirectIPHostEnterIP(ctx)
+			}
+		}
+	case id == routeMultiPlayerDirectIPHostCustomSetup:
+		data = app.menuMultiPlayerSetup(ctx, 2, -1, routeMultiPlayerDirectIPHostEnterIP)
+	case id == routeMultiPlayerDirectIPHostEnterIP:
+		data = app.menuMultiPlayerDirectIPHostEnterIP(ctx)
+	case id == routeMultiPlayerDirectIPHostLobby:
+		data = app.menuMultiPlayerDirectIPHostLobby(ctx)
+
+	case id == routeMultiPlayerDirectIPJoinEnterIP:
+		data = app.menuMultiPlayerDirectIPJoinEnterIP(ctx)
+	case id == routeMultiPlayerDirectIPJoinLobby:
+		data = app.menuMultiPlayerDirectIPJoinLobby(ctx)
+
+	// Game
+
+	case id == routeMultiPlayerUDPHostGame:
 		data = app.gameUDPServer(ctx)
-	case id == routeMultiPlayerLANJoinGame:
+	case id == routeMultiPlayerUDPJoinGame:
 		data = app.gameUDPClient(ctx)
 
 	// Configure

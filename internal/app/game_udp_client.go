@@ -82,6 +82,7 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 	var playerInChs [setup.MaxLocalPlayers]chan<- []byte
 
 	var playerIndex int
+
 	fields := make([]core.FieldSetup, len(session.Stories))
 	for fieldIdx := range fields {
 		storyToken := session.Stories[fieldIdx].StoryInfo.Token

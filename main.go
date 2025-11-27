@@ -7,15 +7,13 @@ import (
 	"context"
 	"os"
 
-	"github.com/marko-gacesa/gamatet/logic/lang"
-
-	"github.com/marko-gacesa/gamatet/internal/i18n"
-
 	"github.com/marko-gacesa/gamatet/graphics/loop"
 	"github.com/marko-gacesa/gamatet/internal/app"
 	"github.com/marko-gacesa/gamatet/internal/config"
+	"github.com/marko-gacesa/gamatet/internal/i18n"
 	"github.com/marko-gacesa/gamatet/internal/values"
 	"github.com/marko-gacesa/gamatet/logic/appctx"
+	"github.com/marko-gacesa/gamatet/logic/lang"
 )
 
 func main() {
