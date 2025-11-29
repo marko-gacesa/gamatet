@@ -81,7 +81,7 @@ type BlockBase struct {
 	viewH    int
 }
 
-func (b *BlockBase) InputKeyPress(key, scancode int, act screen.KeyAction) {
+func (b *BlockBase) InputKeyPress(key int, act screen.KeyAction) {
 	if glfw.Key(key) == glfw.KeyF12 && act == screen.KeyActionPress {
 		b.usePerspective = !b.usePerspective
 		b.SetCamera()

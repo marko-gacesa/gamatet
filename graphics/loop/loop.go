@@ -12,6 +12,7 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 
+	"github.com/marko-gacesa/gamatet/graphics/loop/keypress"
 	"github.com/marko-gacesa/gamatet/graphics/scene"
 	"github.com/marko-gacesa/gamatet/internal/app"
 	"github.com/marko-gacesa/gamatet/internal/values"
@@ -99,22 +100,10 @@ func Loop(globalCtx context.Context, app *app.App) error {
 		cancelLoopCtxFn()
 	})
 
-	window.SetKeyCallback(func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-		act := screen.KeyActionNothing
-		switch action {
-		case glfw.Press:
-			act = screen.KeyActionPress
-		case glfw.Release:
-			act = screen.KeyActionRelease
-		case glfw.Repeat:
-			act = screen.KeyActionRepeat
-		default:
-			return
-		}
+	keyArbiter := keypress.NewArbiter()
 
-		if scr != nil {
-			scr.InputKeyPress(int(key), scancode, act)
-		}
+	window.SetKeyCallback(func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+		keyArbiter.Process(key, scancode, action, mods)
 	})
 
 	window.SetCharCallback(func(w *glfw.Window, char rune) {
@@ -154,6 +143,8 @@ func Loop(globalCtx context.Context, app *app.App) error {
 
 			scr.UpdateViewSize(window.GetFramebufferSize())
 
+			keyEvents := make([]keypress.KeyEvent, 0, 8)
+
 			for isActive(done) {
 				scr.Prepare(time.Now())
 
@@ -163,6 +154,12 @@ func Loop(globalCtx context.Context, app *app.App) error {
 
 				window.SwapBuffers()
 				glfw.PollEvents()
+
+				keyEvents := keyArbiter.Events(keyEvents)
+				for _, keyEvent := range keyEvents {
+					scr.InputKeyPress(int(keyEvent.Key), keypress.ConvertAction(keyEvent.Action))
+				}
+				keyEvents = keyEvents[:0]
 			}
 		}(ctxLoop)
 

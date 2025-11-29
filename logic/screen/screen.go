@@ -16,7 +16,7 @@ type Screen interface {
 	Release()
 
 	// InputKeyPress handles keyboard key press event
-	InputKeyPress(key, scancode int, act KeyAction)
+	InputKeyPress(key int, act KeyAction)
 
 	// InputChar handles keyboard input.
 	InputChar(char rune)
@@ -40,3 +40,17 @@ const (
 	KeyActionPress
 	KeyActionRepeat
 )
+
+func (k KeyAction) String() string {
+	switch k {
+	case KeyActionNothing:
+		return "nothing"
+	case KeyActionRelease:
+		return "release"
+	case KeyActionPress:
+		return "press"
+	case KeyActionRepeat:
+		return "repeat"
+	}
+	return "?"
+}

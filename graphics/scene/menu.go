@@ -98,7 +98,7 @@ func (m *Menu) UpdateViewSize(w, h int) {
 	m.Renderer().OrthogonalFull(w, h, screenContentW, screenContentH, 2)
 }
 
-func (m *Menu) InputKeyPress(key, scancode int, act screen.KeyAction) {
+func (m *Menu) InputKeyPress(key int, act screen.KeyAction) {
 	if act != screen.KeyActionPress {
 		return
 	}

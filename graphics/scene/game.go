@@ -169,8 +169,8 @@ func (ft *Game) Release() {
 	close(ft.actionCh)
 }
 
-func (ft *Game) InputKeyPress(key, scancode int, act screen.KeyAction) {
-	ft.BlockBase.InputKeyPress(key, scancode, act)
+func (ft *Game) InputKeyPress(key int, act screen.KeyAction) {
+	ft.BlockBase.InputKeyPress(key, act)
 
 	k := glfw.Key(key)
 

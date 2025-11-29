@@ -95,8 +95,8 @@ func (ft *GameOne) Release() {
 	close(ft.actionCh)
 }
 
-func (ft *GameOne) InputKeyPress(key, scancode int, act screen.KeyAction) {
-	ft.BlockBase.InputKeyPress(key, scancode, act)
+func (ft *GameOne) InputKeyPress(key int, act screen.KeyAction) {
+	ft.BlockBase.InputKeyPress(key, act)
 
 	if act == screen.KeyActionPress {
 		switch glfw.Key(key) {
