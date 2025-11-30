@@ -131,8 +131,9 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 	}
 
 	for i := range fields {
-		s := sweeper.NewGameOver(fields[i].Field)
-		fields[i].Sweepers = append(fields[i].Sweepers, s)
+		fields[i].Sweepers = append(fields[i].Sweepers,
+			sweeper.NewGameOver(fields[i].Field),
+			sweeper.NewSpeedUp(fields[i].Field))
 	}
 
 	if len(fields) > 1 {

@@ -36,18 +36,17 @@ const (
 	DurationAnimBlockChange = 750 * time.Millisecond
 )
 
-var _durationFall []time.Duration
-var _durationDescend []time.Duration
-var _durationSlide []time.Duration
+const highestFall = 64
+
+var _durationFall [highestFall]time.Duration
+
+var _durationDescend [MaxLevel + 1]time.Duration
+var _durationSlide [MaxLevel + 1]time.Duration
 
 func init() {
-	_durationFall = make([]time.Duration, 65)
-	for height := 0; height < len(_durationFall); height++ {
+	for height := 0; height < highestFall; height++ {
 		_durationFall[height] = time.Duration(float64(DurationFall) * math.Sqrt(float64(height)))
 	}
-
-	_durationDescend = make([]time.Duration, MaxLevel+1)
-	_durationSlide = make([]time.Duration, MaxLevel+1)
 
 	for level := 0; level <= MaxLevel; level++ {
 		_durationDescend[level] = time.Duration(float64(time.Second) * math.Pow(4.0/3.0, float64(-level)))
