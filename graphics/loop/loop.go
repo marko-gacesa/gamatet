@@ -29,6 +29,8 @@ func Loop(globalCtx context.Context, app *app.App) error {
 	}
 	defer glfw.Terminate()
 
+	log.Info("GLFW", "version", glfw.GetVersionString())
+
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
@@ -39,10 +41,10 @@ func Loop(globalCtx context.Context, app *app.App) error {
 	videoConfig := app.VideoConfig()
 	if err := func() (err error) {
 		if videoConfig.Fullscreen {
-			log.Info("Starting fullscreen")
+			log.Info("Fullscreen")
 			window, err = windowFullscreen(values.ProgramName, nil)
 		} else {
-			log.Info("Creating window", "width", videoConfig.WindowWidth, "height", videoConfig.WindowHeight)
+			log.Info("Window", "width", videoConfig.WindowWidth, "height", videoConfig.WindowHeight)
 			window, err = windowResizable(videoConfig.WindowWidth, videoConfig.WindowHeight, values.ProgramName)
 			window.SetOpacity(videoConfig.WindowOpacity)
 		}
@@ -53,11 +55,7 @@ func Loop(globalCtx context.Context, app *app.App) error {
 
 	defer window.Destroy()
 
-	log.Info("Setting current OpenGL context")
-
 	window.MakeContextCurrent()
-
-	log.Info("Initializing OpenGL")
 
 	if err := gl.Init(); err != nil {
 		return fmt.Errorf("failed to initialize OpenGL bindings: %w", err)
@@ -155,7 +153,7 @@ func Loop(globalCtx context.Context, app *app.App) error {
 				window.SwapBuffers()
 				glfw.PollEvents()
 
-				keyEvents := keyArbiter.Events(keyEvents)
+				keyEvents = keyArbiter.Events(keyEvents)
 				for _, keyEvent := range keyEvents {
 					scr.InputKeyPress(int(keyEvent.Key), keypress.ConvertAction(keyEvent.Action))
 				}

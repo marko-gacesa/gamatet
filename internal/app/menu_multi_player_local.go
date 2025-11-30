@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/marko-gacesa/gamatet/game/setup"
-
 	. "github.com/marko-gacesa/gamatet/internal/i18n"
 	"github.com/marko-gacesa/gamatet/logic/menu"
 	"github.com/marko-gacesa/gamatet/logic/screen"

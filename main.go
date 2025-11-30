@@ -38,7 +38,7 @@ func main() {
 	appCtx, appCtxStop := context.WithCancel(globalCtx)
 
 	app := app.NewApp(appCtx, logger, cfg, cfgPath)
-	app.Log().Info("Config", "cfg_path", cfgPath)
+	app.Log().Info("Config", "path", cfgPath)
 
 	err := loop.Loop(appCtx, app)
 	if err != nil {
