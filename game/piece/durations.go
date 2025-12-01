@@ -44,11 +44,11 @@ var _durationDescend [MaxLevel + 1]time.Duration
 var _durationSlide [MaxLevel + 1]time.Duration
 
 func init() {
-	for height := 0; height < highestFall; height++ {
+	for height := range highestFall {
 		_durationFall[height] = time.Duration(float64(DurationFall) * math.Sqrt(float64(height)))
 	}
 
-	for level := 0; level <= MaxLevel; level++ {
+	for level := range MaxLevel + 1 {
 		_durationDescend[level] = time.Duration(float64(time.Second) * math.Pow(4.0/3.0, float64(-level)))
 		_durationSlide[level] = time.Duration(float64(time.Second) * 0.5 * math.Pow(1.125, float64(-level)))
 	}
