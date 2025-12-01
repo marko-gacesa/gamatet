@@ -84,9 +84,9 @@ func SinglePlayerPresetRotMiniminoes() Setup {
 			SamePiecesForAll: false,
 		},
 		FieldOptions: FieldOptions{
-			WidthSingle:    DefaultFieldWidth - 4,
-			WidthPerPlayer: DefaultFieldWidth,
-			Height:         DefaultFieldHeight + 5,
+			WidthSingle:    MinFieldWidthPerPlayer,
+			WidthPerPlayer: MinFieldWidthPerPlayer,
+			Height:         MaxFieldHeight,
 			Speed:          10,
 		},
 		PieceOptions: PieceOptions{

@@ -52,7 +52,7 @@ type interpreterFieldData struct {
 
 type interpreterPlayerData struct {
 	Name string
-	field.PiecePlace
+	PiecePlace
 }
 
 func MakeInterpreter(setup Setup, options InterpreterOptions) *GameInterpreter {
@@ -89,7 +89,7 @@ func MakeInterpreter(setup Setup, options InterpreterOptions) *GameInterpreter {
 				Max: (j+1)*setup.Config.WidthPerPlayer - 1,
 			}
 
-			pp := field.PiecePlace{
+			pp := PiecePlace{
 				FieldIdx: byte(i),
 				CtrlIdx:  byte(j),
 			}

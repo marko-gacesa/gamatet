@@ -63,3 +63,8 @@ type PlayerSetup struct {
 	// InCh is used for direct player input. Actions are read from the channel.
 	InCh <-chan []byte
 }
+
+type PiecePlace struct {
+	FieldIdx byte
+	CtrlIdx  byte
+}

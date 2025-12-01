@@ -60,7 +60,7 @@ type hostFieldData struct {
 
 type hostPlayerData struct {
 	Name string
-	field.PiecePlace
+	PiecePlace
 	InCh <-chan []byte // player actions, either direct local or from remote players
 }
 
@@ -103,7 +103,7 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 				Max: (j+1)*setup.Config.WidthPerPlayer - 1,
 			}
 
-			pp := field.PiecePlace{
+			pp := PiecePlace{
 				FieldIdx: byte(i),
 				CtrlIdx:  byte(j),
 			}
@@ -177,15 +177,15 @@ func (g *GameHost) Perform(ctx context.Context) {
 		}
 	}()
 
-	ctrlTimer := channel.Join(g.doneCh, func() <-chan channel.Input[time.Time, field.PiecePlace] {
-		ch := make(chan channel.Input[time.Time, field.PiecePlace])
+	ctrlTimer := channel.Join(g.doneCh, func() <-chan channel.Input[time.Time, PiecePlace] {
+		ch := make(chan channel.Input[time.Time, PiecePlace])
 		go func() {
 			defer close(ch)
 			for fIdx, f := range g.fields {
 				ctrlCount := byte(f.Field.Ctrls())
 				for pIdx := range ctrlCount {
-					ch <- channel.Input[time.Time, field.PiecePlace]{
-						ID: field.PiecePlace{
+					ch <- channel.Input[time.Time, PiecePlace]{
+						ID: PiecePlace{
 							FieldIdx: byte(fIdx),
 							CtrlIdx:  pIdx,
 						},
