@@ -7,17 +7,16 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/marko-gacesa/gamatet/game/setup"
-	"github.com/marko-gacesa/gamatet/internal/config/key"
-
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 
 	"github.com/marko-gacesa/gamatet/game/action"
 	"github.com/marko-gacesa/gamatet/game/core"
+	"github.com/marko-gacesa/gamatet/game/setup"
 	"github.com/marko-gacesa/gamatet/graphics/render"
 	"github.com/marko-gacesa/gamatet/graphics/scene/base"
 	"github.com/marko-gacesa/gamatet/graphics/texture"
+	"github.com/marko-gacesa/gamatet/internal/config/key"
 	"github.com/marko-gacesa/gamatet/internal/types"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
