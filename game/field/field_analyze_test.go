@@ -4,6 +4,7 @@
 package field
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -124,6 +125,113 @@ func TestField_FindBlizzardTops(t *testing.T) {
 
 			if !cmp.Equal(got, want) {
 				t.Errorf("failed:\n%s\n", cmp.Diff(got, want))
+			}
+		})
+	}
+}
+
+func TestField_FindMovableColumnSections(t *testing.T) {
+	bE := block.Block{Type: block.TypeEmpty}
+	bR := block.Block{Type: block.TypeRock}
+	bI := block.Block{Type: block.TypeWall}
+
+	const dimW = 6
+	const dimH = 6
+
+	setColumn := func(f *Field, col int, blocks []block.Block) {
+		for row := 0; row < dimH; row++ {
+			f.setXY(col, row, blocks[row])
+		}
+	}
+
+	tests := []struct {
+		name     string
+		column   []block.Block
+		filter   func(f *Field, section ColumnSection) bool
+		expected []ColumnSection
+	}{
+		{
+			name:   "empty",
+			column: []block.Block{bE, bE, bE, bE, bE, bE},
+			expected: []ColumnSection{
+				{RowFrom: 0, RowTo: dimH},
+			},
+		},
+		{
+			name:   "with_movable",
+			column: []block.Block{bE, bR, bR, bE, bE, bR},
+			expected: []ColumnSection{
+				{RowFrom: 0, RowTo: dimH},
+			},
+		},
+		{
+			name:   "one",
+			column: []block.Block{bE, bR, bI, bE, bE, bR},
+			expected: []ColumnSection{
+				{RowFrom: 0, RowTo: 2},
+				{RowFrom: 3, RowTo: dimH},
+			},
+		},
+		{
+			name:   "two",
+			column: []block.Block{bE, bR, bI, bE, bI, bR},
+			expected: []ColumnSection{
+				{RowFrom: 0, RowTo: 2},
+				{RowFrom: 3, RowTo: 4},
+				{RowFrom: 5, RowTo: dimH},
+			},
+		},
+		{
+			name:   "two_consecutive",
+			column: []block.Block{bE, bI, bI, bE, bE, bR},
+			expected: []ColumnSection{
+				{RowFrom: 0, RowTo: 1},
+				{RowFrom: 3, RowTo: dimH},
+			},
+		},
+		{
+			name:   "border",
+			column: []block.Block{bI, bI, bR, bE, bE, bI},
+			expected: []ColumnSection{
+				{RowFrom: 2, RowTo: 5},
+			},
+		},
+		{
+			name:   "filter_top_empty",
+			column: []block.Block{bI, bR, bE, bI, bE, bR},
+			filter: func(f *Field, section ColumnSection) bool {
+				b, _ := f.getXY(section.Column, section.RowTo-1)
+				return b.Type == block.TypeEmpty
+			},
+			expected: []ColumnSection{
+				{RowFrom: 1, RowTo: 3},
+			},
+		},
+		{
+			name:   "filter_bottom_empty",
+			column: []block.Block{bE, bR, bI, bE, bE, bR},
+			filter: func(f *Field, section ColumnSection) bool {
+				b, _ := f.getXY(section.Column, section.RowTo-1)
+				return b.Type == block.TypeEmpty
+			},
+			expected: []ColumnSection{
+				{RowFrom: 0, RowTo: 2},
+				{RowFrom: 3, RowTo: dimH},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			f := Make(dimW, dimH, 0)
+
+			const col = 0
+
+			setColumn(f, col, test.column)
+			sections := f.FindMovableColumnSections(col, test.filter)
+
+			if want, got := test.expected, sections; !slices.Equal(want, got) {
+				t.Errorf("want: %v, got: %v", want, got)
 			}
 		})
 	}

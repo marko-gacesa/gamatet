@@ -99,6 +99,71 @@ func (f *Field) UndoShiftColumnByN(x, y, n, height int, b block.Block) {
 	f.setXY(x, y, b)
 }
 
+func (f *Field) ShiftBlockInColumn(section ColumnSection, delta int, anim func(*Field, *anim.List)) []block.XYB {
+	total := section.RowTo - section.RowFrom
+	if delta == 0 || total <= 0 {
+		return nil
+	}
+
+	w := f.w
+	col := section.Column
+
+	var destroy []block.XYB
+	destroyFn := func(destroyIdx, row int) {
+		for j := range delta {
+			if b := f.blocks[destroyIdx].Block; b.Type != block.TypeEmpty {
+				destroy = append(destroy, block.XYB{
+					XY:    block.XY{X: col, Y: row + j},
+					Block: b,
+				})
+			}
+			destroyIdx += w
+		}
+	}
+
+	zeroFn := func(zeroIdx int) {
+		for range delta {
+			f.blocks[zeroIdx] = elem{}
+			zeroIdx += w
+		}
+	}
+
+	if delta > 0 {
+		delta = min(delta, total)
+		deltaW := w * delta
+		dstIdx := section.RowTo*w + col
+		srcIdx := dstIdx - deltaW
+		destroyFn(srcIdx, section.RowTo-delta)
+		for range total - delta {
+			srcIdx -= w
+			dstIdx -= w
+			f.blocks[dstIdx] = f.blocks[srcIdx]
+			if anim != nil {
+				anim(f, &f.blocks[dstIdx].List)
+			}
+		}
+		zeroFn(section.RowFrom*w + col)
+	} else {
+		delta = -delta
+		delta = min(delta, total)
+		deltaW := w * delta
+		dstIdx := section.RowFrom*w + col
+		srcIdx := dstIdx + deltaW
+		destroyFn(dstIdx, section.RowFrom)
+		for range total - delta {
+			f.blocks[dstIdx] = f.blocks[srcIdx]
+			if anim != nil {
+				anim(f, &f.blocks[dstIdx].List)
+			}
+			srcIdx += w
+			dstIdx += w
+		}
+		zeroFn(section.RowTo*w + col - deltaW)
+	}
+
+	return destroy
+}
+
 func (f *Field) SetXY(x, y, animType, animParam int, b block.Block) {
 	if old, _ := f.getXY(x, y); b.Type == block.TypeEmpty || old.Type != block.TypeEmpty {
 		panic("empty block in f.SetXY") // should not happen

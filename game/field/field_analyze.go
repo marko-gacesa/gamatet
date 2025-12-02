@@ -58,3 +58,47 @@ func (f *Field) FindBlizzardTops() []block.XY {
 
 	return tops
 }
+
+type ColumnSection struct {
+	Column  int
+	RowFrom int
+	RowTo   int
+}
+
+func (f *Field) FindMovableColumnSections(col int, filter func(*Field, ColumnSection) bool) []ColumnSection {
+	var start int
+	var sections []ColumnSection
+	start = -1
+	for row, idx := 0, col; row < f.h; row, idx = row+1, idx+f.w {
+		b := f.blocks[idx].Block
+		if b.Type.IsImmovable() {
+			if start >= 0 {
+				section := ColumnSection{Column: col, RowFrom: start, RowTo: row}
+				if filter == nil || filter(f, section) {
+					sections = append(sections, section)
+				}
+				start = -1
+			}
+		} else {
+			if start < 0 {
+				start = row
+			}
+		}
+	}
+	if start >= 0 {
+		section := ColumnSection{Column: col, RowFrom: start, RowTo: f.h}
+		if filter == nil || filter(f, section) {
+			sections = append(sections, section)
+		}
+	}
+
+	return sections
+}
+
+func (f *Field) FindMovableSections(filter func(*Field, ColumnSection) bool) []ColumnSection {
+	sections := make([]ColumnSection, 0, f.w)
+	for col := range f.w {
+		sections = append(sections, f.FindMovableColumnSections(col, filter)...)
+	}
+	return sections
+}
