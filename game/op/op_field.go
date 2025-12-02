@@ -8,11 +8,13 @@ import (
 	"encoding/binary"
 	"io"
 	"slices"
+	"time"
 
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/piece"
+	"github.com/marko-gacesa/gamatet/logic/anim"
 )
 
 // FieldStop is a signal that not more events will be fired
@@ -474,6 +476,84 @@ func (e *FieldBlockTransform) Read(r io.Reader) error {
 }
 
 func (e *FieldBlockTransform) TypeID() event.Code { return codeFieldBlockTransform }
+
+func NewFieldColumnShift(section field.ColumnSection, delta int) *FieldColumnShift {
+	return &FieldColumnShift{
+		Column:  byte(section.Column),
+		RowFrom: byte(section.RowFrom),
+		RowTo:   byte(section.RowTo),
+		Delta:   int8(delta),
+	}
+}
+
+type FieldColumnShift struct {
+	Column  byte
+	RowFrom byte
+	RowTo   byte
+	Delta   int8
+}
+
+var _ event.Event = (*FieldColumnShift)(nil)
+
+func (e *FieldColumnShift) Do(f *field.Field) {
+	section := field.ColumnSection{
+		Column:  int(e.Column),
+		RowFrom: int(e.RowFrom),
+		RowTo:   int(e.RowTo),
+	}
+	now := time.Now()
+	f.ShiftBlockInColumn(section, int(e.Delta), func(f *field.Field, list *anim.List) {
+		list.Add(anim.NewYLin(now, piece.DurationMove, float32(e.Delta)))
+	})
+}
+
+func (e *FieldColumnShift) Undo(f *field.Field) {
+	section := field.ColumnSection{
+		Column:  int(e.Column),
+		RowFrom: int(e.RowFrom),
+		RowTo:   int(e.RowTo),
+	}
+	f.ShiftBlockInColumn(section, int(-e.Delta), nil)
+}
+
+func (e *FieldColumnShift) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldColumnShift)
+	return ok &&
+		e.Column == q.Column && e.RowFrom == q.RowFrom && e.RowTo == q.RowTo && e.Delta == q.Delta
+}
+
+func (e *FieldColumnShift) Read(r io.Reader) error {
+	var buffer [4]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.Column = buffer[0]
+	e.RowFrom = buffer[1]
+	e.RowTo = buffer[2]
+	e.Delta = int8(buffer[3])
+
+	return nil
+}
+
+func (e *FieldColumnShift) Write(w io.Writer) error {
+	var buffer [4]byte
+
+	buffer[0] = e.Column
+	buffer[1] = e.RowFrom
+	buffer[2] = e.RowTo
+	buffer[3] = byte(e.Delta)
+
+	if _, err := w.Write(buffer[:]); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *FieldColumnShift) TypeID() event.Code {
+	return codeFieldColumnShift
+}
 
 func NewFieldExBlock(col, row int, animType, animParam int, b block.Block) *FieldExBlock {
 	return &FieldExBlock{

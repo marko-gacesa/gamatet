@@ -42,6 +42,7 @@ const (
 
 	magicEffectLid
 	magicEffectBigO
+	magicRaise
 
 	magicEffectPatchHoles
 
@@ -50,7 +51,7 @@ const (
 
 var (
 	magicEffectsSelf   = []field.Effect{magicEffectPatchHoles}
-	magicEffectsOthers = []field.Effect{magicEffectLid, magicEffectBigO}
+	magicEffectsOthers = []field.Effect{magicEffectLid, magicEffectBigO, magicRaise}
 )
 
 func NewMagic(f *field.Field, others []FieldPusher, seed int, types MagicType) *Magic {
@@ -159,6 +160,9 @@ func (s *Magic) activated(effect field.Effect, p event.Pusher) {
 		s.effectLid()
 	case magicEffectBigO:
 		s.effectBigO()
+	case magicRaise:
+		s.effectRaise()
+
 	case magicEffectPatchHoles:
 		s.effectPatchHoles(p)
 	}
@@ -263,6 +267,22 @@ func (s *Magic) effectBigO() {
 					break
 				}
 			}
+		}
+	}
+}
+
+func (s *Magic) effectRaise() {
+	for _, o := range s.others {
+		f := o.Field
+		if f.IsFinished() {
+			continue
+		}
+
+		sections := f.FindMovableSections(func(f *field.Field, section field.ColumnSection) bool {
+			return f.GetXY(section.Column, section.RowTo-1).Type == block.TypeEmpty
+		})
+		for _, section := range sections {
+			o.Pusher.Push(op.NewFieldColumnShift(section, 1))
 		}
 	}
 }

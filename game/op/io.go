@@ -20,6 +20,7 @@ const (
 	codeFieldBlockSet
 	codeFieldBlockHardness
 	codeFieldBlockTransform
+	codeFieldColumnShift
 	codeFieldExBlock
 	codeFieldStat
 	codeFieldEffect
@@ -89,6 +90,8 @@ func instance(code event.Code) event.Event {
 		e = &FieldBlockHardness{}
 	case codeFieldBlockTransform:
 		e = &FieldBlockTransform{}
+	case codeFieldColumnShift:
+		e = &FieldColumnShift{}
 	case codeFieldExBlock:
 		e = &FieldExBlock{}
 	case codeFieldStat:
