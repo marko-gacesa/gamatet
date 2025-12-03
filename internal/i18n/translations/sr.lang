@@ -235,7 +235,6 @@ rotation_dir_ccw = Супротно од смера казаљке на сату
 # Field strings
 
 field_title_panel_blocks  = Блокови:
-field_title_panel_magic   = Магија:
 field_side_panel_player   = ИГРАЧ
 field_side_panel_score    = ПОЕНИ
 field_side_panel_piece    = ФИГУРА
@@ -247,6 +246,15 @@ field_message_defeat      = ПОРАЗ
 field_message_pause       = ПАУЗА
 field_message_suspended   = ПРОБЛЕМ\nСА\nМРЕЖОМ
 field_message_server_lost = СЕРВЕР\nИЗГУБЉЕН
+
+# Effects
+
+effect_lid   = Поклопац
+effect_big_o = Велико О
+effect_raise = Подизање
+effect_patch = Закрпе
+
+# Generic
 
 bool_true  = ДА
 bool_false = НЕ

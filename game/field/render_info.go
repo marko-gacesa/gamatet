@@ -60,8 +60,13 @@ type PieceTextData struct {
 
 type TextData struct {
 	BlocksRemoved string
-	Magic         string
 	Latencies     string
+}
+
+type EffectInfo struct {
+	Effect      Effect
+	EffectCount byte
+	EffectStr   string
 }
 
 type RenderInfo struct {
@@ -71,6 +76,8 @@ type RenderInfo struct {
 
 	Pieces     [MaxPieces]PieceRenderInfo
 	PieceCount int
+
+	Effect EffectInfo
 
 	Result anim.Result
 
@@ -120,11 +127,11 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 	info.Mode = f.mode
 	info.Blocks = info.Blocks[:0] // empty it, but keep the memory
 	info.PieceCount = pieceCount
+	info.Effect = EffectInfo{Effect: f.effect, EffectCount: f.effectSeconds, EffectStr: f.effectStr}
 	info.Result = f.animList.Process(now)
 
 	info.TextData = TextData{
 		BlocksRemoved: f.stats.blocksRemovedStr,
-		Magic:         f.stats.effectStr,
 	}
 
 	// process all blocks of the Field

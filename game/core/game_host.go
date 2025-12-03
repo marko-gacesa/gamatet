@@ -123,6 +123,8 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 			panic(fmt.Sprintf("field=%d should not have InCh", i))
 		}
 
+		f.UpdateBlocksRemoved(0)
+
 		fields[i] = hostFieldData{
 			Field:    f,
 			Sweepers: sweepers,

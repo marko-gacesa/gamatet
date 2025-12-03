@@ -5,6 +5,7 @@ package field
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/piece"
@@ -70,8 +71,6 @@ type elem struct {
 	anim.List
 }
 
-type Effect byte
-
 type stats struct {
 	blocksRemoved    int
 	blocksRemovedStr string
@@ -115,8 +114,6 @@ func Make(dimW, dimH, pieceCount int) (f *Field) {
 	for i := range pieceCount {
 		f.pieces[i] = piece.NewCtrl(i)
 	}
-
-	f.UpdateBlocksRemoved(0)
 
 	return
 }
@@ -187,7 +184,19 @@ func (f *Field) Anim(a anim.Anim) {
 
 func (f *Field) UpdateBlocksRemoved(delta int) {
 	f.stats.blocksRemoved += delta
-	f.stats.blocksRemovedStr = fmt.Sprintf("%06d", f.blocksRemoved)
+
+	var level int
+	for _, ctrl := range f.pieces {
+		level = max(level, ctrl.Level)
+	}
+
+	if level == piece.MaxLevel {
+		f.stats.blocksRemovedStr = fmt.Sprintf("%04d", f.blocksRemoved)
+	} else {
+		f.stats.blocksRemovedStr = fmt.Sprintf("%04d / %04d",
+			f.blocksRemoved,
+			LevelUpBlocks(level+1, f.w))
+	}
 }
 
 func (f *Field) GetBlocksRemoved() int {
@@ -201,7 +210,7 @@ func (f *Field) UpdateEffect(effect Effect, effectSeconds byte) {
 		f.stats.effectStr = ""
 		return
 	}
-	f.stats.effectStr = fmt.Sprintf("%d @ %02d", f.effect, f.effectSeconds)
+	f.stats.effectStr = "(" + strconv.Itoa(int(effectSeconds)) + ")"
 }
 
 func (f *Field) GetEffect() (Effect, byte) {

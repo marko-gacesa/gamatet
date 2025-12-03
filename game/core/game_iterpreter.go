@@ -108,6 +108,8 @@ func MakeInterpreter(setup Setup, options InterpreterOptions) *GameInterpreter {
 			panic(fmt.Sprintf("field=%d should not have OutCh", i))
 		}
 
+		f.UpdateBlocksRemoved(0)
+
 		fields[i] = interpreterFieldData{
 			Field: f,
 			InCh:  setup.Fields[i].InCh,

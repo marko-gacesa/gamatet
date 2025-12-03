@@ -235,7 +235,6 @@ rotation_dir_ccw = Counterclockwise
 # Field strings
 
 field_title_panel_blocks  = Blocks:
-field_title_panel_magic   = Magic:
 field_side_panel_player   = PLAYER
 field_side_panel_score    = SCORE
 field_side_panel_piece    = PIECE
@@ -247,6 +246,15 @@ field_message_defeat      = DEFEAT
 field_message_pause       = PAUSE
 field_message_suspended   = NETWORK\nPROBLEM
 field_message_server_lost = SERVER LOST
+
+# Effects
+
+effect_lid   = Lid
+effect_big_o = Big O
+effect_raise = Raise Field
+effect_patch = Patch Holes
+
+# Generic
 
 bool_true  = ON
 bool_false = OFF

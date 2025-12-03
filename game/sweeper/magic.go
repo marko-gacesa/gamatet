@@ -17,8 +17,8 @@ import (
 var _ Sweeper = (*Magic)(nil)
 
 const (
-	magicWaitSeconds   = 5
-	magicActiveSeconds = 15
+	magicWaitSeconds   = 15
+	magicActiveSeconds = 25
 )
 
 type magicState byte
@@ -37,21 +37,9 @@ const (
 	MagicTypeAll    MagicType = MagicTypeSelf | MagicTypeOthers
 )
 
-const (
-	magicEffectNone field.Effect = iota
-
-	magicEffectLid
-	magicEffectBigO
-	magicRaise
-
-	magicEffectPatchHoles
-
-	magicEffectTotal
-)
-
 var (
-	magicEffectsSelf   = []field.Effect{magicEffectPatchHoles}
-	magicEffectsOthers = []field.Effect{magicEffectLid, magicEffectBigO, magicRaise}
+	magicEffectsSelf   = []field.Effect{field.EffectPatch}
+	magicEffectsOthers = []field.Effect{field.EffectLid, field.EffectBigO, field.EffectRaise}
 )
 
 func NewMagic(f *field.Field, others []FieldPusher, seed int, types MagicType) *Magic {
@@ -102,10 +90,10 @@ func (s *Magic) Sweep(p event.Pusher) {
 	effect, seconds := s.field.GetEffect()
 
 	if s.state == magicStateFinished {
-		if effect != magicEffectNone {
+		if effect != field.EffectNone {
 			s.restoreBlock(p)
 		}
-		p.Push(op.NewFieldEffect(effect, magicEffectNone, 0, 0))
+		p.Push(op.NewFieldEffect(effect, field.EffectNone, 0, 0))
 		s.endIteration()
 		return
 	}
@@ -113,7 +101,7 @@ func (s *Magic) Sweep(p event.Pusher) {
 	if s.state == magicStateActivated {
 		s.activated(effect, p)
 		s.state = magicStateRunning
-		p.Push(op.NewFieldEffect(effect, magicEffectNone, seconds, magicWaitSeconds))
+		p.Push(op.NewFieldEffect(effect, field.EffectNone, seconds, magicWaitSeconds))
 		s.base.reschedule(time.Second)
 		return
 	}
@@ -124,23 +112,23 @@ func (s *Magic) Sweep(p event.Pusher) {
 		return
 	}
 
-	if effect != magicEffectNone {
+	if effect != field.EffectNone {
 		s.restoreBlock(p)
-		p.Push(op.NewFieldEffect(effect, magicEffectNone, 0, magicWaitSeconds))
+		p.Push(op.NewFieldEffect(effect, field.EffectNone, 0, magicWaitSeconds))
 		s.base.reschedule(time.Second)
 		return
 	}
 
 	xyb, ok := s.possessBlock()
 	if !ok {
-		p.Push(op.NewFieldEffect(magicEffectNone, magicEffectNone, 0, magicWaitSeconds))
+		p.Push(op.NewFieldEffect(field.EffectNone, field.EffectNone, 0, magicWaitSeconds))
 		s.base.reschedule(time.Second)
 		return
 	}
 
 	s.oldBlock = xyb.Block
 	effect = s.randomEffect()
-	if effect == magicEffectNone {
+	if effect == field.EffectNone {
 		s.state = magicStateFinished
 		s.endIteration()
 		return
@@ -148,7 +136,7 @@ func (s *Magic) Sweep(p event.Pusher) {
 
 	p.Push(op.NewFieldBlockTransform(xyb.X, xyb.Y, xyb.Block, block.Goal, field.AnimNo, 0))
 	p.Push(op.NewFieldExBlock(xyb.X, xyb.Y, field.AnimDestroy, 0, xyb.Block))
-	p.Push(op.NewFieldEffect(magicEffectNone, effect, 0, magicActiveSeconds))
+	p.Push(op.NewFieldEffect(field.EffectNone, effect, 0, magicActiveSeconds))
 
 	s.count++
 	s.base.reschedule(time.Second)
@@ -156,14 +144,14 @@ func (s *Magic) Sweep(p event.Pusher) {
 
 func (s *Magic) activated(effect field.Effect, p event.Pusher) {
 	switch effect {
-	case magicEffectLid:
+	case field.EffectLid:
 		s.effectLid()
-	case magicEffectBigO:
+	case field.EffectBigO:
 		s.effectBigO()
-	case magicRaise:
+	case field.EffectRaise:
 		s.effectRaise()
 
-	case magicEffectPatchHoles:
+	case field.EffectPatch:
 		s.effectPatchHoles(p)
 	}
 }
@@ -204,7 +192,7 @@ func (s *Magic) possessBlock() (block.XYB, bool) {
 }
 
 func (s *Magic) randomEffect() field.Effect {
-	var effectsBuffer [magicEffectTotal]field.Effect
+	var effectsBuffer [32]field.Effect
 	effects := effectsBuffer[:0]
 	if s.types&MagicTypeSelf > 0 {
 		effects = append(effects, magicEffectsSelf...)
@@ -213,7 +201,7 @@ func (s *Magic) randomEffect() field.Effect {
 		effects = append(effects, magicEffectsOthers...)
 	}
 	if len(effects) == 0 {
-		return magicEffectNone
+		return field.EffectNone
 	}
 
 	r := random.New(s.count, s.seed)

@@ -229,7 +229,6 @@ const (
 	KeyRotationDirCCW = "rotation_dir_ccw"
 
 	KeyFieldTitlePanelBlocks  = "field_title_panel_blocks"
-	KeyFieldTitlePanelMagic   = "field_title_panel_magic"
 	KeyFieldSidePanelPlayer   = "field_side_panel_player"
 	KeyFieldSidePanelScore    = "field_side_panel_score"
 	KeyFieldSidePanelPiece    = "field_side_panel_piece"
@@ -241,6 +240,11 @@ const (
 	KeyFieldMessagePause      = "field_message_pause"
 	KeyFieldMessageSuspended  = "field_message_suspended"
 	KeyFieldMessageServerLost = "field_message_server_lost"
+
+	KeyEffectLid   = "effect_lid"
+	KeyEffectBigO  = "effect_big_o"
+	KeyEffectRaise = "effect_raise"
+	KeyEffectPatch = "effect_patch"
 
 	KeyBoolTrue  = "bool_true"
 	KeyBoolFalse = "bool_false"

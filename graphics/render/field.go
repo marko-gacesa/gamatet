@@ -31,8 +31,8 @@ var (
 
 	colorFrame = colorVector(block.Rock.Color)
 
-	colorText  = mgl32.Vec4{1, 1, 1, 0.8}
-	colorLabel = mgl32.Vec4{1, 1, 1, 0.5}
+	colorText  = mgl32.Vec4{1, 1, 1, 0.7}
+	colorLabel = mgl32.Vec4{1, 1, 1, 0.4}
 
 	colorPlayer     = [setup.MaxPlayers]mgl32.Vec4{}
 	colorPlayerBack = [setup.MaxPlayers]mgl32.Vec4{}
@@ -47,7 +47,7 @@ func init() {
 
 const (
 	scaleLabel = 0.6
-	scaleText  = 0.8
+	scaleText  = 0.75
 
 	paddingText = 0.2
 )
@@ -76,7 +76,6 @@ func GetExtendedContent(w, h int, infoPos [field.MaxPieces]DisplayPosition) (int
 type FieldStrings struct {
 	TitlePanel struct {
 		Blocks string
-		Magic  string
 	}
 	SidePanel struct {
 		Player string
@@ -93,6 +92,7 @@ type FieldStrings struct {
 		Suspended  string
 		ServerLost string
 	}
+	EffectMap map[field.Effect]string
 }
 
 type Field struct {
@@ -280,25 +280,29 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 			colorText,
 			scaleText,
 			renderInfo.TextData.BlocksRemoved)
-		f.printTextRight(
+		_ = f.printTextRight(
 			modelTitleTopRight.Mul4(mgl32.Translate3D(-d-0.1, 0, 0)),
 			colorLabel,
 			scaleLabel,
 			f.str.TitlePanel.Blocks)
 	}
 
-	if renderInfo.TextData.Magic != "" {
-		modelTitleBottomLeft := modelField.Mul4(mgl32.Translate3D(-0.5, -1, 0.5))
+	if renderInfo.Effect.Effect != field.EffectNone {
+		modelTitleBottomLeft := modelField.Mul4(mgl32.Translate3D(0, -1, 0.5))
+		f.listGoal.Add(modelTitleBottomLeft.Mul4(mgl32.Scale3D(0.4, 0.4, 0.4)),
+			mgl32.Vec4{1, 0, 0, 1})
+		modelTitleBottomLeft = modelTitleBottomLeft.Mul4(mgl32.Translate3D(0.5, 0, 0))
 		d := f.printText(
 			modelTitleBottomLeft,
-			colorLabel,
-			scaleLabel,
-			f.str.TitlePanel.Magic)
-		f.printText(
-			modelTitleBottomLeft.Mul4(mgl32.Translate3D(d+0.1, 0, 0)),
 			colorText,
 			scaleText,
-			renderInfo.TextData.Magic)
+			f.str.EffectMap[renderInfo.Effect.Effect])
+		d += 0.3
+		_ = f.printText(
+			modelTitleBottomLeft.Mul4(mgl32.Translate3D(d, 0, 0)),
+			colorLabel,
+			scaleLabel,
+			renderInfo.Effect.EffectStr)
 	}
 
 	for y := 1; y < contentHeight-1; y++ {

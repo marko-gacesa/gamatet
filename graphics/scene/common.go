@@ -6,6 +6,7 @@ package scene
 import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 
+	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/graphics/render"
 	"github.com/marko-gacesa/gamatet/internal/config/key"
 	. "github.com/marko-gacesa/gamatet/internal/i18n"
@@ -268,10 +269,8 @@ func fieldStrings() render.FieldStrings {
 	return render.FieldStrings{
 		TitlePanel: struct {
 			Blocks string
-			Magic  string
 		}{
 			Blocks: T(KeyFieldTitlePanelBlocks),
-			Magic:  T(KeyFieldTitlePanelMagic),
 		},
 		SidePanel: struct {
 			Player string
@@ -300,6 +299,12 @@ func fieldStrings() render.FieldStrings {
 			Pause:      T(KeyFieldMessagePause),
 			Suspended:  T(KeyFieldMessageSuspended),
 			ServerLost: T(KeyFieldMessageServerLost),
+		},
+		EffectMap: map[field.Effect]string{
+			field.EffectLid:   T(KeyEffectLid),
+			field.EffectBigO:  T(KeyEffectBigO),
+			field.EffectRaise: T(KeyEffectRaise),
+			field.EffectPatch: T(KeyEffectPatch),
 		},
 	}
 }
