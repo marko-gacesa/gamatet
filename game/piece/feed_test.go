@@ -49,7 +49,7 @@ func TestGenericFeed(t *testing.T) {
 			shapes := shapesRotTetrominoes
 			shapeCount := len(shapes)
 
-			f := NewGenericFeed(test.bagSize, test.seed, shapeCount, func(idx, playerIndex int) Piece {
+			f := NewGenericFeed(test.bagSize, test.seed, shapeCount, func(idx uint, playerIndex byte) Piece {
 				return &polyominoRot{
 					shapeSquare: shapes[idx],
 					block:       block.Rock,
@@ -77,7 +77,7 @@ func TestGenericFeed(t *testing.T) {
 			for _, bag := range test.bags {
 				idx := bag * pieceBagCount
 				for bagIdx := range pieceBagCount {
-					p := f.Get(idx+bagIdx, 0).(*polyominoRot)
+					p := f.Get(uint(idx+bagIdx), 0).(*polyominoRot)
 					bagTest[bag].pieceCount[*p]++
 					bagTest[bag].pieces[bagIdx] = *p
 				}
@@ -102,7 +102,7 @@ func TestGenericFeed(t *testing.T) {
 
 				idx := bag * pieceBagCount
 				for bagIdx := range pieceBagCount {
-					p := f.Get(idx+bagIdx, 0).(*polyominoRot)
+					p := f.Get(uint(idx+bagIdx), 0).(*polyominoRot)
 					if bagTest[bag].pieces[bagIdx] != *p {
 						t.Errorf("piece order test failed: test#=%d in bag=%d bagIdx=%d expected piece:\n%s\ngot piece:\n%s\n",
 							testIdx, bag, bagIdx, bagTest[bag].pieces[bagIdx].String(), p.String())

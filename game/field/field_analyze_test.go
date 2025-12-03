@@ -211,7 +211,7 @@ func TestField_FindMovableColumnSections(t *testing.T) {
 			name:   "filter_bottom_empty",
 			column: []block.Block{bE, bR, bI, bE, bE, bR},
 			filter: func(f *Field, section ColumnSection) bool {
-				b, _ := f.getXY(section.Column, section.RowTo-1)
+				b, _ := f.getXY(section.Column, section.RowFrom)
 				return b.Type == block.TypeEmpty
 			},
 			expected: []ColumnSection{
