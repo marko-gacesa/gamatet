@@ -90,7 +90,7 @@ func (s *Row) Sweep(p event.Pusher) {
 		return
 	}
 
-	s.reschedule(piece.GetFallDuration(maxHeight) + piece.DurationFullLine)
+	s.reschedule(piece.GetFallDuration(uint(maxHeight)) + piece.DurationFullLine)
 }
 
 func (s *Row) finish(p event.Pusher) {

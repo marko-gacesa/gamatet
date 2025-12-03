@@ -54,14 +54,14 @@ func init() {
 	}
 }
 
-func getDescendDuration(level int) time.Duration {
+func getDescendDuration(level uint) time.Duration {
 	return _durationDescend[level]
 }
 
-func GetFallDuration(height int) time.Duration {
+func GetFallDuration(height uint) time.Duration {
 	return _durationFall[height]
 }
 
-func GetSlideDuration(level int) time.Duration {
+func GetSlideDuration(level uint) time.Duration {
 	return _durationSlide[level]
 }

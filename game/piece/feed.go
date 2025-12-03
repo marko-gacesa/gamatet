@@ -13,7 +13,7 @@ import (
 )
 
 type Feed interface {
-	Get(idx, playerIdx int) Piece
+	Get(idx uint, playerIdx byte) Piece
 }
 
 const (
@@ -30,49 +30,52 @@ const (
 // SamePieceFeed is the feed that always return the same piece. Useful for testing.
 type SamePieceFeed struct{ Piece }
 
-func (p SamePieceFeed) Get(int, int) Piece { return p.Piece }
+func (p SamePieceFeed) Get(uint, byte) Piece { return p.Piece }
 
 type QFeed struct{}
 
-func (p QFeed) Get(int, int) Piece { return &polyominoFlipH{shapeRect: shapeQ, block: block.Rock} }
+func (p QFeed) Get(uint, byte) Piece { return &polyominoFlipH{shapeRect: shapeQ, block: block.Rock} }
 
 type GenericFeed struct {
-	seed          int
-	pieceBagCount int
-	shapeCount    int
-	fn            func(idx, playerIdx int) Piece
+	seed          uint
+	pieceBagCount uint
+	shapeCount    uint
+	fn            func(idx uint, playerIdx byte) Piece
 	pool          *sync.Pool
 }
 
-func NewGenericFeed(bagSize int, seed int, shapeCount int, fn func(idx, playerIdx int) Piece) GenericFeed {
+func NewGenericFeed(bagSize int, seed int, shapeCount int, fn func(idx uint, playerIdx byte) Piece) GenericFeed {
 	if bagSize < 1 || bagSize > MaxBagSize {
 		panic("bagSize must be from 1 to " + strconv.Itoa(MaxBagSize))
+	}
+	if shapeCount < 1 {
+		panic("shapeCount must a positive integer")
 	}
 
 	pieceBagCount := shapeCount * bagSize
 
 	return GenericFeed{
-		seed:          seed,
-		pieceBagCount: pieceBagCount,
-		shapeCount:    shapeCount,
+		seed:          uint(seed),
+		pieceBagCount: uint(pieceBagCount),
+		shapeCount:    uint(shapeCount),
 		fn:            fn,
 		pool: &sync.Pool{
 			New: func() any {
-				return make([]int, pieceBagCount)
+				return make([]uint, pieceBagCount)
 			},
 		},
 	}
 }
 
-func (f GenericFeed) Get(idx, playerIdx int) Piece {
+func (f GenericFeed) Get(idx uint, playerIdx byte) Piece {
 	bagIdx := idx / f.pieceBagCount
-	idx = idx % f.pieceBagCount
+	offs := idx % f.pieceBagCount
 
-	r := random.New(uint32(f.seed+857*bagIdx+13), uint32(f.seed+328*bagIdx+17))
+	r := random.New(f.seed+857*bagIdx+13, f.seed+328*bagIdx+17)
 
-	m := f.pool.Get().([]int)
+	m := f.pool.Get().([]uint)
 	r.Perm(m)
-	shapeIdx := m[idx] % f.shapeCount
+	shapeIdx := m[offs] % f.shapeCount
 	f.pool.Put(m)
 
 	return f.fn(shapeIdx, playerIdx)
@@ -89,7 +92,7 @@ func NewRotTetrominoFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 		return QFeed{}
 	}
 	shapes := shapesRot[pieceSize]
-	return NewGenericFeed(bagSize, seed, len(shapes), func(idx, playerIdx int) Piece {
+	return NewGenericFeed(bagSize, seed, len(shapes), func(idx uint, playerIdx byte) Piece {
 		return &polyominoRot{
 			shapeSquare: shapes[idx],
 			rot:         0,
@@ -113,7 +116,7 @@ func NewFlipVFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 		return QFeed{}
 	}
 	shapes := shapesFlipV[pieceSize]
-	return NewGenericFeed(bagSize, seed, len(shapes), func(idx, playerIndex int) Piece {
+	return NewGenericFeed(bagSize, seed, len(shapes), func(idx uint, playerIndex byte) Piece {
 		return &polyominoFlipV{
 			shapeRect: shapes[idx],
 			block: block.Block{
@@ -136,7 +139,7 @@ func NewFlipHFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 		return QFeed{}
 	}
 	shapes := shapesFlipH[pieceSize]
-	return NewGenericFeed(bagSize, seed, len(shapes), func(idx, playerIndex int) Piece {
+	return NewGenericFeed(bagSize, seed, len(shapes), func(idx uint, playerIndex byte) Piece {
 		return &polyominoFlipH{
 			shapeRect: shapes[idx],
 			block: block.Block{
@@ -153,7 +156,7 @@ type CtrlFeed struct {
 	fIdx     int
 	ctrlIdx  int
 	same     bool
-	override map[int]Piece
+	override map[uint]Piece
 }
 
 func NewCtrlFeed(internal Feed, fIdx, ctrlIdx int, same bool) *CtrlFeed {
@@ -162,32 +165,32 @@ func NewCtrlFeed(internal Feed, fIdx, ctrlIdx int, same bool) *CtrlFeed {
 		fIdx:     fIdx,
 		ctrlIdx:  ctrlIdx,
 		same:     same,
-		override: map[int]Piece{},
+		override: map[uint]Piece{},
 	}
 }
 
-func (f *CtrlFeed) Get(idx, playerIndex int) Piece {
+func (f *CtrlFeed) Get(idx uint, playerIndex byte) Piece {
 	if override, ok := f.override[idx]; ok {
 		return override
 	}
 	if f.same {
 		return f.internal.Get(idx, playerIndex)
 	}
-	return f.internal.Get(idx+f.fIdx*137+f.ctrlIdx*5, playerIndex)
+	return f.internal.Get(idx+uint(f.fIdx)*137+uint(f.ctrlIdx)*5, playerIndex)
 }
 
-func (f *CtrlFeed) Overridden(idx int) bool {
+func (f *CtrlFeed) Overridden(idx uint) bool {
 	_, ok := f.override[idx]
 	return ok
 }
 
-func (f *CtrlFeed) Override(idx int, piece Piece) {
+func (f *CtrlFeed) Override(idx uint, piece Piece) {
 	if _, ok := f.override[idx]; ok {
 		return
 	}
 	f.override[idx] = piece
 }
 
-func (f *CtrlFeed) OverrideClear(idx int) {
+func (f *CtrlFeed) OverrideClear(idx uint) {
 	delete(f.override, idx)
 }

@@ -18,7 +18,7 @@ const (
 	WallKickDefault = 2
 )
 
-const NextBlockCount = 3
+const NextBlockCount uint = 3
 
 type State byte
 
@@ -71,7 +71,7 @@ type Ctrl struct {
 	Idx int
 
 	// PlayerIndex is index of the player in the game.
-	PlayerIndex int
+	PlayerIndex byte
 
 	// Name of the player
 	Name string
@@ -101,15 +101,15 @@ type Ctrl struct {
 	ColumnLimit ColumnLimit
 
 	// Score is player's score.
-	Score    int
+	Score    uint
 	ScoreStr string
 
 	// PieceCount is the index number of the piece since the game start
-	PieceCount    int
+	PieceCount    uint
 	PieceCountStr string
 
 	// Level is the speed at the player plays
-	Level      int
+	Level      uint
 	LevelStr   string
 	LevelBoost bool
 
@@ -166,7 +166,7 @@ func (c *Ctrl) RestartTimer(param int) {
 		dur = getDescendDuration(c.ApparentLevel())
 	case StateFall:
 		if param > 0 {
-			dur = GetFallDuration(param)
+			dur = GetFallDuration(uint(param))
 		} else {
 			dur = DurationFall
 		}
@@ -202,12 +202,15 @@ func (c *Ctrl) StopTimer() {
 	}
 }
 
-func (c *Ctrl) SetLevel(l int) {
+func (c *Ctrl) SetLevel(l uint) {
+	if l > MaxLevel {
+		return
+	}
 	c.Level = l
-	c.LevelStr = strconv.Itoa(l)
+	c.LevelStr = strconv.Itoa(int(l))
 }
 
-func (c *Ctrl) ApparentLevel() int {
+func (c *Ctrl) ApparentLevel() uint {
 	level := c.Level
 	if c.LevelBoost && level < MaxLevel {
 		switch level {

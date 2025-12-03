@@ -16,7 +16,7 @@ const (
 	TetrominoZ
 )
 
-func NewTetromino(id int, b block.Block) Piece {
+func NewTetromino(id uint, b block.Block) Piece {
 	return &polyominoRot{
 		shapeSquare: shapesRotTetrominoes[id],
 		rot:         0,
@@ -24,7 +24,7 @@ func NewTetromino(id int, b block.Block) Piece {
 	}
 }
 
-func NewColorTetromino(id int, color uint32) Piece {
+func NewColorTetromino(id uint, color uint32) Piece {
 	return NewTetromino(id, block.Block{
 		Type:     block.TypeRock,
 		Hardness: 0,
@@ -32,18 +32,18 @@ func NewColorTetromino(id int, color uint32) Piece {
 	})
 }
 
-func NewStandardTetromino(id int) Piece {
+func NewStandardTetromino(id uint) Piece {
 	return NewColorTetromino(id, DefaultColor{}.Color(id, 0))
 }
 
-func NewFlipVTetromino(id int, b block.Block) Piece {
+func NewFlipVTetromino(id uint, b block.Block) Piece {
 	return &polyominoFlipV{
 		shapeRect: shapesFlipVTetrominoes[id],
 		block:     b,
 	}
 }
 
-func NewPentominos(id int, b block.Block) Piece {
+func NewPentominos(id uint, b block.Block) Piece {
 	return &polyominoRot{
 		shapeSquare: shapesRotPentominoes[id],
 		rot:         0,

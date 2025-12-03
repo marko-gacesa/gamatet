@@ -48,7 +48,7 @@ func NewMagic(f *field.Field, others []FieldPusher, seed int, types MagicType) *
 	m := &Magic{
 		base:   *b,
 		others: others,
-		seed:   uint32(seed),
+		seed:   uint(seed),
 		state:  magicStateRunning,
 		types:  types,
 	}
@@ -63,11 +63,11 @@ func NewMagic(f *field.Field, others []FieldPusher, seed int, types MagicType) *
 type Magic struct {
 	base
 	others []FieldPusher
-	seed   uint32
+	seed   uint
 	state  magicState
 	types  MagicType
 
-	count    uint32
+	count    uint
 	oldBlock block.Block
 }
 
@@ -215,7 +215,7 @@ func (s *Magic) effectLid() {
 			continue
 		}
 
-		r := random.New(s.count*10+uint32(idx), s.seed)
+		r := random.New(s.count+uint(idx), s.seed)
 
 		w := f.GetWidth()
 		h := f.GetHeight()

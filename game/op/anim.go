@@ -74,7 +74,7 @@ func animateDropPiece(ctrl *piece.Ctrl, height int, isAnim bool) {
 		return
 	}
 
-	duration := piece.GetFallDuration(height)
+	duration := piece.GetFallDuration(uint(height))
 	ctrl.List.Add(anim.NewFall(time.Now(), duration, float32(height)))
 }
 

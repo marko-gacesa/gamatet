@@ -185,7 +185,7 @@ func (f *Field) Anim(a anim.Anim) {
 func (f *Field) UpdateBlocksRemoved(delta int) {
 	f.stats.blocksRemoved += delta
 
-	var level int
+	var level uint
 	for _, ctrl := range f.pieces {
 		level = max(level, ctrl.Level)
 	}
@@ -195,7 +195,7 @@ func (f *Field) UpdateBlocksRemoved(delta int) {
 	} else {
 		f.stats.blocksRemovedStr = fmt.Sprintf("%04d / %04d",
 			f.blocksRemoved,
-			LevelUpBlocks(level+1, f.w))
+			LevelUpBlocks(int(level+1), f.w))
 	}
 }
 

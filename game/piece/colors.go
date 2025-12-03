@@ -8,13 +8,13 @@ import (
 )
 
 type Color interface {
-	Color(idx, playerIdx int) uint32
+	Color(idx uint, playerIdx byte) uint32
 }
 
 type DefaultColor struct{}
 
-func (c DefaultColor) Color(idx, playerIdx int) uint32 {
-	return _colors[idx%len(_colors)]
+func (c DefaultColor) Color(idx uint, playerIdx byte) uint32 {
+	return _colors[idx%uint(len(_colors))]
 }
 
 var _colors = []uint32{
@@ -61,8 +61,8 @@ func NewRandomColor(colorTable [][3]float32, seed int) *RandomColor {
 	return c
 }
 
-func (c *RandomColor) Color(idx, playerIdx int) uint32 {
-	rgb := c.colorTable[playerIdx%len(c.colorTable)]
+func (c *RandomColor) Color(idx uint, playerIdx byte) uint32 {
+	rgb := c.colorTable[playerIdx%byte(len(c.colorTable))]
 	r := uint16(256 * rgb[0])
 	g := uint16(256 * rgb[1])
 	b := uint16(256 * rgb[2])

@@ -94,7 +94,7 @@ func (e *PieceState) Read(r io.Reader) error {
 
 func (e *PieceState) TypeID() event.Code { return codePieceState }
 
-func NewPieceSet(pIdx int, op Type, x, y int, p piece.Piece, pCount int) *PieceSet {
+func NewPieceSet(pIdx int, op Type, x, y int, p piece.Piece, pCount uint) *PieceSet {
 	return &PieceSet{
 		PieceIdx:   byte(pIdx),
 		Op:         op,
@@ -110,7 +110,7 @@ type PieceSet struct {
 	Op         Type
 	X, Y       int8
 	Piece      piece.Piece
-	PieceCount int
+	PieceCount uint
 }
 
 var _ event.Event = (*PieceSet)(nil)
@@ -121,7 +121,7 @@ func (e *PieceSet) Do(f *field.Field) {
 	case TypeSet:
 		ctrl.SetXYP(int(e.X), int(e.Y), e.Piece)
 		ctrl.PieceCount = e.PieceCount
-		ctrl.PieceCountStr = strconv.Itoa(e.PieceCount)
+		ctrl.PieceCountStr = strconv.Itoa(int(e.PieceCount))
 		animateNewPiece(ctrl, f.Config.Anim)
 		ctrl.Blocks = piece.GetBlocks(e.Piece, ctrl.Blocks[:0])
 		for i := range piece.NextBlockCount {
@@ -145,7 +145,7 @@ func (e *PieceSet) Undo(f *field.Field) {
 	case TypeClear:
 		ctrl.SetXYP(int(e.X), int(e.Y), e.Piece)
 		ctrl.PieceCount = e.PieceCount
-		ctrl.PieceCountStr = strconv.Itoa(e.PieceCount)
+		ctrl.PieceCountStr = strconv.Itoa(int(e.PieceCount))
 		ctrl.Blocks = piece.GetBlocks(e.Piece, ctrl.Blocks[:0])
 		for i := range piece.NextBlockCount {
 			np := ctrl.Feed.Get(ctrl.PieceCount+i, ctrl.PlayerIndex)
@@ -192,10 +192,12 @@ func (e *PieceSet) Read(r io.Reader) error {
 		return err
 	}
 
-	e.PieceCount, err = serialize.ReadInt(r)
+	pieceCount, err := serialize.ReadInt(r)
 	if err != nil {
 		return err
 	}
+
+	e.PieceCount = uint(pieceCount)
 
 	return nil
 }
@@ -499,7 +501,7 @@ func (e *PieceLevelBoost) Read(r io.Reader) error {
 
 func (e *PieceLevelBoost) TypeID() event.Code { return codePieceLevelBoost }
 
-func NewPieceOverride(pIdx byte, p piece.Piece, pCount int) *PieceOverride {
+func NewPieceOverride(pIdx byte, p piece.Piece, pCount uint) *PieceOverride {
 	return &PieceOverride{
 		PieceIdx:   pIdx,
 		Piece:      p,
@@ -510,7 +512,7 @@ func NewPieceOverride(pIdx byte, p piece.Piece, pCount int) *PieceOverride {
 type PieceOverride struct {
 	PieceIdx   byte
 	Piece      piece.Piece
-	PieceCount int
+	PieceCount uint
 }
 
 var _ event.Event = (*PieceOverride)(nil)
@@ -568,10 +570,12 @@ func (e *PieceOverride) Read(r io.Reader) error {
 		return err
 	}
 
-	e.PieceCount, err = serialize.ReadInt(r)
+	pieceCount, err := serialize.ReadInt(r)
 	if err != nil {
 		return err
 	}
+
+	e.PieceCount = uint(pieceCount)
 
 	return nil
 }
@@ -594,12 +598,12 @@ var _ event.Event = (*PieceSpeedUp)(nil)
 
 func (e *PieceSpeedUp) Do(f *field.Field) {
 	ctrl := f.Ctrl(e.PieceIdx)
-	ctrl.SetLevel(ctrl.Level + int(e.Delta))
+	ctrl.SetLevel(uint(int(ctrl.Level) + int(e.Delta)))
 }
 
 func (e *PieceSpeedUp) Undo(f *field.Field) {
 	ctrl := f.Ctrl(e.PieceIdx)
-	ctrl.SetLevel(ctrl.Level - int(e.Delta))
+	ctrl.SetLevel(uint(int(ctrl.Level) - int(e.Delta)))
 }
 
 func (e *PieceSpeedUp) Equals(ev event.Event) bool {

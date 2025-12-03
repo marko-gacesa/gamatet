@@ -35,7 +35,7 @@ func (s *SpeedUp) Sweep(p event.Pusher) {
 	b := s.field.GetBlocksRemoved()
 	n := byte(s.field.Ctrls())
 	for i := range n {
-		needed := field.LevelUpBlocks(s.field.Ctrl(i).Level+1, w)
+		needed := field.LevelUpBlocks(int(s.field.Ctrl(i).Level+1), w)
 		if b >= needed {
 			p.Push(op.NewPieceSpeedUp(i, 1))
 		}

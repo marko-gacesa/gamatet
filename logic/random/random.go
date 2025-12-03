@@ -3,38 +3,42 @@
 
 package random
 
+import "math/rand/v2"
+
 type Random struct {
-	z, w uint32
+	src rand.PCG
 }
 
-func New(z, w uint32) *Random {
-	return &Random{z: z, w: w}
-}
-
-func (r *Random) gen() uint32 {
-	// Found this algorithm at: https://www.codeproject.com/Articles/25172/Simple-Random-Number-Generation.
-	// Apparently it's written by https://en.wikipedia.org/wiki/George_Marsaglia.
-	r.z = 36969*(r.z&65535) + r.z>>16
-	r.w = 18000*(r.w&65535) + r.w>>16
-	return r.z<<16 + r.w
+func New(seed1, seed2 uint) *Random {
+	src := rand.NewPCG(uint64(seed1), uint64(seed2))
+	return &Random{
+		src: *src,
+	}
 }
 
 func (r *Random) Int(n int) int {
-	return int(r.gen() % uint32(n))
+	return int(uint(r.src.Uint64()) % uint(n))
 }
 
-func (r *Random) Perm(m []int) {
-	n := len(m)
+func (r *Random) UInt(n uint) uint {
+	return uint(r.src.Uint64()) % n
+}
+
+func (r *Random) Perm(m []uint) {
+	n := uint(len(m))
 	for i := range n {
-		j := r.Int(i + 1)
+		j := r.UInt(i + 1)
 		m[i] = m[j]
 		m[j] = i
 	}
 }
 
 func Shuffle[T any](r *Random, a []T) {
-	for i := len(a) - 1; i > 0; i-- {
-		j := r.Int(i + 1)
+	if len(a) == 0 {
+		return
+	}
+	for i := uint(len(a) - 1); i > 0; i-- {
+		j := r.UInt(i + 1)
 		a[i], a[j] = a[j], a[i]
 	}
 }

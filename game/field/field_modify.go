@@ -66,7 +66,7 @@ func (f *Field) ShiftColumnDownByN(x, y, n, height int) {
 
 	var duration time.Duration
 	if f.Config.Anim {
-		duration = piece.GetFallDuration(height)
+		duration = piece.GetFallDuration(uint(height))
 	}
 
 	// move n blocks above it by height rows down
@@ -188,7 +188,7 @@ func (f *Field) SetXY(x, y, animType, animParam int, b block.Block) {
 					}
 				}
 
-				duration = piece.GetFallDuration(height)
+				duration = piece.GetFallDuration(uint(height))
 
 				if rowFull {
 					// if this block completes a line, add external bullet animation because the block will be destroyed
@@ -294,7 +294,7 @@ func (f *Field) AddExXY(x, y, animType, animParam int, b block.Block) {
 
 	case AnimFall:
 		if height := animParam; height > 0 {
-			duration := piece.GetFallDuration(height)
+			duration := piece.GetFallDuration(uint(height))
 			f.addExBlock(x, y, b, anim.NewFall(time.Now(), duration, float32(height)))
 		}
 	}
