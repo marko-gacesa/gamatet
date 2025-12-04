@@ -345,7 +345,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 			within := p.IsLimited && x >= p.Limits.Min && x <= p.Limits.Max
 			if within {
-				colorCol = colorCol.Add(colorPlayerBack[pIdx])
+				colorCol = colorCol.Add(colorPlayerBack[p.PlayerIndex])
 			}
 
 			shadow := !p.PieceEmpty && x >= renderInfo.Pieces[pIdx].Shadow.ColL && x < renderInfo.Pieces[pIdx].Shadow.ColR
