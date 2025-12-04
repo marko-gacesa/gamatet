@@ -48,7 +48,6 @@ type RandomColor struct {
 	seed       int
 	colorTable [][3]float32
 	pcg        rand.PCG
-	rand       rand.Rand
 }
 
 func NewRandomColor(colorTable [][3]float32, seed int) *RandomColor {
@@ -57,16 +56,23 @@ func NewRandomColor(colorTable [][3]float32, seed int) *RandomColor {
 		colorTable: colorTable,
 		pcg:        *rand.NewPCG(0, 0),
 	}
-	c.rand = *rand.New(&c.pcg)
 	return c
 }
 
 func (c *RandomColor) Color(idx uint, playerIdx byte) uint32 {
+	random := rand.New(&c.pcg)
 	rgb := c.colorTable[playerIdx%byte(len(c.colorTable))]
-	r := uint16(256 * rgb[0])
-	g := uint16(256 * rgb[1])
-	b := uint16(256 * rgb[2])
+	r := clamp(rgb[0] + 0.4*(rand.Float32()-0.5))
+	g := clamp(rgb[1] + 0.4*(rand.Float32()-0.5))
+	b := clamp(rgb[2] + 0.4*(rand.Float32()-0.5))
+	r16 := uint16(256 * r)
+	g16 := uint16(256 * g)
+	b16 := uint16(256 * b)
 	c.pcg.Seed(uint64(c.seed), uint64(idx))
-	v := uint16(c.rand.Uint64())&0xFF | 0b11000000
-	return uint32(r*v)&0xFF00<<16 | uint32(g*v)&0xFF00<<8 | uint32(b*v)&0xFF00
+	v := uint16(random.Uint64())&0xFF | 0b11000000
+	return uint32(r16*v)&0xFF00<<16 | uint32(g16*v)&0xFF00<<8 | uint32(b16*v)&0xFF00
+}
+
+func clamp(f float32) float32 {
+	return max(min(1, f), 0)
 }

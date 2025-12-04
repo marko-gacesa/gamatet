@@ -289,8 +289,12 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 	if renderInfo.Effect.Effect != field.EffectNone {
 		modelTitleBottomLeft := modelField.Mul4(mgl32.Translate3D(0, -1, 0.5))
-		f.listGoal.Add(modelTitleBottomLeft.Mul4(mgl32.Scale3D(0.4, 0.4, 0.4)),
-			mgl32.Vec4{1, 0, 0, 1})
+		f.listGoal.Add(
+			modelTitleBottomLeft.
+				Mul4(mgl32.Scale3D(0.4, 0.4, 0.4)).
+				Mul4(mgl32.HomogRotate3DX(float32(math.Mod(f.t*3.72, 2*math.Pi)))).
+				Mul4(mgl32.HomogRotate3DY(float32(math.Mod(f.t*2.63, 2*math.Pi)))),
+			mgl32.Vec4{0.5, 0.5, 0.5, 1})
 		modelTitleBottomLeft = modelTitleBottomLeft.Mul4(mgl32.Translate3D(0.5, 0, 0))
 		d := f.printText(
 			modelTitleBottomLeft,
@@ -550,7 +554,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 			switch np.Type {
 			case piece.TypeDumb:
-				modelPieceN = modelPieceN.Mul4(mgl32.Translate3D(0.1*pulse, 0.1*(1-pulse), 1))
+				modelPieceN = modelPieceN.Mul4(mgl32.Translate3D(0.1*pulse, 0, 0.1*pulse))
 			case piece.TypeFlipV:
 				modelPieceN = modelPieceN.Mul4(mgl32.HomogRotate3DX(float32(math.Mod(2*f.t, 2*math.Pi))))
 			case piece.TypeFlipH:

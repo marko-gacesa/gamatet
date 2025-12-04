@@ -109,7 +109,7 @@ func (s *GameOver) blockBurn(p event.Pusher) {
 		})
 	}
 
-	s.reschedule(50 * time.Millisecond)
+	s.reschedule(75 * time.Millisecond)
 }
 
 func (s *GameOver) blockFall(p event.Pusher) {

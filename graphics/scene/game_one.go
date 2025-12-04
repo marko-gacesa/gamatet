@@ -70,9 +70,8 @@ func NewGameOne(
 		playerInCh: params.PlayerInCh,
 		input:      params.PlayerInput,
 
-		model:       mgl32.Ident4(),
-		game:        params.Game,
-		fieldRender: nil,
+		model: mgl32.Ident4().Mul4(mgl32.Translate3D(0, 0, -0.25)), // -0.5 for ideal 2D/3D transition
+		game:  params.Game,
 
 		actionCh: params.ActionCh,
 
