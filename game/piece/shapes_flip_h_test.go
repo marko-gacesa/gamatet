@@ -4,7 +4,6 @@
 package piece
 
 import (
-	"slices"
 	"testing"
 )
 
@@ -319,17 +318,17 @@ func TestShapesFlipH(t *testing.T) {
 		XX, XX, __,
 	}))
 
-	if want, got := _tinyminoes, shapesFlipHTinyminoes; !slices.Equal(want, got) {
+	if want, got := _tinyminoes, shapesFlipHTinyminoes; !shapesRectEqual(want, got) {
 		t.Error("tinymino mismatch")
 		outputShapes(_tinyminoes)
 	}
 
-	if want, got := _tetrominoes, shapesFlipHTetrominoes; !slices.Equal(want, got) {
+	if want, got := _tetrominoes, shapesFlipHTetrominoes; !shapesRectEqual(want, got) {
 		t.Error("tetrominoes mismatch")
 		outputShapes(_tetrominoes)
 	}
 
-	if want, got := _pentominoes, shapesFlipHPentominoes; !slices.Equal(want, got) {
+	if want, got := _pentominoes, shapesFlipHPentominoes; !shapesRectEqual(want, got) {
 		t.Error("pentominoes mismatch")
 		outputShapes(_pentominoes)
 	}

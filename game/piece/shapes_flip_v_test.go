@@ -5,7 +5,6 @@ package piece
 
 import (
 	"fmt"
-	"slices"
 	"testing"
 )
 
@@ -320,20 +319,32 @@ func TestShapesFlipV(t *testing.T) {
 		XX, XX, __,
 	}))
 
-	if want, got := _tinyminoes, shapesFlipVTinyminoes; !slices.Equal(want, got) {
+	if want, got := _tinyminoes, shapesFlipVTinyminoes; !shapesRectEqual(want, got) {
 		t.Error("tinymino mismatch")
 		outputShapes(_tinyminoes)
 	}
 
-	if want, got := _tetrominoes, shapesFlipVTetrominoes; !slices.Equal(want, got) {
+	if want, got := _tetrominoes, shapesFlipVTetrominoes; !shapesRectEqual(want, got) {
 		t.Error("tetrominoes mismatch")
 		outputShapes(_tetrominoes)
 	}
 
-	if want, got := _pentominoes, shapesFlipVPentominoes; !slices.Equal(want, got) {
+	if want, got := _pentominoes, shapesFlipVPentominoes; !shapesRectEqual(want, got) {
 		t.Error("pentominoes mismatch")
 		outputShapes(_pentominoes)
 	}
+}
+
+func shapesRectEqual[T shapeRect | shapeRectV | shapeRectH](s1 []shapeRect, s2 []T) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+	for i := range s1 {
+		if s1[i] != shapeRect(s2[i]) {
+			return false
+		}
+	}
+	return true
 }
 
 func _initShapeRect(w, h byte, boolData []bool) shapeRect {

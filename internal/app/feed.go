@@ -13,7 +13,7 @@ func Feed(s setup.Setup) piece.Feed {
 		return piece.QFeed{}
 	}
 
-	badSize := int(s.PieceOptions.BagSize)
+	bagSize := int(s.PieceOptions.BagSize)
 	seed := int(s.MiscOptions.Seed)
 	isSingle := s.GameOptions.FieldCount == 1 && s.GameOptions.TeamSize == 1
 
@@ -26,11 +26,11 @@ func Feed(s setup.Setup) piece.Feed {
 
 	switch s.PieceOptions.PieceType {
 	case setup.PieceTypeRotatingPolyominoes:
-		return piece.NewRotTetrominoFeed(s.PieceOptions.PieceSize, badSize, seed, color)
+		return piece.NewRotTetrominoFeed(s.PieceOptions.PieceSize, bagSize, seed, color)
 	case setup.PieceTypeVMirroringPolyominoes:
-		return piece.NewFlipVFeed(s.PieceOptions.PieceSize, badSize, seed, color)
+		return piece.NewFlipVFeed(s.PieceOptions.PieceSize, bagSize, seed, color)
 	case setup.PieceTypeHMirroringPolyominoes:
-		return piece.NewFlipHFeed(s.PieceOptions.PieceSize, badSize, seed, color)
+		return piece.NewFlipHFeed(s.PieceOptions.PieceSize, bagSize, seed, color)
 	}
 
 	return piece.QFeed{}

@@ -34,7 +34,7 @@ func (p SamePieceFeed) Get(uint, byte) Piece { return p.Piece }
 
 type QFeed struct{}
 
-func (p QFeed) Get(uint, byte) Piece { return &polyominoFlipH{shapeRect: shapeQ, block: block.Rock} }
+func (p QFeed) Get(uint, byte) Piece { return NewQ(block.Rock) }
 
 type GenericFeed struct {
 	seed          uint
@@ -105,10 +105,10 @@ func NewRotTetrominoFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 	})
 }
 
-var shapesFlipV = map[byte][]shapeRect{
+var shapesFlipV = map[byte][]shapeRectV{
 	Size3: shapesFlipVTinyminoes,
 	Size4: slices.Concat(shapesFlipVTinyminoes, shapesFlipVTetrominoes),
-	Size5: slices.Concat(shapesFlipVTinyminoes, shapesFlipVTinyminoes, shapesFlipVTetrominoes, shapesFlipVTetrominoes, shapesFlipHPentominoes),
+	Size5: slices.Concat(shapesFlipVTinyminoes, shapesFlipVTinyminoes, shapesFlipVTetrominoes, shapesFlipVTetrominoes, shapesFlipVPentominoes),
 }
 
 func NewFlipVFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
@@ -118,7 +118,7 @@ func NewFlipVFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 	shapes := shapesFlipV[pieceSize]
 	return NewGenericFeed(bagSize, seed, len(shapes), func(idx uint, playerIndex byte) Piece {
 		return &polyominoFlipV{
-			shapeRect: shapes[idx],
+			shapeRect: shapeRect(shapes[idx]),
 			block: block.Block{
 				Type:     block.TypeRock,
 				Hardness: 0,
@@ -128,7 +128,7 @@ func NewFlipVFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 	})
 }
 
-var shapesFlipH = map[byte][]shapeRect{
+var shapesFlipH = map[byte][]shapeRectH{
 	Size3: shapesFlipHTinyminoes,
 	Size4: slices.Concat(shapesFlipHTinyminoes, shapesFlipHTetrominoes),
 	Size5: slices.Concat(shapesFlipHTinyminoes, shapesFlipHTinyminoes, shapesFlipHTetrominoes, shapesFlipHTetrominoes, shapesFlipHPentominoes),
@@ -141,12 +141,48 @@ func NewFlipHFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 	shapes := shapesFlipH[pieceSize]
 	return NewGenericFeed(bagSize, seed, len(shapes), func(idx uint, playerIndex byte) Piece {
 		return &polyominoFlipH{
-			shapeRect: shapes[idx],
+			shapeRect: shapeRect(shapes[idx]),
 			block: block.Block{
 				Type:     block.TypeRock,
 				Hardness: 0,
 				Color:    c.Color(idx, playerIndex),
 			},
+		}
+	})
+}
+
+func NewMixedFeed(bagSize int, seed int, c Color, shapes ...any) Feed {
+	return NewGenericFeed(bagSize, seed, len(shapes), func(idx uint, playerIndex byte) Piece {
+		switch s := shapes[idx].(type) {
+		case shapeSquare:
+			return &polyominoRot{
+				shapeSquare: s,
+				block: block.Block{
+					Type:     block.TypeRock,
+					Hardness: 0,
+					Color:    c.Color(idx, playerIndex),
+				},
+			}
+		case shapeRectV:
+			return &polyominoFlipV{
+				shapeRect: shapeRect(s),
+				block: block.Block{
+					Type:     block.TypeRock,
+					Hardness: 0,
+					Color:    c.Color(idx, playerIndex),
+				},
+			}
+		case shapeRectH:
+			return &polyominoFlipH{
+				shapeRect: shapeRect(s),
+				block: block.Block{
+					Type:     block.TypeRock,
+					Hardness: 0,
+					Color:    c.Color(idx, playerIndex),
+				},
+			}
+		default:
+			return NewQ(block.Rock)
 		}
 	})
 }

@@ -38,7 +38,7 @@ func NewStandardTetromino(id uint) Piece {
 
 func NewFlipVTetromino(id uint, b block.Block) Piece {
 	return &polyominoFlipV{
-		shapeRect: shapesFlipVTetrominoes[id],
+		shapeRect: shapeRect(shapesFlipVTetrominoes[id]),
 		block:     b,
 	}
 }
@@ -56,4 +56,8 @@ func NewO(b block.Block) Piece {
 		shapeRect: shapeO,
 		block:     b,
 	}
+}
+
+func NewQ(b block.Block) Piece {
+	return &polyominoFlipH{shapeRect: shapeQ, block: b}
 }

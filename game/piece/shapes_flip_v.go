@@ -3,8 +3,10 @@
 
 package piece
 
+type shapeRectV shapeRect
+
 var (
-	shapesFlipVTinyminoes = []shapeRect{
+	shapesFlipVTinyminoes = []shapeRectV{
 		{width: 1, height: 1, size: 1, data: 1},
 		{width: 2, height: 1, size: 2, data: 3},
 		{width: 1, height: 2, size: 2, data: 3},
@@ -14,7 +16,7 @@ var (
 		{width: 2, height: 2, size: 3, data: 14},
 	}
 
-	shapesFlipVTetrominoes = []shapeRect{
+	shapesFlipVTetrominoes = []shapeRectV{
 		{width: 2, height: 2, size: 4, data: 15},
 		{width: 4, height: 1, size: 4, data: 15},
 		{width: 1, height: 4, size: 4, data: 15},
@@ -29,7 +31,7 @@ var (
 		{width: 3, height: 2, size: 4, data: 30},
 	}
 
-	shapesFlipVPentominoes = []shapeRect{
+	shapesFlipVPentominoes = []shapeRectV{
 		{width: 5, height: 1, size: 5, data: 31},
 		{width: 1, height: 5, size: 5, data: 31},
 		{width: 3, height: 3, size: 5, data: 185},
