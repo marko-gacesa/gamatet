@@ -13,7 +13,7 @@ import (
 
 func (app *App) menuConfigLocalPlayer(ctx screen.Context, idx int) *menu.Menu {
 	if idx < 0 || idx >= setup.MaxLocalPlayers {
-		return app.menuErrorText(ctx, T(KeyErrorPlayerIndexOutOfRange))
+		return app.menuError(ctx, errorPlayerIndexOutOfRange)
 	}
 
 	stringFn := func(k key.Key) string { return key.Map[k] }

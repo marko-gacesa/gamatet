@@ -20,7 +20,7 @@ import (
 
 func (app *App) menuMultiPlayerLANJoinLobby(ctx screen.Context) *menu.Menu {
 	if app.resultClientLobbySelected == nil {
-		return app.menuErrorText(ctx, T(KeyErrorInputMissing))
+		return app.menuError(ctx, errorInputMissing)
 	}
 
 	app.resultClientSession = nil

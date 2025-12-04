@@ -21,7 +21,7 @@ import (
 
 func (app *App) menuMultiPlayerLANHostLobby(ctx screen.Context) *menu.Menu {
 	if app.resultSetup == nil {
-		return app.menuErrorText(ctx, T(KeyErrorInputMissing))
+		return app.menuError(ctx, errorInputMissing)
 	}
 
 	app.resultServerSession = nil

@@ -21,7 +21,7 @@ import (
 func (app *App) menuMultiPlayerDirectIPJoinLobby(ctx screen.Context) *menu.Menu {
 	addr, err := net.ResolveIPAddr("ip", app.cfg.Network.DirectIPAddress)
 	if err != nil || app.resultToken == 0 {
-		return app.menuErrorText(ctx, T(KeyErrorInputMissing))
+		return app.menuError(ctx, errorInputMissing)
 	}
 
 	app.resultClientSession = nil

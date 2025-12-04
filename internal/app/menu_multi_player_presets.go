@@ -39,7 +39,7 @@ func (app *App) menuMultiPlayerSetup(ctx screen.Context, maxPlayers byte, preset
 	app.resultSetup = nil // Clear result of this input
 
 	if presetIdx >= len(app.cfg.Presets.Multi) {
-		return app.menuErrorText(ctx, T(KeyErrorPresetIndexOutOfRange))
+		return app.menuError(ctx, errorPresetIndexOutOfRange)
 	}
 
 	var s setup.Setup

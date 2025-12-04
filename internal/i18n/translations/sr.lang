@@ -215,10 +215,7 @@ menu_back_desc = Вратите се на претходни мени.
 # Errors
 
 error                           = Грешка
-error_too_many_players          = Поставка игре има превише играча: Дозвољено је највише %d
-error_input_missing             = Улаз недостаје
-error_preset_index_out_of_range = Индекс поставке је ван опсега
-error_player_index_out_of_range = Индекс играча је ван опсега
+error_too_many_players          = Поставка игре има превише играча. Дозвољено је највише %d.
 
 # Piece enumerations
 
@@ -244,7 +241,7 @@ field_message_game_over   = КРАЈ\nИГРЕ
 field_message_victory     = ПОБЕДА
 field_message_defeat      = ПОРАЗ
 field_message_pause       = ПАУЗА
-field_message_suspended   = ПРОБЛЕМ\nСА\nМРЕЖОМ
+field_message_suspended   = ПРОБЛЕМ\nСА МРЕЖОМ
 field_message_server_lost = СЕРВЕР\nИЗГУБЉЕН
 
 # Effects

@@ -5,7 +5,7 @@ package setup
 
 const (
 	SinglePlayerPresetCount = 3
-	MultiPlayerPresetCount  = 2
+	MultiPlayerPresetCount  = 3
 )
 
 func SinglePlayerPreset(idx int) Setup {
@@ -104,13 +104,15 @@ func MultiPlayerPreset(idx int) Setup {
 		return MultiPlayerPresetCoop2()
 	case 1:
 		return MultiPlayerPresetBattle1vs1()
+	case 2:
+		return MultiPlayerPresetBattle2vs2()
 	}
 	panic("unreachable")
 }
 
 func MultiPlayerPresetCoop2() Setup {
 	return Setup{
-		Name: "Two Players: Cooperative",
+		Name: "Co-op",
 		GameOptions: GameOptions{
 			GameType:         GameTypeFallingPolyominoes,
 			FieldCount:       1,
@@ -136,13 +138,39 @@ func MultiPlayerPresetCoop2() Setup {
 
 func MultiPlayerPresetBattle1vs1() Setup {
 	return Setup{
-		Name: "Two Players: Battle",
+		Name: "Battle",
 		GameOptions: GameOptions{
 			GameType:         GameTypeFallingPolyominoes,
 			FieldCount:       2,
 			TeamSize:         1,
 			PieceCollision:   false,
 			PlayerZones:      false,
+			SamePiecesForAll: true,
+		},
+		FieldOptions: FieldOptions{
+			WidthSingle:    DefaultFieldWidth,
+			WidthPerPlayer: DefaultFieldWidth,
+			Height:         DefaultFieldHeight,
+			Speed:          DefaultSpeed,
+		},
+		PieceOptions: PieceOptions{
+			PieceType: PieceTypeRotatingPolyominoes,
+			PieceSize: PieceSize4,
+			BagSize:   BagSizeDefault,
+		},
+		MiscOptions: MiscOptions{},
+	}
+}
+
+func MultiPlayerPresetBattle2vs2() Setup {
+	return Setup{
+		Name: "2 versus 2",
+		GameOptions: GameOptions{
+			GameType:         GameTypeFallingPolyominoes,
+			FieldCount:       2,
+			TeamSize:         2,
+			PieceCollision:   false,
+			PlayerZones:      true,
 			SamePiecesForAll: true,
 		},
 		FieldOptions: FieldOptions{

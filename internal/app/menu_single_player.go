@@ -65,7 +65,7 @@ func (app *App) menuSinglePlayerSetup(ctx screen.Context, presetIdx int, nextRou
 	app.resultSetup = nil // Clear result of this input
 
 	if presetIdx >= len(app.cfg.Presets.Single) {
-		return app.menuErrorText(ctx, T(KeyErrorPresetIndexOutOfRange))
+		return app.menuError(ctx, errorPresetIndexOutOfRange)
 	}
 
 	var s setup.Setup

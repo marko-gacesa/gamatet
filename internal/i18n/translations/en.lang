@@ -215,10 +215,7 @@ menu_back_desc = Go back to the previous menu.
 # Errors
 
 error                           = Error
-error_too_many_players          = The preset defined too many players: Maximum is %d
-error_input_missing             = Input missing
-error_preset_index_out_of_range = Preset index out of range
-error_player_index_out_of_range = Player index out of range
+error_too_many_players          = The preset defined too many players. Maximum is %d.
 
 # Piece enumerations
 

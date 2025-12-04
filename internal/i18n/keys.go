@@ -212,11 +212,8 @@ const (
 	KeyConfigVideoOpacity                = "config_video_opacity"
 	KeyConfigVideoOpacityDesc            = "config_video_opacity_desc"
 
-	KeyError                      = "error"
-	KeyErrorTooManyPlayers        = "error_too_many_players"
-	KeyErrorInputMissing          = "error_input_missing"
-	KeyErrorPresetIndexOutOfRange = "error_preset_index_out_of_range"
-	KeyErrorPlayerIndexOutOfRange = "error_player_index_out_of_range"
+	KeyError               = "error"
+	KeyErrorTooManyPlayers = "error_too_many_players"
 
 	KeyPieceTypeRotatingPolyominoes   = "piece_type_rotating_polyominoes"
 	KeyPieceTypeHMirroringPolyominoes = "piece_type_h_mirroring_polyominoes"

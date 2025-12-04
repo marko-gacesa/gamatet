@@ -20,7 +20,7 @@ func (app *App) menuMultiPlayerDirectIPHostLobby(ctx screen.Context) *menu.Menu 
 	if err != nil || app.resultSetup == nil || app.resultSetup.GameOptions.PlayerCount() != 2 ||
 		app.resultSetup.GameOptions.FieldCount > 2 || app.resultSetup.GameOptions.FieldCount < 1 ||
 		app.resultToken == 0 {
-		return app.menuErrorText(ctx, T(KeyErrorInputMissing))
+		return app.menuError(ctx, errorInputMissing)
 	}
 
 	udpAddr := net.UDPAddr{
