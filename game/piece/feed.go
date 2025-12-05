@@ -40,11 +40,11 @@ type GenericFeed struct {
 	seed          uint
 	pieceBagCount uint
 	shapeCount    uint
-	fn            func(idx uint, playerIdx byte) Piece
+	fn            func(idx, shapeIdx uint, playerIdx byte) Piece
 	pool          *sync.Pool
 }
 
-func NewGenericFeed(bagSize int, seed int, shapeCount int, fn func(idx uint, playerIdx byte) Piece) GenericFeed {
+func NewGenericFeed(bagSize int, seed int, shapeCount int, fn func(idx, shapeIdx uint, playerIdx byte) Piece) GenericFeed {
 	if bagSize < 1 || bagSize > MaxBagSize {
 		panic("bagSize must be from 1 to " + strconv.Itoa(MaxBagSize))
 	}
@@ -78,7 +78,7 @@ func (f GenericFeed) Get(idx uint, playerIdx byte) Piece {
 	shapeIdx := m[offs] % f.shapeCount
 	f.pool.Put(m)
 
-	return f.fn(shapeIdx, playerIdx)
+	return f.fn(idx, shapeIdx, playerIdx)
 }
 
 var shapesRot = map[byte][]shapeSquare{
@@ -87,19 +87,23 @@ var shapesRot = map[byte][]shapeSquare{
 	Size5: slices.Concat(shapesRotTinyminoes, shapesRotTinyminoes, shapesRotTetrominoes, shapesRotTetrominoes, shapesRotPentominoes),
 }
 
-func NewRotTetrominoFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
+func GetRotShapes(pieceSize byte) []shapeSquare {
+	return shapesRot[pieceSize]
+}
+
+func RotTetrominoFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 	if pieceSize < SizeMin || pieceSize > SizeMax {
 		return QFeed{}
 	}
 	shapes := shapesRot[pieceSize]
-	return NewGenericFeed(bagSize, seed, len(shapes), func(idx uint, playerIdx byte) Piece {
+	return NewGenericFeed(bagSize, seed, len(shapes), func(idx, shapeIdx uint, playerIdx byte) Piece {
 		return &polyominoRot{
-			shapeSquare: shapes[idx],
+			shapeSquare: shapes[shapeIdx],
 			rot:         0,
 			block: block.Block{
 				Type:     block.TypeRock,
 				Hardness: 0,
-				Color:    c.Color(idx, playerIdx),
+				Color:    c.Color(shapeIdx, playerIdx),
 			},
 		}
 	})
@@ -111,18 +115,22 @@ var shapesFlipV = map[byte][]shapeRectV{
 	Size5: slices.Concat(shapesFlipVTinyminoes, shapesFlipVTinyminoes, shapesFlipVTetrominoes, shapesFlipVTetrominoes, shapesFlipVPentominoes),
 }
 
-func NewFlipVFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
+func GetFlipVShapes(pieceSize byte) []shapeRectV {
+	return shapesFlipV[pieceSize]
+}
+
+func FlipVFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 	if pieceSize < SizeMin || pieceSize > SizeMax {
 		return QFeed{}
 	}
 	shapes := shapesFlipV[pieceSize]
-	return NewGenericFeed(bagSize, seed, len(shapes), func(idx uint, playerIndex byte) Piece {
+	return NewGenericFeed(bagSize, seed, len(shapes), func(idx, shapeIdx uint, playerIndex byte) Piece {
 		return &polyominoFlipV{
-			shapeRect: shapeRect(shapes[idx]),
+			shapeRect: shapeRect(shapes[shapeIdx]),
 			block: block.Block{
 				Type:     block.TypeRock,
 				Hardness: 0,
-				Color:    c.Color(idx, playerIndex),
+				Color:    c.Color(shapeIdx, playerIndex),
 			},
 		}
 	})
@@ -134,55 +142,23 @@ var shapesFlipH = map[byte][]shapeRectH{
 	Size5: slices.Concat(shapesFlipHTinyminoes, shapesFlipHTinyminoes, shapesFlipHTetrominoes, shapesFlipHTetrominoes, shapesFlipHPentominoes),
 }
 
-func NewFlipHFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
+func GetFlipHShapes(pieceSize byte) []shapeRectH {
+	return shapesFlipH[pieceSize]
+}
+
+func FlipHFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 	if pieceSize < SizeMin || pieceSize > SizeMax {
 		return QFeed{}
 	}
 	shapes := shapesFlipH[pieceSize]
-	return NewGenericFeed(bagSize, seed, len(shapes), func(idx uint, playerIndex byte) Piece {
+	return NewGenericFeed(bagSize, seed, len(shapes), func(idx, shapeIdx uint, playerIndex byte) Piece {
 		return &polyominoFlipH{
-			shapeRect: shapeRect(shapes[idx]),
+			shapeRect: shapeRect(shapes[shapeIdx]),
 			block: block.Block{
 				Type:     block.TypeRock,
 				Hardness: 0,
-				Color:    c.Color(idx, playerIndex),
+				Color:    c.Color(shapeIdx, playerIndex),
 			},
-		}
-	})
-}
-
-func NewMixedFeed(bagSize int, seed int, c Color, shapes ...any) Feed {
-	return NewGenericFeed(bagSize, seed, len(shapes), func(idx uint, playerIndex byte) Piece {
-		switch s := shapes[idx].(type) {
-		case shapeSquare:
-			return &polyominoRot{
-				shapeSquare: s,
-				block: block.Block{
-					Type:     block.TypeRock,
-					Hardness: 0,
-					Color:    c.Color(idx, playerIndex),
-				},
-			}
-		case shapeRectV:
-			return &polyominoFlipV{
-				shapeRect: shapeRect(s),
-				block: block.Block{
-					Type:     block.TypeRock,
-					Hardness: 0,
-					Color:    c.Color(idx, playerIndex),
-				},
-			}
-		case shapeRectH:
-			return &polyominoFlipH{
-				shapeRect: shapeRect(s),
-				block: block.Block{
-					Type:     block.TypeRock,
-					Hardness: 0,
-					Color:    c.Color(idx, playerIndex),
-				},
-			}
-		default:
-			return NewQ(block.Rock)
 		}
 	})
 }

@@ -24,14 +24,30 @@ func Feed(s setup.Setup) piece.Feed {
 		color = piece.NewRandomColor(setup.ColorRGB[:], seed)
 	}
 
+	var shapes []any
+
 	switch s.PieceOptions.PieceType {
 	case setup.PieceTypeRotatingPolyominoes:
-		return piece.NewRotTetrominoFeed(s.PieceOptions.PieceSize, bagSize, seed, color)
+		for _, shape := range piece.GetRotShapes(s.PieceOptions.PieceSize) {
+			shapes = append(shapes, shape)
+		}
+		shapes = append(shapes, piece.ShapeShooter{})
 	case setup.PieceTypeVMirroringPolyominoes:
-		return piece.NewFlipVFeed(s.PieceOptions.PieceSize, bagSize, seed, color)
+		for _, shape := range piece.GetFlipVShapes(s.PieceOptions.PieceSize) {
+			shapes = append(shapes, shape)
+		}
 	case setup.PieceTypeHMirroringPolyominoes:
-		return piece.NewFlipHFeed(s.PieceOptions.PieceSize, bagSize, seed, color)
+		for _, shape := range piece.GetFlipHShapes(s.PieceOptions.PieceSize) {
+			shapes = append(shapes, shape)
+		}
 	}
 
-	return piece.QFeed{}
+	if len(shapes) == 0 {
+		shapes = append(shapes, piece.QFeed{})
+	}
+
+	wb := piece.NewTypeWeights(1, 0, 0, 0, 0)
+	ws := piece.NewTypeWeights(1, 1, 1, 1, 1)
+
+	return piece.MixedFeed(wb, ws, bagSize, seed, color, shapes...)
 }

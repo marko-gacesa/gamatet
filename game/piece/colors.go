@@ -5,10 +5,18 @@ package piece
 
 import (
 	"math/rand/v2"
+
+	"github.com/marko-gacesa/gamatet/game/block"
 )
 
 type Color interface {
 	Color(idx uint, playerIdx byte) uint32
+}
+
+type RockColor struct{}
+
+func (c RockColor) Color(uint, byte) uint32 {
+	return block.Rock.Color
 }
 
 type DefaultColor struct{}
