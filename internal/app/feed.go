@@ -28,15 +28,18 @@ func Feed(s setup.Setup) piece.Feed {
 	var wb piece.TypeWeights
 	var ws piece.TypeWeights
 
-	if isSingle {
+	if s.PieceOptions.Shooters {
 		shapes = Shapes(s.PieceOptions.PieceType, s.PieceOptions.PieceSize)
-		wb = piece.NewTypeWeights(1, 0, 0, 0, 0)
-		ws = piece.NewTypeWeights(1, 0, 0, 0, 0)
 	} else {
 		shapes = ShapesWithShooters(s.PieceOptions.PieceType, s.PieceOptions.PieceSize)
-		wb = piece.NewTypeWeights(27, 2, 1, 0, 0)
-		ws = piece.NewTypeWeights(0, 3, 2, 1, 1)
 	}
+
+	if s.PieceOptions.SpecialBlocks {
+		wb = piece.NewTypeWeights(27, 2, 1, 0, 0)
+	} else {
+		wb = piece.NewTypeWeights(1, 0, 0, 0, 0)
+	}
+	ws = piece.NewTypeWeights(0, 3, 2, 1, 1)
 
 	return piece.MixedFeed(wb, ws, bagSize, seed, color, shapes...)
 }

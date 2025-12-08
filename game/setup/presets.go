@@ -38,9 +38,11 @@ func SinglePlayerPresetRotTetrominoes() Setup {
 			Speed:          DefaultSpeed,
 		},
 		PieceOptions: PieceOptions{
-			PieceType: PieceTypeRotatingPolyominoes,
-			PieceSize: PieceSize4,
-			BagSize:   BagSizeDefault,
+			PieceType:     PieceTypeRotatingPolyominoes,
+			PieceSize:     PieceSize4,
+			SpecialBlocks: false,
+			Shooters:      false,
+			BagSize:       BagSizeDefault,
 		},
 		MiscOptions: MiscOptions{},
 	}
@@ -64,9 +66,11 @@ func SinglePlayerPresetRotPentominoes() Setup {
 			Speed:          DefaultSpeed,
 		},
 		PieceOptions: PieceOptions{
-			PieceType: PieceTypeRotatingPolyominoes,
-			PieceSize: PieceSize5,
-			BagSize:   BagSizeDefault,
+			PieceType:     PieceTypeRotatingPolyominoes,
+			PieceSize:     PieceSize5,
+			SpecialBlocks: false,
+			Shooters:      false,
+			BagSize:       BagSizeDefault,
 		},
 		MiscOptions: MiscOptions{},
 	}
@@ -90,9 +94,11 @@ func SinglePlayerPresetRotMiniminoes() Setup {
 			Speed:          10,
 		},
 		PieceOptions: PieceOptions{
-			PieceType: PieceTypeRotatingPolyominoes,
-			PieceSize: PieceSize3,
-			BagSize:   BagSizeDefault,
+			PieceType:     PieceTypeRotatingPolyominoes,
+			PieceSize:     PieceSize3,
+			SpecialBlocks: false,
+			Shooters:      false,
+			BagSize:       BagSizeDefault,
 		},
 		MiscOptions: MiscOptions{},
 	}
@@ -128,9 +134,11 @@ func MultiPlayerPresetCoop2() Setup {
 			Speed:          DefaultSpeed,
 		},
 		PieceOptions: PieceOptions{
-			PieceType: PieceTypeRotatingPolyominoes,
-			PieceSize: PieceSize4,
-			BagSize:   BagSizeDefault,
+			PieceType:     PieceTypeRotatingPolyominoes,
+			PieceSize:     PieceSize4,
+			SpecialBlocks: false,
+			Shooters:      false,
+			BagSize:       BagSizeDefault,
 		},
 		MiscOptions: MiscOptions{},
 	}
@@ -154,9 +162,11 @@ func MultiPlayerPresetBattle1vs1() Setup {
 			Speed:          DefaultSpeed,
 		},
 		PieceOptions: PieceOptions{
-			PieceType: PieceTypeRotatingPolyominoes,
-			PieceSize: PieceSize4,
-			BagSize:   BagSizeDefault,
+			PieceType:     PieceTypeRotatingPolyominoes,
+			PieceSize:     PieceSize4,
+			SpecialBlocks: true,
+			Shooters:      true,
+			BagSize:       BagSizeDefault,
 		},
 		MiscOptions: MiscOptions{},
 	}
@@ -180,9 +190,11 @@ func MultiPlayerPresetBattle2vs2() Setup {
 			Speed:          DefaultSpeed,
 		},
 		PieceOptions: PieceOptions{
-			PieceType: PieceTypeRotatingPolyominoes,
-			PieceSize: PieceSize4,
-			BagSize:   BagSizeDefault,
+			PieceType:     PieceTypeRotatingPolyominoes,
+			PieceSize:     PieceSize4,
+			SpecialBlocks: true,
+			Shooters:      true,
+			BagSize:       BagSizeDefault,
 		},
 		MiscOptions: MiscOptions{},
 	}

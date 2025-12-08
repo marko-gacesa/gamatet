@@ -44,6 +44,16 @@ func setupSingle(s *setup.Setup, sections *setupSections) []menu.Item {
 			menu.WithVisible(func() bool {
 				return sections.showPiece
 			})),
+		menu.NewBool(&s.PieceOptions.SpecialBlocks,
+			"\t"+T(KeySetupPieceSpecialBlocks), T(KeySetupPieceSpecialBlocksDesc),
+			menu.WithVisible(func() bool {
+				return sections.showPiece
+			})),
+		menu.NewBool(&s.PieceOptions.Shooters,
+			"\t"+T(KeySetupPieceShooters), T(KeySetupPieceShootersDesc),
+			menu.WithVisible(func() bool {
+				return sections.showPiece
+			})),
 		menu.NewInteger(&s.PieceOptions.BagSize, 1, setup.BagSizeMax,
 			"\t"+T(KeySetupBagSize), T(KeySetupBagSizeDesc),
 			menu.WithVisible(func() bool {

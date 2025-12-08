@@ -49,9 +49,9 @@ func TestGenericFeed(t *testing.T) {
 			shapes := shapesRotTetrominoes
 			shapeCount := len(shapes)
 
-			f := NewGenericFeed(test.bagSize, test.seed, shapeCount, func(idx uint, playerIndex byte) Piece {
+			f := NewGenericFeed(test.bagSize, test.seed, shapeCount, func(idx, shapeIdx uint, playerIndex byte) Piece {
 				return &polyominoRot{
-					shapeSquare: shapes[idx],
+					shapeSquare: shapes[shapeIdx],
 					block:       block.Rock,
 				}
 			})

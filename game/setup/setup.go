@@ -348,20 +348,26 @@ func (o *FieldOptions) String(teamSize byte) string {
 }
 
 type PieceOptions struct {
-	PieceType PieceType
-	PieceSize byte
-	BagSize   byte
+	PieceType     PieceType
+	PieceSize     byte
+	SpecialBlocks bool
+	Shooters      bool
+	BagSize       byte
 }
 
 func (o *PieceOptions) Write(w *bitdata.Writer) {
 	w.Write8(byte(o.PieceType), 4)
 	w.Write8(o.PieceSize-3, 2) // 3, 4, 5
-	w.Write8(o.BagSize-1, 3)   // 1..8
+	w.WriteBool(o.SpecialBlocks)
+	w.WriteBool(o.Shooters)
+	w.Write8(o.BagSize-1, 3) // 1..8
 }
 
 func (o *PieceOptions) Read(r *bitdata.ReaderError) {
 	o.PieceType = PieceType(r.Read8(4))
 	o.PieceSize = r.Read8(2) + 3
+	o.SpecialBlocks = r.ReadBool()
+	o.Shooters = r.ReadBool()
 	o.BagSize = r.Read8(3) + 1
 }
 
@@ -402,6 +408,13 @@ func (o *PieceOptions) String() string {
 	}
 
 	sb.WriteString(strconv.Itoa(int(o.PieceSize)))
+
+	if o.SpecialBlocks {
+		sb.WriteByte('#')
+	}
+	if o.Shooters {
+		sb.WriteString("¤")
+	}
 
 	return sb.String()
 }
