@@ -5,6 +5,8 @@ package piece
 
 type shapeRectH shapeRect
 
+func (shapeRectH) _shape() {}
+
 var (
 	shapesFlipHTinyminoes = []shapeRectH{
 		{width: 1, height: 1, size: 1, data: 1},

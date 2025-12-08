@@ -8,7 +8,7 @@ import (
 	"github.com/marko-gacesa/gamatet/logic/random"
 )
 
-func MixedFeed(wb, ws TypeWeights, bagSize int, seed int, c Color, shapes ...any) Feed {
+func MixedFeed(wb, ws TypeWeights, bagSize int, seed int, c Color, shapes ...ShapeAny) Feed {
 	return NewGenericFeed(bagSize, seed, len(shapes), func(idx, shapeIdx uint, playerIndex byte) Piece {
 		switch s := shapes[shapeIdx].(type) {
 		case shapeSquare:

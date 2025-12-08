@@ -3,6 +3,8 @@
 
 package piece
 
+import "strings"
+
 type bitarray uint32
 
 func (a bitarray) get(idx byte) bool {
@@ -158,4 +160,21 @@ func (a bitarray) isEmpty(w, h byte, x, y int) bool {
 	}
 
 	return !a.get(byte(y)*w + byte(x))
+}
+
+func (a bitarray) rectangleString(w, h byte) string {
+	sb := strings.Builder{}
+
+	for j := range h {
+		for i := range w {
+			if a.get(j*w + i) {
+				sb.WriteString("[]")
+			} else {
+				sb.WriteString(". ")
+			}
+		}
+		sb.WriteByte('\n')
+	}
+
+	return sb.String()
 }

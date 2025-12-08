@@ -3,7 +3,11 @@
 
 package setup
 
-import "github.com/marko-gacesa/gamatet/game/piece"
+import (
+	"strconv"
+
+	"github.com/marko-gacesa/gamatet/game/piece"
+)
 
 type PieceType byte
 
@@ -17,6 +21,19 @@ var PieceTypeAll = []PieceType{
 	PieceTypeRotatingPolyominoes,
 	PieceTypeHMirroringPolyominoes,
 	PieceTypeVMirroringPolyominoes,
+}
+
+func (p PieceType) String() string {
+	switch p {
+	case PieceTypeRotatingPolyominoes:
+		return "R"
+	case PieceTypeHMirroringPolyominoes:
+		return "H"
+	case PieceTypeVMirroringPolyominoes:
+		return "V"
+	default:
+		return "?(" + strconv.Itoa(int(p)) + ")"
+	}
 }
 
 const (

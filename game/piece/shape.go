@@ -5,8 +5,11 @@ package piece
 
 import (
 	"fmt"
-	"strings"
 )
+
+type ShapeAny interface {
+	_shape()
+}
 
 type shapeRect struct {
 	width  byte     // Piece X dimension
@@ -16,12 +19,14 @@ type shapeRect struct {
 }
 
 func (p shapeRect) String() string {
-	return polyominoToStr(p.data, p.width, p.height)
+	return p.data.rectangleString(p.width, p.height)
 }
 
 func (p shapeRect) def() string {
 	return fmt.Sprintf("{width: %d, height: %d, size: %d, data: %d},", p.width, p.height, p.size, p.data)
 }
+
+func (p shapeRect) _shape() {}
 
 type shapeSquare struct {
 	dim  byte     // Piece dimension
@@ -31,26 +36,15 @@ type shapeSquare struct {
 }
 
 func (p shapeSquare) String() string {
-	return polyominoToStr(p.data, p.dim, p.dim)
+	return p.data.rectangleString(p.dim, p.dim)
 }
 
 func (p shapeSquare) def() string {
 	return fmt.Sprintf("{dim: %d, size: %d, rots: %d, data: %d},", p.dim, p.size, p.rots, p.data)
 }
 
-func polyominoToStr(b bitarray, w, h byte) string {
-	sb := strings.Builder{}
+func (p shapeSquare) _shape() {}
 
-	for j := range h {
-		for i := range w {
-			if b.get(j*w + i) {
-				sb.WriteString("[]")
-			} else {
-				sb.WriteString(". ")
-			}
-		}
-		sb.WriteByte('\n')
-	}
+type ShapeShooter struct{}
 
-	return sb.String()
-}
+func (p ShapeShooter) _shape() {}

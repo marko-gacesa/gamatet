@@ -84,7 +84,13 @@ func (f GenericFeed) Get(idx uint, playerIdx byte) Piece {
 var shapesRot = map[byte][]shapeSquare{
 	Size3: shapesRotTinyminoes,
 	Size4: shapesRotTetrominoes,
-	Size5: slices.Concat(shapesRotTinyminoes, shapesRotTinyminoes, shapesRotTetrominoes, shapesRotTetrominoes, shapesRotPentominoes),
+	Size5: slices.Concat(
+		shapesRotTinyminoes,
+		shapesRotTinyminoes,
+		shapesRotTetrominoes,
+		shapesRotTetrominoes,
+		shapesRotPentominoes,
+	),
 }
 
 func GetRotShapes(pieceSize byte) []shapeSquare {
@@ -111,8 +117,17 @@ func RotTetrominoFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 
 var shapesFlipV = map[byte][]shapeRectV{
 	Size3: shapesFlipVTinyminoes,
-	Size4: slices.Concat(shapesFlipVTinyminoes, shapesFlipVTetrominoes),
-	Size5: slices.Concat(shapesFlipVTinyminoes, shapesFlipVTinyminoes, shapesFlipVTetrominoes, shapesFlipVTetrominoes, shapesFlipVPentominoes),
+	Size4: slices.Concat(
+		shapesFlipVTinyminoes,
+		shapesFlipVTetrominoes,
+	),
+	Size5: slices.Concat(
+		shapesFlipVTinyminoes,
+		shapesFlipVTinyminoes,
+		shapesFlipVTetrominoes,
+		shapesFlipVTetrominoes,
+		shapesFlipVPentominoes,
+	),
 }
 
 func GetFlipVShapes(pieceSize byte) []shapeRectV {
@@ -138,8 +153,17 @@ func FlipVFeed(pieceSize byte, bagSize int, seed int, c Color) Feed {
 
 var shapesFlipH = map[byte][]shapeRectH{
 	Size3: shapesFlipHTinyminoes,
-	Size4: slices.Concat(shapesFlipHTinyminoes, shapesFlipHTetrominoes),
-	Size5: slices.Concat(shapesFlipHTinyminoes, shapesFlipHTinyminoes, shapesFlipHTetrominoes, shapesFlipHTetrominoes, shapesFlipHPentominoes),
+	Size4: slices.Concat(
+		shapesFlipHTinyminoes,
+		shapesFlipHTetrominoes,
+	),
+	Size5: slices.Concat(
+		shapesFlipHTinyminoes,
+		shapesFlipHTinyminoes,
+		shapesFlipHTetrominoes,
+		shapesFlipHTetrominoes,
+		shapesFlipHPentominoes,
+	),
 }
 
 func GetFlipHShapes(pieceSize byte) []shapeRectH {
