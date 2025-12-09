@@ -119,7 +119,7 @@ func (s *Magic) Sweep(p event.Pusher) {
 		return
 	}
 
-	xyb, ok := s.possessBlock()
+	xyb, ok := s.field.GetRandomBlock()
 	if !ok {
 		p.Push(op.NewFieldEffect(field.EffectNone, field.EffectNone, 0, magicWaitSeconds))
 		s.base.reschedule(time.Second)
@@ -167,28 +167,6 @@ func (s *Magic) restoreBlock(p event.Pusher) {
 		}
 		return true
 	})
-}
-
-func (s *Magic) possessBlock() (block.XYB, bool) {
-	var buffer [128]block.XYB
-	blocks := buffer[:0]
-	s.field.RangeBlocks(func(xyb block.XYB) bool {
-		if xyb.Block.Type == block.TypeRock && xyb.Block.Hardness == 0 {
-			blocks = append(blocks, xyb)
-			if len(blocks) == cap(blocks) {
-				return false
-			}
-		}
-		return true
-	})
-	if len(blocks) == 0 {
-		return block.XYB{}, false
-	}
-
-	randomIndex := random.New(s.count, s.seed)
-	xyb := blocks[randomIndex.Int(len(blocks))]
-
-	return xyb, true
 }
 
 func (s *Magic) randomEffect() field.Effect {

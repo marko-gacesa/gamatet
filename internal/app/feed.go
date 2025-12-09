@@ -29,9 +29,9 @@ func Feed(s setup.Setup) piece.Feed {
 	var ws piece.TypeWeights
 
 	if s.PieceOptions.Shooters {
-		shapes = Shapes(s.PieceOptions.PieceType, s.PieceOptions.PieceSize)
-	} else {
 		shapes = ShapesWithShooters(s.PieceOptions.PieceType, s.PieceOptions.PieceSize)
+	} else {
+		shapes = Shapes(s.PieceOptions.PieceType, s.PieceOptions.PieceSize)
 	}
 
 	if s.PieceOptions.SpecialBlocks {

@@ -15,6 +15,7 @@ type Analyzer struct {
 
 	blocks delta
 	stats  deltaStats
+	shots  []block.Type
 
 	endMode *field.Mode
 }
@@ -69,6 +70,10 @@ func (a *Analyzer) Analyze(e event.Event) {
 	case *op.FieldMode:
 		if v.ModeNew == field.ModeGameOver || v.ModeNew == field.ModeVictory || v.ModeNew == field.ModeDefeat {
 			a.endMode = &v.ModeNew
+		}
+	case *op.PieceShoot:
+		if v.Hit {
+			a.shots = append(a.shots, v.BlockType)
 		}
 	}
 }

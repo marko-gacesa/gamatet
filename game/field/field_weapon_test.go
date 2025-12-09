@@ -4,6 +4,7 @@
 package field
 
 import (
+	"slices"
 	"sort"
 	"testing"
 
@@ -44,5 +45,71 @@ func TestField_Blizzard(t *testing.T) {
 	want := []block.XY{{X: 4, Y: 4}, {X: 0, Y: 5}, {X: 4, Y: 5}}
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
+	}
+}
+
+func TestField_GetRandomBlock(t *testing.T) {
+	const dimW = 10
+	const dimH = 10
+
+	tests := []struct {
+		name   string
+		blocks []block.XYB
+		expect bool
+	}{
+		{
+			name:   "empty",
+			blocks: []block.XYB{},
+			expect: false,
+		},
+		{
+			name:   "one",
+			blocks: []block.XYB{{block.XY{4, 5}, block.Rock}},
+			expect: true,
+		},
+		{
+			name: "two",
+			blocks: []block.XYB{
+				{block.XY{dimW - 1, dimH - 1}, block.Rock},
+				{block.XY{0, 0}, block.Rock},
+			},
+			expect: true,
+		},
+		{
+			name: "several",
+			blocks: []block.XYB{
+				{block.XY{0, 0}, block.Rock},
+				{block.XY{1, 1}, block.Rock},
+				{block.XY{2, 2}, block.Rock},
+				{block.XY{3, 3}, block.Rock},
+				{block.XY{4, 4}, block.Rock},
+				{block.XY{5, 5}, block.Rock},
+				{block.XY{6, 6}, block.Rock},
+				{block.XY{7, 7}, block.Rock},
+				{block.XY{8, 8}, block.Rock},
+				{block.XY{9, 9}, block.Rock},
+			},
+			expect: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			f := Make(dimW, dimH, 0)
+			for _, xyb := range test.blocks {
+				f.setXY(xyb.X, xyb.Y, xyb.Block)
+			}
+
+			result, ok := f.GetRandomBlock()
+
+			if ok != test.expect {
+				t.Errorf("got %v, want %v", ok, test.expect)
+				return
+			}
+
+			if ok && !slices.Contains(test.blocks, result) {
+				t.Errorf("could not find %v in %v", result, test.blocks)
+			}
+		})
 	}
 }

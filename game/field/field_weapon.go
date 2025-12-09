@@ -39,3 +39,36 @@ func (f *Field) Blizzard(intensity int) []block.XY {
 
 	return result
 }
+
+func (f *Field) GetRandomBlock() (block.XYB, bool) {
+	var count int
+	f.RangeBlocks(func(xyb block.XYB) bool {
+		if xyb.Block.Type == block.TypeRock && xyb.Block.Hardness == 0 {
+			count++
+		}
+		return true
+	})
+	if count == 0 {
+		return block.XYB{}, false
+	}
+
+	r := random.New(uint(count), uint(f.seed))
+	idx := r.Int(count)
+
+	count = 0
+	var chosen block.XYB
+	var ok bool
+	f.RangeBlocks(func(xyb block.XYB) bool {
+		if count == idx {
+			chosen = xyb
+			ok = true
+			return false
+		}
+		if xyb.Block.Type == block.TypeRock && xyb.Block.Hardness == 0 {
+			count++
+		}
+		return true
+	})
+
+	return chosen, ok
+}

@@ -83,10 +83,6 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 		f.Config = setup.Config.FieldConfig
 		f.Seed(setup.Config.RandomSeed)
 
-		var sweepers []sweeper.Sweeper
-		sweepers = append(sweepers, sweeper.NewRow(f))
-		sweepers = append(sweepers, sweeper.NewShaker(f))
-
 		for j := range players {
 			ctrl := f.Ctrl(byte(j))
 
@@ -127,30 +123,37 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 
 		fields[i] = hostFieldData{
 			Field:    f,
-			Sweepers: sweepers,
+			Sweepers: nil, // set below
 			OutCh:    setup.Fields[i].OutCh,
 		}
 	}
 
 	for i := range fields {
+		f := fields[i].Field
 		fields[i].Sweepers = append(fields[i].Sweepers,
-			sweeper.NewGameOver(fields[i].Field),
-			sweeper.NewSpeedUp(fields[i].Field))
+			sweeper.NewRow(f),
+			sweeper.NewShaker(f),
+			sweeper.NewGameOver(f),
+			sweeper.NewSpeedUp(f),
+		)
 	}
 
 	if len(fields) > 1 {
 		for i := range fields {
+			f := fields[i].Field
 			others := getFieldPushers(fields, i)
 
-			if len(others) > 1 {
+			if setup.Config.Shooters {
 				fields[i].Sweepers = append(fields[i].Sweepers,
-					sweeper.NewSpeedUpOnDefeat(fields[i].Field, others),
+					sweeper.NewShotTransfer(f, others),
 				)
 			}
 
 			fields[i].Sweepers = append(fields[i].Sweepers,
-				sweeper.NewBlizzard(fields[i].Field, others),
-				sweeper.NewMagic(fields[i].Field, getFieldPushers(fields, i), setup.Config.RandomSeed, sweeper.MagicTypeAll))
+				sweeper.NewSpeedUpOnDefeat(f, others),
+				sweeper.NewBlizzard(f, others),
+				sweeper.NewMagic(f, others, setup.Config.RandomSeed, sweeper.MagicTypeAll),
+			)
 		}
 	}
 
