@@ -7,7 +7,7 @@ var (
 	shapesRotTinyminoes = []shapeSquare{
 		{dim: 1, size: 1, rots: 0, data: 1},
 		{dim: 2, size: 2, rots: 2, data: 3},
-		{dim: 3, size: 3, rots: 2, data: 56},
+		{dim: 3, size: 3, rots: 4, data: 56},
 		{dim: 2, size: 3, rots: 4, data: 14},
 	}
 
@@ -22,7 +22,7 @@ var (
 	}
 
 	shapesRotPentominoes = []shapeSquare{
-		{dim: 5, size: 5, rots: 2, data: 31744},
+		{dim: 5, size: 5, rots: 4, data: 31744},
 		{dim: 3, size: 5, rots: 4, data: 185},
 		{dim: 3, size: 5, rots: 4, data: 188},
 		{dim: 4, size: 5, rots: 4, data: 3856},

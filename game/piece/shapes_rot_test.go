@@ -34,7 +34,7 @@ func TestShapesRot(t *testing.T) {
 		__, __,
 	}))
 
-	_tinyminoes = append(_tinyminoes, _initShapeSquare(2, []bool{
+	_tinyminoes = append(_tinyminoes, _initShapeSquare(4, []bool{
 		__, __, __,
 		XX, XX, XX,
 		__, __, __,
@@ -91,7 +91,7 @@ func TestShapesRot(t *testing.T) {
 
 	_pentominoes := make([]shapeSquare, 0, 18)
 
-	_pentominoes = append(_pentominoes, _initShapeSquare(2, []bool{
+	_pentominoes = append(_pentominoes, _initShapeSquare(4, []bool{
 		__, __, __, __, __,
 		__, __, __, __, __,
 		XX, XX, XX, XX, XX,
