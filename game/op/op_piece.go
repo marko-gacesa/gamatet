@@ -7,6 +7,7 @@ import (
 	"io"
 	"strconv"
 
+	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/piece"
@@ -271,125 +272,235 @@ func (e *PieceMove) Read(r io.Reader) error {
 
 func (e *PieceMove) TypeID() event.Code { return codePieceMove }
 
-func NewPieceActivate(pIdx int) *PieceActivate {
-	return &PieceActivate{
+func NewPieceRotate(pIdx int, dirCW bool) *PieceRotate {
+	return &PieceRotate{
 		PieceIdx: byte(pIdx),
-		Param:    0,
+		DirCW:    dirCW,
 	}
 }
 
-func NewPieceRotate(pIdx int, dirCW bool) *PieceActivate {
-	param := paramRotCCW
-	if dirCW {
-		param++
-	}
-	return &PieceActivate{
-		PieceIdx: byte(pIdx),
-		Param:    param,
-	}
-}
-
-const (
-	paramRotCCW byte = 0
-	paramRotCW  byte = 1
-)
-
-type PieceActivate struct {
+type PieceRotate struct {
 	PieceIdx byte
-	Param    byte
+	DirCW    bool
 }
 
-var _ event.Event = (*PieceActivate)(nil)
+var _ event.Event = (*PieceRotate)(nil)
 
-func (e *PieceActivate) Do(f *field.Field) {
+func (e *PieceRotate) Do(f *field.Field) {
 	ctrl := f.Ctrl(e.PieceIdx)
 	ctrl.Piece = ctrl.Piece.Clone()
 
-	switch ctrl.Piece.Type() {
-	case piece.TypeFlipV:
-		ctrl.Piece.Activate()
-		animateFlipVPiece(ctrl, f.Config.Anim)
-		ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
-		updatePieceShadow(f, ctrl)
-	case piece.TypeFlipH:
-		ctrl.Piece.Activate()
-		animateFlipHPiece(ctrl, f.Config.Anim)
-		ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
-		updatePieceShadow(f, ctrl)
-	case piece.TypeRotation:
-		var inverted bool
-		switch e.Param {
-		case paramRotCCW:
-			inverted = ctrl.Piece.Activate()
-		case paramRotCW:
-			inverted = ctrl.Piece.UndoActivate()
-		default:
-			return
-		}
-		animateRotatePiece(ctrl, e.Param == paramRotCW, inverted, f.Config.Anim)
-		ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
-		updatePieceShadow(f, ctrl)
-	case piece.TypeShooter:
-		ctrl.Piece.Activate()
-		if ctrl.Piece.ActivationCount() == 1 {
-			animateBlinkPiece(ctrl, f.Config.Anim)
-		}
+	if ctrl.Piece.Type() != piece.TypeRotation {
+		return
 	}
+
+	var inverted bool
+	if e.DirCW {
+		inverted = ctrl.Piece.UndoActivate()
+	} else {
+		inverted = ctrl.Piece.Activate()
+	}
+
+	animateRotatePiece(ctrl, e.DirCW, inverted, f.Config.Anim)
+	ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
+	updatePieceShadow(f, ctrl)
 }
 
-func (e *PieceActivate) Undo(f *field.Field) {
+func (e *PieceRotate) Undo(f *field.Field) {
 	ctrl := f.Ctrl(e.PieceIdx)
 	ctrl.Piece = ctrl.Piece.Clone()
 
-	switch ctrl.Piece.Type() {
-	case piece.TypeFlipV, piece.TypeFlipH:
-		ctrl.Piece.UndoActivate()
-		ctrl.List.Clear()
-		ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
-		updatePieceShadow(f, ctrl)
-	case piece.TypeRotation:
-		switch e.Param {
-		case paramRotCCW:
-			ctrl.Piece.UndoActivate()
-		case paramRotCW:
-			ctrl.Piece.Activate()
-		default:
-			return
-		}
-		ctrl.List.Clear()
-		ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
-		updatePieceShadow(f, ctrl)
-	case piece.TypeShooter:
-		ctrl.Piece.UndoActivate()
-		ctrl.List.Clear()
+	if ctrl.Piece.Type() != piece.TypeRotation {
+		return
 	}
+
+	if e.DirCW {
+		ctrl.Piece.Activate()
+	} else {
+		ctrl.Piece.UndoActivate()
+	}
+
+	ctrl.List.Clear()
+	ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
+	updatePieceShadow(f, ctrl)
 }
 
-func (e *PieceActivate) Equals(ev event.Event) bool {
-	q, ok := ev.(*PieceActivate)
-	return ok && e.PieceIdx == q.PieceIdx
+func (e *PieceRotate) Equals(ev event.Event) bool {
+	q, ok := ev.(*PieceRotate)
+	return ok && e.PieceIdx == q.PieceIdx && e.DirCW == q.DirCW
 }
 
-func (e *PieceActivate) Write(w io.Writer) error {
-	if _, err := w.Write([]byte{e.PieceIdx, e.Param}); err != nil {
+func (e *PieceRotate) Write(w io.Writer) error {
+	var dirCW byte
+	if e.DirCW {
+		dirCW = 1
+	}
+
+	if _, err := w.Write([]byte{e.PieceIdx, dirCW}); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (e *PieceActivate) Read(r io.Reader) error {
+func (e *PieceRotate) Read(r io.Reader) error {
 	var buffer [2]byte
 	if _, err := io.ReadFull(r, buffer[:]); err != nil {
 		return err
 	}
 
 	e.PieceIdx = buffer[0]
-	e.Param = buffer[1]
+	e.DirCW = buffer[1] != 0
 
 	return nil
 }
 
-func (e *PieceActivate) TypeID() event.Code { return codePieceActivate }
+func (e *PieceRotate) TypeID() event.Code { return codePieceRotate }
+
+func NewPieceFlip(pIdx int) *PieceFlip {
+	return &PieceFlip{
+		PieceIdx: byte(pIdx),
+	}
+}
+
+type PieceFlip struct {
+	PieceIdx byte
+}
+
+var _ event.Event = (*PieceFlip)(nil)
+
+func (e *PieceFlip) Do(f *field.Field) {
+	ctrl := f.Ctrl(e.PieceIdx)
+	ctrl.Piece = ctrl.Piece.Clone()
+
+	if pt := ctrl.Piece.Type(); pt != piece.TypeFlipV && pt != piece.TypeFlipH {
+		return
+	}
+
+	ctrl.Piece.Activate()
+
+	if ctrl.Piece.Type() == piece.TypeFlipV {
+		animateFlipVPiece(ctrl, f.Config.Anim)
+	} else {
+		animateFlipHPiece(ctrl, f.Config.Anim)
+	}
+
+	ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
+	updatePieceShadow(f, ctrl)
+}
+
+func (e *PieceFlip) Undo(f *field.Field) {
+	ctrl := f.Ctrl(e.PieceIdx)
+	ctrl.Piece = ctrl.Piece.Clone()
+
+	if pt := ctrl.Piece.Type(); pt != piece.TypeFlipV && pt != piece.TypeFlipH {
+		return
+	}
+
+	ctrl.Piece.UndoActivate()
+	ctrl.List.Clear()
+	ctrl.Blocks = piece.GetBlocks(ctrl.Piece, ctrl.Blocks[:0])
+	updatePieceShadow(f, ctrl)
+}
+
+func (e *PieceFlip) Equals(ev event.Event) bool {
+	q, ok := ev.(*PieceFlip)
+	return ok && e.PieceIdx == q.PieceIdx
+}
+
+func (e *PieceFlip) Write(w io.Writer) error {
+	if _, err := w.Write([]byte{e.PieceIdx}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *PieceFlip) Read(r io.Reader) error {
+	var buffer [1]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.PieceIdx = buffer[0]
+
+	return nil
+}
+
+func (e *PieceFlip) TypeID() event.Code { return codePieceFlip }
+
+func NewPieceShoot(pIdx int, hit bool, t block.Type) *PieceShoot {
+	return &PieceShoot{
+		PieceIdx:  byte(pIdx),
+		Hit:       hit,
+		BlockType: t,
+	}
+}
+
+type PieceShoot struct {
+	PieceIdx  byte
+	Hit       bool
+	BlockType block.Type
+}
+
+var _ event.Event = (*PieceShoot)(nil)
+
+func (e *PieceShoot) Do(f *field.Field) {
+	ctrl := f.Ctrl(e.PieceIdx)
+	ctrl.Piece = ctrl.Piece.Clone()
+
+	if ctrl.Piece.Type() != piece.TypeShooter {
+		return
+	}
+
+	ctrl.Piece.Activate()
+	if ctrl.Piece.ActivationCount() == 1 {
+		animateBlinkPiece(ctrl, f.Config.Anim)
+	}
+}
+
+func (e *PieceShoot) Undo(f *field.Field) {
+	ctrl := f.Ctrl(e.PieceIdx)
+	ctrl.Piece = ctrl.Piece.Clone()
+
+	if ctrl.Piece.Type() != piece.TypeShooter {
+		return
+	}
+
+	ctrl.Piece.UndoActivate()
+	ctrl.List.Clear()
+}
+
+func (e *PieceShoot) Equals(ev event.Event) bool {
+	q, ok := ev.(*PieceShoot)
+	return ok && e.PieceIdx == q.PieceIdx && e.Hit == q.Hit && e.BlockType == q.BlockType
+}
+
+func (e *PieceShoot) Write(w io.Writer) error {
+	var hit byte
+	if e.Hit {
+		hit = 1
+	}
+
+	if _, err := w.Write([]byte{e.PieceIdx, hit, byte(e.BlockType)}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *PieceShoot) Read(r io.Reader) error {
+	var buffer [3]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.PieceIdx = buffer[0]
+	e.Hit = buffer[1] != 0
+	e.BlockType = block.Type(buffer[2])
+
+	return nil
+}
+
+func (e *PieceShoot) TypeID() event.Code { return codePieceShoot }
 
 func NewPieceFall(pIdx int, height int) *PieceFall {
 	return &PieceFall{

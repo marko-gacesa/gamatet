@@ -100,11 +100,11 @@ func HandleActionInput(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, a actio
 			}
 		case piece.TypeFlipV:
 			if success, _ := f.CanFlipVPiece(ctrl.Idx, !f.PieceCollision); success {
-				p.Push(op.NewPieceActivate(ctrl.Idx))
+				p.Push(op.NewPieceFlip(ctrl.Idx))
 			}
 		case piece.TypeFlipH:
 			if success, _ := f.CanFlipHPiece(ctrl.Idx, !f.PieceCollision); success {
-				p.Push(op.NewPieceActivate(ctrl.Idx))
+				p.Push(op.NewPieceFlip(ctrl.Idx))
 			}
 		case piece.TypeShooter:
 			_shoot(f, ctrl, p)
@@ -430,45 +430,47 @@ func _shoot(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
 		return
 	}
 
-	p.Push(op.NewPieceActivate(ctrl.Idx))
-
 	b := ctrl.Piece.Get(0, 0)
+	var hit bool
+
 	switch b.Type {
 	case block.TypeRock:
-		_shootBlock(f, ctrl, p, b)
+		hit = _shootBlock(f, ctrl, p, b)
 	case block.TypeAcid:
-		_shootAcid(f, ctrl, p)
+		hit = _shootAcid(f, ctrl, p)
 	case block.TypeLava:
-		_shootLava(f, ctrl, p)
+		hit = _shootLava(f, ctrl, p)
 	case block.TypeCurl:
-		_shootCurl(f, ctrl, p)
+		hit = _shootCurl(f, ctrl, p)
 	case block.TypeWave:
-		_shootWave(f, ctrl, p)
+		hit = _shootWave(f, ctrl, p)
 	}
+
+	p.Push(op.NewPieceShoot(ctrl.Idx, hit, b.Type))
 
 	if ammo == 1 {
 		_clearPiece(ctrl, p)
 	}
 }
 
-func _shootBlock(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, b block.Block) {
-	_dropBlock(f, p, ctrl.X, ctrl.Y, b)
+func _shootBlock(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, b block.Block) bool {
+	return _dropBlock(f, p, ctrl.X, ctrl.Y, b)
 }
 
-func _shootAcid(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
-	_dropAcid(f, p, ctrl.X, ctrl.Y)
+func _shootAcid(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) bool {
+	return _dropAcid(f, p, ctrl.X, ctrl.Y)
 }
 
-func _shootLava(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
-	_dropLava(f, p, ctrl.X, ctrl.Y)
+func _shootLava(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) bool {
+	return _dropLava(f, p, ctrl.X, ctrl.Y)
 }
 
-func _shootCurl(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
-	_dropCurl(f, p, ctrl.X, ctrl.Y)
+func _shootCurl(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) bool {
+	return _dropCurl(f, p, ctrl.X, ctrl.Y)
 }
 
-func _shootWave(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) {
-	_dropWave(f, p, ctrl.X, ctrl.Y)
+func _shootWave(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) bool {
+	return _dropWave(f, p, ctrl.X, ctrl.Y)
 }
 
 func _dropHeight(f *field.Field, x, y int) (height, y0 int, ok bool) {

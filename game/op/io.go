@@ -30,7 +30,9 @@ const (
 	codePieceState
 	codePieceSet
 	codePieceMove
-	codePieceActivate
+	codePieceRotate
+	codePieceFlip
+	codePieceShoot
 	codePieceFall
 	codePieceLevelBoost
 	codePieceOverride
@@ -107,8 +109,12 @@ func instance(code event.Code) event.Event {
 		e = &PieceSet{}
 	case codePieceMove:
 		e = &PieceMove{}
-	case codePieceActivate:
-		e = &PieceActivate{}
+	case codePieceRotate:
+		e = &PieceRotate{}
+	case codePieceFlip:
+		e = &PieceFlip{}
+	case codePieceShoot:
+		e = &PieceShoot{}
 	case codePieceFall:
 		e = &PieceFall{}
 	case codePieceLevelBoost:
