@@ -20,7 +20,7 @@ var (
 func init() {
 	for i := range MaxPlayers {
 		for j := range 3 {
-			ColorBackRGB[i][j] = ColorRGB[i][j] * 0.15
+			ColorBackRGB[i][j] = (1 - ColorRGB[i][j]) * 0.15
 		}
 	}
 }
