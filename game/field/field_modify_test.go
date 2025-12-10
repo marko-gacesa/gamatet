@@ -22,12 +22,12 @@ func TestField_ShiftBlockInColumn(t *testing.T) {
 	bD := block.Block{Type: block.TypeRock, Color: 4}
 
 	setColumn := func(f *Field, col int, blocks []block.Block) {
-		for row := 0; row < dimH; row++ {
+		for row := range dimH {
 			f.setXY(col, row, blocks[row])
 		}
 	}
 	getColumn := func(f *Field, col int) (blocks []block.Block) {
-		for row := 0; row < dimH; row++ {
+		for row := range dimH {
 			b, _ := f.getXY(col, row)
 			blocks = append(blocks, b)
 		}

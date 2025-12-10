@@ -20,7 +20,7 @@ func TestName(t *testing.T) {
 		"Δ":          "Δ",        // greek
 		"Ћ":          "Ћ",        // cyrillic
 		".:[]{}$@":   ".:[]{}$@", // ascii punctuation
-		"世界123":    "123",      // remove japanese/chinese
+		"世界123":      "123",      // remove japanese/chinese
 		"عالم123":    "123",      // remove arabic
 		"\xFBAB\xF0": "AB",       // remove invalid
 

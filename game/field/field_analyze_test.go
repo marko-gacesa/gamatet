@@ -139,7 +139,7 @@ func TestField_FindMovableColumnSections(t *testing.T) {
 	const dimH = 6
 
 	setColumn := func(f *Field, col int, blocks []block.Block) {
-		for row := 0; row < dimH; row++ {
+		for row := range dimH {
 			f.setXY(col, row, blocks[row])
 		}
 	}

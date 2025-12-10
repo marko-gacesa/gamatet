@@ -49,7 +49,7 @@ func TestWeights(t *testing.T) {
 
 			n := w.Total()
 
-			for i := uint(0); i < n; i++ {
+			for i := range n {
 				if want, got := test.expected[i], w.Weighted(i); want != got {
 					t.Errorf("idx %d: want: %d, got: %d", i, want, got)
 				}

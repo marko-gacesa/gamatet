@@ -78,12 +78,12 @@ func ShapesWithShooters(pieceType setup.PieceType, pieceSize byte) []piece.Shape
 	case setup.PieceTypeRotatingPolyominoes:
 		switch pieceSize {
 		case setup.PieceSize3: // 20:1
-			for i := 0; i < 5; i++ {
+			for range 5 {
 				shapes = append(shapes, Shapes(pieceType, pieceSize)...)
 			}
 			shapes = append(shapes, piece.ShapeShooter{})
 		case setup.PieceSize4: // 21:1
-			for i := 0; i < 3; i++ {
+			for range 3 {
 				shapes = append(shapes, Shapes(pieceType, pieceSize)...)
 			}
 			shapes = append(shapes, piece.ShapeShooter{})
@@ -95,7 +95,7 @@ func ShapesWithShooters(pieceType setup.PieceType, pieceSize byte) []piece.Shape
 	case setup.PieceTypeHMirroringPolyominoes, setup.PieceTypeVMirroringPolyominoes:
 		switch pieceSize {
 		case setup.PieceSize3: // 21:1
-			for i := 0; i < 3; i++ {
+			for range 3 {
 				shapes = append(shapes, Shapes(pieceType, pieceSize)...)
 			}
 			shapes = append(shapes, piece.ShapeShooter{})
