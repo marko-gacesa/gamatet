@@ -39,7 +39,7 @@ func (in *Input) String() string {
 
 var (
 	InputWASD   = Input{Left: A, Right: D, Activate: W, Boost: S, Drop: Tab}
-	InputHJKL   = Input{Left: H, Right: L, Activate: K, Boost: J, Drop: Space}
+	InputHJKL   = Input{Left: H, Right: L, Activate: K, Boost: J, Drop: RightShift}
 	InputArrows = Input{Left: Left, Right: Right, Activate: Up, Boost: Down, Drop: Space}
 	InputNumPad = Input{Left: KP4, Right: KP6, Activate: KP8, Boost: KP2, Drop: KP0}
 
