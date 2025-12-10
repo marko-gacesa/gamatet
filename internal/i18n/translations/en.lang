@@ -235,6 +235,7 @@ rotation_dir_ccw = Counterclockwise
 
 # Field strings
 
+field_player_name_default = Player %s
 field_title_panel_blocks  = Blocks:
 field_side_panel_player   = PLAYER
 field_side_panel_score    = SCORE

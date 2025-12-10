@@ -47,17 +47,8 @@ type PlayerInfo struct {
 }
 
 func (cfg *PlayerInfo) Sanitize(idx int) {
-	if cfg.Name == "" || len(cfg.Name) > setup.MaxLenName {
-		switch idx % 4 {
-		case 0:
-			cfg.Name = string('\u0394') // delta
-		case 1:
-			cfg.Name = string('\u0398') // theta
-		case 2:
-			cfg.Name = string('\u03A8') // psi
-		case 3:
-			cfg.Name = string('\u03A9') // omega
-		}
+	if len(cfg.Name) > setup.MaxLenName {
+		cfg.Name = string([]rune(cfg.Name)[:setup.MaxLenName])
 	}
 	cfg.Input.Sanitize(idx)
 	cfg.GameConfig.Sanitize()

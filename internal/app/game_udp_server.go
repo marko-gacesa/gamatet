@@ -119,13 +119,8 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 
 				session.Clients[actor.ClientIdx].Actors[actor.ClientActorIdx].Channel = actorInputPipe.In // [5] The network layer accepts remote player inputs here.
 
-				name := actor.Name
-				if name == "" {
-					name = fmt.Sprintf("P%d-%d", fieldIdx+1, storyActorIdx+1)
-				}
-
 				fieldPlayers[storyActorIdx] = core.PlayerSetup{
-					Name:    name,
+					Name:    playerName(actor.Name, fieldIdx, storyActorIdx, playerIndex),
 					Config:  piece.Config(playerConfig),
 					IsLocal: false,
 					Index:   playerIndex,
@@ -146,13 +141,8 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 			playerInputPipe := channel.MakePipe[[]byte]() // The "In" part of the pipe should be closed on UI component.
 			playerInChs[localPlayerIdx] = playerInputPipe.In
 
-			name := localPlayerInfo.Name
-			if name == "" {
-				name = fmt.Sprintf("P%d-%d", fieldIdx+1, storyActorIdx+1)
-			}
-
 			fieldPlayers[storyActorIdx] = core.PlayerSetup{
-				Name:    name,
+				Name:    playerName(localPlayerInfo.Name, fieldIdx, storyActorIdx, playerIndex),
 				Config:  piece.Config(localPlayerInfo.GameConfig),
 				IsLocal: true,
 				Index:   playerIndex,

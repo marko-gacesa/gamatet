@@ -101,7 +101,7 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 		for storyActorIdx, actor := range actors {
 			if actor.Token == 0 {
 				fieldPlayers[storyActorIdx] = core.PlayerSetup{
-					Name:    actor.Name,
+					Name:    playerName(actor.Name, fieldIdx, storyActorIdx, playerIndex),
 					Config:  piece.Config{},
 					IsLocal: false,
 					Index:   playerIndex,
@@ -122,13 +122,8 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 
 			session.Actors[actor.ActorIdx].InputCh = playerInputPipe.Out // [C] The network layer reads player inputs from here.
 
-			name := localPlayerInfo.Name
-			if name == "" {
-				name = fmt.Sprintf("P%d-%d", fieldIdx+1, storyActorIdx+1)
-			}
-
 			fieldPlayers[storyActorIdx] = core.PlayerSetup{
-				Name:    name,
+				Name:    playerName(localPlayerInfo.Name, fieldIdx, storyActorIdx, playerIndex),
 				Config:  piece.Config(localPlayerInfo.GameConfig),
 				IsLocal: true,
 				Index:   playerIndex,

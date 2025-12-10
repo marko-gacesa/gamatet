@@ -50,7 +50,7 @@ func (app *App) gameSinglePlayer(ctx screen.Context) types.GameOneParams {
 				OutCh: fieldCh,
 				Players: []core.PlayerSetup{
 					{
-						Name:    app.cfg.LocalPlayers.Infos[0].Name,
+						Name:    "", // no need to show name for single player
 						Config:  piece.Config(app.cfg.LocalPlayers.Infos[0].GameConfig),
 						IsLocal: true,
 						Index:   0,
