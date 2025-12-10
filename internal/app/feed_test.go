@@ -23,8 +23,10 @@ func TestShapesWithShooters(t *testing.T) {
 
 			ratio := float64(countRegular) / float64(countShooters)
 
-			if ratio < 35.0 || ratio > 45.0 {
-				t.Errorf("Ratio=%0.3f out of range (regulars=%d shooters=%d)", ratio, countRegular, countShooters)
+			if ratio < 18.0 || ratio > 22.0 {
+				t.Errorf("type=%s size=%d: Ratio=%0.3f out of range (regulars=%d shooters=%d)",
+					pieceType, pieceSize,
+					ratio, countRegular, countShooters)
 			}
 		}
 	}

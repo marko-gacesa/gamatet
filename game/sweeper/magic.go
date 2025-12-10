@@ -203,7 +203,9 @@ func (s *Magic) effectLid() {
 			topRow = max(f.GetTopmostEmpty(col), topRow)
 		}
 
-		for j := range 2 {
+		const thickness = 1
+
+		for j := range thickness {
 			skipCol := r.Int(w)
 			if topRow+j >= h {
 				break

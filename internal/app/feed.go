@@ -16,17 +16,20 @@ func Feed(s setup.Setup) piece.Feed {
 	bagSize := int(s.PieceOptions.BagSize)
 	seed := int(s.MiscOptions.Seed)
 	isSingle := s.GameOptions.FieldCount == 1 && s.GameOptions.TeamSize == 1
+	isBattle := s.GameOptions.FieldCount > 1
 
-	var color piece.Color
+	var (
+		color  piece.Color
+		shapes []piece.ShapeAny
+		wb     piece.TypeWeights
+		ws     piece.TypeWeights
+	)
+
 	if isSingle {
 		color = piece.DefaultColor{}
 	} else {
 		color = piece.NewRandomColor(setup.ColorRGB[:], seed)
 	}
-
-	var shapes []piece.ShapeAny
-	var wb piece.TypeWeights
-	var ws piece.TypeWeights
 
 	if s.PieceOptions.Shooters {
 		shapes = ShapesWithShooters(s.PieceOptions.PieceType, s.PieceOptions.PieceSize)
@@ -35,11 +38,16 @@ func Feed(s setup.Setup) piece.Feed {
 	}
 
 	if s.PieceOptions.SpecialBlocks {
-		wb = piece.NewTypeWeights(27, 2, 1, 0, 0)
+		wb = piece.NewTypeWeights(17, 2, 1, 0, 0)
 	} else {
 		wb = piece.NewTypeWeights(1, 0, 0, 0, 0)
 	}
-	ws = piece.NewTypeWeights(0, 3, 2, 1, 1)
+
+	if isBattle {
+		ws = piece.NewTypeWeights(0, 1, 1, 1, 1)
+	} else {
+		ws = piece.NewTypeWeights(0, 3, 2, 0, 0)
+	}
 
 	return piece.MixedFeed(wb, ws, bagSize, seed, color, shapes...)
 }
@@ -69,33 +77,35 @@ func ShapesWithShooters(pieceType setup.PieceType, pieceSize byte) []piece.Shape
 	switch pieceType {
 	case setup.PieceTypeRotatingPolyominoes:
 		switch pieceSize {
-		case setup.PieceSize3: // 40:1
-			for i := 0; i < 10; i++ {
+		case setup.PieceSize3: // 20:1
+			for i := 0; i < 5; i++ {
 				shapes = append(shapes, Shapes(pieceType, pieceSize)...)
 			}
 			shapes = append(shapes, piece.ShapeShooter{})
-		case setup.PieceSize4: // 42:1
-			for i := 0; i < 6; i++ {
+		case setup.PieceSize4: // 21:1
+			for i := 0; i < 3; i++ {
 				shapes = append(shapes, Shapes(pieceType, pieceSize)...)
 			}
 			shapes = append(shapes, piece.ShapeShooter{})
-		case setup.PieceSize5: // 40:1
+		case setup.PieceSize5: // 40:2
 			shapes = append(shapes, Shapes(pieceType, pieceSize)...)
+			shapes = append(shapes, piece.ShapeShooter{})
 			shapes = append(shapes, piece.ShapeShooter{})
 		}
 	case setup.PieceTypeHMirroringPolyominoes, setup.PieceTypeVMirroringPolyominoes:
 		switch pieceSize {
-		case setup.PieceSize3: // 42:1
-			for i := 0; i < 6; i++ {
+		case setup.PieceSize3: // 21:1
+			for i := 0; i < 3; i++ {
 				shapes = append(shapes, Shapes(pieceType, pieceSize)...)
 			}
 			shapes = append(shapes, piece.ShapeShooter{})
-		case setup.PieceSize4: // 38:1
-			shapes = append(shapes, Shapes(pieceType, pieceSize)...)
+		case setup.PieceSize4: // 19:1
 			shapes = append(shapes, Shapes(pieceType, pieceSize)...)
 			shapes = append(shapes, piece.ShapeShooter{})
-		case setup.PieceSize5: // 73:2
+		case setup.PieceSize5: // 73:4
 			shapes = append(shapes, Shapes(pieceType, pieceSize)...)
+			shapes = append(shapes, piece.ShapeShooter{})
+			shapes = append(shapes, piece.ShapeShooter{})
 			shapes = append(shapes, piece.ShapeShooter{})
 			shapes = append(shapes, piece.ShapeShooter{})
 		}
