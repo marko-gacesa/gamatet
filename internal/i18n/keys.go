@@ -188,6 +188,7 @@ const (
 	KeyConfigMultiPresets                = "config_multi_presets"
 	KeyConfigMultiPresetsDesc            = "config_multi_presets_desc"
 	KeyConfigEditPlayer                  = "config_edit_player"
+	KeyConfigEditPlayerNoName            = "config_edit_player_no_name"
 	KeyConfigEditPlayerDesc              = "config_edit_player_desc"
 	KeyConfigPlayerTitle                 = "config_player_title"
 	KeyConfigPlayerName                  = "config_player_name"

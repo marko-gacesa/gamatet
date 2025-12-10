@@ -185,6 +185,7 @@ config_single_presets_desc            = There are %d presets for single player g
 config_multi_presets                  = Edit multi-player game presets
 config_multi_presets_desc             = There are %d presets for multi-player games. Modify them here.
 config_edit_player                    = Edit local player %d: %s
+config_edit_player_no_name            = Edit local player %d
 config_edit_player_desc               = The game supports four players that can play locally. The first player is used in single player games.
 config_player_title                   = Edit player %d
 config_player_name                    = Name

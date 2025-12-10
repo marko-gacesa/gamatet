@@ -21,10 +21,16 @@ func (app *App) menuConfig(ctx screen.Context) *menu.Menu {
 	)
 
 	for i := range setup.MaxLocalPlayers {
-		info := app.cfg.LocalPlayers.Infos[i].Name
+		var info string
+		name := app.cfg.LocalPlayers.Infos[i].Name
+		if name != "" {
+			info = Tf(KeyConfigEditPlayer, i+1, name)
+		} else {
+			info = Tf(KeyConfigEditPlayerNoName, i+1)
+		}
 		items = append(items, menu.NewCommand(&app.screenIDNext,
 			route(routeConfigLocalPlayerSetupN+strconv.Itoa(i)),
-			Tf(KeyConfigEditPlayer, i+1, info),
+			info,
 			T(KeyConfigEditPlayerDesc)))
 	}
 	items = append(items,
