@@ -10,13 +10,13 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/marko-gacesa/bitdata v0.0.0-20250629140544-0cf19430b1b6
 	github.com/marko-gacesa/channel v0.0.0-20251109114423-46abe59b4977
-	github.com/marko-gacesa/udpstar v0.0.0-20251128163835-fcaf93c9aea9
+	github.com/marko-gacesa/udpstar v0.0.0-20251211205854-5791b03f3153
 	golang.org/x/image v0.26.0
-	golang.org/x/text v0.24.0
+	golang.org/x/text v0.28.0
 )
 
 require (
-	golang.org/x/net v0.36.0 // indirect
-	golang.org/x/sync v0.13.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/net v0.43.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
+	golang.org/x/sys v0.35.0 // indirect
 )

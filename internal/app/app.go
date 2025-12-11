@@ -56,10 +56,11 @@ type App struct {
 func NewApp(ctx context.Context, logger *slog.Logger, cfg config.Config, cfgPath string) *App {
 	wg := &sync.WaitGroup{}
 
+	loggerUDP := logger.With("component", "udp-service")
 	udpService := udp.NewService(ctx, cfg.Network.Port,
-		udp.WithLogger(logger),
+		udp.WithLogger(loggerUDP),
 		udp.WithServerStateCallback(func(state udp.ServerState, err error) {
-			logger.Debug("server state changed", "state", state)
+			loggerUDP.Debug("state changed", "state", state)
 		}),
 		udp.WithIdleTimeout(30*time.Second),
 	)
