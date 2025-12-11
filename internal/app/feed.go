@@ -38,13 +38,13 @@ func Feed(s setup.Setup) piece.Feed {
 	}
 
 	if s.PieceOptions.SpecialBlocks {
-		wb = piece.NewTypeWeights(17, 2, 1, 0, 0)
+		wb = piece.NewTypeWeights(27, 1, 2, 0, 0)
 	} else {
 		wb = piece.NewTypeWeights(1, 0, 0, 0, 0)
 	}
 
 	if isBattle {
-		ws = piece.NewTypeWeights(0, 1, 1, 1, 1)
+		ws = piece.NewTypeWeights(0, 1, 2, 1, 1)
 	} else {
 		ws = piece.NewTypeWeights(0, 3, 2, 0, 0)
 	}
