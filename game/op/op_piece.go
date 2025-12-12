@@ -710,11 +710,13 @@ var _ event.Event = (*PieceSpeedUp)(nil)
 func (e *PieceSpeedUp) Do(f *field.Field) {
 	ctrl := f.Ctrl(e.PieceIdx)
 	ctrl.SetLevel(uint(int(ctrl.Level) + int(e.Delta)))
+	f.UpdateBlocksRemoved(0)
 }
 
 func (e *PieceSpeedUp) Undo(f *field.Field) {
 	ctrl := f.Ctrl(e.PieceIdx)
 	ctrl.SetLevel(uint(int(ctrl.Level) - int(e.Delta)))
+	f.UpdateBlocksRemoved(0)
 }
 
 func (e *PieceSpeedUp) Equals(ev event.Event) bool {
