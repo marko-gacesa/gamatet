@@ -5,6 +5,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"math/rand/v2"
 	"net"
@@ -403,4 +404,36 @@ func (app *App) loadPresetMulti(idx int) {
 
 func (app *App) saveConfig() {
 	_ = config.Save(app.logger, app.cfgPath, &app.cfg)
+}
+
+func latencyState(s udpstar.ClientState) string {
+	switch s {
+	case udpstar.ClientStateNew:
+		return i18n.T(i18n.KeyFieldLatencyStateNew)
+	case udpstar.ClientStateLocal:
+		return i18n.T(i18n.KeyFieldLatencyStateLocal)
+	case udpstar.ClientStateGood:
+		return i18n.T(i18n.KeyFieldLatencyStateGood)
+	case udpstar.ClientStateLagging:
+		return i18n.T(i18n.KeyFieldLatencyStateLagging)
+	case udpstar.ClientStateLost:
+		return i18n.T(i18n.KeyFieldLatencyStateLost)
+	default:
+		return "?"
+	}
+}
+
+func latenciesToString(l []udpstar.LatencyActor, names []string) string {
+	if len(l) == 0 {
+		return ""
+	}
+	sb := strings.Builder{}
+
+	sb.WriteString(i18n.T(i18n.KeyFieldLatency))
+	sb.WriteString(":\n")
+	for i, v := range l {
+		sb.WriteString(fmt.Sprintf("%d. %s [%s] %dms\n",
+			i+1, names[i], latencyState(v.State), v.Latency.Milliseconds()))
+	}
+	return sb.String()
 }

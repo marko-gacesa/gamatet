@@ -186,8 +186,20 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 		}
 	}
 
+	playerNames := func() []string {
+		names := make([]string, 0)
+		for fIdx := range fields {
+			for fieldPlayerIdx := range fields[fIdx].Players {
+				names = append(names, fields[fIdx].Players[fieldPlayerIdx].Name)
+			}
+		}
+		return names
+	}()
+
 	latencies := latency.NewList(func() []udpstar.LatencyActor {
 		return cli.Latencies().Latencies
+	}, func(l []udpstar.LatencyActor) string {
+		return latenciesToString(l, playerNames)
 	})
 
 	gameInterpreter := core.MakeInterpreter(core.Setup{

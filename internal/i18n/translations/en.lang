@@ -236,19 +236,25 @@ rotation_dir_ccw = Counterclockwise
 
 # Field strings
 
-field_player_name_default = Player %s
-field_title_panel_blocks  = Blocks:
-field_side_panel_player   = PLAYER
-field_side_panel_score    = SCORE
-field_side_panel_piece    = PIECE
-field_side_panel_level    = SPEED
-field_side_panel_next     = NEXT
-field_message_game_over   = GAME\nOVER
-field_message_victory     = VICTORY
-field_message_defeat      = DEFEAT
-field_message_pause       = PAUSE
-field_message_suspended   = NETWORK\nPROBLEM
-field_message_server_lost = SERVER LOST
+field_player_name_default   = Player %s
+field_title_panel_blocks    = Blocks:
+field_side_panel_player     = PLAYER
+field_side_panel_score      = SCORE
+field_side_panel_piece      = PIECE
+field_side_panel_level      = SPEED
+field_side_panel_next       = NEXT
+field_message_game_over     = GAME\nOVER
+field_message_victory       = VICTORY
+field_message_defeat        = DEFEAT
+field_message_pause         = PAUSE
+field_message_suspended     = NETWORK\nPROBLEM
+field_message_server_lost   = SERVER LOST
+field_latency               = Latency
+field_latency_state_new     = new
+field_latency_state_local   = local
+field_latency_state_good    = good
+field_latency_state_lagging = lagging
+field_latency_state_lost    = lost
 
 # Effects
 

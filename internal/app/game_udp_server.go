@@ -185,8 +185,20 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 
 	actionCh := make(chan action.Action)
 
+	playerNames := func() []string {
+		names := make([]string, 0)
+		for fIdx := range fields {
+			for fieldPlayerIdx := range fields[fIdx].Players {
+				names = append(names, fields[fIdx].Players[fieldPlayerIdx].Name)
+			}
+		}
+		return names
+	}()
+
 	latencies := latency.NewList(func() []udpstar.LatencyActor {
 		return app.gameServer.Latencies(session.Token)
+	}, func(l []udpstar.LatencyActor) string {
+		return latenciesToString(l, playerNames)
 	})
 
 	gameHost := core.MakeHost(core.Setup{

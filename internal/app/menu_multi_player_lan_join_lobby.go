@@ -143,8 +143,8 @@ func (app *App) menuMultiPlayerLANJoinLobby(ctx screen.Context) *menu.Menu {
 	items = append(items, menu.NewStatic(
 		T(KeyLobbyStarting1), "", nil,
 		menu.WithVisible(blocker.Starting1)))
-	items = append(items, app.menuItemEscape())
-	items = append(items, app.menuItemBack())
+	items = append(items, app.menuItemEscape(menu.WithDisabled(func() bool { return blocker.Starting() })))
+	items = append(items, app.menuItemBack(menu.WithDisabled(func() bool { return blocker.Starting() })))
 
 	m := menu.New(T(KeyLobbyTitle), func(m *menu.Menu) {
 		if app.screenIDNext == routeBack {

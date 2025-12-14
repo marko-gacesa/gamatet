@@ -4,7 +4,8 @@
 package app
 
 import (
-	"fmt"
+	"context"
+	"errors"
 	"net"
 	"time"
 
@@ -98,24 +99,16 @@ func (app *App) menuMultiPlayerDirectIPHostLobby(ctx screen.Context) *menu.Menu 
 			start++
 			go func() {
 				app.resultServerSession, app.resultClientMap, err = app.gameServer.FinishLobby(ctx, lobbyToken)
-				if err != nil {
-					app.logger.Error("failed to finish lobby",
-						"err", err,
-						"lobbyToken", lobbyToken,
-					)
-					l, err := app.gameServer.GetLobby(lobbyToken, -1)
-					if err != nil {
-						app.logger.Error("failed to get lobby", "err", err, "lobbyToken", lobbyToken)
-					}
-					if l != nil {
-						app.logger.Info("lobby", "state", l.State.String(), "slots",
-							fmt.Sprintf("%+v", l.Slots))
-					}
-					app.screenIDNext = routeBack
-					ctx.Stop()
-					return
+				if err != nil && !errors.Is(err, context.Canceled) {
+					app.logger.Error("failed to finish lobby", "err", err)
 				}
-				app.screenIDNext = routeMultiPlayerUDPHostGame
+
+				if app.resultServerSession == nil || app.resultClientMap == nil {
+					app.screenIDNext = routeBack
+				} else {
+					app.screenIDNext = routeMultiPlayerUDPHostGame
+				}
+
 				ctx.Stop()
 			}()
 		}

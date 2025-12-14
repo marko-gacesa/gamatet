@@ -236,19 +236,25 @@ rotation_dir_ccw = Супротно од смера казаљке на сату
 
 # Field strings
 
-field_player_name_default = Играч %s
-field_title_panel_blocks  = Блокови:
-field_side_panel_player   = ИГРАЧ
-field_side_panel_score    = ПОЕНИ
-field_side_panel_piece    = ФИГУРА
-field_side_panel_level    = БРЗИНА
-field_side_panel_next     = СЛЕДЕЋЕ
-field_message_game_over   = КРАЈ\nИГРЕ
-field_message_victory     = ПОБЕДА
-field_message_defeat      = ПОРАЗ
-field_message_pause       = ПАУЗА
-field_message_suspended   = ПРОБЛЕМ\nСА МРЕЖОМ
-field_message_server_lost = СЕРВЕР\nИЗГУБЉЕН
+field_player_name_default   = Играч %s
+field_title_panel_blocks    = Блокови:
+field_side_panel_player     = ИГРАЧ
+field_side_panel_score      = ПОЕНИ
+field_side_panel_piece      = ФИГУРА
+field_side_panel_level      = БРЗИНА
+field_side_panel_next       = СЛЕДЕЋЕ
+field_message_game_over     = КРАЈ\nИГРЕ
+field_message_victory       = ПОБЕДА
+field_message_defeat        = ПОРАЗ
+field_message_pause         = ПАУЗА
+field_message_suspended     = ПРОБЛЕМ\nСА МРЕЖОМ
+field_message_server_lost   = СЕРВЕР\nИЗГУБЉЕН
+field_latency               = Кашњење
+field_latency_state_new     = нов
+field_latency_state_local   = локал
+field_latency_state_good    = добар
+field_latency_state_lagging = касни
+field_latency_state_lost    = изгубљен
 
 # Effects
 

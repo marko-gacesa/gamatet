@@ -4,6 +4,8 @@
 package app
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net"
 	"strconv"
@@ -86,8 +88,8 @@ func (app *App) menuMultiPlayerLANHostLobby(ctx screen.Context) *menu.Menu {
 	items = append(items, menu.NewStatic(
 		T(KeyLobbyStarting1), "", nil,
 		menu.WithVisible(blocker.Starting1)))
-	items = append(items, app.menuItemEscape())
-	items = append(items, app.menuItemBack())
+	items = append(items, app.menuItemEscape(menu.WithDisabled(func() bool { return blocker.Starting() })))
+	items = append(items, app.menuItemBack(menu.WithDisabled(func() bool { return blocker.Starting() })))
 
 	m := menu.New(T(KeyLobbyTitle), func(m *menu.Menu) {
 		app.menuStopper(ctx)(m)
@@ -95,8 +97,19 @@ func (app *App) menuMultiPlayerLANHostLobby(ctx screen.Context) *menu.Menu {
 		if start == 1 {
 			start++
 			go func() {
-				app.resultServerSession, app.resultClientMap, _ = app.gameServer.FinishLobby(ctx, lobbyToken)
-				app.screenIDNext = routeMultiPlayerUDPHostGame
+				var err error
+
+				app.resultServerSession, app.resultClientMap, err = app.gameServer.FinishLobby(ctx, lobbyToken)
+				if err != nil && !errors.Is(err, context.Canceled) {
+					app.logger.Error("failed to finish lobby", "err", err)
+				}
+
+				if app.resultServerSession == nil || app.resultClientMap == nil {
+					app.screenIDNext = routeBack
+				} else {
+					app.screenIDNext = routeMultiPlayerUDPHostGame
+				}
+
 				ctx.Stop()
 			}()
 		}
@@ -167,14 +180,20 @@ type lobbyEntries struct {
 
 	localActors []message.Token
 
-	teams   map[message.Token]string
-	entries []lobbyEntry
-	mx      sync.Mutex
+	slotInfos []slotInfo
+	entries   []lobbyEntry
+	mx        sync.Mutex
 }
 
 type lobbyEntriesConfig struct {
 	host       bool
 	fixedSlots bool
+}
+
+type slotInfo struct {
+	storyIndex      int
+	storyEntryIndex int
+	teamName        string
 }
 
 type lobbyEntry struct {
@@ -192,7 +211,7 @@ func makeLobbyEntries(
 	l := &lobbyEntries{
 		config:      lobbyEntriesConfig{},
 		localActors: localActors,
-		teams:       nil,
+		slotInfos:   nil,
 		entries:     make([]lobbyEntry, len(slotStories)),
 		mx:          sync.Mutex{},
 	}
@@ -231,8 +250,31 @@ func (l *lobbyEntries) updateStoryTokens(slotStories []message.Token) {
 		}
 	}
 
+	slotInfos := make([]slotInfo, len(slotStories))
+	for i := range slotStories {
+		if i == 0 {
+			slotInfos[0] = slotInfo{
+				storyIndex:      0,
+				storyEntryIndex: 0,
+				teamName:        teams[slotStories[i]],
+			}
+		} else if slotStories[i] == slotStories[i-1] {
+			slotInfos[i] = slotInfo{
+				storyIndex:      slotInfos[i-1].storyIndex,
+				storyEntryIndex: slotInfos[i-1].storyEntryIndex + 1,
+				teamName:        teams[slotStories[i]],
+			}
+		} else {
+			slotInfos[i] = slotInfo{
+				storyIndex:      slotInfos[i-1].storyIndex + 1,
+				storyEntryIndex: 0,
+				teamName:        teams[slotStories[i]],
+			}
+		}
+	}
+
 	l.mx.Lock()
-	l.teams = teams
+	l.slotInfos = slotInfos
 	l.mx.Unlock()
 }
 
@@ -245,8 +287,11 @@ func (l *lobbyEntries) setAll(lobby *udpstar.Lobby) {
 		l.entries[i].availability = avail
 		l.entries[i].actor = actor
 
-		name := lobby.Slots[i].Name
-		team := l.teams[lobby.Slots[i].StoryToken]
+		info := l.slotInfos[i]
+
+		name := playerName(lobby.Slots[i].Name, info.storyIndex, info.storyEntryIndex, i)
+		team := info.teamName
+
 		switch avail {
 		case udpstar.SlotAvailable:
 			if l.config.fixedSlots {
@@ -400,6 +445,13 @@ func (b *startBlocker) Starting2() bool {
 func (b *startBlocker) Starting3() bool {
 	b.mx.Lock()
 	q := b.lobbyState == udpstar.LobbyStateStarting3
+	b.mx.Unlock()
+	return q
+}
+
+func (b *startBlocker) Starting() bool {
+	b.mx.Lock()
+	q := b.lobbyState >= udpstar.LobbyStateStarting
 	b.mx.Unlock()
 	return q
 }

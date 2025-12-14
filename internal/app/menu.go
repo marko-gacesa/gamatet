@@ -28,12 +28,12 @@ func (app *App) configStopper(ctx screen.Context) func(*menu.Menu) {
 	}
 }
 
-func (app *App) menuItemEscape() *menu.Hidden[route] {
-	return menu.NewHidden(menu.InputEscape, &app.screenIDNext, routeBack)
+func (app *App) menuItemEscape(options ...func(menu.Item)) *menu.Hidden[route] {
+	return menu.NewHidden(menu.InputEscape, &app.screenIDNext, routeBack, options...)
 }
 
-func (app *App) menuItemBack() *menu.Command[route] {
-	return menu.NewCommand(&app.screenIDNext, routeBack, T(KeyMenuBack), T(KeyMenuBackDesc))
+func (app *App) menuItemBack(options ...func(menu.Item)) *menu.Command[route] {
+	return menu.NewCommand(&app.screenIDNext, routeBack, T(KeyMenuBack), T(KeyMenuBackDesc), options...)
 }
 
 func withBoolStr() func(menu.Item) {

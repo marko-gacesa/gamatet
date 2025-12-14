@@ -17,7 +17,21 @@ type List struct {
 	cached *cache.String[[]udpstar.LatencyActor]
 }
 
-func NewList(fn func() []udpstar.LatencyActor) *List {
+func NewList(fn func() []udpstar.LatencyActor, strFn func(l []udpstar.LatencyActor) string) *List {
+	if strFn == nil {
+		strFn = func(l []udpstar.LatencyActor) string {
+			if len(l) == 0 {
+				return ""
+			}
+			sb := strings.Builder{}
+			sb.WriteString("Latency:\n")
+			for i, v := range l {
+				sb.WriteString(fmt.Sprintf("%d. %s [%s] %dms\n",
+					i+1, v.Name, clientState(v.State), v.Latency.Milliseconds()))
+			}
+			return sb.String()
+		}
+	}
 	return &List{
 		cached: cache.NewString[[]udpstar.LatencyActor](
 			fn, func(prev *[]udpstar.LatencyActor, curr []udpstar.LatencyActor) bool {
@@ -32,18 +46,7 @@ func NewList(fn func() []udpstar.LatencyActor) *List {
 				}
 				return equal
 			},
-			func(l []udpstar.LatencyActor) string {
-				if len(l) == 0 {
-					return ""
-				}
-				sb := strings.Builder{}
-				sb.WriteString("Latency:\n")
-				for i, v := range l {
-					sb.WriteString(fmt.Sprintf("%d. %s [%s] %dms\n",
-						i+1, v.Name, clientState(v.State), v.Latency.Milliseconds()))
-				}
-				return sb.String()
-			},
+			strFn,
 			time.Second,
 		),
 	}
