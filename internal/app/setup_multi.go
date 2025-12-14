@@ -80,12 +80,14 @@ func setupMultiPlayer(s *setup.Setup, sections *setupSections) []menu.Item {
 			"\t"+T(KeySetupPieceSpecialBlocks), T(KeySetupPieceSpecialBlocksDesc),
 			menu.WithVisible(func() bool {
 				return sections.showPiece
-			})),
+			}),
+			withBoolStr()),
 		menu.NewBool(&s.PieceOptions.Shooters,
 			"\t"+T(KeySetupPieceShooters), T(KeySetupPieceShootersDesc),
 			menu.WithVisible(func() bool {
 				return sections.showPiece
-			})),
+			}),
+			withBoolStr()),
 		menu.NewInteger(&s.PieceOptions.BagSize, 1, setup.BagSizeMax,
 			"\t"+T(KeySetupBagSize), T(KeySetupBagSizeDesc),
 			menu.WithVisible(func() bool {
