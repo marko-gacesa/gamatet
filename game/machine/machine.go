@@ -155,6 +155,7 @@ func HandleActionInput(f *field.Field, ctrl *piece.Ctrl, p event.Pusher, a actio
 		}
 
 		p.Push(op.NewPieceFall(ctrl.Idx, height))
+		p.Push(op.NewPieceScore(ctrl.Idx, 2*height*int(ctrl.Level)))
 
 		_changeStateWithParam(ctrl, p, piece.StateFall, height)
 
@@ -199,6 +200,7 @@ func HandleTimeout(f *field.Field, ctrl *piece.Ctrl, p event.Pusher) bool {
 	case piece.StateDescend, piece.StateSlide:
 		if f.CanMovePiece(0, -1, ctrl.Idx, !f.PieceCollision) {
 			p.Push(op.NewPieceFall(ctrl.Idx, 1))
+			p.Push(op.NewPieceScore(ctrl.Idx, int(ctrl.ApparentLevel())))
 			_changeState(ctrl, p, piece.StateDescend)
 			break
 		}

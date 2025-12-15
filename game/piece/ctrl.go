@@ -231,6 +231,18 @@ func (c *Ctrl) ApparentLevel() uint {
 	return level
 }
 
+func (c *Ctrl) ModifyScore(delta int) {
+	switch {
+	case delta == 0:
+		return
+	case delta < 0 && c.Score < uint(-delta):
+		c.Score = 0
+	default:
+		c.Score += uint(delta)
+	}
+	c.ScoreStr = strconv.Itoa(int(c.Score))
+}
+
 type Config struct {
 	// RotationDirectionCW determines Piece rotation direction.
 	// Value true means the rotation is clockwise and performed with RotateCW().

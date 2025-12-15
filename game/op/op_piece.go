@@ -4,6 +4,7 @@
 package op
 
 import (
+	"encoding/binary"
 	"io"
 	"strconv"
 
@@ -557,6 +558,62 @@ func (e *PieceFall) Read(r io.Reader) error {
 }
 
 func (e *PieceFall) TypeID() event.Code { return codePieceFall }
+
+func NewPieceScore(pIdx int, delta int) *PieceScore {
+	return &PieceScore{
+		PieceIdx: byte(pIdx),
+		Delta:    delta,
+	}
+}
+
+type PieceScore struct {
+	PieceIdx byte
+	Delta    int
+}
+
+var _ event.Event = (*PieceScore)(nil)
+
+func (e *PieceScore) Do(f *field.Field) {
+	ctrl := f.Ctrl(e.PieceIdx)
+	ctrl.ModifyScore(e.Delta)
+}
+
+func (e *PieceScore) Undo(f *field.Field) {
+	ctrl := f.Ctrl(e.PieceIdx)
+	ctrl.ModifyScore(-e.Delta)
+}
+
+func (e *PieceScore) Equals(ev event.Event) bool {
+	q, ok := ev.(*PieceScore)
+	return ok && e.PieceIdx == q.PieceIdx && e.Delta == q.Delta
+}
+
+func (e *PieceScore) Write(w io.Writer) error {
+	var buffer [5]byte
+
+	buffer[0] = e.PieceIdx
+	binary.LittleEndian.PutUint32(buffer[1:5], uint32(e.Delta))
+
+	if _, err := w.Write(buffer[:]); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *PieceScore) Read(r io.Reader) error {
+	var buffer [5]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.PieceIdx = buffer[0]
+	e.Delta = int(binary.LittleEndian.Uint32(buffer[1:5]))
+
+	return nil
+}
+
+func (e *PieceScore) TypeID() event.Code { return codePieceScore }
 
 func NewPieceLevelBoost(pIdx int, boost bool) *PieceLevelBoost {
 	return &PieceLevelBoost{

@@ -34,6 +34,7 @@ const (
 	codePieceFlip
 	codePieceShoot
 	codePieceFall
+	codePieceScore
 	codePieceLevelBoost
 	codePieceOverride
 	codePieceSpeedUp
@@ -117,6 +118,8 @@ func instance(code event.Code) event.Event {
 		e = &PieceShoot{}
 	case codePieceFall:
 		e = &PieceFall{}
+	case codePieceScore:
+		e = &PieceScore{}
 	case codePieceLevelBoost:
 		e = &PieceLevelBoost{}
 	case codePieceOverride:

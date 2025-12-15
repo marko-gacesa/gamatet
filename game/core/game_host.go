@@ -132,6 +132,7 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 		f := fields[i].Field
 		fields[i].Sweepers = append(fields[i].Sweepers,
 			sweeper.NewRow(f),
+			sweeper.NewScore(f),
 			sweeper.NewShaker(f),
 			sweeper.NewGameOver(f),
 			sweeper.NewSpeedUp(f),
