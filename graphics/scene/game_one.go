@@ -13,6 +13,7 @@ import (
 	"github.com/marko-gacesa/gamatet/game/core"
 	"github.com/marko-gacesa/gamatet/graphics/render"
 	"github.com/marko-gacesa/gamatet/graphics/scene/base"
+	"github.com/marko-gacesa/gamatet/graphics/scene/hud"
 	"github.com/marko-gacesa/gamatet/graphics/texture"
 	"github.com/marko-gacesa/gamatet/internal/config/key"
 	"github.com/marko-gacesa/gamatet/internal/types"
@@ -23,9 +24,7 @@ type GameOne struct {
 	base.BlockBase
 	res  render.FieldResources
 	text render.Text
-
-	textHUD render.Text
-	fpsHUD  render.HUD
+	huds *hud.HUDs
 
 	playerInCh chan<- []byte
 	input      key.Input
@@ -48,9 +47,8 @@ func NewGameOne(
 ) *GameOne {
 	res := render.GenerateFieldResources(tex)
 	text := render.MakeText(tex, render.Font)
-
-	textHUD := render.MakeText(tex, render.HudFont)
-	fpsHUD := render.NewHUD(render.NewFPS(), HUDPosFPS, textHUD)
+	huds := hud.NewHUDs(tex)
+	huds.Add(render.NewFPS(), hud.PosFPS)
 
 	str := fieldStrings()
 
@@ -63,9 +61,7 @@ func NewGameOne(
 		BlockBase: base.NewBlockBase(renderer, tex, w, h, true),
 		res:       *res,
 		text:      *text,
-
-		textHUD: *textHUD,
-		fpsHUD:  *fpsHUD,
+		huds:      huds,
 
 		playerInCh: params.PlayerInCh,
 		input:      params.PlayerInput,
@@ -85,6 +81,8 @@ func NewGameOne(
 
 func (ft *GameOne) Release() {
 	<-ft.waitDoneCh
+
+	ft.huds.Release()
 	ft.text.Release()
 	ft.res.Release()
 
@@ -121,11 +119,12 @@ func (ft *GameOne) InputKeyPress(key int, act screen.KeyAction) {
 		}
 	}
 
+	ft.huds.InputKeyPress(key, act)
 }
 
 func (ft *GameOne) Prepare(now time.Time) {
 	ft.fieldRender.Prepare(now)
-	ft.fpsHUD.Prepare(ft.ViewSize())
+	ft.huds.Prepare(ft.ViewSize())
 }
 
 func (ft *GameOne) Render() {
@@ -134,5 +133,5 @@ func (ft *GameOne) Render() {
 	ft.SetCamera()
 	ft.fieldRender.Render(r)
 
-	ft.fpsHUD.Render(r)
+	ft.huds.Render(r)
 }

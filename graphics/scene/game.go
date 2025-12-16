@@ -4,7 +4,6 @@
 package scene
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -15,6 +14,7 @@ import (
 	"github.com/marko-gacesa/gamatet/game/setup"
 	"github.com/marko-gacesa/gamatet/graphics/render"
 	"github.com/marko-gacesa/gamatet/graphics/scene/base"
+	"github.com/marko-gacesa/gamatet/graphics/scene/hud"
 	"github.com/marko-gacesa/gamatet/graphics/texture"
 	"github.com/marko-gacesa/gamatet/internal/config/key"
 	"github.com/marko-gacesa/gamatet/internal/types"
@@ -25,10 +25,7 @@ type Game struct {
 	base.BlockBase
 	res  render.FieldResources
 	text render.Text
-
-	textHUD      render.Text
-	fpsHUD       render.HUD
-	latenciesHUD render.HUD
+	huds *hud.HUDs
 
 	playersInCh [setup.MaxLocalPlayers]chan<- []byte
 	inputs      [setup.MaxLocalPlayers]key.Input
@@ -51,15 +48,11 @@ func NewGame(
 ) *Game {
 	res := render.GenerateFieldResources(tex)
 	text := render.MakeText(tex, render.Font)
-
-	var latencies fmt.Stringer
+	huds := hud.NewHUDs(tex)
+	huds.Add(render.NewFPS(), hud.PosFPS)
 	if params.Latencies != nil {
-		latencies = params.Latencies
+		huds.Add(params.Latencies, hud.PosLatencies)
 	}
-
-	textHUD := render.MakeText(tex, render.HudFont)
-	fpsHUD := render.NewHUD(render.NewFPS(), HUDPosFPS, textHUD)
-	latenciesHUD := render.NewHUD(latencies, HUDPosLatencies, textHUD)
 
 	str := fieldStrings()
 
@@ -131,10 +124,7 @@ func NewGame(
 		BlockBase: base.NewBlockBase(renderer, tex, w, h, true),
 		res:       *res,
 		text:      *text,
-
-		textHUD:      *textHUD,
-		fpsHUD:       *fpsHUD,
-		latenciesHUD: *latenciesHUD,
+		huds:      huds,
 
 		playersInCh: params.PlayerInCh,
 		inputs:      params.PlayerInputs,
@@ -154,8 +144,7 @@ func NewGame(
 func (ft *Game) Release() {
 	<-ft.waitDoneCh
 
-	ft.textHUD.Release()
-
+	ft.huds.Release()
 	ft.text.Release()
 	ft.res.Release()
 
@@ -203,6 +192,8 @@ func (ft *Game) InputKeyPress(key int, act screen.KeyAction) {
 			}
 		}
 	}
+
+	ft.huds.InputKeyPress(key, act)
 }
 
 func (ft *Game) Prepare(now time.Time) {
@@ -210,8 +201,7 @@ func (ft *Game) Prepare(now time.Time) {
 		ft.fieldRenders[i].Prepare(now)
 	}
 
-	ft.fpsHUD.Prepare(ft.ViewSize())
-	ft.latenciesHUD.Prepare(ft.ViewSize())
+	ft.huds.Prepare(ft.ViewSize())
 }
 
 func (ft *Game) Render() {
@@ -222,8 +212,7 @@ func (ft *Game) Render() {
 		ft.fieldRenders[i].Render(r)
 	}
 
-	ft.fpsHUD.Render(r)
-	ft.latenciesHUD.Render(r)
+	ft.huds.Render(r)
 }
 
 func positionFieldRenderers(

@@ -6,15 +6,7 @@ package scene
 import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 
-	"github.com/marko-gacesa/gamatet/game/field"
-	"github.com/marko-gacesa/gamatet/graphics/render"
 	"github.com/marko-gacesa/gamatet/internal/config/key"
-	. "github.com/marko-gacesa/gamatet/internal/i18n"
-)
-
-const (
-	HUDPosFPS       = render.HUDUpperRight
-	HUDPosLatencies = render.HUDUpperLeft
 )
 
 var KeyMap = map[key.Key]glfw.Key{
@@ -263,48 +255,4 @@ var KeyMapReverse = map[glfw.Key]key.Key{
 	glfw.KeyRightAlt:     key.RightAlt,
 	glfw.KeyRightSuper:   key.RightSuper,
 	glfw.KeyMenu:         key.Menu,
-}
-
-func fieldStrings() render.FieldStrings {
-	return render.FieldStrings{
-		TitlePanel: struct {
-			Blocks string
-		}{
-			Blocks: T(KeyFieldTitlePanelBlocks),
-		},
-		SidePanel: struct {
-			Player string
-			Score  string
-			Piece  string
-			Level  string
-			Next   string
-		}{
-			Player: T(KeyFieldSidePanelPlayer),
-			Score:  T(KeyFieldSidePanelScore),
-			Piece:  T(KeyFieldSidePanelPiece),
-			Level:  T(KeyFieldSidePanelLevel),
-			Next:   T(KeyFieldSidePanelNext),
-		},
-		Message: struct {
-			GameOver   string
-			Victory    string
-			Defeat     string
-			Pause      string
-			Suspended  string
-			ServerLost string
-		}{
-			GameOver:   T(KeyFieldMessageGameOver),
-			Victory:    T(KeyFieldMessageVictory),
-			Defeat:     T(KeyFieldMessageDefeat),
-			Pause:      T(KeyFieldMessagePause),
-			Suspended:  T(KeyFieldMessageSuspended),
-			ServerLost: T(KeyFieldMessageServerLost),
-		},
-		EffectMap: map[field.Effect]string{
-			field.EffectLid:   T(KeyEffectLid),
-			field.EffectBigO:  T(KeyEffectBigO),
-			field.EffectRaise: T(KeyEffectRaise),
-			field.EffectPatch: T(KeyEffectPatch),
-		},
-	}
 }

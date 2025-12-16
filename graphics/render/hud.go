@@ -28,6 +28,7 @@ type HUD struct {
 	viewW float32
 	viewH float32
 
+	show  bool
 	value string
 	model mgl32.Mat4
 }
@@ -36,13 +37,18 @@ func NewHUD(v fmt.Stringer, pos HUDPos, text *Text) *HUD {
 	return &HUD{v: v, pos: pos, text: text}
 }
 
-func (hud *HUD) Prepare(viewW, viewH int) {
-	hud.viewW = float32(viewW)
-	hud.viewH = float32(viewH)
+func (hud *HUD) ShowToggle() {
+	hud.show = !hud.show
+}
 
-	if hud.v == nil {
+func (hud *HUD) Prepare(viewW, viewH int) {
+	if hud.v == nil || !hud.show {
+		hud.value = ""
 		return
 	}
+
+	hud.viewW = float32(viewW)
+	hud.viewH = float32(viewH)
 
 	s := hud.v.String()
 	hud.value = s
