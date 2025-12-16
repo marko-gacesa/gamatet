@@ -23,8 +23,8 @@ import (
 //
 // New: Player has no piece; A new piece should be generated
 // * on timeout: Take next piece (the piece at index PieceCount)...
-// * ... if it can't be introduced the because of some other player's piece: ChangeState(New)
-// * ... if it can't be introduced the because of a block on the field, the game is over: ChangeState(End)
+// * ... if it can't be introduced because of some other player's piece: ChangeState(New)
+// * ... if it can't be introduced because of a block on the field, the game is over: ChangeState(End)
 // * ... if it can: ChangeState(Descend), PieceCount++, SetPiece (and it's location)
 //
 // Descend: Player has a piece, and it descends slowly

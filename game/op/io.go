@@ -25,9 +25,11 @@ const (
 	codeFieldStat
 	codeFieldEffect
 	codeFieldQuake
+)
 
+const (
 	// piece events
-	codePieceState
+	codePieceState event.Code = 64 + iota
 	codePieceSet
 	codePieceMove
 	codePieceRotate

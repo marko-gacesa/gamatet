@@ -13,7 +13,7 @@ type Hidden[T any] struct {
 	key   rune
 }
 
-// NewHidden creates new Hidden menu item that activates when the a specific key is pressed.
+// NewHidden creates new Hidden menu item that activates when the specific key is pressed.
 // The activation means write of the provided value to the provided pointer.
 func NewHidden[T any](key rune, ptr *T, value T, options ...func(Item)) *Hidden[T] {
 	if ptr == nil {

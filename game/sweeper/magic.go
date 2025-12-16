@@ -34,7 +34,7 @@ type MagicType byte
 const (
 	MagicTypeSelf   MagicType = 1
 	MagicTypeOthers MagicType = 2
-	MagicTypeAll    MagicType = MagicTypeSelf | MagicTypeOthers
+	MagicTypeAll              = MagicTypeSelf | MagicTypeOthers
 )
 
 var (
