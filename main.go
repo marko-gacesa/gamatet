@@ -5,7 +5,7 @@ package main
 
 import (
 	"context"
-	"os"
+	"flag"
 
 	"github.com/marko-gacesa/gamatet/graphics/loop"
 	"github.com/marko-gacesa/gamatet/internal/app"
@@ -14,17 +14,18 @@ import (
 	"github.com/marko-gacesa/gamatet/internal/values"
 	"github.com/marko-gacesa/gamatet/logic/appctx"
 	"github.com/marko-gacesa/gamatet/logic/lang"
+	"github.com/marko-gacesa/gamatet/logic/logger"
 )
 
 func main() {
-	pid := os.Getpid()
+	logLevelStr := flag.String("log", logger.LevelInfo, "Log level")
+	flag.Parse()
 
-	logger := app.Logger()
+	logger := logger.Logger(*logLevelStr)
 	logger.Info(values.ProgramName,
 		"version", values.VersionTag,
-		"commit_sha", values.GitSHA,
-		"build_time", values.BuildTime,
-		"pid", pid)
+		"commit", values.GitSHA,
+		"built", values.BuildTime)
 
 	i18n.ParseEmbeddedLanguages(logger)
 	lang.DefineFallbackFromExisting("en")
