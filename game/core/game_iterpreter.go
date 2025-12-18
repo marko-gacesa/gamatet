@@ -57,18 +57,17 @@ type interpreterPlayerData struct {
 }
 
 func MakeInterpreter(setup Setup, options InterpreterOptions) *GameInterpreter {
-	if setup.ActionCh == nil {
-		panic("ActionCh must not be nil")
-	}
-
 	var inputs []interpreterPlayerData
 	fields := make([]interpreterFieldData, len(setup.Fields))
 
 	for i := range setup.Fields {
 		players := setup.Fields[i].Players
 
-		width := setup.Config.WidthPerPlayer * len(players)
+		width := setup.Config.WidthPerPlayer
 		height := setup.Config.Height
+		if len(players) > 0 {
+			width *= len(players)
+		}
 
 		f := field.Make(width, height, len(players))
 		f.Idx = i
@@ -140,7 +139,7 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 
 	defer close(g.doneCh)
 
-	var s serializer
+	var s Serializer
 
 	const serverLostDuration = time.Second * 5
 

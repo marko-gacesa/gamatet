@@ -50,6 +50,8 @@ type Menu struct {
 	base.Base
 	text render.Text
 
+	w, h int
+
 	menu *menu.Menu
 	iter menu.Iter
 
@@ -95,7 +97,7 @@ func (m *Menu) Release() {
 }
 
 func (m *Menu) UpdateViewSize(w, h int) {
-	m.Renderer().OrthogonalFull(w, h, screenContentW, screenContentH, 2)
+	m.w, m.h = w, h
 }
 
 func (m *Menu) InputKeyPress(key int, act screen.KeyAction) {
@@ -171,6 +173,8 @@ func (m *Menu) Prepare(now time.Time) {
 }
 
 func (m *Menu) Render() {
+	m.Renderer().OrthogonalFull(m.w, m.h, screenContentW, screenContentH, 2)
+
 	count := len(m.iter.Items)
 
 	modelIdxStart := 0

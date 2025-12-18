@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020, 2025 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package core
@@ -15,12 +15,12 @@ import (
 	"github.com/marko-gacesa/gamatet/game/op"
 )
 
-type serializer struct {
+type Serializer struct {
 	rawBuff  bytes.Buffer
 	gzipBuff bytes.Buffer
 }
 
-func (s *serializer) Serialize(events *event.List) []byte {
+func (s *Serializer) Serialize(events *event.List) []byte {
 	s.rawBuff.Reset()
 	events.Range(func(e event.Event) {
 		err := op.Write(&s.rawBuff, e)
@@ -47,7 +47,7 @@ func (s *serializer) Serialize(events *event.List) []byte {
 	return slices.Clone(s.gzipBuff.Bytes())
 }
 
-func (s *serializer) Deserialize(data []byte, p event.Pusher) error {
+func (s *Serializer) Deserialize(data []byte, p event.Pusher) error {
 	if len(data) == 0 {
 		return nil
 	}

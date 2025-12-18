@@ -64,7 +64,7 @@ func Save(log *slog.Logger, filePath string, cfg *Config) error {
 		return err
 	}
 
-	log.Info("config file saved", "path", filePath)
+	log.Debug("config file saved", "path", filePath)
 
 	return nil
 }

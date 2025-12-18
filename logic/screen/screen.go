@@ -29,7 +29,7 @@ type Screen interface {
 }
 
 type Screener interface {
-	Screen(ctx Context, data any) Screen
+	Screen(ctx Context, data ...any) Screen
 }
 
 type KeyAction byte

@@ -2,7 +2,6 @@ language_name=Српски
 
 # Menu
 
-menu_main_title                       = ГаМаТеТ
 menu_main_single_player               = Игра једног играча
 menu_main_single_player_desc          = Играјте игру за једног играча.
 menu_main_multi_player_local          = Игра више играча, локално

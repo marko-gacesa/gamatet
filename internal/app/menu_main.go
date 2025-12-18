@@ -10,7 +10,7 @@ import (
 )
 
 func (app *App) menuMain(ctx screen.Context) *menu.Menu {
-	return menu.New(T(KeyMenuMainTitle), app.menuStopper(ctx), []menu.Item{
+	return menu.New("", app.menuStopper(ctx), []menu.Item{
 		app.menuItemEscape(),
 		menu.NewCommand(&app.screenIDNext, routeSinglePlayerMenu, T(KeyMenuMainSinglePlayer), T(KeyMenuMainSinglePlayerDesc)),
 		menu.NewCommand(&app.screenIDNext, routeMultiPlayerLocalMenu, T(KeyMenuMainMultiplayerLocal), T(KeyMenuMainMultiplayerLocalDesc)),

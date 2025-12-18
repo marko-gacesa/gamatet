@@ -9,7 +9,6 @@ const (
 	KeyMenuBack     = "menu_back"
 	KeyMenuBackDesc = "menu_back_desc"
 
-	KeyMenuMainTitle                   = "menu_main_title"
 	KeyMenuMainSinglePlayer            = "menu_main_single_player"
 	KeyMenuMainSinglePlayerDesc        = "menu_main_single_player_desc"
 	KeyMenuMainMultiplayerLocal        = "menu_main_multi_player_local"

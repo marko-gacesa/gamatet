@@ -23,15 +23,44 @@ func InitResources() *Resources {
 	}
 }
 
-func (r Resources) Screen(ctx screen.Context, data any) screen.Screen {
-	switch v := data.(type) {
-	case *menu.Menu:
-		return NewMenu(r.rend, r.tex, v)
-	case types.GameParams:
-		return NewGame(r.rend, r.tex, v)
-	case types.GameOneParams:
-		return NewGameOne(r.rend, r.tex, v)
+func (r Resources) Screen(ctx screen.Context, data ...any) screen.Screen {
+	if len(data) == 0 {
+		return nil
 	}
 
-	return nil
+	f := func(data any) screen.Screen {
+		switch v := data.(type) {
+		case *menu.Menu:
+			return NewMenu(r.rend, r.tex, v)
+		case types.GameParams:
+			return NewGame(r.rend, r.tex, v)
+		case types.GameOneParams:
+			return NewGameOne(r.rend, r.tex, v)
+		case types.DemoParams:
+			return NewDemo(r.rend, r.tex, v)
+		}
+
+		return nil
+	}
+
+	if len(data) == 1 {
+		return f(data[0])
+	}
+
+	var screens screen.Screens
+
+	for _, d := range data {
+		s := f(d)
+		if s == nil {
+			continue
+		}
+
+		screens = append(screens, s)
+	}
+
+	if len(screens) == 0 {
+		return nil
+	}
+
+	return &screens
 }

@@ -56,7 +56,7 @@ type hostFieldData struct {
 	OutCh    chan<- []byte
 
 	events     event.List
-	serializer serializer
+	serializer Serializer
 }
 
 type hostPlayerData struct {
@@ -76,8 +76,11 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 	for i := range setup.Fields {
 		players := setup.Fields[i].Players
 
-		width := setup.Config.WidthPerPlayer * len(players)
+		width := setup.Config.WidthPerPlayer
 		height := setup.Config.Height
+		if len(players) > 0 {
+			width *= len(players)
+		}
 
 		f := field.Make(width, height, len(players))
 		f.Idx = i

@@ -29,3 +29,11 @@ type GameParams struct {
 	Game                 core.RenderRequester
 	Done                 <-chan struct{}
 }
+
+type DemoParams struct {
+	FullW, FullH     int
+	OffsX, OffsY     float32
+	RotX, RotY, RotZ float32
+	Demo             core.RenderRequester
+	Done             <-chan struct{}
+}

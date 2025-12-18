@@ -200,7 +200,11 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 	case id == "" || id == routeQuit:
 		data = nil
 	case id == routeMain:
-		data = app.menuMain(ctx)
+		return screen.Screens(
+			[]screen.Screen{
+				app.screener.Screen(ctx, app.title(ctx)),
+				app.screener.Screen(ctx, app.menuMain(ctx)),
+			}), ctx.Done()
 
 	// Single player
 
