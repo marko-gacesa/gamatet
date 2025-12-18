@@ -46,6 +46,7 @@ type GameHost struct {
 }
 
 type HostOptions struct {
+	field.RenderOptions
 	Latencies *latency.List
 }
 
@@ -82,6 +83,7 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 		f.Idx = i
 		f.Config = setup.Config.FieldConfig
 		f.Seed(setup.Config.RandomSeed)
+		f.RenderOptions = options.RenderOptions
 
 		for j := range players {
 			ctrl := f.Ctrl(byte(j))

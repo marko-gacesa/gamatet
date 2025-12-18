@@ -69,6 +69,12 @@ type EffectInfo struct {
 	EffectStr   string
 }
 
+type RenderOptions struct {
+	HideFrame   bool
+	HideBack    bool
+	HideShadows bool
+}
+
 type RenderInfo struct {
 	W, H   int
 	Mode   Mode
@@ -82,6 +88,7 @@ type RenderInfo struct {
 	Result anim.Result
 
 	TextData
+	RenderOptions
 }
 
 var syncPoolRenderInfo = &sync.Pool{
@@ -133,6 +140,8 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 	info.TextData = TextData{
 		BlocksRemoved: f.stats.blocksRemovedStr,
 	}
+
+	info.RenderOptions = f.RenderOptions
 
 	// process all blocks of the Field
 

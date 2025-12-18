@@ -235,12 +235,28 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		lightPowShooter = 1.5
 	)
 
+	defer func() {
+		f.listRock.OrderByValue()
+		f.listRuby.OrderByValue()
+	}()
+
+	showFrame := !renderInfo.RenderOptions.HideFrame
+	showBack := !renderInfo.RenderOptions.HideBack
+	showShadows := !renderInfo.RenderOptions.HideShadows
+
+	var contentWidth, contentHeight int
+
 	infoPositions := f.preferredSide.PieceCorners(renderInfo.PieceCount)
 
-	hasLeftPad := slices.Contains(infoPositions[:], DisplayPositionTopLeft) || slices.Contains(infoPositions[:], DisplayPositionBottomLeft)
-	hasRightPad := slices.Contains(infoPositions[:], DisplayPositionTopRight) || slices.Contains(infoPositions[:], DisplayPositionBottomRight)
+	hasLeftPad := showFrame && (slices.Contains(infoPositions[:], DisplayPositionTopLeft) || slices.Contains(infoPositions[:], DisplayPositionBottomLeft))
+	hasRightPad := showFrame && (slices.Contains(infoPositions[:], DisplayPositionTopRight) || slices.Contains(infoPositions[:], DisplayPositionBottomRight))
 
-	contentWidth, contentHeight := renderInfo.W+2, renderInfo.H+2
+	if showFrame {
+		contentWidth, contentHeight = renderInfo.W+2, renderInfo.H+2
+	} else {
+		contentWidth, contentHeight = renderInfo.W, renderInfo.H
+	}
+
 	if hasLeftPad {
 		contentWidth += sidePanelBlockWidth
 	}
@@ -251,6 +267,8 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 	aniMatrixField, _ := animListUpdate(&renderInfo.Result)
 	model := f.model.Mul4(aniMatrixField)
 
+	pulse := float32(0.7 + 0.3*math.Sin(math.Mod(10*f.t, math.Pi)))
+
 	var modelFrame, modelField mgl32.Mat4
 
 	modelFrame = model.
@@ -259,110 +277,56 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 	if hasLeftPad {
 		modelField = modelFrame.
 			Mul4(mgl32.Translate3D(1+sidePanelBlockWidth, 1, 0))
-	} else {
+	} else if showFrame {
 		modelField = modelFrame.
 			Mul4(mgl32.Translate3D(1, 1, 0))
+	} else {
+		modelField = modelFrame
 	}
 
-	pulse := float32(0.7 + 0.3*math.Sin(math.Mod(10*f.t, math.Pi)))
+	// ********
+	// * Text *
+	// ********
 
-	// prepare the field frame
+	var message string
 
-	for x := range contentWidth {
-		f.listWall.Add(modelFrame.Mul4(mgl32.Translate3D(float32(x), float32(0), 0)))
-		f.listWall.Add(modelFrame.Mul4(mgl32.Translate3D(float32(x), float32(contentHeight-1), 0)))
+	switch renderInfo.Mode {
+	case field.ModeNormal:
+	case field.ModeGameOver:
+		message = f.str.Message.GameOver
+	case field.ModeVictory:
+		message = f.str.Message.Victory
+	case field.ModeDefeat:
+		message = f.str.Message.Defeat
+	case field.ModePause:
+		message = f.str.Message.Pause
+	case field.ModeSuspended:
+		message = f.str.Message.Suspended
+	case field.ModeServerLost:
+		message = f.str.Message.ServerLost
 	}
 
-	if renderInfo.TextData.BlocksRemoved != "" {
-		modelTitleTopRight := modelField.Mul4(mgl32.Translate3D(float32(f.w)-0.5, float32(contentHeight-2), 0.5))
-		d := f.printTextRight(
-			modelTitleTopRight,
-			colorText,
-			scaleText,
-			renderInfo.TextData.BlocksRemoved)
-		_ = f.printTextRight(
-			modelTitleTopRight.Mul4(mgl32.Translate3D(-d-0.1, 0, 0)),
-			colorLabel,
-			scaleLabel,
-			f.str.TitlePanel.Blocks)
+	if message != "" {
+		w, h := f.text.Dim(message)
+
+		modelMessage := modelField.
+			Mul4(mgl32.Translate3D((float32(renderInfo.W-1)-w*pulse)/2.0, (float32(renderInfo.H-2)+h*pulse)/2.0, 0)).
+			Mul4(mgl32.Scale3D(pulse, pulse, 1))
+		f.listStr.Add(modelMessage, mgl32.Vec4{1, 1, 1, 1}, message)
 	}
 
-	if renderInfo.Effect.Effect != field.EffectNone {
-		modelTitleBottomLeft := modelField.Mul4(mgl32.Translate3D(0, -1, 0.5))
-		f.listGoal.Add(
-			modelTitleBottomLeft.
-				Mul4(mgl32.Scale3D(0.4, 0.4, 0.4)).
-				Mul4(mgl32.HomogRotate3DX(float32(math.Mod(f.t*3.72, 2*math.Pi)))).
-				Mul4(mgl32.HomogRotate3DY(float32(math.Mod(f.t*2.63, 2*math.Pi)))),
-			mgl32.Vec4{0.5, 0.5, 0.5, 1})
-		modelTitleBottomLeft = modelTitleBottomLeft.Mul4(mgl32.Translate3D(0.5, 0, 0))
-		d := f.printText(
-			modelTitleBottomLeft,
-			colorText,
-			scaleText,
-			f.str.EffectMap[renderInfo.Effect.Effect])
-		d += 0.3
-		_ = f.printText(
-			modelTitleBottomLeft.Mul4(mgl32.Translate3D(d, 0, 0)),
-			colorLabel,
-			scaleLabel,
-			renderInfo.Effect.EffectStr)
+	if (renderInfo.Mode == field.ModePause || renderInfo.Mode == field.ModeSuspended) && renderInfo.TextData.Latencies != "" {
+		const scale = 0.5
+		_, h := f.text.Dim(renderInfo.TextData.Latencies)
+		modelLatencies := modelField.
+			Mul4(mgl32.Translate3D(0, h*scale, 0)).
+			Mul4(mgl32.Scale3D(scale, scale, 1))
+		f.listStr.Add(modelLatencies, mgl32.Vec4{0.6, 0.6, 0.6, 1}, renderInfo.TextData.Latencies)
 	}
 
-	for y := 1; y < contentHeight-1; y++ {
-		var m mgl32.Mat4
-
-		m = modelFrame.Mul4(mgl32.Translate3D(float32(0), float32(y), 0))
-		f.listWall.Add(m)
-
-		if hasLeftPad {
-			for i := range sidePanelBlockWidth {
-				m = modelFrame.Mul4(mgl32.Translate3D(float32(1+i), float32(y), 0))
-				f.listWall.Add(m)
-			}
-		}
-		if hasRightPad {
-			for i := range sidePanelBlockWidth {
-				m = modelFrame.Mul4(mgl32.Translate3D(float32(contentWidth-2-i), float32(y), 0))
-				f.listWall.Add(m)
-			}
-		}
-
-		m = modelFrame.Mul4(mgl32.Translate3D(float32(contentWidth-1), float32(y), 0))
-		f.listWall.Add(m)
-	}
-
-	// prepare the background
-
-	for x := range renderInfo.W {
-		colorCol := colorBack
-		for pIdx := range renderInfo.Pieces {
-			p := &renderInfo.Pieces[pIdx]
-
-			if infoPositions[pIdx] == DisplayPositionOff {
-				continue
-			}
-
-			within := p.IsLimited && x >= p.Limits.Min && x <= p.Limits.Max
-			if within {
-				colorCol = colorCol.Add(colorPlayerBack[p.PlayerIndex])
-			}
-
-			shadow := !p.PieceEmpty && x >= renderInfo.Pieces[pIdx].Shadow.ColL && x < renderInfo.Pieces[pIdx].Shadow.ColR
-			if shadow {
-				colorCol = colorCol.Mul(1.1)
-			}
-		}
-
-		f.colorsBack[x] = colorCol
-
-		for y := range renderInfo.H {
-			m := modelField.Mul4(mgl32.Translate3D(float32(x), float32(y), float32(-1)))
-			f.listsBack[x].Add(m)
-		}
-	}
-
-	// prepare the field's blocks
+	// ****************
+	// * Field blocks *
+	// ****************
 
 	for _, fb := range renderInfo.Blocks {
 		aniMatrix, aniColor := animListUpdate(&fb.Result)
@@ -406,7 +370,9 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		}
 	}
 
-	// prepare the pieces
+	// ****************
+	// * Field pieces *
+	// ****************
 
 	for _, p := range renderInfo.Pieces {
 		if p.PieceEmpty {
@@ -463,23 +429,67 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		}
 	}
 
-	// prepare piece shadows
+	// *****************
+	// * Piece shadows *
+	// *****************
 
-	for _, p := range renderInfo.Pieces {
-		if p.PieceEmpty || !p.DrawShadow {
-			continue
-		}
+	if showShadows {
+		for _, p := range renderInfo.Pieces {
+			if p.PieceEmpty || !p.DrawShadow {
+				continue
+			}
 
-		for _, pb := range p.Shadow.Blocks {
-			modelPieceShadowBlock := modelField.
-				Mul4(mgl32.Translate3D(float32(pb.X), float32(pb.Y), 0)).
-				Mul4(mgl32.Scale3D(pulse, pulse, pulse))
-			blockColor := colorVector(pb.Block.Color).Mul(0.7)
-			f.listShad.Add(modelPieceShadowBlock, blockColor)
+			for _, pb := range p.Shadow.Blocks {
+				modelPieceShadowBlock := modelField.
+					Mul4(mgl32.Translate3D(float32(pb.X), float32(pb.Y), 0)).
+					Mul4(mgl32.Scale3D(pulse, pulse, pulse))
+				blockColor := colorVector(pb.Block.Color).Mul(0.7)
+				f.listShad.Add(modelPieceShadowBlock, blockColor)
+			}
 		}
 	}
 
-	// prepare player info strings and next pieces
+	// **************
+	// * Background *
+	// **************
+
+	if showBack {
+		for x := range renderInfo.W {
+			colorCol := colorBack
+			for pIdx := range renderInfo.Pieces {
+				p := &renderInfo.Pieces[pIdx]
+
+				if infoPositions[pIdx] == DisplayPositionOff {
+					continue
+				}
+
+				within := p.IsLimited && x >= p.Limits.Min && x <= p.Limits.Max
+				if within {
+					colorCol = colorCol.Add(colorPlayerBack[p.PlayerIndex])
+				}
+
+				shadow := !p.PieceEmpty && x >= renderInfo.Pieces[pIdx].Shadow.ColL && x < renderInfo.Pieces[pIdx].Shadow.ColR
+				if shadow {
+					colorCol = colorCol.Mul(1.1)
+				}
+			}
+
+			f.colorsBack[x] = colorCol
+
+			for y := range renderInfo.H {
+				m := modelField.Mul4(mgl32.Translate3D(float32(x), float32(y), float32(-1)))
+				f.listsBack[x].Add(m)
+			}
+		}
+	}
+
+	if !showFrame {
+		return
+	}
+
+	// *********************
+	// * Player side panel *
+	// *********************
 
 	nextShowCount := 3
 	if renderInfo.PieceCount == 2 && f.preferredSide.IsLeftOrRight() || renderInfo.PieceCount > 2 {
@@ -597,48 +607,78 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		}
 	}
 
-	// text
+	// *********
+	// * Frame *
+	// *********
 
-	var message string
+	for x := range contentWidth {
+		f.listWall.Add(modelFrame.Mul4(mgl32.Translate3D(float32(x), float32(0), 0)))
+		f.listWall.Add(modelFrame.Mul4(mgl32.Translate3D(float32(x), float32(contentHeight-1), 0)))
 
-	switch renderInfo.Mode {
-	case field.ModeNormal:
-	case field.ModeGameOver:
-		message = f.str.Message.GameOver
-	case field.ModeVictory:
-		message = f.str.Message.Victory
-	case field.ModeDefeat:
-		message = f.str.Message.Defeat
-	case field.ModePause:
-		message = f.str.Message.Pause
-	case field.ModeSuspended:
-		message = f.str.Message.Suspended
-	case field.ModeServerLost:
-		message = f.str.Message.ServerLost
 	}
 
-	if message != "" {
-		w, h := f.text.Dim(message)
+	for y := 1; y < contentHeight-1; y++ {
+		var m mgl32.Mat4
 
-		modelMessage := modelField.
-			Mul4(mgl32.Translate3D((float32(renderInfo.W-1)-w*pulse)/2.0, (float32(renderInfo.H-2)+h*pulse)/2.0, 0)).
-			Mul4(mgl32.Scale3D(pulse, pulse, 1))
-		f.listStr.Add(modelMessage, mgl32.Vec4{1, 1, 1, 1}, message)
+		m = modelFrame.Mul4(mgl32.Translate3D(float32(0), float32(y), 0))
+		f.listWall.Add(m)
+
+		if hasLeftPad {
+			for i := range sidePanelBlockWidth {
+				m = modelFrame.Mul4(mgl32.Translate3D(float32(1+i), float32(y), 0))
+				f.listWall.Add(m)
+			}
+		}
+		if hasRightPad {
+			for i := range sidePanelBlockWidth {
+				m = modelFrame.Mul4(mgl32.Translate3D(float32(contentWidth-2-i), float32(y), 0))
+				f.listWall.Add(m)
+			}
+		}
+
+		m = modelFrame.Mul4(mgl32.Translate3D(float32(contentWidth-1), float32(y), 0))
+		f.listWall.Add(m)
 	}
 
-	if (renderInfo.Mode == field.ModePause || renderInfo.Mode == field.ModeSuspended) && renderInfo.TextData.Latencies != "" {
-		const scale = 0.5
-		_, h := f.text.Dim(renderInfo.TextData.Latencies)
-		modelLatencies := modelField.
-			Mul4(mgl32.Translate3D(0, h*scale, 0)).
-			Mul4(mgl32.Scale3D(scale, scale, 1))
-		f.listStr.Add(modelLatencies, mgl32.Vec4{0.6, 0.6, 0.6, 1}, renderInfo.TextData.Latencies)
+	// blocks removed info shown on the frame
+
+	if renderInfo.TextData.BlocksRemoved != "" {
+		modelTitleTopRight := modelField.Mul4(mgl32.Translate3D(float32(f.w)-0.5, float32(contentHeight-2), 0.5))
+		d := f.printTextRight(
+			modelTitleTopRight,
+			colorText,
+			scaleText,
+			renderInfo.TextData.BlocksRemoved)
+		_ = f.printTextRight(
+			modelTitleTopRight.Mul4(mgl32.Translate3D(-d-0.1, 0, 0)),
+			colorLabel,
+			scaleLabel,
+			f.str.TitlePanel.Blocks)
 	}
 
-	// sort
+	// magic info shown on the frame
 
-	f.listRock.OrderByValue()
-	f.listRuby.OrderByValue()
+	if renderInfo.Effect.Effect != field.EffectNone {
+		modelTitleBottomLeft := modelField.Mul4(mgl32.Translate3D(0, -1, 0.5))
+		f.listGoal.Add(
+			modelTitleBottomLeft.
+				Mul4(mgl32.Scale3D(0.4, 0.4, 0.4)).
+				Mul4(mgl32.HomogRotate3DX(float32(math.Mod(f.t*3.72, 2*math.Pi)))).
+				Mul4(mgl32.HomogRotate3DY(float32(math.Mod(f.t*2.63, 2*math.Pi)))),
+			mgl32.Vec4{0.5, 0.5, 0.5, 1})
+		modelTitleBottomLeft = modelTitleBottomLeft.Mul4(mgl32.Translate3D(0.5, 0, 0))
+		d := f.printText(
+			modelTitleBottomLeft,
+			colorText,
+			scaleText,
+			f.str.EffectMap[renderInfo.Effect.Effect])
+		d += 0.3
+		_ = f.printText(
+			modelTitleBottomLeft.Mul4(mgl32.Translate3D(d, 0, 0)),
+			colorLabel,
+			scaleLabel,
+			renderInfo.Effect.EffectStr)
+	}
 }
 
 func (f *Field) renderAll(r *Renderer) {

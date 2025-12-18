@@ -24,6 +24,7 @@ type Field struct {
 	doneCh   chan struct{}
 	seed     int
 	Config
+	RenderOptions
 	stats
 }
 

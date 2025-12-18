@@ -37,6 +37,7 @@ type GameInterpreter struct {
 }
 
 type InterpreterOptions struct {
+	field.RenderOptions
 	LocalPlayerActionCh chan<- []byte
 	SinceLastContactFn  func() time.Duration
 	Latencies           *latency.List
@@ -72,6 +73,7 @@ func MakeInterpreter(setup Setup, options InterpreterOptions) *GameInterpreter {
 		f := field.Make(width, height, len(players))
 		f.Idx = i
 		f.Config = setup.Config.FieldConfig
+		f.RenderOptions = options.RenderOptions
 
 		for j := range players {
 			ctrl := f.Ctrl(byte(j))
