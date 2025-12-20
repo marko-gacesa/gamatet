@@ -10,7 +10,10 @@ import (
 	"path"
 )
 
-const filename = ".gamatet.config.json"
+const (
+	filename  = ".gamatet.config.json"
+	directory = "GaMaTeT"
+)
 
 func Load(log *slog.Logger) (Config, string) {
 	var cfg Config
@@ -45,6 +48,13 @@ func Load(log *slog.Logger) (Config, string) {
 }
 
 func Save(log *slog.Logger, filePath string, cfg *Config) error {
+	fileDir, _ := path.Split(filePath)
+
+	if err := os.MkdirAll(fileDir, 0o755); err != nil {
+		log.Error("failed to create config file directory", "error", err, "path", filePath)
+		return err
+	}
+
 	f, err := os.Create(filePath)
 	if err != nil {
 		log.Error("failed to create config file", "error", err, "path", filePath)
@@ -72,16 +82,19 @@ func Save(log *slog.Logger, filePath string, cfg *Config) error {
 func getDirList() []string {
 	var dirs []string
 
+	// config dir
+	if dir, _ := os.UserConfigDir(); dir != "" {
+		dirs = append(dirs, path.Join(dir, directory))
+	}
+
 	// home dir
-	dir, _ := os.UserHomeDir()
-	if dir != "" {
+	if dir, _ := os.UserHomeDir(); dir != "" {
 		dirs = append(dirs, dir)
 	}
 
 	// exec's dir
 	if len(os.Args) > 0 {
-		dir = path.Dir(os.Args[0])
-		if dir != "" {
+		if dir := path.Dir(os.Args[0]); dir != "" {
 			dirs = append(dirs, dir)
 		}
 	}
