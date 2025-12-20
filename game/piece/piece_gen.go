@@ -43,6 +43,13 @@ func NewFlipVTetromino(id uint, b block.Block) Piece {
 	}
 }
 
+func NewFlipHTetromino(id uint, b block.Block) Piece {
+	return &polyominoFlipH{
+		shapeRect: shapeRect(shapesFlipHTetrominoes[id]),
+		block:     b,
+	}
+}
+
 func NewPentominos(id uint, b block.Block) Piece {
 	return &polyominoRot{
 		shapeSquare: shapesRotPentominoes[id],

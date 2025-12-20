@@ -32,6 +32,7 @@ func (app *App) title(ctx screen.Context) types.DemoParams {
 	programCh := make(chan []byte)
 	go func() {
 		t := time.NewTimer(50 * time.Millisecond)
+		defer t.Stop()
 
 		defer close(programCh)
 
