@@ -16,7 +16,7 @@ The game features:
 * Various special pieces and blocks.
 
 From technical point, the game features:
-* Small size: The entire game is just a *single 10MB executable* file.
+* Small size: The entire game is just a *single 7MB executable* file.
 * Zero assets: All textures and 3D models are procedurally generated.
 * Minimal memory footprint.
 * Multiplayer communication using UDP protocol.
@@ -47,6 +47,16 @@ The project has also been my playground. A place where I could try out different
 * The only input device currently supported is keyboard. I don't think mouse input is necessary for a game like this, but I would like to support game controllers.
 * Terminal rendering.
 * Different game types.
+
+## Support Development
+
+If you enjoy this project, consider supporting it with a small donation:
+
+[![GitHub](https://img.shields.io/badge/github_sponsors-EA4AAA?logo=githubsponsors&logoColor=white&style=for-the-badge)](https://github.com/marko-gacesa)
+[![Buy Me A Coffee](https://img.shields.io/badge/buy_me_a_coffee-FFDD00?logo=buy-me-a-coffee&logoColor=black&style=for-the-badge)](https://www.buymeacoffee.com/marko.gacesa)
+[![PayPal](https://img.shields.io/badge/paypal-002991?logo=paypal&logoColor=white&style=for-the-badge)](https://paypal.me/markogacesa77)
+
+Thank you!
 
 ## License
 
