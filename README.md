@@ -22,6 +22,17 @@ From technical point, the game features:
 * Multiplayer communication using UDP protocol.
 * 2D view or 3D view: Toggle with F12 key.
 
+## Compile
+
+Even though the game is written in Go, it uses C bindings for OpenGL. Therefore, compiling the game doesn't produce a statically linked executable as pure Go projects would usually do.
+
+To compile, simply run `./build.sh`.
+
+For compilation to succeed:
+* Linux: It requires few external libraries to be installed (C and OpenGL-related).
+* MacOS: With Go and Apple Developer Tools installed, it just works.
+* Windows: It should be compilable, but I've never tried to do it.
+
 ## About the Project
 
 GaMaTeT is a product of passion. No AI tools were used for the code development in any way. The goal was not to make the best game or the best looking game, but simply to go through the entire process and enjoy every step of it. This is why the project imports almost no libraries - there's no game engine library, no networking library, no utility libraries. It was just OpenGL and me.
@@ -52,7 +63,7 @@ The project has also been my playground. A place where I could try out different
 
 If you enjoy this project, consider supporting it with a small donation:
 
-[![GitHub](https://img.shields.io/badge/github_sponsors-EA4AAA?logo=githubsponsors&logoColor=white&style=for-the-badge)](https://github.com/marko-gacesa)
+[![GitHub](https://img.shields.io/badge/github_sponsors-EA4AAA?logo=githubsponsors&logoColor=white&style=for-the-badge)](https://github.com/sponsors/marko-gacesa)
 [![Buy Me A Coffee](https://img.shields.io/badge/buy_me_a_coffee-FFDD00?logo=buy-me-a-coffee&logoColor=black&style=for-the-badge)](https://www.buymeacoffee.com/marko.gacesa)
 [![PayPal](https://img.shields.io/badge/paypal-002991?logo=paypal&logoColor=white&style=for-the-badge)](https://paypal.me/markogacesa77)
 
