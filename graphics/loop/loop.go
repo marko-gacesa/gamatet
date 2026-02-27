@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2025 by Marko Gaćeša
+// Copyright (c) 2023-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package loop
@@ -13,6 +13,7 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 
 	"github.com/marko-gacesa/gamatet/graphics/loop/keypress"
+	"github.com/marko-gacesa/gamatet/graphics/monitor"
 	"github.com/marko-gacesa/gamatet/graphics/scene"
 	"github.com/marko-gacesa/gamatet/internal/app"
 	"github.com/marko-gacesa/gamatet/internal/values"
@@ -41,8 +42,13 @@ func Loop(globalCtx context.Context, app *app.App) error {
 	videoConfig := app.VideoConfig()
 	if err := func() (err error) {
 		if videoConfig.Fullscreen {
-			log.Info("Fullscreen")
-			window, err = windowFullscreen(values.ProgramName, nil)
+			m := monitor.GetMonitorByName(videoConfig.Monitor)
+			if m != nil {
+				log.Info("Fullscreen", "monitor", m.GetName())
+			} else {
+				log.Info("Fullscreen")
+			}
+			window, err = windowFullscreen(values.ProgramName, m)
 		} else {
 			log.Info("Window", "width", videoConfig.WindowWidth, "height", videoConfig.WindowHeight)
 			window, err = windowResizable(videoConfig.WindowWidth, videoConfig.WindowHeight, values.ProgramName)

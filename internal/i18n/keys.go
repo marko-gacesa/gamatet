@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package i18n
@@ -209,6 +209,9 @@ const (
 	KeyConfigVideoTitle                  = "config_video_title"
 	KeyConfigVideoFullscreen             = "config_video_fullscreen"
 	KeyConfigVideoFullscreenDesc         = "config_video_fullscreen_desc"
+	KeyConfigVideoMonitor                = "config_video_monitor"
+	KeyConfigVideoMonitorDesc            = "config_video_monitor_desc"
+	KeyConfigVideoMonitorPrimary         = "config_video_monitor_primary"
 	KeyConfigVideoWindowWidth            = "config_video_window_width"
 	KeyConfigVideoWindowWidthDesc        = "config_video_window_width_desc"
 	KeyConfigVideoWindowHeight           = "config_video_window_height"

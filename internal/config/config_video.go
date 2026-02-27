@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package config
@@ -12,6 +12,7 @@ const (
 
 type Video struct {
 	Fullscreen    bool    `json:"fullscreen"`
+	Monitor       string  `json:"monitor"`
 	WindowWidth   int     `json:"window_width"`
 	WindowHeight  int     `json:"window_height"`
 	WindowOpacity float32 `json:"window_opacity"`
