@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package sweeper
@@ -26,6 +26,7 @@ type gameOverMethod byte
 
 const (
 	gameOverMethodVanish gameOverMethod = iota
+	gameOverMethodCurtain
 	gameOverMethodBurn
 	gameOverMethodFall
 )
@@ -43,7 +44,7 @@ func (s *GameOver) Start(analyzer *Analyzer) bool {
 
 	switch *analyzer.endMode {
 	case field.ModeGameOver:
-		s.method = gameOverMethodVanish
+		s.method = gameOverMethodCurtain
 	case field.ModeVictory:
 		s.method = gameOverMethodBurn
 	case field.ModeDefeat:
@@ -59,11 +60,36 @@ func (s *GameOver) Sweep(p event.Pusher) {
 	switch s.method {
 	case gameOverMethodVanish:
 		s.blockVanish(p)
+	case gameOverMethodCurtain:
+		s.blockCurtain(p)
 	case gameOverMethodBurn:
 		s.blockBurn(p)
 	case gameOverMethodFall:
 		s.blockFall(p)
 	}
+}
+
+func (s *GameOver) blockCurtain(p event.Pusher) {
+	const n = 10
+
+	xybs := s.findAllDestructible(n)
+	if len(xybs) == 0 {
+		s.endIteration()
+		return
+	}
+
+	for _, xyb := range xybs {
+		p.Push(&op.FieldBlockSet{
+			Col:       byte(xyb.X),
+			Row:       byte(xyb.Y),
+			Op:        op.TypeClear,
+			AnimType:  field.AnimCurtain,
+			AnimParam: 1,
+			Block:     xyb.Block,
+		})
+	}
+
+	s.reschedule(2 * time.Millisecond)
 }
 
 func (s *GameOver) blockVanish(p event.Pusher) {

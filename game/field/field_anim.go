@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package field
@@ -19,6 +19,7 @@ const (
 	AnimFall    // Fall from the top (AnimParam holds height)
 	AnimSpin    // Spin in place
 	AnimMeld
+	AnimCurtain
 )
 
 type exElem struct {

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package field
@@ -205,6 +205,18 @@ func (f *Field) SetXY(x, y, animType, animParam int, b block.Block) {
 			animList.Add(anim.NewPopIn(time.Now(), piece.DurationAnimBlockChange))
 		case AnimMeld:
 			animList.Add(anim.NewMeld(time.Now(), piece.DurationAnimBlockChange))
+		case AnimCurtain:
+			var dx float32
+			var l int
+			if x < f.w/2 {
+				l = x + 1
+				dx = float32(l)
+			} else {
+				l = f.w - x
+				dx = float32(-l)
+			}
+			d := piece.DurationMove * time.Duration(l*(animParam+1))
+			animList.Add(anim.NewXLin(time.Now(), d, dx))
 		}
 
 		if b.Type == block.TypeGoal {
@@ -228,6 +240,20 @@ func (f *Field) ClearXY(x, y, animType, animParam int) (b block.Block) {
 			f.addExBlock(x, y, b, anim.NewPopOut(time.Now(), piece.DurationAnimBlockChange))
 		case AnimFall:
 			f.addExBlock(x, -1, b, anim.NewFall(time.Now(), piece.DurationAnimBlockChange, float32(animParam+1)))
+		case AnimCurtain:
+			var dx float32
+			var x1, l int
+			if x < f.w/2 {
+				x1 = -1
+				l = x + 1
+				dx = float32(-l)
+			} else {
+				x1 = f.w
+				l = f.w - x
+				dx = float32(l)
+			}
+			d := piece.DurationMove * time.Duration(l*(animParam+1))
+			f.addExBlock(x1, y, b, anim.NewXLin(time.Now(), d, dx))
 		}
 	}
 
