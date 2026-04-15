@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package sweeper
@@ -12,7 +12,7 @@ import (
 
 var _ Sweeper = (*SpeedUpOnDefeat)(nil)
 
-func NewSpeedUpOnDefeat(f *field.Field, others []FieldPusher) *SpeedUpOnDefeat {
+func NewSpeedUpOnDefeat(f *field.Field, others []FieldPunisher) *SpeedUpOnDefeat {
 	b := newBase(f)
 	return &SpeedUpOnDefeat{
 		base:   *b,
@@ -22,7 +22,7 @@ func NewSpeedUpOnDefeat(f *field.Field, others []FieldPusher) *SpeedUpOnDefeat {
 
 type SpeedUpOnDefeat struct {
 	base
-	others []FieldPusher
+	others []FieldPunisher
 }
 
 func (s *SpeedUpOnDefeat) Start(analyzer *Analyzer) bool {

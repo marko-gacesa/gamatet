@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package scene
@@ -48,6 +48,7 @@ func fieldStrings() render.FieldStrings {
 			field.EffectLid:   T(KeyEffectLid),
 			field.EffectBigO:  T(KeyEffectBigO),
 			field.EffectRaise: T(KeyEffectRaise),
+			field.EffectGnaw:  T(KeyEffectGnaw),
 			field.EffectPatch: T(KeyEffectPatch),
 		},
 	}

@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package sweeper
@@ -12,7 +12,7 @@ import (
 
 var _ Sweeper = (*ShotTransfer)(nil)
 
-func NewShotTransfer(f *field.Field, others []FieldPusher) *ShotTransfer {
+func NewShotTransfer(f *field.Field, others []FieldPunisher) *ShotTransfer {
 	b := newBase(f)
 	return &ShotTransfer{
 		base:   *b,
@@ -22,7 +22,7 @@ func NewShotTransfer(f *field.Field, others []FieldPusher) *ShotTransfer {
 
 type ShotTransfer struct {
 	base
-	others []FieldPusher
+	others []FieldPunisher
 	shots  []block.Type
 }
 

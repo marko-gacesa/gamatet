@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package sweeper
@@ -39,10 +39,10 @@ const (
 
 var (
 	magicEffectsSelf   = []field.Effect{field.EffectPatch}
-	magicEffectsOthers = []field.Effect{field.EffectLid, field.EffectBigO, field.EffectRaise}
+	magicEffectsOthers = []field.Effect{field.EffectLid, field.EffectBigO, field.EffectRaise, field.EffectGnaw}
 )
 
-func NewMagic(f *field.Field, others []FieldPusher, seed int, types MagicType) *Magic {
+func NewMagic(f *field.Field, others []FieldPunisher, seed int, types MagicType) *Magic {
 	b := newBase(f)
 
 	m := &Magic{
@@ -62,7 +62,7 @@ func NewMagic(f *field.Field, others []FieldPusher, seed int, types MagicType) *
 // It creates it, monitors it and restores the original block when it expires.
 type Magic struct {
 	base
-	others []FieldPusher
+	others []FieldPunisher
 	seed   uint
 	state  magicState
 	types  MagicType
@@ -150,6 +150,8 @@ func (s *Magic) activated(effect field.Effect, p event.Pusher) {
 		s.effectBigO()
 	case field.EffectRaise:
 		s.effectRaise()
+	case field.EffectGnaw:
+		s.effectSpawnGnaw()
 
 	case field.EffectPatch:
 		s.effectPatchHoles(p)
@@ -252,6 +254,22 @@ func (s *Magic) effectRaise() {
 		for _, section := range sections {
 			o.Pusher.Push(op.NewFieldColumnShift(section, 1))
 		}
+	}
+}
+
+func (s *Magic) effectSpawnGnaw() {
+	for _, o := range s.others {
+		f := o.Field
+		if f.IsFinished() {
+			continue
+		}
+
+		xy, ok := f.SpawnLocation(field.SpawnLocationBottomMid)
+		if !ok {
+			continue
+		}
+
+		o.GnawAdd(xy.X, xy.Y)
 	}
 }
 

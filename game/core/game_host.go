@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package core
@@ -51,9 +51,10 @@ type HostOptions struct {
 }
 
 type hostFieldData struct {
-	Field    *field.Field
-	Sweepers []sweeper.Sweeper
-	OutCh    chan<- []byte
+	Field      *field.Field
+	Sweepers   []sweeper.Sweeper
+	GnawKeeper *GnawKeeper
+	OutCh      chan<- []byte
 
 	events     event.List
 	serializer Serializer
@@ -127,9 +128,10 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 		f.UpdateBlocksRemoved(0)
 
 		fields[i] = hostFieldData{
-			Field:    f,
-			Sweepers: nil, // set below
-			OutCh:    setup.Fields[i].OutCh,
+			Field:      f,
+			Sweepers:   nil, // set below
+			GnawKeeper: NewGnawKeeper(f, uint(setup.Config.RandomSeed)),
+			OutCh:      setup.Fields[i].OutCh,
 		}
 	}
 
@@ -147,7 +149,7 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 	if len(fields) > 1 {
 		for i := range fields {
 			f := fields[i].Field
-			others := getFieldPushers(fields, i)
+			others := getFieldPunishers(fields, i)
 
 			if setup.Config.Shooters {
 				fields[i].Sweepers = append(fields[i].Sweepers,
@@ -235,6 +237,10 @@ func (g *GameHost) Perform(ctx context.Context) {
 		}()
 		return ch
 	}())
+
+	gnawTimer := channel.JoinSlicePtr(g.doneCh, g.fields, func(p *hostFieldData) <-chan time.Time {
+		return p.GnawKeeper.Chan()
+	})
 
 	defer g.sendStop()
 
@@ -325,6 +331,11 @@ func (g *GameHost) Perform(ctx context.Context) {
 
 		case sw := <-sweeperTimer:
 			sw.ID.sweeper.Sweep(sw.ID.pusher)
+			g.applyEvents()
+
+		case gn := <-gnawTimer:
+			f := &g.fields[gn.ID]
+			f.GnawKeeper.ProcessAll(&f.events)
 			g.applyEvents()
 
 		case rr := <-g.renderReqCh:
@@ -538,16 +549,17 @@ func (g *GameHost) checkWinner(loserIdx int) {
 	}
 }
 
-func getFieldPushers(fields []hostFieldData, exceptIdx int) []sweeper.FieldPusher {
-	list := make([]sweeper.FieldPusher, 0, len(fields)-1)
+func getFieldPunishers(fields []hostFieldData, exceptIdx int) []sweeper.FieldPunisher {
+	list := make([]sweeper.FieldPunisher, 0, len(fields)-1)
 	for i := range fields {
 		if i == exceptIdx {
 			continue
 		}
 
-		list = append(list, sweeper.FieldPusher{
-			Field:  fields[i].Field,
-			Pusher: &fields[i].events,
+		list = append(list, sweeper.FieldPunisher{
+			Field:   fields[i].Field,
+			Pusher:  &fields[i].events,
+			GnawAdd: fields[i].GnawKeeper.AddSmall,
 		})
 	}
 

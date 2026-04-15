@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package sweeper
@@ -12,7 +12,7 @@ import (
 
 var _ Sweeper = (*Blizzard)(nil)
 
-func NewBlizzard(f *field.Field, others []FieldPusher) *Blizzard {
+func NewBlizzard(f *field.Field, others []FieldPunisher) *Blizzard {
 	b := newBase(f)
 	return &Blizzard{
 		base:   *b,
@@ -22,7 +22,7 @@ func NewBlizzard(f *field.Field, others []FieldPusher) *Blizzard {
 
 type Blizzard struct {
 	base
-	others    []FieldPusher
+	others    []FieldPunisher
 	intensity int
 }
 

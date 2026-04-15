@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package sweeper
@@ -21,11 +21,12 @@ type Analyzer struct {
 }
 
 type delta struct {
-	added    int
-	removed  int
-	hardened int
-	softened int
-	goal     byte
+	added     int
+	removed   int
+	hardened  int
+	softened  int
+	goal      byte
+	gnawKills []block.XYB
 }
 
 type deltaStats struct {
@@ -41,8 +42,14 @@ func (a *Analyzer) Analyze(e event.Event) {
 			a.blocks.added++
 		case op.TypeClear:
 			a.blocks.removed++
-			if v.Block.Type == block.TypeGoal {
+			switch v.Block.Type {
+			case block.TypeGoal:
 				a.blocks.goal++
+			case block.TypeGnaw:
+				a.blocks.gnawKills = append(a.blocks.gnawKills, block.XYB{
+					XY:    block.XY{X: int(v.Col), Y: int(v.Row)},
+					Block: v.Block,
+				})
 			}
 		}
 	case *op.FieldBlockHardness:
@@ -54,15 +61,27 @@ func (a *Analyzer) Analyze(e event.Event) {
 		}
 	case *op.FieldDestroyRow:
 		a.blocks.removed += a.Field.GetWidth()
-		for _, b := range v.Blocks {
-			if b.Type == block.TypeGoal {
+		for col, b := range v.Blocks {
+			switch b.Type {
+			case block.TypeGoal:
 				a.blocks.goal++
+			case block.TypeGnaw:
+				a.blocks.gnawKills = append(a.blocks.gnawKills, block.XYB{
+					XY:    block.XY{X: col, Y: int(v.Row)},
+					Block: b,
+				})
 			}
 		}
 	case *op.FieldDestroyColumn:
 		a.blocks.removed++
-		if v.Block.Type == block.TypeGoal {
+		switch v.Block.Type {
+		case block.TypeGoal:
 			a.blocks.goal++
+		case block.TypeGnaw:
+			a.blocks.gnawKills = append(a.blocks.gnawKills, block.XYB{
+				XY:    block.XY{X: int(v.Col), Y: int(v.Row)},
+				Block: v.Block,
+			})
 		}
 	case *op.FieldStat:
 		a.stats.removed += int(v.BlocksRemoved)

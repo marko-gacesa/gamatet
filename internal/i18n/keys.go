@@ -255,6 +255,7 @@ const (
 	KeyEffectLid   = "effect_lid"
 	KeyEffectBigO  = "effect_big_o"
 	KeyEffectRaise = "effect_raise"
+	KeyEffectGnaw  = "effect_gnaw"
 	KeyEffectPatch = "effect_patch"
 
 	KeyBoolTrue  = "bool_true"

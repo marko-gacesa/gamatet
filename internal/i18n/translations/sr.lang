@@ -263,6 +263,7 @@ field_latency_state_lost    = изгубљен
 effect_lid   = Поклопац
 effect_big_o = Велико О
 effect_raise = Подизање
+effect_gnaw  = Призови Глођа
 effect_patch = Закрпе
 
 # Generic
