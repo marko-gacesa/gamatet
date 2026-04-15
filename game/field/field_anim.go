@@ -20,6 +20,7 @@ const (
 	AnimSpin    // Spin in place
 	AnimMeld
 	AnimCurtain
+	AnimSlide
 )
 
 type exElem struct {

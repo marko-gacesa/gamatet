@@ -306,6 +306,38 @@ func (f *Field) TransformXY(x, y, animType, animParam int, bExp, b block.Block) 
 	}
 }
 
+func (f *Field) SwapXY(srcX, srcY, dstX, dstY, animType, animParam int) {
+	srcBlock, srcAnim, dstBlock, dstAnim := f.swapXY(srcX, srcY, dstX, dstY)
+
+	if f.Config.Anim {
+		now := time.Now()
+		switch animType {
+		case AnimSlide:
+			if srcBlock.Type != block.TypeEmpty {
+				dx := float32(dstX - srcX)
+				dy := float32(dstY - srcY)
+				a := anim.NewTransQuad(now, piece.DurationAnimBlockSlide, dx, dy, 0)
+				srcAnim.Add(a)
+			}
+			if dstBlock.Type != block.TypeEmpty {
+				dx := float32(srcX - dstX)
+				dy := float32(srcY - dstY)
+				a := anim.NewTransQuad(now, piece.DurationAnimBlockSlide, dx, dy, 0)
+				dstAnim.Add(a)
+			}
+		case AnimPop:
+			if srcBlock.Type != block.TypeEmpty {
+				a := anim.NewPopIn(now, piece.DurationAnimBlockChange)
+				srcAnim.Add(a)
+			}
+			if dstBlock.Type != block.TypeEmpty {
+				a := anim.NewPopIn(now, piece.DurationAnimBlockChange)
+				dstAnim.Add(a)
+			}
+		}
+	}
+}
+
 func (f *Field) AddExXY(x, y, animType, animParam int, b block.Block) {
 	if !f.Config.Anim {
 		return

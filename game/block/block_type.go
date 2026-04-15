@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package block
@@ -42,6 +42,9 @@ const (
 	// TypeGoal is special block type used as a goal.
 	TypeGoal
 
+	// TypeGnaw is special type of block that serves as an entity that moves and eats other blocks.
+	TypeGnaw
+
 	// TypeWall is used for walls around (and inside) the play area - indestructible and unmovable.
 	TypeWall Type = 255
 )
@@ -59,6 +62,9 @@ func (t Type) NoSlide() bool {
 // Destructible returns true f the block type is directly destroyable.
 func (t Type) Destructible() bool { return t == TypeRock || t == TypeRuby || t == TypeGoal }
 
+// Gnawable returns true f the block type is eatable by a Gnaw block.
+func (t Type) Gnawable() bool { return t == TypeRock || t == TypeRuby }
+
 const (
 	// HardnessMax is special, maximum, value for block hardness that can't be reduced.
 	HardnessMax byte = 0xFF
@@ -74,6 +80,7 @@ var (
 	Curl = Block{Type: TypeCurl, Hardness: 0, Color: 0xFF00C0FF}
 	Wave = Block{Type: TypeWave, Hardness: 0, Color: 0x00C0FFFF}
 	Bomb = Block{Type: TypeBomb, Hardness: 0, Color: 0xF0F0F0FF}
+	Gnaw = Block{Type: TypeGnaw, Hardness: 0, Color: 0x4F6F4FFF}
 	Goal = Block{Type: TypeGoal, Hardness: 0, Color: 0xFF0000FF}
 	Wall = Block{Type: TypeWall, Hardness: HardnessMax, Color: 0x606060FF}
 )

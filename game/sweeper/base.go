@@ -1,4 +1,4 @@
-// Copyright (c) 2024, 2025 by Marko Gaćeša
+// Copyright (c) 2024, 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package sweeper
@@ -66,10 +66,14 @@ func (s *base) Unpause() {
 	s.timer.Reset(s.remaining)
 }
 
+// endIteration should be called during Sweep to stop the current iteration.
+// Basically, during Sweep one of the two methods should be called: endIteration or reschedule.
 func (s *base) endIteration() {
 	s.active = false
 }
 
+// reschedule can be called during Sweep to trigger another iteration of Sweep.
+// Basically, during Sweep one of the two methods should be called: endIteration or reschedule.
 func (s *base) reschedule(d time.Duration) {
 	s.startedAt = time.Now()
 	s.timer.Reset(d)

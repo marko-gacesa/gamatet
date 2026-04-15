@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package op
@@ -20,6 +20,7 @@ const (
 	codeFieldBlockSet
 	codeFieldBlockHardness
 	codeFieldBlockTransform
+	codeFieldBlockSwap
 	codeFieldColumnShift
 	codeFieldExBlock
 	codeFieldStat
@@ -95,6 +96,8 @@ func instance(code event.Code) event.Event {
 		e = &FieldBlockHardness{}
 	case codeFieldBlockTransform:
 		e = &FieldBlockTransform{}
+	case codeFieldBlockSwap:
+		e = &FieldBlockSwap{}
 	case codeFieldColumnShift:
 		e = &FieldColumnShift{}
 	case codeFieldExBlock:

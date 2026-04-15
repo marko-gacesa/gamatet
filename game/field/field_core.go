@@ -1,4 +1,4 @@
-// Copyright (c) 2020, 2025 by Marko Gaćeša
+// Copyright (c) 2020, 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package field
@@ -228,6 +228,13 @@ func (f *Field) setXY(x, y int, b block.Block) *anim.List {
 func (f *Field) getXY(x, y int) (block.Block, *anim.List) {
 	idx := y*f.w + x
 	return f.blocks[idx].Block, &f.blocks[idx].List
+}
+
+func (f *Field) swapXY(x0, y0, x1, y1 int) (block.Block, *anim.List, block.Block, *anim.List) {
+	idx0 := y0*f.w + x0
+	idx1 := y1*f.w + x1
+	f.blocks[idx0], f.blocks[idx1] = f.blocks[idx1], f.blocks[idx0]
+	return f.blocks[idx1].Block, &f.blocks[idx1].List, f.blocks[idx0].Block, &f.blocks[idx0].List
 }
 
 func (f *Field) fill(b block.Block) {

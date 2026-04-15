@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package piece
@@ -34,6 +34,9 @@ const (
 
 	// DurationAnimBlockChange is time to animate change of a block.
 	DurationAnimBlockChange = 750 * time.Millisecond
+
+	// DurationAnimBlockSlide is time to animate movement of a field block.
+	DurationAnimBlockSlide = 250 * time.Millisecond
 )
 
 const highestFall = 64

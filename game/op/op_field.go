@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package op
@@ -476,6 +476,65 @@ func (e *FieldBlockTransform) Read(r io.Reader) error {
 }
 
 func (e *FieldBlockTransform) TypeID() event.Code { return codeFieldBlockTransform }
+
+func NewFieldBlockSwap(colSrc, rowSrc, colDst, rowDst int, animType, animParam int) *FieldBlockSwap {
+	return &FieldBlockSwap{
+		ColSrc:    byte(colSrc),
+		RowSrc:    byte(rowSrc),
+		ColDst:    byte(colDst),
+		RowDst:    byte(rowDst),
+		AnimType:  byte(animType),
+		AnimParam: byte(animParam),
+	}
+}
+
+type FieldBlockSwap struct {
+	ColSrc, RowSrc, ColDst, RowDst byte
+	AnimType                       byte
+	AnimParam                      byte
+}
+
+var _ event.Event = (*FieldBlockSwap)(nil)
+
+func (e *FieldBlockSwap) Do(f *field.Field) {
+	f.SwapXY(int(e.ColSrc), int(e.RowSrc), int(e.ColDst), int(e.RowDst), int(e.AnimType), int(e.AnimParam))
+}
+
+func (e *FieldBlockSwap) Undo(f *field.Field) {
+	f.SwapXY(int(e.ColSrc), int(e.RowSrc), int(e.ColDst), int(e.RowDst), field.AnimNo, 0)
+}
+
+func (e *FieldBlockSwap) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldBlockSwap)
+	return ok &&
+		e.ColSrc == q.ColSrc && e.RowSrc == q.RowSrc &&
+		e.ColDst == q.ColDst && e.RowDst == q.RowDst
+}
+
+func (e *FieldBlockSwap) Write(w io.Writer) error {
+	if _, err := w.Write([]byte{e.ColSrc, e.RowSrc, e.ColDst, e.RowDst, e.AnimType, e.AnimParam}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *FieldBlockSwap) Read(r io.Reader) error {
+	var buffer [6]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.ColSrc = buffer[0]
+	e.RowSrc = buffer[1]
+	e.ColDst = buffer[2]
+	e.RowDst = buffer[3]
+	e.AnimType = buffer[4]
+	e.AnimParam = buffer[5]
+
+	return nil
+}
+
+func (e *FieldBlockSwap) TypeID() event.Code { return codeFieldBlockSwap }
 
 func NewFieldColumnShift(section field.ColumnSection, delta int) *FieldColumnShift {
 	return &FieldColumnShift{

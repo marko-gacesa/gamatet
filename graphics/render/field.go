@@ -28,6 +28,7 @@ var (
 	colorCurl = colorVector(block.Curl.Color)
 	colorWave = colorVector(block.Wave.Color)
 	colorBomb = colorVector(block.Bomb.Color)
+	colorGnaw = colorVector(block.Gnaw.Color)
 
 	colorFrame = colorVector(block.Rock.Color)
 
@@ -118,6 +119,7 @@ type Field struct {
 	listIron  rendercache.Models
 	listFrame rendercache.Models
 	listBomb  rendercache.Models
+	listGnaw  rendercache.Models
 	listRock  rendercache.ModelColorValueList[int]
 	listRuby  rendercache.ModelColorValueList[int]
 	listLava  rendercache.ModelColorList
@@ -191,6 +193,7 @@ func (f *Field) preRender(renderInfo *field.RenderInfo, now time.Time) {
 	f.listIron = rendercache.ModelPool.Get()
 	f.listFrame = rendercache.ModelPool.Get()
 	f.listBomb = rendercache.ModelPool.Get()
+	f.listGnaw = rendercache.ModelPool.Get()
 	f.listRock = rendercache.ModelColorIntPool.Get()
 	f.listRuby = rendercache.ModelColorIntPool.Get()
 	f.listLava = rendercache.ModelColorPool.Get()
@@ -213,6 +216,7 @@ func (f *Field) postRender() {
 	rendercache.ModelPool.Put(f.listIron)
 	rendercache.ModelPool.Put(f.listFrame)
 	rendercache.ModelPool.Put(f.listBomb)
+	rendercache.ModelPool.Put(f.listGnaw)
 	rendercache.ModelColorIntPool.Put(f.listRock)
 	rendercache.ModelColorIntPool.Put(f.listRuby)
 	rendercache.ModelColorPool.Put(f.listLava)
@@ -232,6 +236,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		lightIntAcid    = 1.2
 		lightIntWave    = 1.5
 		lightIntGoal    = 3
+		lightIntGnaw    = 2
 		lightPowShooter = 1.5
 	)
 
@@ -357,6 +362,16 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 			f.lights.AddWithModel(modelFieldBlock, colorWave.Vec3(), lightIntWave*fb.Result.SX)
 		case block.TypeBomb:
 			f.listBomb.Add(modelFieldBlock)
+		case block.TypeGnaw:
+			pulseGnaw := pulse + 0.4
+			modelGnaw := modelFieldBlock.
+				Mul4(mgl32.HomogRotate3DZ(float32(6.7*f.t + 0.2))).
+				Mul4(mgl32.HomogRotate3DX(float32(5.1*f.t + 0.7))).
+				Mul4(mgl32.Scale3D(pulseGnaw, pulseGnaw, pulseGnaw))
+			f.listGnaw.Add(modelGnaw)
+			blockColor := colorVector(fb.Block.Color)
+			color := mulColor(blockColor, aniColor)
+			f.lights.AddWithModel(modelFieldBlock, color.Vec3(), lightIntGnaw)
 		case block.TypeGoal:
 			f.listFrame.Add(modelFieldBlockBase)
 			color := colorVector(fb.Block.Color)
@@ -820,6 +835,15 @@ func (f *Field) renderAll(r *Renderer) {
 		for i := range f.listBomb {
 			modelBomb := f.listBomb[i].Mul4(transform)
 			r.Render(&modelBomb)
+		}
+	}
+
+	if len(f.listGnaw) > 0 {
+		r.Geometry(f.resources.GeomStar6)
+		r.Material(f.resources.MatRock)
+		f.resources.MatRock.Color(colorGnaw)
+		for _, modelGnaw := range f.listGnaw {
+			r.Render(&modelGnaw)
 		}
 	}
 
