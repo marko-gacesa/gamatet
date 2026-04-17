@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package field
@@ -122,6 +122,54 @@ func TestField_FindBlizzardTops(t *testing.T) {
 
 			want := test.want
 			got := f.FindBlizzardTops()
+
+			if !cmp.Equal(got, want) {
+				t.Errorf("failed:\n%s\n", cmp.Diff(got, want))
+			}
+		})
+	}
+}
+
+func TestField_FindAcidRainTops(t *testing.T) {
+	tests := []struct {
+		name string
+		xybs []block.XYB
+		want []block.XY
+	}{
+		{
+			name: "empty",
+			xybs: []block.XYB{},
+			want: []block.XY{},
+		},
+		{
+			// 5 . . R . . .
+			// 4 . . . . . R
+			// 3 R . . . . .
+			// 2 . G . . . .
+			// 1 . . . . . .
+			// 0 . . . R . .
+			//   0 1 2 3 4 5
+			name: "non-empty",
+			xybs: []block.XYB{
+				{XY: block.XY{X: 0, Y: 3}, Block: block.Rock},
+				{XY: block.XY{X: 1, Y: 2}, Block: block.Goal},
+				{XY: block.XY{X: 2, Y: 5}, Block: block.Rock},
+				{XY: block.XY{X: 3, Y: 0}, Block: block.Rock},
+				{XY: block.XY{X: 5, Y: 4}, Block: block.Rock},
+			},
+			want: []block.XY{{X: 0, Y: 3}, {X: 2, Y: 5}, {X: 3, Y: 0}, {X: 5, Y: 4}},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			f := Make(6, 6, 0)
+			for _, xyb := range test.xybs {
+				f.setXY(xyb.X, xyb.Y, xyb.Block)
+			}
+
+			want := test.want
+			got := f.FindAcidRainTops()
 
 			if !cmp.Equal(got, want) {
 				t.Errorf("failed:\n%s\n", cmp.Diff(got, want))

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package field
@@ -504,6 +504,57 @@ func TestField_GetTopmostEmpty(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			row := f.GetTopmostEmpty(test.col)
+			if row != test.expRow {
+				t.Errorf("failed; expected row %d, got %d", test.expRow, row)
+			}
+		})
+	}
+}
+
+func TestField_GetTopmostFull(t *testing.T) {
+	f := Make(6, 6, 0)
+	f.setXY(0, 2, block.Block{Type: block.TypeRock})
+	f.setXY(1, 5, block.Block{Type: block.TypeRock})
+	f.setXY(2, 0, block.Block{Type: block.TypeRock})
+
+	// 5 . # . . . .
+	// 4 . . . . . .
+	// 3 . . . . . .
+	// 2 # . . . . .
+	// 1 . . . . . .
+	// 0 . . # . . .
+	//   0 1 2 3 4 5
+
+	tests := []struct {
+		name   string
+		col    int
+		expRow int
+	}{
+		{
+			name:   "mid",
+			col:    0,
+			expRow: 2,
+		},
+		{
+			name:   "top",
+			col:    1,
+			expRow: 5,
+		},
+		{
+			name:   "bottom",
+			col:    2,
+			expRow: 0,
+		},
+		{
+			name:   "empty",
+			col:    3,
+			expRow: -1,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			row := f.GetTopmostFull(test.col)
 			if row != test.expRow {
 				t.Errorf("failed; expected row %d, got %d", test.expRow, row)
 			}

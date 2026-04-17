@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package field
@@ -54,6 +54,21 @@ func (f *Field) FindBlizzardTops() []block.XY {
 		if ok {
 			tops = append(tops, block.XY{X: x, Y: y})
 		}
+	}
+
+	return tops
+}
+
+func (f *Field) FindAcidRainTops() []block.XY {
+	tops := make([]block.XY, 0, f.w)
+
+	for x := range f.w {
+		y := f.GetTopmostFull(x)
+		if y < 0 || !f.blocks[y*f.w+x].Type.Shootable() {
+			continue
+		}
+
+		tops = append(tops, block.XY{X: x, Y: y})
 	}
 
 	return tops

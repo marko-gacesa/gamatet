@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package field
@@ -235,6 +235,19 @@ func (f *Field) GetTopmostEmpty(x int) int {
 		y--
 	}
 	return 0
+}
+
+func (f *Field) GetTopmostFull(x int) int {
+	w := f.w
+	y := f.h - 1
+	for idx := y*w + x; idx >= 0; idx -= w {
+		if f.blocks[idx].Type != block.TypeEmpty {
+			return y
+		}
+		y--
+	}
+
+	return -1
 }
 
 // GetHeightToTopmostEmpty returns height from which the block at location (x, y) can fall
