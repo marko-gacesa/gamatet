@@ -117,7 +117,7 @@ func TestField_Neighbors8(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			want := test.exp
-			got := f.Neighbors8(test.p)
+			got := f.Neighbors8(test.p, validTarget)
 			if got != want {
 				t.Errorf("Neighbors8(%v) = %v, want %v", test.p, got, want)
 			}
@@ -177,7 +177,7 @@ func TestField_Neighbors4(t *testing.T) {
 	for _, test := range tests {
 		t.Run(fmt.Sprint(test.p), func(t *testing.T) {
 			want := test.exp
-			got := f.Neighbors4(test.p)
+			got := f.Neighbors4(test.p, validTarget)
 			if got != want {
 				t.Errorf("Neighbors4(%v) = %v, want %v", test.p, got, want)
 			}
@@ -313,7 +313,7 @@ func TestField_Path4(t *testing.T) {
 				f.SetXY(xy.X, xy.Y, AnimNo, 0, block.Wall)
 			}
 
-			if want, got := test.exp, f.Path4(test.start, test.end); !slices.Equal(got, want) {
+			if want, got := test.exp, f.Path4(test.start, test.end, validTarget); !slices.Equal(got, want) {
 				t.Errorf("Path4(%v->%v)\nwant = %v\n got = %v\n", test.start, test.end, want, got)
 			}
 		})
@@ -345,7 +345,7 @@ func TestField_Path8(t *testing.T) {
 				f.SetXY(xy.X, xy.Y, AnimNo, 0, block.Wall)
 			}
 
-			if want, got := test.exp, f.Path8(test.start, test.end); !slices.Equal(got, want) {
+			if want, got := test.exp, f.Path8(test.start, test.end, validTarget); !slices.Equal(got, want) {
 				t.Errorf("Path8(%v->%v)\nwant = %v\n got = %v\n", test.start, test.end, want, got)
 			}
 		})
@@ -739,7 +739,7 @@ func TestNeighbors8_ForEach(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			want := test.exp
-			n := f.Neighbors8(test.p)
+			n := f.Neighbors8(test.p, validTarget)
 			var got []block.XY
 			n.ForEach(f, test.p, func(xyb block.XYB) {
 				got = append(got, xyb.XY)
@@ -794,7 +794,7 @@ func TestNeighbors4_ForEach(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			want := test.exp
-			n := f.Neighbors4(test.p)
+			n := f.Neighbors4(test.p, validTarget)
 			var got []block.XY
 			n.ForEach(f, test.p, func(xyb block.XYB) {
 				got = append(got, xyb.XY)
@@ -806,3 +806,5 @@ func TestNeighbors4_ForEach(t *testing.T) {
 		})
 	}
 }
+
+func validTarget(t block.Type) bool { return t == block.TypeEmpty || t == block.TypeRock }

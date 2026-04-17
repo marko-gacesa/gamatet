@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package field
@@ -40,7 +40,7 @@ func (info DestroyInfo) GetSimpleRow() int {
 
 		q := info.Columns[i].Rows[0]
 
-		if q.Height != 1 || q.Type != block.TypeRock { // simple row is made of only TypeRock blocks
+		if q.Height != 1 || reqSpecDestroy(q.Type) { // simple row is made of only simple blocks
 			return -1
 		}
 
@@ -68,4 +68,8 @@ func (info DestroyInfo) HasHardOrImm() bool {
 		}
 	}
 	return false
+}
+
+func reqSpecDestroy(t block.Type) bool {
+	return t != block.TypeRock && t != block.TypeRuby && t != block.TypeGnaw
 }

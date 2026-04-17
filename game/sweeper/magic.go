@@ -4,6 +4,7 @@
 package sweeper
 
 import (
+	"slices"
 	"time"
 
 	"github.com/marko-gacesa/gamatet/game/block"
@@ -78,7 +79,7 @@ func (s *Magic) Start(analyzer *Analyzer) bool {
 		return false
 	}
 
-	if analyzer.blocks.goal > 0 {
+	if len(analyzer.blocks.goalsRemoved) > 0 {
 		s.state = magicStateActivated
 		s.base.reschedule(time.Microsecond)
 	}
@@ -134,7 +135,16 @@ func (s *Magic) Sweep(p event.Pusher) {
 		return
 	}
 
-	p.Push(op.NewFieldBlockTransform(xyb.X, xyb.Y, xyb.Block, block.Goal, field.AnimNo, 0))
+	b := block.Block{
+		Type:     block.TypeGoal,
+		Hardness: 0,
+		Color:    0xFF0000FF,
+	}
+	if slices.Contains(magicEffectsSelf, effect) {
+		b.Color = 0x00FF00FF
+	}
+
+	p.Push(op.NewFieldBlockTransform(xyb.X, xyb.Y, xyb.Block, b, field.AnimNo, 0))
 	p.Push(op.NewFieldExBlock(xyb.X, xyb.Y, field.AnimDestroy, 0, xyb.Block))
 	p.Push(op.NewFieldEffect(field.EffectNone, effect, 0, magicActiveSeconds))
 

@@ -21,12 +21,13 @@ type Analyzer struct {
 }
 
 type delta struct {
-	added     int
-	removed   int
-	hardened  int
-	softened  int
-	goal      byte
-	gnawKills []block.XYB
+	added    int
+	removed  int
+	hardened int
+	softened int
+
+	goalsRemoved []block.XYB
+	gnawsKilled  []block.XYB
 }
 
 type deltaStats struct {
@@ -44,12 +45,9 @@ func (a *Analyzer) Analyze(e event.Event) {
 			a.blocks.removed++
 			switch v.Block.Type {
 			case block.TypeGoal:
-				a.blocks.goal++
+				a.blocks.goalsRemoved = appendXYB(a.blocks.goalsRemoved, int(v.Col), int(v.Row), v.Block)
 			case block.TypeGnaw:
-				a.blocks.gnawKills = append(a.blocks.gnawKills, block.XYB{
-					XY:    block.XY{X: int(v.Col), Y: int(v.Row)},
-					Block: v.Block,
-				})
+				a.blocks.gnawsKilled = appendXYB(a.blocks.gnawsKilled, int(v.Col), int(v.Row), v.Block)
 			}
 		}
 	case *op.FieldBlockHardness:
@@ -64,24 +62,18 @@ func (a *Analyzer) Analyze(e event.Event) {
 		for col, b := range v.Blocks {
 			switch b.Type {
 			case block.TypeGoal:
-				a.blocks.goal++
+				a.blocks.goalsRemoved = appendXYB(a.blocks.goalsRemoved, col, int(v.Row), b)
 			case block.TypeGnaw:
-				a.blocks.gnawKills = append(a.blocks.gnawKills, block.XYB{
-					XY:    block.XY{X: col, Y: int(v.Row)},
-					Block: b,
-				})
+				a.blocks.gnawsKilled = appendXYB(a.blocks.gnawsKilled, col, int(v.Row), b)
 			}
 		}
 	case *op.FieldDestroyColumn:
 		a.blocks.removed++
 		switch v.Block.Type {
 		case block.TypeGoal:
-			a.blocks.goal++
+			a.blocks.goalsRemoved = appendXYB(a.blocks.goalsRemoved, int(v.Col), int(v.Row), v.Block)
 		case block.TypeGnaw:
-			a.blocks.gnawKills = append(a.blocks.gnawKills, block.XYB{
-				XY:    block.XY{X: int(v.Col), Y: int(v.Row)},
-				Block: v.Block,
-			})
+			a.blocks.gnawsKilled = appendXYB(a.blocks.gnawsKilled, int(v.Col), int(v.Row), v.Block)
 		}
 	case *op.FieldStat:
 		a.stats.removed += int(v.BlocksRemoved)
@@ -95,4 +87,8 @@ func (a *Analyzer) Analyze(e event.Event) {
 			a.shots = append(a.shots, v.BlockType)
 		}
 	}
+}
+
+func appendXYB(xybs []block.XYB, x, y int, b block.Block) []block.XYB {
+	return append(xybs, block.XYB{XY: block.XY{X: x, Y: y}, Block: b})
 }

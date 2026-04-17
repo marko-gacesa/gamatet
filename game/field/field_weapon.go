@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package field
@@ -43,9 +43,10 @@ func (f *Field) Blizzard(intensity int) []block.XY {
 func (f *Field) GetRandomBlock() (block.XYB, bool) {
 	var count int
 	f.RangeBlocks(func(xyb block.XYB) bool {
-		if xyb.Block.Type == block.TypeRock && xyb.Block.Hardness == 0 {
-			count++
+		if xyb.Block.Type != block.TypeRock || xyb.Block.Hardness != 0 {
+			return true
 		}
+		count++
 		return true
 	})
 	if count == 0 {
@@ -59,14 +60,15 @@ func (f *Field) GetRandomBlock() (block.XYB, bool) {
 	var chosen block.XYB
 	var ok bool
 	f.RangeBlocks(func(xyb block.XYB) bool {
+		if xyb.Block.Type != block.TypeRock || xyb.Block.Hardness != 0 {
+			return true
+		}
 		if count == idx {
 			chosen = xyb
 			ok = true
 			return false
 		}
-		if xyb.Block.Type == block.TypeRock && xyb.Block.Hardness == 0 {
-			count++
-		}
+		count++
 		return true
 	})
 

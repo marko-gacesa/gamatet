@@ -50,20 +50,16 @@ const (
 )
 
 func (t Type) IsImmovable() bool     { return t == TypeWall || t == TypeRuby }
-func (t Type) SupportsExBlock() bool { return t == TypeRock }
+func (t Type) SupportsExBlock() bool { return t == TypeRock || t == TypeRuby }
 
 // Shootable returns true f the block type is directly destroyable by shooter pieces.
 func (t Type) Shootable() bool { return t == TypeRock || t == TypeRuby }
 
+// NoSlide return true if a same-block piece is form this material.
+// The slide would not be activated after such piece has been dropped.
 func (t Type) NoSlide() bool {
 	return t == TypeAcid || t == TypeLava || t == TypeCurl || t == TypeWave || t == TypeBomb
 }
-
-// Destructible returns true f the block type is directly destroyable.
-func (t Type) Destructible() bool { return t == TypeRock || t == TypeRuby || t == TypeGoal }
-
-// Gnawable returns true f the block type is eatable by a Gnaw block.
-func (t Type) Gnawable() bool { return t == TypeRock || t == TypeRuby }
 
 const (
 	// HardnessMax is special, maximum, value for block hardness that can't be reduced.
@@ -81,6 +77,6 @@ var (
 	Wave = Block{Type: TypeWave, Hardness: 0, Color: 0x00C0FFFF}
 	Bomb = Block{Type: TypeBomb, Hardness: 0, Color: 0xF0F0F0FF}
 	Gnaw = Block{Type: TypeGnaw, Hardness: 0, Color: 0x4F6F4FFF}
-	Goal = Block{Type: TypeGoal, Hardness: 0, Color: 0xFF0000FF}
+	Goal = Block{Type: TypeGoal, Hardness: 0, Color: 0xFFD700FF}
 	Wall = Block{Type: TypeWall, Hardness: HardnessMax, Color: 0x606060FF}
 )

@@ -44,7 +44,7 @@ const (
 
 type Neighbors8 [8]bool
 
-func (f *Field) Neighbors8(pos block.XY) Neighbors8 {
+func (f *Field) Neighbors8(pos block.XY, fnOk func(block.Type) bool) Neighbors8 {
 	w := f.w
 	h := f.h
 	idx := pos.Y*w + pos.X
@@ -57,8 +57,7 @@ func (f *Field) Neighbors8(pos block.XY) Neighbors8 {
 	)
 
 	isOk := func(f *Field, i int) bool {
-		t := f.blocks[i].Block.Type
-		return t == block.TypeEmpty || t.Gnawable()
+		return fnOk(f.blocks[i].Block.Type)
 	}
 
 	var result Neighbors8
@@ -122,7 +121,7 @@ const (
 
 type Neighbors4 [4]bool
 
-func (f *Field) Neighbors4(pos block.XY) Neighbors4 {
+func (f *Field) Neighbors4(pos block.XY, fnOk func(block.Type) bool) Neighbors4 {
 	w := f.w
 	h := f.h
 	idx := pos.Y*w + pos.X
@@ -135,8 +134,7 @@ func (f *Field) Neighbors4(pos block.XY) Neighbors4 {
 	)
 
 	isOk := func(f *Field, i int) bool {
-		t := f.blocks[i].Block.Type
-		return t == block.TypeEmpty || t.Gnawable()
+		return fnOk(f.blocks[i].Block.Type)
 	}
 
 	var result Neighbors4
@@ -206,18 +204,18 @@ func (pq *pathQueue) Pop() any {
 // Path4 finds the shortest path between the start and the goal. It doesn't contain diagonal movement.
 // If it's found, the resulting slice will contain all coordinates of the path, including the start and the goal.
 // So at least two elements must be in the list. However, if no path could be found it returns nil.
-func (f *Field) Path4(start, goal block.XY) []block.XY {
-	return f.path(start, goal, false)
+func (f *Field) Path4(start, goal block.XY, fnOk func(block.Type) bool) []block.XY {
+	return f.path(start, goal, false, fnOk)
 }
 
 // Path8 finds the shortest path between the start and the goal. It contains diagonal movement.
 // If it's found, the resulting slice will contain all coordinates of the path, including the start and the goal.
 // So at least two elements must be in the list. However, if no path could be found it returns nil.
-func (f *Field) Path8(start, goal block.XY) []block.XY {
-	return f.path(start, goal, true)
+func (f *Field) Path8(start, goal block.XY, fnOk func(block.Type) bool) []block.XY {
+	return f.path(start, goal, true, fnOk)
 }
 
-func (f *Field) path(start, goal block.XY, diagonalMove bool) []block.XY {
+func (f *Field) path(start, goal block.XY, diagonalMove bool, fnOk func(block.Type) bool) []block.XY {
 	openSet := &pathQueue{}
 	heap.Init(openSet)
 
@@ -265,9 +263,9 @@ func (f *Field) path(start, goal block.XY, diagonalMove bool) []block.XY {
 		}
 
 		if diagonalMove {
-			neighbors = f.Neighbors8(current.xy)
+			neighbors = f.Neighbors8(current.xy, fnOk)
 		} else {
-			neighbors = f.Neighbors4(current.xy)
+			neighbors = f.Neighbors4(current.xy, fnOk)
 		}
 
 		neighbors.ForEach(f, current.xy, func(neighbor block.XYB) {

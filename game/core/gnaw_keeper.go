@@ -5,6 +5,7 @@ package core
 
 import (
 	"fmt"
+	"math"
 	"math/rand/v2"
 	"time"
 
@@ -80,6 +81,10 @@ func (k *GnawKeeper) RandomColor() uint32 {
 
 func (k *GnawKeeper) AddSmall(x, y int) {
 	k.Add(x, y, k.RandomColor(), 10, time.Second)
+}
+
+func (k *GnawKeeper) AddInfinite(x, y int) {
+	k.Add(x, y, k.RandomColor(), math.MaxInt, 1200*time.Millisecond)
 }
 
 func (k *GnawKeeper) Add(x, y int, color uint32, hunger int, restDuration time.Duration) {
@@ -195,14 +200,14 @@ func (k *GnawKeeper) process(gnaw *gnawData, now time.Time, p event.Pusher) (suc
 
 	r := max(w-xy.X-1, xy.X, h-xy.Y-1, xy.Y)
 	target, ok := f.FindNearest8(xy, r, func(xyb block.XYB, i int) bool {
-		return xyb.Block.Type.Gnawable() && f.HasLOS(xy, xyb.XY)
+		return validGnawFood(xyb.Block.Type) && f.HasLOS(xy, xyb.XY)
 	})
 	if !ok {
 		k.move1(gnaw, p) // target to eat
 		return true
 	}
 
-	path := f.Path8(xy, target.XY)
+	path := f.Path8(xy, target.XY, validGnawMove)
 	if len(path) < 2 {
 		k.move1(gnaw, p) // no route to target
 		return true
@@ -211,12 +216,12 @@ func (k *GnawKeeper) process(gnaw *gnawData, now time.Time, p event.Pusher) (suc
 	moveTo := path[1]
 
 	b := f.GetXY(moveTo.X, moveTo.Y)
-	switch {
-	case b.Type == block.TypeEmpty:
+	switch b.Type {
+	case block.TypeEmpty:
 		// move to empty space
 		p.Push(op.NewFieldBlockSwap(xy.X, xy.Y, moveTo.X, moveTo.Y, field.AnimSlide, 0))
 		gnaw.lastPos = moveTo
-	case b.Type.Gnawable():
+	case block.TypeRock:
 		if b.Hardness == 0 {
 			// eat the block and move there
 			p.Push(op.NewFieldBlockSet(moveTo.X, moveTo.Y, op.TypeClear, field.AnimDestroy, 0, b))
@@ -236,7 +241,7 @@ func (k *GnawKeeper) process(gnaw *gnawData, now time.Time, p event.Pusher) (suc
 
 func (k *GnawKeeper) move1(gnaw *gnawData, p event.Pusher) {
 	f := k.f
-	neighbors := f.Neighbors8(gnaw.lastPos)
+	neighbors := f.Neighbors8(gnaw.lastPos, validGnawMove)
 
 	potentialXY := make([]block.XY, 0, 4)
 	neighbors.ForEach(f, gnaw.lastPos, func(xyb block.XYB) {
@@ -324,3 +329,9 @@ func (k *GnawKeeper) die(gnaw *gnawData, noHunger bool, p event.Pusher) {
 func (k *GnawKeeper) remove(gnaw *gnawData) {
 	delete(k.gnaws, gnaw.color)
 }
+
+// validGnawFood returns true if a gnaw can eat this block type.
+func validGnawFood(t block.Type) bool { return t == block.TypeRock }
+
+// validGnawMove returns true if a gnaw can move into this block type.
+func validGnawMove(t block.Type) bool { return t == block.TypeEmpty || t == block.TypeRock }
