@@ -48,6 +48,7 @@ type GameHost struct {
 type HostOptions struct {
 	field.RenderOptions
 	Latencies *latency.List
+	Init      func(f *field.Field, p event.Pusher)
 }
 
 type hostFieldData struct {
@@ -165,6 +166,14 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 		}
 	}
 
+	if options.Init != nil {
+		for i := range fields {
+			f := fields[i].Field
+			p := &fields[i].events
+			options.Init(f, p)
+		}
+	}
+
 	return &GameHost{
 		fields:      fields,
 		inputs:      inputs,
@@ -245,6 +254,8 @@ func (g *GameHost) Perform(ctx context.Context) {
 	defer g.sendStop()
 
 	defer close(g.doneCh)
+
+	g.applyEvents()
 
 	for {
 		for i := range g.fields {

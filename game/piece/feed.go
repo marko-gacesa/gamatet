@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package piece
@@ -71,7 +71,7 @@ func (f GenericFeed) Get(idx uint, playerIdx byte) Piece {
 	bagIdx := idx / f.pieceBagCount
 	offs := idx % f.pieceBagCount
 
-	r := random.New(f.seed+857*bagIdx+13, f.seed+328*bagIdx+17)
+	r := random.New(uint64(f.seed+857*bagIdx+13), uint64(f.seed+328*bagIdx+17))
 
 	m := f.pool.Get().([]uint)
 	r.Perm(m)

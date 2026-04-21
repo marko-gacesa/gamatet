@@ -1,11 +1,10 @@
-// Copyright (c) 2024, 2025 by Marko Gaćeša
+// Copyright (c) 2024-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package app
 
 import (
 	"math"
-	"math/rand/v2"
 
 	"github.com/marko-gacesa/gamatet/game/setup"
 	. "github.com/marko-gacesa/gamatet/internal/i18n"
@@ -15,7 +14,7 @@ import (
 )
 
 func (app *App) menuMultiPlayerDirectIPHostEnterIP(ctx screen.Context) *menu.Menu {
-	app.resultToken = message.Token(rand.Uint32())
+	app.resultToken = message.RandomToken()
 	return app.menuEnterIP(ctx, routeMultiPlayerDirectIPHostLobby)
 }
 

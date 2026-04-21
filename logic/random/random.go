@@ -1,4 +1,4 @@
-// Copyright (c) 2020, 2025 by Marko Gaćeša
+// Copyright (c) 2020, 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package random
@@ -9,8 +9,8 @@ type Random struct {
 	src rand.PCG
 }
 
-func New(seed1, seed2 uint) *Random {
-	src := rand.NewPCG(uint64(seed1), uint64(seed2))
+func New(seed1, seed2 uint64) *Random {
+	src := rand.NewPCG(seed1, seed2)
 	return &Random{
 		src: *src,
 	}

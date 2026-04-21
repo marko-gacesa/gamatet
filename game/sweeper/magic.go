@@ -49,7 +49,7 @@ func NewMagic(f *field.Field, others []FieldPunisher, seed int, types MagicType)
 	m := &Magic{
 		base:   *b,
 		others: others,
-		seed:   uint(seed),
+		seed:   uint64(seed),
 		state:  magicStateRunning,
 		types:  types,
 	}
@@ -64,11 +64,11 @@ func NewMagic(f *field.Field, others []FieldPunisher, seed int, types MagicType)
 type Magic struct {
 	base
 	others []FieldPunisher
-	seed   uint
+	seed   uint64
 	state  magicState
 	types  MagicType
 
-	count    uint
+	count    int
 	oldBlock block.Block
 }
 
@@ -194,7 +194,7 @@ func (s *Magic) randomEffect() field.Effect {
 		return field.EffectNone
 	}
 
-	r := random.New(s.count, s.seed)
+	r := random.New(uint64(s.count), s.seed)
 	return effects[r.Int(len(effects))]
 }
 
@@ -205,7 +205,7 @@ func (s *Magic) effectLid() {
 			continue
 		}
 
-		r := random.New(s.count+uint(idx), s.seed)
+		r := random.New(uint64(s.count+idx), s.seed)
 
 		w := f.GetWidth()
 		h := f.GetHeight()
@@ -298,7 +298,7 @@ func (s *Magic) effectPatchHoles(p event.Pusher) {
 		}
 	}
 
-	r := random.New(s.count, s.seed)
+	r := random.New(uint64(s.count), s.seed)
 	random.Shuffle(r, holes)
 
 	const patches = 10

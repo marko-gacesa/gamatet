@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package piece
@@ -44,7 +44,7 @@ func NewTypeWeights(rock, lava, acid, wave, curl byte) TypeWeights {
 }
 
 func (w TypeWeights) Block(c Color, idx, shapeIdx uint, seed int, playerIndex byte) block.Block {
-	r := random.New(idx*13, uint(seed))
+	r := random.New(uint64(idx*13), uint64(seed))
 	switch w.w.Random(r) {
 	case 1:
 		return block.Lava

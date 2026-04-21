@@ -1,4 +1,4 @@
-// Copyright (c) 2020, 2025 by Marko Gaćeša
+// Copyright (c) 2020, 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package random
@@ -10,7 +10,7 @@ import (
 
 func TestRandomPerm(t *testing.T) {
 	tests := []struct {
-		seed1, seed2 uint
+		seed1, seed2 uint64
 		n            uint
 	}{
 		{seed1: 31233, seed2: 534526, n: 10},

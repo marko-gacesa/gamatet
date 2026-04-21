@@ -53,7 +53,7 @@ func (f *Field) SpawnLocation(loc SpawnLocation) (block.XY, bool) {
 		return block.XY{}, false
 	}
 
-	r := random.New(uint(entropy), uint(f.seed))
+	r := random.New(uint64(entropy), uint64(f.seed))
 	n := r.Int(len(potentialXY))
 	xy := potentialXY[n]
 

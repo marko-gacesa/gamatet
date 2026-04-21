@@ -13,7 +13,6 @@ import (
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/op"
-	"github.com/marko-gacesa/gamatet/logic/random"
 )
 
 func NewGnawKeeper(f *field.Field, seed uint) *GnawKeeper {
@@ -255,7 +254,7 @@ func (k *GnawKeeper) move1(gnaw *gnawData, p event.Pusher) {
 		return
 	}
 
-	r := random.New(uint(gnaw.color)+uint(gnaw.lastPos.Y*f.GetWidth()+gnaw.lastPos.X), k.seed)
+	r := f.Random(uint64(gnaw.color) + uint64(gnaw.lastPos.Y*f.GetWidth()+gnaw.lastPos.X))
 	n := r.Int(len(potentialXY))
 
 	moveTo := potentialXY[n]

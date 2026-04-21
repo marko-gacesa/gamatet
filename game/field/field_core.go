@@ -10,6 +10,7 @@ import (
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/gamatet/logic/anim"
+	"github.com/marko-gacesa/gamatet/logic/random"
 )
 
 type Field struct {
@@ -121,6 +122,10 @@ func Make(dimW, dimH, pieceCount int) (f *Field) {
 
 func (f *Field) Seed(seed int) {
 	f.seed = seed
+}
+
+func (f *Field) Random(seed uint64) *random.Random {
+	return random.New(seed, uint64(f.seed))
 }
 
 func (f *Field) Ctrls() int {

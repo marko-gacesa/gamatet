@@ -21,7 +21,7 @@ func (f *Field) Blizzard(intensity int) []block.XY {
 		k += top.Y*f.w + top.X
 	}
 
-	r := random.New(uint(intensity+k), uint(f.seed))
+	r := random.New(uint64(intensity+k), uint64(f.seed))
 
 	for range intensity {
 		if len(tops) == 0 {
@@ -53,7 +53,7 @@ func (f *Field) GetRandomBlock() (block.XYB, bool) {
 		return block.XYB{}, false
 	}
 
-	r := random.New(uint(count), uint(f.seed))
+	r := random.New(uint64(count), uint64(f.seed))
 	idx := r.Int(count)
 
 	count = 0
