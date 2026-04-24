@@ -4,8 +4,6 @@
 package core
 
 import (
-	"math/rand"
-
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
@@ -22,7 +20,7 @@ func putBlock(p event.Pusher, x, y int, b block.Block) {
 	p.Push(op.NewFieldBlockSet(x, y, op.TypeSet, field.AnimNo, 0, b))
 }
 
-func FieldRandomBlocks(f *field.Field, p event.Pusher) {
+func InitRandomBlocks(f *field.Field, p event.Pusher) {
 	rnd := f.Random(0)
 	w := f.GetWidth()
 	n := w + w/2
@@ -46,20 +44,31 @@ func FieldRandomBlocks(f *field.Field, p event.Pusher) {
 	}
 }
 
-func FieldInit1(f *field.Field, p event.Pusher) {
+func InitTriangle(f *field.Field, p event.Pusher) {
 	w := f.GetWidth()
 	h := f.GetHeight()
 	c := piece.NewRandomColor(setup.ColorRGB[:], 0)
-	for yi := range h / 2 {
-		for xi := range w {
-			if xi == yi%w {
-				continue
-			}
-			putBlock(p, xi, yi, block.Block{
+	d := min(w, h)
+	for y := 0; y < d; y++ {
+		for x := w - d + 1 + y; x < w; x++ {
+			idx := y*w + x
+			putBlock(p, x, y, block.Block{
 				Type:     block.TypeRock,
-				Hardness: byte(rand.Int31n(4)),
-				Color:    c.Color(uint(yi*w+xi), 0),
+				Hardness: 0,
+				Color:    c.Color(uint(idx), byte(idx%8)),
 			})
+		}
+	}
+}
+
+func InitFunnel(f *field.Field, p event.Pusher) {
+	w := f.GetWidth()
+	h := f.GetHeight()
+	d := min((w-1)/2, h)
+	for y := 0; y < d; y++ {
+		for x := 0; x < d-y; x++ {
+			putBlock(p, x, y, block.Wall)
+			putBlock(p, w-x-1, y, block.Wall)
 		}
 	}
 }

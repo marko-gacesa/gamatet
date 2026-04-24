@@ -200,6 +200,10 @@ func (g *GameHost) Perform(ctx context.Context) {
 		}
 	}()
 
+	defer g.sendStop()
+
+	defer close(g.doneCh)
+
 	ctrlTimer := channel.Join(g.doneCh, func() <-chan channel.Input[time.Time, PiecePlace] {
 		ch := make(chan channel.Input[time.Time, PiecePlace])
 		go func() {
@@ -251,10 +255,6 @@ func (g *GameHost) Perform(ctx context.Context) {
 	gnawTimer := channel.JoinSlicePtr(g.doneCh, g.fields, func(p *hostFieldData) <-chan time.Time {
 		return p.GnawKeeper.Chan()
 	})
-
-	defer g.sendStop()
-
-	defer close(g.doneCh)
 
 	g.applyEvents()
 
