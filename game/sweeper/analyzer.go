@@ -13,9 +13,10 @@ import (
 type Analyzer struct {
 	Field *field.Field
 
-	blocks delta
-	stats  deltaStats
-	shots  []block.Type
+	blocks    delta
+	stats     deltaStats
+	lingering map[field.Effect]int
+	shots     []block.Type
 
 	endMode *field.Mode
 }
@@ -82,6 +83,11 @@ func (a *Analyzer) Analyze(e event.Event) {
 		if v.ModeNew == field.ModeGameOver || v.ModeNew == field.ModeVictory || v.ModeNew == field.ModeDefeat {
 			a.endMode = &v.ModeNew
 		}
+	case *op.FieldLingering:
+		if a.lingering == nil {
+			a.lingering = make(map[field.Effect]int)
+		}
+		a.lingering[v.Effect] += int(v.Delta)
 	case *op.PieceShoot:
 		if v.Hit {
 			a.shots = append(a.shots, v.BlockType)

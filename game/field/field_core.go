@@ -76,6 +76,7 @@ type elem struct {
 type stats struct {
 	blocksRemoved    int
 	blocksRemovedStr string
+	lingering        map[Effect]int
 	effect           Effect
 	effectSeconds    byte
 	effectStr        string
@@ -207,6 +208,36 @@ func (f *Field) UpdateBlocksRemoved(delta int) {
 
 func (f *Field) GetBlocksRemoved() int {
 	return f.stats.blocksRemoved
+}
+
+func (f *Field) UpdateLingering(effect Effect, delta int) {
+	if f.stats.lingering == nil {
+		f.stats.lingering = make(map[Effect]int)
+	}
+	amount, ok := f.stats.lingering[effect]
+	amount += delta
+	if amount <= 0 && ok {
+		delete(f.stats.lingering, effect)
+		return
+	}
+	f.stats.lingering[effect] = amount
+}
+
+func (f *Field) GetLingering(effect Effect) int {
+	return f.stats.lingering[effect]
+}
+
+func (f *Field) LingeringEffects(fn func(effect Effect, amount int)) {
+	for effect, amount := range f.stats.lingering {
+		fn(effect, amount)
+	}
+}
+
+func (f *Field) LingeringEffect() (Effect, int) {
+	for effect, amount := range f.stats.lingering {
+		return effect, amount
+	}
+	return EffectNone, 0
 }
 
 func (f *Field) UpdateEffect(effect Effect, effectSeconds byte) {

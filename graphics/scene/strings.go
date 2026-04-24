@@ -45,11 +45,12 @@ func fieldStrings() render.FieldStrings {
 			ServerLost: T(KeyFieldMessageServerLost),
 		},
 		EffectMap: map[field.Effect]string{
-			field.EffectLid:   T(KeyEffectLid),
-			field.EffectBigO:  T(KeyEffectBigO),
-			field.EffectRaise: T(KeyEffectRaise),
-			field.EffectGnaw:  T(KeyEffectGnaw),
-			field.EffectPatch: T(KeyEffectPatch),
+			field.EffectLid:      T(KeyEffectLid),
+			field.EffectBigO:     T(KeyEffectBigO),
+			field.EffectRaise:    T(KeyEffectRaise),
+			field.EffectGnaw:     T(KeyEffectGnaw),
+			field.EffectPatch:    T(KeyEffectPatch),
+			field.EffectAcidRain: T(KeyEffectAcidRain),
 		},
 	}
 }

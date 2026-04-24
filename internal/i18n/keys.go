@@ -252,11 +252,12 @@ const (
 	KeyFieldLatencyStateLagging = "field_latency_state_lagging"
 	KeyFieldLatencyStateLost    = "field_latency_state_lost"
 
-	KeyEffectLid   = "effect_lid"
-	KeyEffectBigO  = "effect_big_o"
-	KeyEffectRaise = "effect_raise"
-	KeyEffectGnaw  = "effect_gnaw"
-	KeyEffectPatch = "effect_patch"
+	KeyEffectLid      = "effect_lid"
+	KeyEffectBigO     = "effect_big_o"
+	KeyEffectRaise    = "effect_raise"
+	KeyEffectGnaw     = "effect_gnaw"
+	KeyEffectPatch    = "effect_patch"
+	KeyEffectAcidRain = "effect_acid_rain"
 
 	KeyBoolTrue  = "bool_true"
 	KeyBoolFalse = "bool_false"

@@ -39,7 +39,7 @@ const (
 )
 
 var (
-	magicEffectsSelf   = []field.Effect{field.EffectPatch}
+	magicEffectsSelf   = []field.Effect{field.EffectPatch, field.EffectAcidRain}
 	magicEffectsOthers = []field.Effect{field.EffectLid, field.EffectBigO, field.EffectRaise, field.EffectGnaw}
 )
 
@@ -165,6 +165,8 @@ func (s *Magic) activated(effect field.Effect, p event.Pusher) {
 
 	case field.EffectPatch:
 		s.effectPatchHoles(p)
+	case field.EffectAcidRain:
+		s.effectAcidRain(p)
 	}
 }
 
@@ -306,4 +308,8 @@ func (s *Magic) effectPatchHoles(p event.Pusher) {
 	for i := range min(patches, len(holes)) {
 		p.Push(op.NewFieldBlockSet(holes[i].X, holes[i].Y, op.TypeSet, field.AnimPop, 0, block.Rock))
 	}
+}
+
+func (s *Magic) effectAcidRain(p event.Pusher) {
+	p.Push(op.NewFieldLingering(field.EffectAcidRain, 10))
 }

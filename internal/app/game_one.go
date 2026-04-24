@@ -62,7 +62,7 @@ func (app *App) gameSinglePlayer(ctx screen.Context) types.GameOneParams {
 		ActionCh: actionCh,
 	}
 
-	g := core.MakeHost(setup, core.HostOptions{})
+	g := core.MakeHost(setup, core.HostOptions{Init: core.FieldRandomBlocks})
 
 	// go-routine for processing events for the field
 	go func() {

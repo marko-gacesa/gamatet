@@ -24,6 +24,7 @@ const (
 	codeFieldColumnShift
 	codeFieldExBlock
 	codeFieldStat
+	codeFieldLingering
 	codeFieldEffect
 	codeFieldQuake
 )
@@ -104,6 +105,8 @@ func instance(code event.Code) event.Event {
 		e = &FieldExBlock{}
 	case codeFieldStat:
 		e = &FieldStat{}
+	case codeFieldLingering:
+		e = &FieldLingering{}
 	case codeFieldEffect:
 		e = &FieldEffect{}
 	case codeFieldQuake:

@@ -730,6 +730,62 @@ func (e *FieldStat) TypeID() event.Code {
 	return codeFieldStat
 }
 
+func NewFieldLingering(effect field.Effect, delta int8) *FieldLingering {
+	return &FieldLingering{
+		Effect: effect,
+		Delta:  delta,
+	}
+}
+
+type FieldLingering struct {
+	Effect field.Effect
+	Delta  int8
+}
+
+var _ event.Event = (*FieldEffect)(nil)
+
+func (e *FieldLingering) Do(f *field.Field) {
+	f.UpdateLingering(e.Effect, int(e.Delta))
+}
+
+func (e *FieldLingering) Undo(f *field.Field) {
+	f.UpdateLingering(e.Effect, int(-e.Delta))
+}
+
+func (e *FieldLingering) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldLingering)
+	return ok && e.Effect == q.Effect && e.Delta == q.Delta
+}
+
+func (e *FieldLingering) Read(r io.Reader) error {
+	var buffer [2]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.Effect = field.Effect(buffer[0])
+	e.Delta = int8(buffer[1])
+
+	return nil
+}
+
+func (e *FieldLingering) Write(w io.Writer) error {
+	var buffer [2]byte
+
+	buffer[0] = byte(e.Effect)
+	buffer[1] = byte(e.Delta)
+
+	if _, err := w.Write(buffer[:]); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *FieldLingering) TypeID() event.Code {
+	return codeFieldLingering
+}
+
 func NewFieldEffect(effectOld, effectNew field.Effect, secondsOld, secondsNew byte) *FieldEffect {
 	return &FieldEffect{
 		EffectOld:  effectOld,

@@ -25,9 +25,10 @@ func putBlock(p event.Pusher, x, y int, b block.Block) {
 func FieldRandomBlocks(f *field.Field, p event.Pusher) {
 	rnd := f.Random(0)
 	w := f.GetWidth()
+	n := w + w/2
 	m := make(map[block.XY]struct{})
 	c := piece.NewRandomColor(setup.ColorRGB[:], 0)
-	for len(m) < w {
+	for len(m) < n {
 		xy := block.XY{
 			X: rnd.Int(w),
 			Y: rnd.Int(4),

@@ -144,6 +144,7 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 			sweeper.NewShaker(f),
 			sweeper.NewGameOver(f),
 			sweeper.NewSpeedUp(f),
+			sweeper.NewLingering(f),
 		)
 	}
 

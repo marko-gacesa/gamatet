@@ -260,11 +260,12 @@ field_latency_state_lost    = lost
 
 # Effects
 
-effect_lid   = Lid
-effect_big_o = Big O
-effect_raise = Raise Field
-effect_gnaw  = Summon Gnaw
-effect_patch = Patch Holes
+effect_lid       = Lid
+effect_big_o     = Big O
+effect_raise     = Raise Field
+effect_gnaw      = Summon Gnaw
+effect_patch     = Patch Holes
+effect_acid_rain = Acid Rain
 
 # Generic
 

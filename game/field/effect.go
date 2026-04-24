@@ -6,10 +6,11 @@ package field
 type Effect byte
 
 const (
-	EffectNone  Effect = 0
-	EffectLid   Effect = 10
-	EffectBigO  Effect = 11
-	EffectRaise Effect = 12
-	EffectGnaw  Effect = 13
-	EffectPatch Effect = 20
+	EffectNone     Effect = 0
+	EffectLid      Effect = 10
+	EffectBigO     Effect = 11
+	EffectRaise    Effect = 12
+	EffectGnaw     Effect = 13
+	EffectPatch    Effect = 20
+	EffectAcidRain Effect = 21
 )
