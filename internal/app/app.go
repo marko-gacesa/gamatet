@@ -202,8 +202,8 @@ func (app *App) MakeScreen(parentCtx context.Context) (screen.Screen, <-chan str
 	case id == routeMain:
 		return screen.Screens(
 			[]screen.Screen{
-				app.screener.Screen(ctx, app.title(ctx)),
 				app.screener.Screen(ctx, app.menuMain(ctx)),
+				app.screener.Screen(ctx, app.title(ctx)),
 			}), ctx.Done()
 
 	// Single player

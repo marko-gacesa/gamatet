@@ -31,7 +31,10 @@ func (r Resources) Screen(ctx screen.Context, data ...any) screen.Screen {
 	f := func(data any) screen.Screen {
 		switch v := data.(type) {
 		case *menu.Menu:
-			return NewMenu(r.rend, r.tex, v)
+			return screen.Screens{
+				NewBackground(r.rend, r.tex),
+				NewMenu(r.rend, r.tex, v),
+			}
 		case types.GameParams:
 			return NewGame(r.rend, r.tex, v)
 		case types.GameOneParams:

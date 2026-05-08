@@ -37,8 +37,8 @@ func (s Base) UpdateViewSize(w, h int) {}
 
 func (s Base) Release() {}
 
-func (s Base) InputKeyPress(key, scancode int) {}
-func (s Base) InputChar(char rune)             {}
+func (s Base) InputKeyPress(key int, action screen.KeyAction) {}
+func (s Base) InputChar(char rune)                            {}
 
 func (s Base) Prepare(time.Time) {}
 func (s Base) Render()           {}
