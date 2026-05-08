@@ -4,10 +4,13 @@
 package types
 
 import (
+	"time"
+
 	"github.com/marko-gacesa/gamatet/game/action"
 	"github.com/marko-gacesa/gamatet/game/core"
 	"github.com/marko-gacesa/gamatet/game/setup"
 	"github.com/marko-gacesa/gamatet/internal/config/key"
+	"github.com/marko-gacesa/gamatet/logic/anim"
 	"github.com/marko-gacesa/gamatet/logic/latency"
 )
 
@@ -36,4 +39,6 @@ type DemoParams struct {
 	RotX, RotY, RotZ float32
 	Demo             core.RenderRequester
 	Done             <-chan struct{}
+	AnimFunc         func() anim.Anim
+	AnimPeriod       time.Duration
 }

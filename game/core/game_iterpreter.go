@@ -15,6 +15,7 @@ import (
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/piece"
+	"github.com/marko-gacesa/gamatet/logic/anim"
 	"github.com/marko-gacesa/gamatet/logic/latency"
 )
 
@@ -208,4 +209,10 @@ func (g *GameInterpreter) RenderRequest(fieldIdx int, t time.Time, ch chan<- *fi
 func (g *GameInterpreter) GetSize(idx int) (int, int, int) {
 	f := g.fields[idx].Field
 	return f.GetWidth(), f.GetHeight(), f.Ctrls()
+}
+
+func (g *GameInterpreter) AddAnim(anim anim.Anim) {
+	for i := range g.fields {
+		g.fields[i].Field.Anim(anim)
+	}
 }

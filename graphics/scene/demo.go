@@ -13,6 +13,7 @@ import (
 	"github.com/marko-gacesa/gamatet/graphics/scene/base"
 	"github.com/marko-gacesa/gamatet/graphics/texture"
 	"github.com/marko-gacesa/gamatet/internal/types"
+	"github.com/marko-gacesa/gamatet/logic/anim"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
@@ -24,6 +25,10 @@ type Demo struct {
 	model       mgl32.Mat4
 	demo        core.RenderRequester
 	fieldRender *render.Field
+
+	animLast   time.Time
+	animPeriod time.Duration
+	animFunc   func() anim.Anim
 
 	waitDoneCh <-chan struct{}
 }
@@ -41,9 +46,16 @@ func NewDemo(
 	str := fieldStrings()
 
 	g := &Demo{
-		BlockBase: base.NewBlockBase(renderer, tex, params.FullW, params.FullH, true),
-		res:       *res,
-		text:      *text,
+		BlockBase: base.NewBlockBaseWithZ(
+			renderer,
+			tex,
+			params.FullW,
+			params.FullH,
+			max(params.FullW/2, params.FullH/2),
+			true,
+		),
+		res:  *res,
+		text: *text,
 
 		model: mgl32.Ident4().
 			Mul4(mgl32.Translate3D(params.OffsX, params.OffsY, -0.25)).
@@ -51,6 +63,10 @@ func NewDemo(
 			Mul4(mgl32.HomogRotate3DY(params.RotY)).
 			Mul4(mgl32.HomogRotate3DZ(params.RotZ)),
 		demo: params.Demo,
+
+		animLast:   time.Now(),
+		animPeriod: params.AnimPeriod,
+		animFunc:   params.AnimFunc,
 
 		waitDoneCh: params.Done,
 	}
@@ -67,9 +83,12 @@ func (ft *Demo) Release() {
 	ft.res.Release()
 }
 
-func (ft *Demo) InputKeyPress(key int, act screen.KeyAction) {}
-
 func (ft *Demo) Prepare(now time.Time) {
+	if ft.animFunc != nil && ft.animPeriod > 0 && now.Sub(ft.animLast) >= ft.animPeriod {
+		ft.fieldRender.AddAnim(ft.animFunc())
+		ft.animLast = now
+	}
+
 	ft.fieldRender.Prepare(now)
 }
 

@@ -10,6 +10,7 @@ import (
 	"github.com/marko-gacesa/gamatet/game/action"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/piece"
+	"github.com/marko-gacesa/gamatet/logic/anim"
 )
 
 type Performer interface {
@@ -23,6 +24,9 @@ type RenderRequester interface {
 
 	// GetSize return size of the field and number of players.
 	GetSize(idx int) (int, int, int)
+
+	// AddAnim adds an animation to all fields in the game. Not intended as a gameplay feature, but for the UI effects.
+	AddAnim(anim anim.Anim)
 }
 
 type Setup struct {

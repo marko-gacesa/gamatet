@@ -16,6 +16,7 @@ import (
 	"github.com/marko-gacesa/gamatet/game/op"
 	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/gamatet/game/sweeper"
+	"github.com/marko-gacesa/gamatet/logic/anim"
 	"github.com/marko-gacesa/gamatet/logic/latency"
 	"github.com/marko-gacesa/udpstar/udpstar/controller"
 )
@@ -387,6 +388,12 @@ func (g *GameHost) RenderRequest(fieldIdx int, t time.Time, ch chan<- *field.Ren
 func (g *GameHost) GetSize(idx int) (int, int, int) {
 	f := g.fields[idx].Field
 	return f.GetWidth(), f.GetHeight(), f.Ctrls()
+}
+
+func (g *GameHost) AddAnim(anim anim.Anim) {
+	for i := range g.fields {
+		g.fields[i].Field.Anim(anim)
+	}
 }
 
 func (g *GameHost) sendStop() {

@@ -18,6 +18,7 @@ import (
 	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/gamatet/game/setup"
 	"github.com/marko-gacesa/gamatet/graphics/render/rendercache"
+	"github.com/marko-gacesa/gamatet/logic/anim"
 )
 
 var (
@@ -174,6 +175,10 @@ func (f *Field) Render(r *Renderer) {
 	f.renderInfoWG.Wait()
 	f.renderAll(r)
 	f.postRender()
+}
+
+func (f *Field) AddAnim(anim anim.Anim) {
+	f.renderRequester.AddAnim(anim)
 }
 
 func (f *Field) preRender(renderInfo *field.RenderInfo, now time.Time) {

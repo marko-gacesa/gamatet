@@ -5,6 +5,7 @@ package app
 
 import (
 	"math"
+	"math/rand/v2"
 	"time"
 
 	"github.com/marko-gacesa/gamatet/game/block"
@@ -14,6 +15,7 @@ import (
 	"github.com/marko-gacesa/gamatet/game/op"
 	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/gamatet/internal/types"
+	"github.com/marko-gacesa/gamatet/logic/anim"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
@@ -108,6 +110,22 @@ func (app *App) title(ctx screen.Context) types.DemoParams {
 		RotX:  -math.Pi / 16,
 		Demo:  demo,
 		Done:  ctx.Done(),
+
+		// Every 10 seconds for one of these 3 animations.
+
+		AnimFunc: func() anim.Anim {
+			switch rand.Int32N(3) {
+			default:
+				fallthrough
+			case 0:
+				return anim.NewQuake(time.Now(), 5)
+			case 1:
+				return anim.NewYRotLin(time.Now(), 1000*time.Millisecond, float32(2*math.Pi))
+			case 2:
+				return anim.NewXRotLin(time.Now(), 1000*time.Millisecond, float32(2*math.Pi))
+			}
+		},
+		AnimPeriod: 10 * time.Second,
 	}
 }
 
