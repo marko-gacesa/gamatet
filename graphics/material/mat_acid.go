@@ -36,9 +36,9 @@ void main() {
 
 	vec2 uv = fragmentTexture;
 
-    // Color gradient for the acid effect
-    vec3 color1 = vec3(0.0, 1.0, 0.0);
-    vec3 color2 = vec3(0.0, 0.0, 0.0);
+	// Color gradient for the acid effect
+	vec3 color1 = vec3(0.0, 1.0, 0.0);
+	vec3 color2 = vec3(0.0, 0.0, 0.0);
 
 	float intensity = mod(texture(textureSampler, uv).r + time, 1.0);
 	intensity *= intensity;

@@ -43,9 +43,9 @@ const ironFragmentShader = `
 #version 330
 
 struct Light {
-    vec3 position;
-    vec3 color;
-    float intensity;
+	vec3 position;
+	vec3 color;
+	float intensity;
 };
 
 uniform sampler2D textureSampler;
