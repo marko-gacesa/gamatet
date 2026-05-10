@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2025 by Marko Gaćeša
+// Copyright (c) 2023-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package render
@@ -19,6 +19,7 @@ type FieldResources struct {
 
 	MatTexUV material.Material
 	MatNorm  material.Material
+	MatWall  *material.Wall
 	MatRock  *material.Rock
 	MatIron  *material.Iron
 	MatLava  *material.Lava
@@ -26,6 +27,7 @@ type FieldResources struct {
 	MatWave  *material.Curl
 	MatColor *material.Color
 
+	GeomPlane       geometry.Geometry
 	GeomSquareBack  geometry.Geometry
 	GeomCube        geometry.Geometry
 	GeomCubeDent    geometry.Geometry
@@ -57,6 +59,7 @@ func GenerateFieldResources(manager *texture.Manager) *FieldResources {
 
 		MatTexUV: material.TexUV(),
 		MatNorm:  material.Normal(),
+		MatWall:  material.NewWall(texRock),
 		MatRock:  material.NewRock(texRock),
 		MatIron:  material.NewIron(texRock),
 		MatLava:  material.NewLava(texRock),
@@ -64,6 +67,7 @@ func GenerateFieldResources(manager *texture.Manager) *FieldResources {
 		MatWave:  material.NewCurl(texRock),
 		MatColor: material.NewColor(),
 
+		GeomPlane:       geometry.NewSquare0(),
 		GeomSquareBack:  geometry.MakeSquareGeometry(geometry.CubeSideDent),
 		GeomCube:        geometry.MakeCubeGeometry(geometry.CubeSideSimple),
 		GeomCubeDent:    geometry.MakeCubeGeometry(geometry.CubeSideDent),
@@ -79,6 +83,7 @@ func GenerateFieldResources(manager *texture.Manager) *FieldResources {
 }
 
 func (r FieldResources) Release() {
+	r.GeomPlane.Delete()
 	r.GeomSquareBack.Delete()
 	r.GeomCube.Delete()
 	r.GeomCubeDent.Delete()
@@ -91,6 +96,7 @@ func (r FieldResources) Release() {
 	r.GeomStar8.Delete()
 	r.GeomSphere.Delete()
 
+	r.GeomPlane = nil
 	r.GeomSquareBack = nil
 	r.GeomCube = nil
 	r.GeomCubeDent = nil
@@ -105,6 +111,7 @@ func (r FieldResources) Release() {
 
 	r.MatTexUV.Delete()
 	r.MatNorm.Delete()
+	r.MatWall.Delete()
 	r.MatRock.Delete()
 	r.MatIron.Delete()
 	r.MatLava.Delete()

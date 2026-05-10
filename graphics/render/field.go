@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package render
@@ -116,6 +116,7 @@ type Field struct {
 	colorsBack [field.MaxWidth]mgl32.Vec4
 	listsBack  [field.MaxWidth]rendercache.Models
 
+	listWallD rendercache.ModelDimList
 	listWall  rendercache.Models
 	listIron  rendercache.Models
 	listFrame rendercache.Models
@@ -194,6 +195,7 @@ func (f *Field) preRender(renderInfo *field.RenderInfo, now time.Time) {
 	}
 	f.w = w
 
+	f.listWallD = rendercache.ModelDimPool.Get()
 	f.listWall = rendercache.ModelPool.Get()
 	f.listIron = rendercache.ModelPool.Get()
 	f.listFrame = rendercache.ModelPool.Get()
@@ -217,6 +219,7 @@ func (f *Field) postRender() {
 		rendercache.ModelPool.Put(f.listsBack[i])
 	}
 
+	rendercache.ModelDimPool.Put(f.listWallD)
 	rendercache.ModelPool.Put(f.listWall)
 	rendercache.ModelPool.Put(f.listIron)
 	rendercache.ModelPool.Put(f.listFrame)
@@ -631,33 +634,73 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 	// * Frame *
 	// *********
 
-	for x := range contentWidth {
-		f.listWall.Add(modelFrame.Mul4(mgl32.Translate3D(float32(x), float32(0), 0)))
-		f.listWall.Add(modelFrame.Mul4(mgl32.Translate3D(float32(x), float32(contentHeight-1), 0)))
-
-	}
-
-	for y := 1; y < contentHeight-1; y++ {
+	{
+		cw := float32(contentWidth)
+		ch := float32(contentHeight)
+		fw := float32(renderInfo.W)
+		fh := float32(renderInfo.H)
+		var d float32
 		var m mgl32.Mat4
 
-		m = modelFrame.Mul4(mgl32.Translate3D(float32(0), float32(y), 0))
-		f.listWall.Add(m)
-
+		// left wall
+		d = 1
 		if hasLeftPad {
-			for i := range sidePanelBlockWidth {
-				m = modelFrame.Mul4(mgl32.Translate3D(float32(1+i), float32(y), 0))
-				f.listWall.Add(m)
-			}
+			d += sidePanelBlockWidth
 		}
-		if hasRightPad {
-			for i := range sidePanelBlockWidth {
-				m = modelFrame.Mul4(mgl32.Translate3D(float32(contentWidth-2-i), float32(y), 0))
-				f.listWall.Add(m)
-			}
-		}
+		m = modelFrame.
+			Mul4(mgl32.Translate3D(-0.5, -0.5, 0.5)).
+			Mul4(mgl32.Scale3D(d, ch, 1))
+		f.listWallD.Add(m, mgl32.Vec2{d, ch})
 
-		m = modelFrame.Mul4(mgl32.Translate3D(float32(contentWidth-1), float32(y), 0))
-		f.listWall.Add(m)
+		// right wall
+		d = 1
+		if hasRightPad {
+			d += sidePanelBlockWidth
+		}
+		m = modelFrame.
+			Mul4(mgl32.Translate3D(-0.5+cw-d, -0.5, 0.5)).
+			Mul4(mgl32.Scale3D(d, ch, 1))
+		f.listWallD.Add(m, mgl32.Vec2{d, ch})
+
+		// bottom wall
+		m = modelField.
+			Mul4(mgl32.Translate3D(-0.5, -1.5, 0.5)).
+			Mul4(mgl32.Scale3D(fw, 1, 1))
+		f.listWallD.Add(m, mgl32.Vec2{fw, 1})
+
+		// top wall
+		m = modelField.
+			Mul4(mgl32.Translate3D(-0.5, -0.5+fh, 0.5)).
+			Mul4(mgl32.Scale3D(fw, 1, 1))
+		f.listWallD.Add(m, mgl32.Vec2{fw, 1})
+
+		// inner bottom wall
+		m = modelField.
+			Mul4(mgl32.Translate3D(-0.5, -0.5, 0.5)).
+			Mul4(mgl32.HomogRotate3DX(-math.Pi / 2)).
+			Mul4(mgl32.Scale3D(fw, 1, 1))
+		f.listWallD.Add(m, mgl32.Vec2{fw, 1})
+
+		// inner top wall
+		m = modelField.
+			Mul4(mgl32.Translate3D(-0.5, fh-0.5, -0.5)).
+			Mul4(mgl32.HomogRotate3DX(math.Pi / 2)).
+			Mul4(mgl32.Scale3D(fw, 1, 1))
+		f.listWallD.Add(m, mgl32.Vec2{fw, 1})
+
+		// inner left wall
+		m = modelField.
+			Mul4(mgl32.Translate3D(-0.5, -0.5, 0.5)).
+			Mul4(mgl32.HomogRotate3DY(math.Pi / 2)).
+			Mul4(mgl32.Scale3D(1, fh, 1))
+		f.listWallD.Add(m, mgl32.Vec2{1, fh})
+
+		// inner right wall
+		m = modelField.
+			Mul4(mgl32.Translate3D(fw-0.5, -0.5, -0.5)).
+			Mul4(mgl32.HomogRotate3DY(-math.Pi / 2)).
+			Mul4(mgl32.Scale3D(1, fh, 1))
+		f.listWallD.Add(m, mgl32.Vec2{1, fh})
 	}
 
 	// blocks removed info shown on the frame
@@ -702,10 +745,18 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 }
 
 func (f *Field) renderAll(r *Renderer) {
-	r.Material(f.resources.MatRock)
-	r.Geometry(f.resources.GeomCube)
-	f.resources.MatRock.Lights(f.lights)
+	r.Geometry(f.resources.GeomPlane)
+	r.Material(f.resources.MatWall)
+	f.resources.MatWall.Color(colorWall)
+	f.resources.MatWall.Lights(f.lights)
+	for i := range f.listWallD {
+		f.resources.MatWall.Dim(f.listWallD[i].Dim)
+		r.Render(&f.listWallD[i].Model)
+	}
 
+	r.Geometry(f.resources.GeomCube)
+	r.Material(f.resources.MatRock)
+	f.resources.MatRock.Lights(f.lights)
 	f.resources.MatRock.Color(colorWall)
 	for i := range f.listWall {
 		r.Render(&f.listWall[i])

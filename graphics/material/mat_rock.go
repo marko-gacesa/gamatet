@@ -1,13 +1,9 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package material
 
 var _ Material = (*Rock)(nil)
-
-const (
-	MaxLights = 16
-)
 
 func NewRock(tex uint32) *Rock {
 	p, err := newProgramBlock(defaultVertexShader, rockFragmentShader, tex)
@@ -51,16 +47,7 @@ func (p *Rock) ClearChain() {
 }
 
 func (p *Rock) Lights(lights []PointLight) {
-	n := min(int32(len(lights)), MaxLights)
-
-	for i := range n {
-		uniformVec3(p.uniPointLights+i*3, lights[i].Position)
-		uniformVec3(p.uniPointLights+i*3+1, lights[i].Color)
-		uniform1f(p.uniPointLights+i*3+2, lights[i].Intensity)
-	}
-	for i := n; i < MaxLights; i++ {
-		uniform1f(p.uniPointLights+i*3+2, 0)
-	}
+	setLights(p.uniPointLights, lights)
 }
 
 const rockFragmentShader = `

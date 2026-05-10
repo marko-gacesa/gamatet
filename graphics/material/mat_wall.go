@@ -1,45 +1,49 @@
-// Copyright (c) 2024-2026 by Marko Gaćeša
+// Copyright (c) 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package material
 
-var _ Material = (*Iron)(nil)
+import "github.com/go-gl/mathgl/mgl32"
 
-func NewIron(tex uint32) *Iron {
-	p, err := newProgramBlock(defaultVertexShader, ironFragmentShader, tex)
+var _ Material = (*Wall)(nil)
+
+func NewWall(tex uint32) *Wall {
+	p, err := newProgramBlock(defaultVertexShader, wallFragmentShader, tex)
 	if err != nil {
-		panic("failed to make rock material: " + err.Error())
+		panic("failed to make wall material: " + err.Error())
 	}
 
 	const (
+		uniPlaneDim    = "planeDim"
 		uniPointLights = "pointLights[0].position"
 	)
 
-	return &Iron{
+	return &Wall{
 		programBlock:   *p,
 		uniPointLights: p.uniformLocation(uniPointLights),
+		uniPlaneDim:    p.uniformLocation(uniPlaneDim),
 	}
 }
 
-type Iron struct {
+type Wall struct {
 	programBlock
 	uniPointLights int32
+	uniPlaneDim    int32
 }
 
-func (p *Iron) Lights(lights []PointLight) {
-	n := min(int32(len(lights)), MaxLights)
-
-	for i := range n {
-		uniformVec3(p.uniPointLights+i*3, lights[i].Position)
-		uniformVec3(p.uniPointLights+i*3+1, lights[i].Color)
-		uniform1f(p.uniPointLights+i*3+2, lights[i].Intensity)
-	}
-	for i := n; i < MaxLights; i++ {
-		uniform1f(p.uniPointLights+i*3+2, 0)
-	}
+func (p *Wall) Use() {
+	p.programBlock.Use()
 }
 
-const ironFragmentShader = `
+func (p *Wall) Dim(d mgl32.Vec2) {
+	uniformVec2(p.uniPlaneDim, d)
+}
+
+func (p *Wall) Lights(lights []PointLight) {
+	setLights(p.uniPointLights, lights)
+}
+
+const wallFragmentShader = `
 #version 330
 
 struct Light {
@@ -52,8 +56,7 @@ uniform sampler2D textureSampler;
 uniform vec4 objectColor;
 uniform vec3 lightDirection;
 uniform Light pointLights[16];
-uniform sampler2D textureSamplerChain;
-uniform int shouldDrawChain;
+uniform vec2 planeDim;
 
 in vec2 fragmentTexture;
 in vec3 fragmentNormal;
@@ -83,26 +86,8 @@ void main() {
 
 	vec3 ambientColor = vec3(0.1);
 
-	if (shouldDrawChain > 0) {
-		float chain = texture(textureSamplerChain, fragmentTexture).r;
-		if (chain > 0.0) {
-			vec3 rgb = min(chain * (ambientColor + scatteredLight), vec3(1.0));
-			outputColor = vec4(rgb, 1);
-			return;
-		}
-	}
-
 	vec3 rgb = min(objectColor.rgb * (ambientColor + scatteredLight), vec3(1.0));
-	vec2 uv = fragmentTexture;
-
-	if (uv.x > 0.1 && uv.x < 0.9 && uv.y > 0.1 && uv.y < 0.9) {
-		uv.x = mod(uv.x*0.15, 1.0);
-		float gray = texture(textureSampler, uv).r;
-		gray = mix(0.8, 1.0, gray);
-		outputColor = vec4(gray * rgb, objectColor.a);
-	} else {
-		float gray = texture(textureSampler, uv).r;
-		gray = mix(0.5, 1.0, gray);
-		outputColor = vec4(gray * rgb, objectColor.a);
-	}
+	float gray = texture(textureSampler, mod(fragmentTexture * planeDim, 1.0)).r;
+	gray = mix(0.6, 1.0, gray);
+	outputColor = vec4(gray * rgb, 1);
 }` + z
