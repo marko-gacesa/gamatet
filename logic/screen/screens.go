@@ -5,6 +5,8 @@ package screen
 
 import (
 	"time"
+
+	"github.com/marko-gacesa/gamatet/logic/gamepad"
 )
 
 type Screens []Screen
@@ -32,6 +34,12 @@ func (screens Screens) InputKeyPress(key int, act KeyAction) {
 func (screens Screens) InputChar(char rune) {
 	for _, s := range screens {
 		s.InputChar(char)
+	}
+}
+
+func (screens Screens) InputGamepadPress(gamepadIdx int, b gamepad.ButtonChange) {
+	for _, s := range screens {
+		s.InputGamepadPress(gamepadIdx, b)
 	}
 }
 

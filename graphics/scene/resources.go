@@ -36,9 +36,15 @@ func (r Resources) Screen(ctx screen.Context, data ...any) screen.Screen {
 				NewMenu(r.rend, r.tex, v),
 			}
 		case types.GameParams:
-			return NewGame(r.rend, r.tex, v)
+			return screen.Screens{
+				NewBackground(r.rend, r.tex),
+				NewGame(r.rend, r.tex, v),
+			}
 		case types.GameOneParams:
-			return NewGameOne(r.rend, r.tex, v)
+			return screen.Screens{
+				NewBackground(r.rend, r.tex),
+				NewGameOne(r.rend, r.tex, v),
+			}
 		case types.DemoParams:
 			return NewDemo(r.rend, r.tex, v)
 		}

@@ -192,6 +192,8 @@ const (
 	KeyConfigPlayerTitle                 = "config_player_title"
 	KeyConfigPlayerName                  = "config_player_name"
 	KeyConfigPlayerNameDesc              = "config_player_name_desc"
+	KeyConfigPlayerInputDevice           = "config_player_input_device"
+	KeyConfigPlayerInputDeviceDesc       = "config_player_input_device_desc"
 	KeyConfigPlayerControl               = "config_player_control"
 	KeyConfigPlayerControlDesc           = "config_player_control_desc"
 	KeyConfigPlayerKeyLeft               = "config_player_key_left"
@@ -228,6 +230,10 @@ const (
 	KeyPieceSize3                     = "piece_size_3"
 	KeyPieceSize4                     = "piece_size_4"
 	KeyPieceSize5                     = "piece_size_5"
+
+	KeyInputSourceKeyboard = "input_source_keyboard"
+	KeyInputSourceGamepad  = "input_source_gamepad"
+	KeyDeviceNotConnected  = "device_not_connected"
 
 	KeyRotationDirCW  = "rotation_dir_cw"
 	KeyRotationDirCCW = "rotation_dir_ccw"

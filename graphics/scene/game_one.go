@@ -1,4 +1,4 @@
-// Copyright (c) 2024, 2025 by Marko Gaćeša
+// Copyright (c) 2024-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package scene
@@ -6,7 +6,6 @@ package scene
 import (
 	"time"
 
-	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 
 	"github.com/marko-gacesa/gamatet/game/action"
@@ -15,8 +14,9 @@ import (
 	"github.com/marko-gacesa/gamatet/graphics/scene/base"
 	"github.com/marko-gacesa/gamatet/graphics/scene/hud"
 	"github.com/marko-gacesa/gamatet/graphics/texture"
-	"github.com/marko-gacesa/gamatet/internal/config/key"
+	"github.com/marko-gacesa/gamatet/internal/config"
 	"github.com/marko-gacesa/gamatet/internal/types"
+	"github.com/marko-gacesa/gamatet/logic/gamepad"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
@@ -27,7 +27,7 @@ type GameOne struct {
 	huds *hud.HUDs
 
 	playerInCh chan<- []byte
-	input      key.Input
+	input      config.Input
 
 	model       mgl32.Mat4
 	game        core.RenderRequester
@@ -93,33 +93,19 @@ func (ft *GameOne) Release() {
 
 func (ft *GameOne) InputKeyPress(key int, act screen.KeyAction) {
 	ft.BlockBase.InputKeyPress(key, act)
-
-	if act == screen.KeyActionPress {
-		switch glfw.Key(key) {
-		case glfw.KeyEscape:
-			ft.actionCh <- action.Abort
-		case glfw.KeyPause:
-			ft.actionCh <- action.Pause
-
-		case KeyMap[ft.input.Left]:
-			base.SendAction(action.MoveLeft, ft.waitDoneCh, ft.playerInCh)
-		case KeyMap[ft.input.Right]:
-			base.SendAction(action.MoveRight, ft.waitDoneCh, ft.playerInCh)
-		case KeyMap[ft.input.Activate]:
-			base.SendAction(action.Activate, ft.waitDoneCh, ft.playerInCh)
-		case KeyMap[ft.input.Boost]:
-			base.SendAction(action.SpeedUp, ft.waitDoneCh, ft.playerInCh)
-		case KeyMap[ft.input.Drop]:
-			base.SendAction(action.Drop, ft.waitDoneCh, ft.playerInCh)
-		}
-	} else if act == screen.KeyActionRelease {
-		switch glfw.Key(key) {
-		case KeyMap[ft.input.Boost]:
-			base.SendAction(action.SpeedDown, ft.waitDoneCh, ft.playerInCh)
-		}
-	}
-
 	ft.huds.InputKeyPress(key, act)
+
+	inputKeyboardGlobal(key, act, ft.actionCh)
+
+	if ft.input.Source == config.InputSourceKeyboard {
+		inputKeyboardPlayer(key, act, ft.input.Keys, ft.waitDoneCh, ft.playerInCh)
+	}
+}
+
+func (ft *GameOne) InputGamepadPress(gamepadIdx int, b gamepad.ButtonChange) {
+	if ft.input.Source == config.InputSourceGamepad && ft.input.Gamepad == gamepadIdx {
+		inputGamepad(b, ft.actionCh, ft.waitDoneCh, ft.playerInCh)
+	}
 }
 
 func (ft *GameOne) Prepare(now time.Time) {

@@ -17,6 +17,7 @@ import (
 	"github.com/marko-gacesa/gamatet/graphics/scene"
 	"github.com/marko-gacesa/gamatet/internal/app"
 	"github.com/marko-gacesa/gamatet/internal/values"
+	"github.com/marko-gacesa/gamatet/logic/gamepad"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
@@ -89,6 +90,14 @@ func Loop(globalCtx context.Context, app *app.App) error {
 
 	var scr screen.Screen
 
+	// Find gamepads
+
+	for joy := glfw.Joystick1; joy <= glfw.JoystickLast; joy++ {
+		if joy.IsGamepad() && joy.Present() {
+			connectGamepad(joy, log)
+		}
+	}
+
 	// Callbacks
 
 	window.SetSizeCallback(func(window *glfw.Window, w int, h int) {
@@ -113,6 +122,17 @@ func Loop(globalCtx context.Context, app *app.App) error {
 	window.SetCharCallback(func(w *glfw.Window, char rune) {
 		if scr != nil {
 			scr.InputChar(char)
+		}
+	})
+
+	glfw.SetJoystickCallback(func(joy glfw.Joystick, event glfw.PeripheralEvent) {
+		if joy.IsGamepad() {
+			switch event {
+			case glfw.Connected:
+				connectGamepad(joy, log)
+			case glfw.Disconnected:
+				disconnectGamepad(joy, log)
+			}
 		}
 	})
 
@@ -164,6 +184,10 @@ func Loop(globalCtx context.Context, app *app.App) error {
 					scr.InputKeyPress(int(keyEvent.Key), keypress.ConvertAction(keyEvent.Action))
 				}
 				keyEvents = keyEvents[:0]
+
+				for gamepadIdx := range gamepad.Gamepads {
+					processGamepad(gamepadIdx, scr)
+				}
 			}
 		}(ctxLoop)
 

@@ -189,6 +189,8 @@ config_edit_player_desc               = The game supports four players that can 
 config_player_title                   = Edit player %d
 config_player_name                    = Name
 config_player_name_desc               = Name of the player. Important for multi-player games over network.
+config_player_input_device            = Input device
+config_player_input_device_desc       = Source device of the player's input: keyboard or a gamepad.
 config_player_control                 = Control
 config_player_control_desc            = Keyboard keys used to control the active piece during a game.
 config_player_key_left                = Left
@@ -232,6 +234,10 @@ piece_type_v_mirroring_polyominoes = Vertical Mirroring Polyominoes
 piece_size_3 = Miniminoes
 piece_size_4 = Tetrominoes
 piece_size_5 = Pentominoes
+
+input_source_keyboard = Keyboard
+input_source_gamepad  = Gamepad
+device_not_connected  = Not connected
 
 rotation_dir_cw  = Clockwise
 rotation_dir_ccw = Counterclockwise

@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package scene
@@ -6,7 +6,6 @@ package scene
 import (
 	"time"
 
-	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 
 	"github.com/marko-gacesa/gamatet/game/action"
@@ -16,8 +15,9 @@ import (
 	"github.com/marko-gacesa/gamatet/graphics/scene/base"
 	"github.com/marko-gacesa/gamatet/graphics/scene/hud"
 	"github.com/marko-gacesa/gamatet/graphics/texture"
-	"github.com/marko-gacesa/gamatet/internal/config/key"
+	"github.com/marko-gacesa/gamatet/internal/config"
 	"github.com/marko-gacesa/gamatet/internal/types"
+	"github.com/marko-gacesa/gamatet/logic/gamepad"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
@@ -28,7 +28,7 @@ type Game struct {
 	huds *hud.HUDs
 
 	playersInCh [setup.MaxLocalPlayers]chan<- []byte
-	inputs      [setup.MaxLocalPlayers]key.Input
+	inputs      [setup.MaxLocalPlayers]config.Input
 
 	model        mgl32.Mat4
 	game         core.RenderRequester
@@ -159,41 +159,23 @@ func (ft *Game) Release() {
 
 func (ft *Game) InputKeyPress(key int, act screen.KeyAction) {
 	ft.BlockBase.InputKeyPress(key, act)
+	ft.huds.InputKeyPress(key, act)
 
-	k := glfw.Key(key)
+	inputKeyboardGlobal(key, act, ft.actionCh)
 
-	if act == screen.KeyActionPress {
-		switch k {
-		case glfw.KeyEscape:
-			ft.actionCh <- action.Abort
-		case glfw.KeyPause:
-			ft.actionCh <- action.Pause
-		}
-
-		for i := range setup.MaxLocalPlayers {
-			switch k {
-			case KeyMap[ft.inputs[i].Left]:
-				base.SendAction(action.MoveLeft, ft.waitDoneCh, ft.playersInCh[i])
-			case KeyMap[ft.inputs[i].Right]:
-				base.SendAction(action.MoveRight, ft.waitDoneCh, ft.playersInCh[i])
-			case KeyMap[ft.inputs[i].Activate]:
-				base.SendAction(action.Activate, ft.waitDoneCh, ft.playersInCh[i])
-			case KeyMap[ft.inputs[i].Boost]:
-				base.SendAction(action.SpeedUp, ft.waitDoneCh, ft.playersInCh[i])
-			case KeyMap[ft.inputs[i].Drop]:
-				base.SendAction(action.Drop, ft.waitDoneCh, ft.playersInCh[i])
-			}
-		}
-	} else if act == screen.KeyActionRelease {
-		for i := range setup.MaxLocalPlayers {
-			switch k {
-			case KeyMap[ft.inputs[i].Boost]:
-				base.SendAction(action.SpeedDown, ft.waitDoneCh, ft.playersInCh[i])
-			}
+	for i := range setup.MaxLocalPlayers {
+		if ft.inputs[i].Source == config.InputSourceKeyboard {
+			inputKeyboardPlayer(key, act, ft.inputs[i].Keys, ft.waitDoneCh, ft.playersInCh[i])
 		}
 	}
+}
 
-	ft.huds.InputKeyPress(key, act)
+func (ft *Game) InputGamepadPress(gamepadIdx int, b gamepad.ButtonChange) {
+	for i := range setup.MaxLocalPlayers {
+		if ft.inputs[i].Source == config.InputSourceGamepad && ft.inputs[i].Gamepad == gamepadIdx {
+			inputGamepad(b, ft.actionCh, ft.waitDoneCh, ft.playersInCh[i])
+		}
+	}
 }
 
 func (ft *Game) Prepare(now time.Time) {

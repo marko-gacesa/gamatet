@@ -14,6 +14,7 @@ The game features:
 * Different piece types: rotating or mirroring.
 * Different piece sizes: trominoes, tetrominoes or pentominoes.
 * Various special pieces and blocks.
+* Keyboard or Gamepad input.
 
 From technical point, the game features:
 * Small size: The entire game is just a *single 7MB executable* file.
@@ -55,7 +56,6 @@ The project has also been my playground. A place where I could try out different
 ### Wish list
 
 * There's no sound. I don't want music, because people can (and should) play their own favourite music. But I would like to have sound effects. And I would like them, in the spirit of the project, to be procedurally generated if possible.
-* The only input device currently supported is keyboard. I don't think mouse input is necessary for a game like this, but I would like to support game controllers.
 * Terminal rendering.
 * Different game types.
 

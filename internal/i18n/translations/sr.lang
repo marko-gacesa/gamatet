@@ -189,6 +189,8 @@ config_edit_player_desc               = Четири играча могу да 
 config_player_title                   = Измена играча %d
 config_player_name                    = Име
 config_player_name_desc               = Име играча је важно за игре више играча преко мреже.
+config_player_input_device            = Уређај
+config_player_input_device_desc       = Уређај за издавање команди: тастатура или гејмпед.
 config_player_control                 = Контрола
 config_player_control_desc            = Тастери који је користе за управљање тренутне фигуре током игре.
 config_player_key_left                = Лево
@@ -232,6 +234,10 @@ piece_type_v_mirroring_polyominoes = Вертикално-пресликавај
 piece_size_3 = Минимине
 piece_size_4 = Тетромине
 piece_size_5 = Пентамине
+
+input_source_keyboard = Тастатура
+input_source_gamepad  = Гејмпед
+device_not_connected  = Није повезан
 
 rotation_dir_cw  = У смеру казаљке на сату
 rotation_dir_ccw = Супротно од смера казаљке на сату

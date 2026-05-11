@@ -1,4 +1,4 @@
-// Copyright (c) 2024, 2025 by Marko Gaćeša
+// Copyright (c) 2024-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package scene
@@ -14,6 +14,7 @@ import (
 	"github.com/marko-gacesa/gamatet/graphics/render"
 	"github.com/marko-gacesa/gamatet/graphics/scene/base"
 	"github.com/marko-gacesa/gamatet/graphics/texture"
+	"github.com/marko-gacesa/gamatet/logic/gamepad"
 	"github.com/marko-gacesa/gamatet/logic/menu"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
@@ -132,6 +133,31 @@ func (m *Menu) InputKeyPress(key int, act screen.KeyAction) {
 func (m *Menu) InputChar(r rune) {
 	if unicode.IsGraphic(r) {
 		m.menu.Input(r)
+	}
+}
+
+func (m *Menu) InputGamepadPress(gamepadIdx int, b gamepad.ButtonChange) {
+	if b.Change != gamepad.Press {
+		return
+	}
+
+	switch b.Button {
+	case gamepad.ButtonUp:
+		m.menu.Previous()
+	case gamepad.ButtonDown:
+		m.menu.Next()
+	case gamepad.ButtonLeft:
+		m.menu.Decrease()
+	case gamepad.ButtonRight:
+		m.menu.Increase()
+	case gamepad.ButtonPadDown, gamepad.ButtonForward:
+		m.menu.Input(menu.InputEnter)
+	case gamepad.ButtonPadLeft:
+		m.menu.Input(menu.InputBackspace)
+	case gamepad.ButtonPadUp:
+		m.menu.Input(menu.InputDelete)
+	case gamepad.ButtonBack, gamepad.ButtonPadRight:
+		m.menu.Input(menu.InputEscape)
 	}
 }
 

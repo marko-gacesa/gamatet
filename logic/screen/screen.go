@@ -1,10 +1,12 @@
-// Copyright (c) 2024, 2025 by Marko Gaćeša
+// Copyright (c) 2024-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package screen
 
 import (
 	"time"
+
+	"github.com/marko-gacesa/gamatet/logic/gamepad"
 )
 
 // Screen abstracts screen rendering.
@@ -15,11 +17,14 @@ type Screen interface {
 	// Release should be called to release any allocated resources.
 	Release()
 
-	// InputKeyPress handles keyboard key press event
+	// InputKeyPress handles keyboard key press event.
 	InputKeyPress(key int, act KeyAction)
 
 	// InputChar handles keyboard input.
 	InputChar(char rune)
+
+	// InputGamepadPress handles gamepad key press.
+	InputGamepadPress(gamepadIdx int, b gamepad.ButtonChange)
 
 	// Prepare should be called prior to the Render and can be used asynchronously prepare render data.
 	Prepare(now time.Time)

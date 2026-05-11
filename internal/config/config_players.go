@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package config
@@ -6,7 +6,6 @@ package config
 import (
 	"github.com/marko-gacesa/gamatet/game/piece"
 	"github.com/marko-gacesa/gamatet/game/setup"
-	"github.com/marko-gacesa/gamatet/internal/config/key"
 )
 
 type LocalPlayers struct {
@@ -17,7 +16,7 @@ func (cfg *LocalPlayers) Sanitize() {
 	cfg.Infos = sliceFixLen(cfg.Infos, setup.MaxLocalPlayers, func(idx int) PlayerInfo {
 		return PlayerInfo{
 			Name:  "",
-			Input: key.DefaultInput[idx%len(key.DefaultInput)],
+			Input: DefaultInput(idx),
 			GameConfig: Player{
 				RotationDirectionCW: false,
 				SlideDisabled:       false,
@@ -32,8 +31,8 @@ func (cfg *LocalPlayers) Sanitize() {
 
 }
 
-func (cfg *LocalPlayers) Inputs() [setup.MaxLocalPlayers]key.Input {
-	var inputs [setup.MaxLocalPlayers]key.Input
+func (cfg *LocalPlayers) Inputs() [setup.MaxLocalPlayers]Input {
+	var inputs [setup.MaxLocalPlayers]Input
 	for i := range min(len(cfg.Infos), setup.MaxLocalPlayers) {
 		inputs[i] = cfg.Infos[i].Input
 	}
@@ -41,9 +40,9 @@ func (cfg *LocalPlayers) Inputs() [setup.MaxLocalPlayers]key.Input {
 }
 
 type PlayerInfo struct {
-	Name       string    `json:"name"`
-	Input      key.Input `json:"input"`
-	GameConfig Player    `json:"game_config"`
+	Name       string `json:"name"`
+	Input      Input  `json:"input"`
+	GameConfig Player `json:"game_config"`
 }
 
 func (cfg *PlayerInfo) Sanitize(idx int) {

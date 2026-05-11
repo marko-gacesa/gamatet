@@ -12,6 +12,7 @@ import (
 	"github.com/marko-gacesa/gamatet/game/action"
 	"github.com/marko-gacesa/gamatet/graphics/render"
 	"github.com/marko-gacesa/gamatet/graphics/texture"
+	"github.com/marko-gacesa/gamatet/logic/gamepad"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
@@ -37,8 +38,9 @@ func (s Base) UpdateViewSize(w, h int) {}
 
 func (s Base) Release() {}
 
-func (s Base) InputKeyPress(key int, action screen.KeyAction) {}
-func (s Base) InputChar(char rune)                            {}
+func (s Base) InputKeyPress(key int, action screen.KeyAction)           {}
+func (s Base) InputChar(char rune)                                      {}
+func (s Base) InputGamepadPress(gamepadIdx int, b gamepad.ButtonChange) {}
 
 func (s Base) Prepare(time.Time) {}
 func (s Base) Render()           {}
