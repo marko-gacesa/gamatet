@@ -12,6 +12,14 @@ import (
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
+func findGamepads(log *slog.Logger) {
+	for joy := glfw.Joystick1; joy <= glfw.JoystickLast; joy++ {
+		if joy.IsGamepad() && joy.Present() {
+			connectGamepad(joy, log)
+		}
+	}
+}
+
 func connectGamepad(joy glfw.Joystick, log *slog.Logger) {
 	number := gamepad.Connect(int(joy), joy.GetGamepadName(), joy.GetGUID())
 	if number >= 0 {
@@ -47,6 +55,12 @@ var _gamepadButtonMap = map[glfw.GamepadButton]gamepad.Button{
 	glfw.ButtonDpadDown:  gamepad.ButtonDown,
 	glfw.ButtonDpadLeft:  gamepad.ButtonLeft,
 	glfw.ButtonDpadRight: gamepad.ButtonRight,
+}
+
+func processGamepads(scr screen.Screen) {
+	for gamepadIdx := range gamepad.Gamepads {
+		processGamepad(gamepadIdx, scr)
+	}
 }
 
 func processGamepad(gamepadIdx int, scr screen.Screen) {

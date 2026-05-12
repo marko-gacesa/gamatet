@@ -17,7 +17,6 @@ import (
 	"github.com/marko-gacesa/gamatet/graphics/scene"
 	"github.com/marko-gacesa/gamatet/internal/app"
 	"github.com/marko-gacesa/gamatet/internal/values"
-	"github.com/marko-gacesa/gamatet/logic/gamepad"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
@@ -92,11 +91,7 @@ func Loop(globalCtx context.Context, app *app.App) error {
 
 	// Find gamepads
 
-	for joy := glfw.Joystick1; joy <= glfw.JoystickLast; joy++ {
-		if joy.IsGamepad() && joy.Present() {
-			connectGamepad(joy, log)
-		}
-	}
+	findGamepads(log)
 
 	// Callbacks
 
@@ -167,8 +162,6 @@ func Loop(globalCtx context.Context, app *app.App) error {
 
 			scr.UpdateViewSize(window.GetFramebufferSize())
 
-			keyEvents := make([]keypress.KeyEvent, 0, 8)
-
 			for isActive(done) {
 				scr.Prepare(time.Now())
 
@@ -179,15 +172,8 @@ func Loop(globalCtx context.Context, app *app.App) error {
 				window.SwapBuffers()
 				glfw.PollEvents()
 
-				keyEvents = keyArbiter.Events(keyEvents)
-				for _, keyEvent := range keyEvents {
-					scr.InputKeyPress(int(keyEvent.Key), keypress.ConvertAction(keyEvent.Action))
-				}
-				keyEvents = keyEvents[:0]
-
-				for gamepadIdx := range gamepad.Gamepads {
-					processGamepad(gamepadIdx, scr)
-				}
+				processKeyboard(scr, keyArbiter)
+				processGamepads(scr)
 			}
 		}(ctxLoop)
 
