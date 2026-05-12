@@ -230,6 +230,7 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 		LocalPlayerActionCh: localPlayerCh,
 		SinceLastContactFn:  cli.SinceLastServerMessage,
 		Latencies:           latencies,
+		StartPaused:         true,
 	})
 
 	// Go-routine for processing events for the field

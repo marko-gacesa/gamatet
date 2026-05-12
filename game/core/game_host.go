@@ -48,8 +48,9 @@ type GameHost struct {
 
 type HostOptions struct {
 	field.RenderOptions
-	Latencies *latency.List
-	Init      func(f *field.Field, p event.Pusher)
+	Latencies   *latency.List
+	Init        func(f *field.Field, p event.Pusher)
+	StartPaused bool
 }
 
 type hostFieldData struct {
@@ -259,6 +260,14 @@ func (g *GameHost) Perform(ctx context.Context) {
 	})
 
 	g.applyEvents()
+
+	if g.options.StartPaused {
+		g.paused = true
+		for fIdx, f := range g.fields {
+			f.Field.SetMode(field.ModePause)
+			g._pauseField(fIdx)
+		}
+	}
 
 	for {
 		for i := range g.fields {

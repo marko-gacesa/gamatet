@@ -226,7 +226,8 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 		Fields:   fields,
 		ActionCh: actionCh,
 	}, core.HostOptions{
-		Latencies: latencies,
+		Latencies:   latencies,
+		StartPaused: true,
 	})
 
 	// Go-routine for processing events for the field.

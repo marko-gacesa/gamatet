@@ -42,6 +42,7 @@ type InterpreterOptions struct {
 	LocalPlayerActionCh chan<- []byte
 	SinceLastContactFn  func() time.Duration
 	Latencies           *latency.List
+	StartPaused         bool
 }
 
 type interpreterFieldData struct {
@@ -138,6 +139,12 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 	fieldsDoneCh := channel.JoinSlicePtr(g.doneCh, g.fields, func(fd *interpreterFieldData) <-chan struct{} {
 		return fd.Field.GetDone()
 	})
+
+	if g.options.StartPaused {
+		for _, f := range g.fields {
+			f.Field.SetMode(field.ModePause)
+		}
+	}
 
 	defer close(g.doneCh)
 

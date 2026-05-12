@@ -99,7 +99,9 @@ func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {
 		ActionCh: actionCh,
 	}
 
-	g := core.MakeHost(gameSetup, core.HostOptions{})
+	g := core.MakeHost(gameSetup, core.HostOptions{
+		StartPaused: true,
+	})
 
 	// go-routine for processing events for the field
 	go func() {
