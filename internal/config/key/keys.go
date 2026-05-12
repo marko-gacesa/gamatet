@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package key
@@ -53,9 +53,12 @@ func (k *Key) UnmarshalJSON(b []byte) error {
 	if len(s) < 2 || s[0] != '"' || s[len(s)-1] != '"' {
 		return fmt.Errorf("invalid key: %s", s)
 	}
+
+	s = s[1 : len(s)-1]
 	for kk, v := range Map {
 		if v == s {
 			*k = kk
+			return nil
 		}
 	}
 	*k = Unknown

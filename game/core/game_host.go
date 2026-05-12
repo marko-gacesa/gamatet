@@ -96,6 +96,7 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 
 			ctrl.PlayerIndex = byte(players[j].Index)
 			ctrl.Name = players[j].Name
+			ctrl.ControlsStr = players[j].ControlsStr
 			ctrl.Feed = piece.NewCtrlFeed(setup.Config.PieceFeed, i, j, setup.Config.SamePieces)
 			ctrl.Config = players[j].Config
 			ctrl.SetLevel(uint(setup.Config.Level))

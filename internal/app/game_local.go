@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package app
@@ -38,6 +38,8 @@ func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {
 		fieldW = s.WidthPerPlayer
 	}
 
+	localPlayerInputs := app.cfg.LocalPlayers.Inputs()
+
 	fieldChs := make([]chan []byte, fieldCount)
 	for i := range fieldChs {
 		fieldChs[i] = make(chan []byte)
@@ -57,11 +59,13 @@ func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {
 
 		for fieldPlayerIdx := range players {
 			players[fieldPlayerIdx] = core.PlayerSetup{
-				Name:    playerName(app.cfg.LocalPlayers.Infos[playerIndex].Name, fieldIdx, fieldPlayerIdx, playerIndex),
-				Config:  piece.Config(app.cfg.LocalPlayers.Infos[playerIndex].GameConfig),
-				IsLocal: true,
-				Index:   playerIndex,
-				InCh:    playerOutChs[playerIndex],
+				Name:        playerName(app.cfg.LocalPlayers.Infos[playerIndex].Name, fieldIdx, fieldPlayerIdx, playerIndex),
+				Config:      piece.Config(app.cfg.LocalPlayers.Infos[playerIndex].GameConfig),
+				IsLocal:     true,
+				LocalIndex:  playerIndex,
+				Index:       playerIndex,
+				ControlsStr: gameInput(localPlayerInputs[playerIndex]),
+				InCh:        playerOutChs[playerIndex],
 			}
 
 			playerIndex++
@@ -113,7 +117,7 @@ func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {
 
 	return types.GameParams{
 		PlayerInCh:   playerInChs,
-		PlayerInputs: app.cfg.LocalPlayers.Inputs(),
+		PlayerInputs: localPlayerInputs,
 		FieldCount:   fieldCount,
 		ActionCh:     actionCh,
 		Game:         g,

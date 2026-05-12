@@ -1,4 +1,4 @@
-// Copyright (c) 2024, 2025 by Marko Gaćeša
+// Copyright (c) 2024-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package app
@@ -20,6 +20,8 @@ func (app *App) gameSinglePlayer(ctx screen.Context) types.GameOneParams {
 		s = *app.resultSetup
 	}
 	s.Sanitize()
+
+	localPlayerInputs := app.cfg.LocalPlayers.Inputs()
 
 	fieldCh := make(chan []byte)
 	playerPipe := channel.MakePipe[[]byte]()
@@ -50,11 +52,13 @@ func (app *App) gameSinglePlayer(ctx screen.Context) types.GameOneParams {
 				OutCh: fieldCh,
 				Players: []core.PlayerSetup{
 					{
-						Name:    "", // no need to show name for single player
-						Config:  piece.Config(app.cfg.LocalPlayers.Infos[0].GameConfig),
-						IsLocal: true,
-						Index:   0,
-						InCh:    playerOutCh,
+						Name:        "", // no need to show name for single player
+						Config:      piece.Config(app.cfg.LocalPlayers.Infos[0].GameConfig),
+						IsLocal:     true,
+						LocalIndex:  0,
+						Index:       0,
+						ControlsStr: gameInput(localPlayerInputs[0]),
+						InCh:        playerOutCh,
 					},
 				},
 			},
@@ -78,7 +82,7 @@ func (app *App) gameSinglePlayer(ctx screen.Context) types.GameOneParams {
 
 	return types.GameOneParams{
 		PlayerInCh:  playerInCh,
-		PlayerInput: app.cfg.LocalPlayers.Infos[0].Input,
+		PlayerInput: localPlayerInputs[0],
 		ActionCh:    actionCh,
 		Game:        g,
 		Done:        ctx.Done(),

@@ -80,11 +80,12 @@ type FieldStrings struct {
 		Blocks string
 	}
 	SidePanel struct {
-		Player string
-		Score  string
-		Piece  string
-		Level  string
-		Next   string
+		Player   string
+		Score    string
+		Piece    string
+		Level    string
+		Next     string
+		Controls string
 	}
 	Message struct {
 		GameOver   string
@@ -563,12 +564,21 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, f.str.SidePanel.Piece, p.PieceTextData.PieceNum, hDir)
 		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, f.str.SidePanel.Level, p.PieceTextData.Level, hDir)
 
+		if renderInfo.Mode == field.ModePause && p.PieceTextData.Controls != nil {
+			f.printLabel(&modelInfo, colorLabel, 0.5, f.str.SidePanel.Controls, hDir)
+			modelControls := modelInfo.Mul4(mgl32.Translate3D((sidePanelBlockWidth+1)/2, 0, 0))
+			for _, s := range p.PieceTextData.Controls {
+				f.printTextCenter(modelControls, colorPlayerText, 0.5, s)
+				modelControls = modelControls.Mul4(mgl32.Translate3D(0, hDir*0.5, 0))
+			}
+		}
+
 		if len(p.NextPieces[0].Blocks) == 0 {
 			continue
 		}
 
 		modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, 0.2*hDir, 0))
-		f.printLabel(&modelInfo, colorLabel, f.str.SidePanel.Next, hDir)
+		f.printLabel(&modelInfo, colorLabel, scaleLabel, f.str.SidePanel.Next, hDir)
 
 		modelNextBlocks := modelInfo.
 			Mul4(mgl32.Translate3D((1.0+sidePanelBlockWidth)/2, 0.1*hDir, 0.5))
@@ -963,7 +973,7 @@ func (f *Field) printLabelAndValue(modelInfo *mgl32.Mat4, colorLabel, colorText 
 	*modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, hDir*(ht+hv+padding), 0))
 }
 
-func (f *Field) printLabel(modelInfo *mgl32.Mat4, colorText mgl32.Vec4, s string, hDir float32) {
+func (f *Field) printLabel(modelInfo *mgl32.Mat4, colorText mgl32.Vec4, scaleLabel float32, s string, hDir float32) {
 	var w, h float32
 	w, h = f.text.Dim(s)
 	w, h = scaleLabel*w, scaleLabel*h
@@ -989,6 +999,14 @@ func (f *Field) printTextRight(m mgl32.Mat4, colorText mgl32.Vec4, scaleText flo
 	w, _ := f.text.Dim(text)
 	w *= scaleText
 	m = m.Mul4(mgl32.Translate3D(-w, 0, 0))
+	f.listStr.Add(m.Mul4(mgl32.Scale3D(scaleText, scaleText, 1.0)), colorText, text)
+	return w
+}
+
+func (f *Field) printTextCenter(m mgl32.Mat4, colorText mgl32.Vec4, scaleText float32, text string) float32 {
+	w, _ := f.text.Dim(text)
+	w *= scaleText
+	m = m.Mul4(mgl32.Translate3D(-w/2, 0, 0))
 	f.listStr.Add(m.Mul4(mgl32.Scale3D(scaleText, scaleText, 1.0)), colorText, text)
 	return w
 }

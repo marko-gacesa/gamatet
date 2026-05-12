@@ -17,17 +17,19 @@ func fieldStrings() render.FieldStrings {
 			Blocks: T(KeyFieldTitlePanelBlocks),
 		},
 		SidePanel: struct {
-			Player string
-			Score  string
-			Piece  string
-			Level  string
-			Next   string
+			Player   string
+			Score    string
+			Piece    string
+			Level    string
+			Next     string
+			Controls string
 		}{
-			Player: T(KeyFieldSidePanelPlayer),
-			Score:  T(KeyFieldSidePanelScore),
-			Piece:  T(KeyFieldSidePanelPiece),
-			Level:  T(KeyFieldSidePanelLevel),
-			Next:   T(KeyFieldSidePanelNext),
+			Player:   T(KeyFieldSidePanelPlayer),
+			Score:    T(KeyFieldSidePanelScore),
+			Piece:    T(KeyFieldSidePanelPiece),
+			Level:    T(KeyFieldSidePanelLevel),
+			Next:     T(KeyFieldSidePanelNext),
+			Controls: T(KeyFieldSidePanelControls),
 		},
 		Message: struct {
 			GameOver   string

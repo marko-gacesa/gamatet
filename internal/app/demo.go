@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package app
@@ -83,10 +83,13 @@ func (app *App) demo(ctx screen.Context, getProgram func() ([]programOp, piece.F
 				InCh: programCh,
 				Players: []core.PlayerSetup{
 					{
-						Config:  piece.Config{},
-						IsLocal: false,
-						Index:   0,
-						InCh:    nil,
+						Name:        "",
+						Config:      piece.Config{},
+						IsLocal:     false,
+						LocalIndex:  -1,
+						Index:       0,
+						ControlsStr: nil,
+						InCh:        nil,
 					},
 				},
 			},

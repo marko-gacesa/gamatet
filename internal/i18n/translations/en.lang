@@ -251,6 +251,7 @@ field_side_panel_score      = SCORE
 field_side_panel_piece      = PIECE
 field_side_panel_level      = SPEED
 field_side_panel_next       = NEXT
+field_side_panel_controls   = CONTROLS
 field_message_game_over     = GAME\nOVER
 field_message_victory       = VICTORY
 field_message_defeat        = DEFEAT

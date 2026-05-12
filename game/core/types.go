@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package core
@@ -62,8 +62,11 @@ type PlayerSetup struct {
 	Name   string
 	Config piece.Config
 
-	IsLocal bool
-	Index   int
+	IsLocal    bool
+	LocalIndex int
+	Index      int
+
+	ControlsStr []string
 
 	// InCh is used for direct player input. Actions are read from the channel.
 	InCh <-chan []byte

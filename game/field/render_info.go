@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package field
@@ -53,6 +53,7 @@ type PieceRenderInfo struct {
 
 type PieceTextData struct {
 	Name     string
+	Controls []string
 	Score    string
 	PieceNum string
 	Level    string
@@ -224,6 +225,7 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 
 		pinfo.PieceTextData = PieceTextData{
 			Name:     ctrl.Name,
+			Controls: ctrl.ControlsStr,
 			Score:    ctrl.ScoreStr,
 			PieceNum: ctrl.PieceCountStr,
 			Level:    ctrl.LevelStr,

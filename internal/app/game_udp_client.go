@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package app
@@ -76,6 +76,8 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 
 	pieceFeed := Feed(s)
 
+	localPlayerInputs := app.cfg.LocalPlayers.Inputs()
+
 	fieldHasLocalPlayers := make(map[int]struct{})
 
 	// Input channels for local players. Closed on the UI component. Elements can be nil.
@@ -101,10 +103,12 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 		for storyActorIdx, actor := range actors {
 			if actor.Token == 0 {
 				fieldPlayers[storyActorIdx] = core.PlayerSetup{
-					Name:    playerName(actor.Name, fieldIdx, storyActorIdx, playerIndex),
-					Config:  piece.Config{},
-					IsLocal: false,
-					Index:   playerIndex,
+					Name:        playerName(actor.Name, fieldIdx, storyActorIdx, playerIndex),
+					Config:      piece.Config{},
+					IsLocal:     false,
+					LocalIndex:  -1,
+					ControlsStr: nil,
+					Index:       playerIndex,
 				}
 				playerIndex++
 				continue
@@ -123,10 +127,12 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 			session.Actors[actor.ActorIdx].InputCh = playerInputPipe.Out // [C] The network layer reads player inputs from here.
 
 			fieldPlayers[storyActorIdx] = core.PlayerSetup{
-				Name:    playerName(localPlayerInfo.Name, fieldIdx, storyActorIdx, playerIndex),
-				Config:  piece.Config(localPlayerInfo.GameConfig),
-				IsLocal: true,
-				Index:   playerIndex,
+				Name:        playerName(localPlayerInfo.Name, fieldIdx, storyActorIdx, playerIndex),
+				Config:      piece.Config(localPlayerInfo.GameConfig),
+				IsLocal:     true,
+				LocalIndex:  localPlayerIdx,
+				ControlsStr: gameInput(localPlayerInputs[localPlayerIdx]),
+				Index:       playerIndex,
 			}
 			playerIndex++
 		}
@@ -238,7 +244,7 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 
 	return types.GameParams{
 		PlayerInCh:           playerInChs,
-		PlayerInputs:         app.cfg.LocalPlayers.Inputs(),
+		PlayerInputs:         localPlayerInputs,
 		FieldHasLocalPlayers: fieldHasLocalPlayers,
 		FieldCount:           byte(len(fields)),
 		ActionCh:             actionCh,

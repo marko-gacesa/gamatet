@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package piece
@@ -75,6 +75,9 @@ type Ctrl struct {
 
 	// Name of the player
 	Name string
+
+	// ControlsStr is text description of the local player's input device.
+	ControlsStr []string
 
 	// X and Y are current position of the piece on the board
 	X, Y int

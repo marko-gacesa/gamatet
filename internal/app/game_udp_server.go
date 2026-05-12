@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package app
@@ -78,6 +78,8 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 
 	pieceFeed := Feed(s)
 
+	localPlayerInputs := app.cfg.LocalPlayers.Inputs()
+
 	fieldHasLocalPlayers := make(map[int]struct{})
 
 	// Input channels for local players. Closed on the UI component. Elements can be nil.
@@ -120,11 +122,13 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 				session.Clients[actor.ClientIdx].Actors[actor.ClientActorIdx].Channel = actorInputPipe.In // [5] The network layer accepts remote player inputs here.
 
 				fieldPlayers[storyActorIdx] = core.PlayerSetup{
-					Name:    playerName(actor.Name, fieldIdx, storyActorIdx, playerIndex),
-					Config:  piece.Config(playerConfig),
-					IsLocal: false,
-					Index:   playerIndex,
-					InCh:    actorInputPipe.Out, // [4] The game engine reads remote actors actions from here.
+					Name:        playerName(actor.Name, fieldIdx, storyActorIdx, playerIndex),
+					Config:      piece.Config(playerConfig),
+					IsLocal:     false,
+					LocalIndex:  -1,
+					Index:       playerIndex,
+					ControlsStr: nil,
+					InCh:        actorInputPipe.Out, // [4] The game engine reads remote actors actions from here.
 				}
 				playerIndex++
 
@@ -142,11 +146,13 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 			playerInChs[localPlayerIdx] = playerInputPipe.In
 
 			fieldPlayers[storyActorIdx] = core.PlayerSetup{
-				Name:    playerName(localPlayerInfo.Name, fieldIdx, storyActorIdx, playerIndex),
-				Config:  piece.Config(localPlayerInfo.GameConfig),
-				IsLocal: true,
-				Index:   playerIndex,
-				InCh:    playerInputPipe.Out, // [3] The game engine reads local player actions from here (directly from the input device - keyboard).
+				Name:        playerName(localPlayerInfo.Name, fieldIdx, storyActorIdx, playerIndex),
+				Config:      piece.Config(localPlayerInfo.GameConfig),
+				IsLocal:     true,
+				LocalIndex:  localPlayerIdx,
+				Index:       playerIndex,
+				ControlsStr: gameInput(localPlayerInputs[localPlayerIdx]),
+				InCh:        playerInputPipe.Out, // [3] The game engine reads local player actions from here (directly from the input device - keyboard).
 			}
 			playerIndex++
 		}
@@ -243,7 +249,7 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 
 	return types.GameParams{
 		PlayerInCh:           playerInChs,
-		PlayerInputs:         app.cfg.LocalPlayers.Inputs(),
+		PlayerInputs:         localPlayerInputs,
 		FieldHasLocalPlayers: fieldHasLocalPlayers,
 		FieldCount:           byte(len(fields)),
 		ActionCh:             actionCh,

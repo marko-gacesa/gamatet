@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package core
@@ -80,6 +80,7 @@ func MakeInterpreter(setup Setup, options InterpreterOptions) *GameInterpreter {
 
 			ctrl.PlayerIndex = byte(players[j].Index)
 			ctrl.Name = players[j].Name
+			ctrl.ControlsStr = players[j].ControlsStr
 			ctrl.Feed = piece.NewCtrlFeed(setup.Config.PieceFeed, i, j, setup.Config.SamePieces)
 			ctrl.Config = players[j].Config
 			ctrl.SetLevel(uint(setup.Config.Level))
