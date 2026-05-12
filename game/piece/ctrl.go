@@ -147,6 +147,9 @@ func NewCtrl(idx int) *Ctrl {
 
 	c.State = StateInit
 
+	c.Timer = time.NewTimer(time.Hour)
+	c.Timer.Stop()
+
 	return c
 }
 
@@ -189,15 +192,11 @@ func (c *Ctrl) RestartTimer(param int) {
 		return
 	}
 
-	if c.Timer == nil {
-		c.Timer = time.NewTimer(dur)
-	} else {
-		c.Timer.Reset(dur)
-	}
+	c.Timer.Reset(dur)
 }
 
 func (c *Ctrl) StopTimer() {
-	if c.Timer != nil && !c.Timer.Stop() {
+	if !c.Timer.Stop() {
 		select {
 		default:
 		case <-c.Timer.C:
