@@ -53,7 +53,7 @@ type PieceRenderInfo struct {
 
 type PieceTextData struct {
 	Name     string
-	Controls []string
+	Controls string
 	Score    string
 	PieceNum string
 	Level    string

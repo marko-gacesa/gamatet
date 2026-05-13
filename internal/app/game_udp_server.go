@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"strings"
 
 	"github.com/marko-gacesa/channel"
 	"github.com/marko-gacesa/gamatet/game/action"
@@ -127,7 +128,7 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 					IsLocal:     false,
 					LocalIndex:  -1,
 					Index:       playerIndex,
-					ControlsStr: nil,
+					ControlsStr: "",
 					InCh:        actorInputPipe.Out, // [4] The game engine reads remote actors actions from here.
 				}
 				playerIndex++
@@ -151,7 +152,7 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 				IsLocal:     true,
 				LocalIndex:  localPlayerIdx,
 				Index:       playerIndex,
-				ControlsStr: gameInput(localPlayerInputs[localPlayerIdx]),
+				ControlsStr: strings.Join(gameInput(localPlayerInputs[localPlayerIdx]), "\n"),
 				InCh:        playerInputPipe.Out, // [3] The game engine reads local player actions from here (directly from the input device - keyboard).
 			}
 			playerIndex++

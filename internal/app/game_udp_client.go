@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"strings"
 
 	"github.com/marko-gacesa/channel"
 	"github.com/marko-gacesa/gamatet/game/action"
@@ -107,7 +108,7 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 					Config:      piece.Config{},
 					IsLocal:     false,
 					LocalIndex:  -1,
-					ControlsStr: nil,
+					ControlsStr: "",
 					Index:       playerIndex,
 				}
 				playerIndex++
@@ -131,7 +132,7 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 				Config:      piece.Config(localPlayerInfo.GameConfig),
 				IsLocal:     true,
 				LocalIndex:  localPlayerIdx,
-				ControlsStr: gameInput(localPlayerInputs[localPlayerIdx]),
+				ControlsStr: strings.Join(gameInput(localPlayerInputs[localPlayerIdx]), "\n"),
 				Index:       playerIndex,
 			}
 			playerIndex++

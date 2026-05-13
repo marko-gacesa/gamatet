@@ -4,6 +4,8 @@
 package app
 
 import (
+	"strings"
+
 	"github.com/marko-gacesa/channel"
 	"github.com/marko-gacesa/gamatet/game/action"
 	"github.com/marko-gacesa/gamatet/game/core"
@@ -57,7 +59,7 @@ func (app *App) gameSinglePlayer(ctx screen.Context) types.GameOneParams {
 						IsLocal:     true,
 						LocalIndex:  0,
 						Index:       0,
-						ControlsStr: gameInput(localPlayerInputs[0]),
+						ControlsStr: strings.Join(gameInput(localPlayerInputs[0]), "\n"),
 						InCh:        playerOutCh,
 					},
 				},

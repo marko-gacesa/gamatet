@@ -9,15 +9,14 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/marko-gacesa/gamatet/internal/config"
-	"github.com/marko-gacesa/gamatet/internal/config/key"
-	"github.com/marko-gacesa/gamatet/logic/gamepad"
-
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 
 	"github.com/marko-gacesa/gamatet/game/setup"
+	"github.com/marko-gacesa/gamatet/internal/config"
+	"github.com/marko-gacesa/gamatet/internal/config/key"
 	. "github.com/marko-gacesa/gamatet/internal/i18n"
+	"github.com/marko-gacesa/gamatet/logic/gamepad"
 )
 
 func playerName(name string, fieldIdx, fieldPlayerIdx, playerIdx int) string {

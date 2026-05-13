@@ -77,7 +77,7 @@ type Ctrl struct {
 	Name string
 
 	// ControlsStr is text description of the local player's input device.
-	ControlsStr []string
+	ControlsStr string
 
 	// X and Y are current position of the piece on the board
 	X, Y int

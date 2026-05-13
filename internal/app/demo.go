@@ -88,7 +88,7 @@ func (app *App) demo(ctx screen.Context, getProgram func() ([]programOp, piece.F
 						IsLocal:     false,
 						LocalIndex:  -1,
 						Index:       0,
-						ControlsStr: nil,
+						ControlsStr: "",
 						InCh:        nil,
 					},
 				},

@@ -66,7 +66,7 @@ type PlayerSetup struct {
 	LocalIndex int
 	Index      int
 
-	ControlsStr []string
+	ControlsStr string
 
 	// InCh is used for direct player input. Actions are read from the channel.
 	InCh <-chan []byte

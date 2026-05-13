@@ -48,8 +48,9 @@ func init() {
 }
 
 const (
-	scaleLabel = 0.6
-	scaleText  = 0.75
+	scaleLabel    = 0.6
+	scaleText     = 0.75
+	scaleControls = 0.5
 
 	paddingText = 0.2
 )
@@ -103,7 +104,8 @@ type Field struct {
 	resources *FieldResources
 	text      *Text
 
-	str FieldStrings
+	str   FieldStrings
+	dimH1 float32
 
 	renderRequesterFieldIdx int
 	renderRequester         core.RenderRequester
@@ -144,10 +146,12 @@ func NewField(
 	renderRequester core.RenderRequester,
 	preferredSide PreferredSide,
 ) *Field {
+	_, dimH1 := text.Dim("A")
 	return &Field{
 		model:                   model,
 		resources:               resources,
 		text:                    text,
+		dimH1:                   dimH1,
 		str:                     str,
 		renderRequesterFieldIdx: renderRequesterFieldIdx,
 		renderRequester:         renderRequester,
@@ -559,18 +563,13 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		p := &renderInfo.Pieces[idx]
 		colorPlayerText := colorPlayer[p.PlayerIndex]
 
-		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, f.str.SidePanel.Player, p.PieceTextData.Name, hDir)
-		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, f.str.SidePanel.Score, p.PieceTextData.Score, hDir)
-		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, f.str.SidePanel.Piece, p.PieceTextData.PieceNum, hDir)
-		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, f.str.SidePanel.Level, p.PieceTextData.Level, hDir)
+		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, scaleLabel, scaleText, f.str.SidePanel.Player, p.PieceTextData.Name, hDir)
+		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, scaleLabel, scaleText, f.str.SidePanel.Score, p.PieceTextData.Score, hDir)
+		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, scaleLabel, scaleText, f.str.SidePanel.Piece, p.PieceTextData.PieceNum, hDir)
+		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, scaleLabel, scaleText, f.str.SidePanel.Level, p.PieceTextData.Level, hDir)
 
-		if renderInfo.Mode == field.ModePause && p.PieceTextData.Controls != nil {
-			f.printLabel(&modelInfo, colorLabel, 0.5, f.str.SidePanel.Controls, hDir)
-			modelControls := modelInfo.Mul4(mgl32.Translate3D((sidePanelBlockWidth+1)/2, 0, 0))
-			for _, s := range p.PieceTextData.Controls {
-				f.printTextCenter(modelControls, colorPlayerText, 0.5, s)
-				modelControls = modelControls.Mul4(mgl32.Translate3D(0, hDir*0.5, 0))
-			}
+		if renderInfo.Mode == field.ModePause {
+			f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, scaleLabel, scaleControls, f.str.SidePanel.Controls, p.PieceTextData.Controls, hDir)
 		}
 
 		if len(p.NextPieces[0].Blocks) == 0 {
@@ -935,29 +934,34 @@ func (f *Field) renderAll(r *Renderer) {
 	gl.Enable(gl.DEPTH_TEST)
 }
 
-func (f *Field) printLabelAndValue(modelInfo *mgl32.Mat4, colorLabel, colorText mgl32.Vec4, label, value string, hDir float32) {
+func (f *Field) printLabelAndValue(
+	modelInfo *mgl32.Mat4,
+	colorLabel, colorText mgl32.Vec4,
+	scaleTitle, scaleValue float32,
+	label, value string,
+	hDir float32,
+) {
 	if value == "" {
 		return
 	}
-
-	const scaleTitle = 0.5
-	const scaleValue = 0.8
-	const padding = 0.2
 
 	var wt, ht, wv, hv float32
 	wt, ht = f.text.Dim(label)
 	wv, hv = f.text.Dim(value)
 	wt, ht = scaleTitle*wt, scaleTitle*ht
 	wv, hv = scaleValue*wv, scaleValue*hv
+	hs := scaleValue * f.dimH1
 
 	// so that the value is always below the label
 	var yt, yv float32
 	if hDir > 0 {
+		// from bottom to top
 		yt = hDir * (hv + ht*0.5)
-		yv = hDir * hv * 0.5
+		yv = hDir*hv - hs*0.5
 	} else {
+		// from top to bottom
 		yt = hDir * ht * 0.5
-		yv = hDir * (ht + hv*0.5)
+		yv = hDir * (ht + hs*0.5)
 	}
 
 	modelTitle := modelInfo.
@@ -970,7 +974,7 @@ func (f *Field) printLabelAndValue(modelInfo *mgl32.Mat4, colorLabel, colorText 
 		Mul4(mgl32.Scale3D(scaleValue, scaleValue, 1.0))
 	f.listStr.Add(modelValue, colorText, value)
 
-	*modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, hDir*(ht+hv+padding), 0))
+	*modelInfo = modelInfo.Mul4(mgl32.Translate3D(0, hDir*(ht+hv+paddingText), 0))
 }
 
 func (f *Field) printLabel(modelInfo *mgl32.Mat4, colorText mgl32.Vec4, scaleLabel float32, s string, hDir float32) {
