@@ -58,6 +58,7 @@ const (
 const sidePanelBlockWidth = 5
 
 var t0 = time.Now()
+var numbers = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
 
 func GetExtendedContent(w, h int, infoPos [field.MaxPieces]DisplayPosition) (int, int) {
 	w += 2 // left frame, right frame
@@ -322,18 +323,28 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		message = f.str.Message.Suspended
 	case field.ModeServerLost:
 		message = f.str.Message.ServerLost
+	case field.ModeGetReady:
 	}
 
 	if message != "" {
 		w, h := f.text.Dim(message)
-
 		modelMessage := modelField.
 			Mul4(mgl32.Translate3D((float32(renderInfo.W-1)-w*pulse)/2.0, (float32(renderInfo.H-2)+h*pulse)/2.0, 0)).
 			Mul4(mgl32.Scale3D(pulse, pulse, 1))
 		f.listStr.Add(modelMessage, mgl32.Vec4{1, 1, 1, 1}, message)
 	}
 
-	if (renderInfo.Mode == field.ModePause || renderInfo.Mode == field.ModeSuspended) && renderInfo.TextData.Latencies != "" {
+	if renderInfo.Mode == field.ModeGetReady && renderInfo.StartUpOptions.Counter > 0 {
+		message = numbers[renderInfo.StartUpOptions.Counter]
+		w, _ := f.text.Dim(message)
+		const scale = 2.5
+		modelMessage := modelField.
+			Mul4(mgl32.Translate3D((float32(renderInfo.W)-w*scale)/2.0-0.5, (float32(renderInfo.H))/2.0-0.5, 0)).
+			Mul4(mgl32.Scale3D(scale, scale, 1))
+		f.listStr.Add(modelMessage, mgl32.Vec4{1, 1, 1, 1}, message)
+	}
+
+	if (renderInfo.Mode == field.ModePause || renderInfo.Mode == field.ModeSuspended || renderInfo.Mode == field.ModeGetReady) && renderInfo.TextData.Latencies != "" {
 		const scale = 0.5
 		_, h := f.text.Dim(renderInfo.TextData.Latencies)
 		modelLatencies := modelField.
@@ -568,7 +579,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, scaleLabel, scaleText, f.str.SidePanel.Piece, p.PieceTextData.PieceNum, hDir)
 		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, scaleLabel, scaleText, f.str.SidePanel.Level, p.PieceTextData.Level, hDir)
 
-		if renderInfo.Mode == field.ModePause {
+		if renderInfo.Mode == field.ModePause || renderInfo.Mode == field.ModeGetReady {
 			f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, scaleLabel, scaleControls, f.str.SidePanel.Controls, p.PieceTextData.Controls, hDir)
 		}
 

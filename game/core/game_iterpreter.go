@@ -142,7 +142,7 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 
 	if g.options.StartPaused {
 		for _, f := range g.fields {
-			f.Field.SetMode(field.ModePause)
+			f.Field.SetMode(field.ModeGetReady)
 		}
 	}
 

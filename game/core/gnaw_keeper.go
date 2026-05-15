@@ -78,15 +78,23 @@ func (k *GnawKeeper) RandomColor() uint32 {
 	}
 }
 
+func (k *GnawKeeper) PrepareSmall(x, y int) {
+	k.add(x, y, k.RandomColor(), 10, time.Second, false)
+}
+
+func (k *GnawKeeper) PrepareInfinite(x, y int) {
+	k.add(x, y, k.RandomColor(), math.MaxInt, 1200*time.Millisecond, false)
+}
+
 func (k *GnawKeeper) AddSmall(x, y int) {
-	k.Add(x, y, k.RandomColor(), 10, time.Second)
+	k.add(x, y, k.RandomColor(), 10, time.Second, true)
 }
 
 func (k *GnawKeeper) AddInfinite(x, y int) {
-	k.Add(x, y, k.RandomColor(), math.MaxInt, 1200*time.Millisecond)
+	k.add(x, y, k.RandomColor(), math.MaxInt, 1200*time.Millisecond, true)
 }
 
-func (k *GnawKeeper) Add(x, y int, color uint32, hunger int, restDuration time.Duration) {
+func (k *GnawKeeper) add(x, y int, color uint32, hunger int, restDuration time.Duration, resetTimer bool) {
 	if _, ok := k.gnaws[color]; ok {
 		panic(fmt.Sprintf("can't add gnaw; %X already exists", color))
 	}
@@ -114,7 +122,9 @@ func (k *GnawKeeper) Add(x, y int, color uint32, hunger int, restDuration time.D
 		Color:    color,
 	})
 
-	k.StartTimer()
+	if resetTimer {
+		k.StartTimer()
+	}
 }
 
 func (k *GnawKeeper) UndoAdd(color uint32, animType, animParam int) {

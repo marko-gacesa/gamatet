@@ -6,6 +6,7 @@ package field
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/piece"
@@ -26,6 +27,7 @@ type Field struct {
 	seed     int
 	Config
 	RenderOptions
+	startup
 	stats
 }
 
@@ -41,6 +43,7 @@ const (
 	ModePause
 	ModeSuspended
 	ModeServerLost
+	ModeGetReady
 )
 
 func (m Mode) String() string {
@@ -59,6 +62,8 @@ func (m Mode) String() string {
 		return "Suspended"
 	case ModeServerLost:
 		return "ServerLost"
+	case ModeGetReady:
+		return "GetReady"
 	}
 	return "Unknown"
 }
@@ -82,12 +87,19 @@ type stats struct {
 	effectStr        string
 }
 
+type startup struct {
+	createdAt time.Time
+	duration  time.Duration
+}
+
 const (
 	MinWidth  = 4
 	MaxWidth  = 40
 	MinHeight = 4
 	MaxHeight = 40
 )
+
+const StartupDuration = 3 * time.Second
 
 func Make(dimW, dimH, pieceCount int) (f *Field) {
 	if dimW < MinWidth {
@@ -112,6 +124,10 @@ func Make(dimW, dimH, pieceCount int) (f *Field) {
 		blocks: make([]elem, dimW*dimH),
 		pieces: make([]*piece.Ctrl, pieceCount),
 		doneCh: make(chan struct{}),
+		startup: startup{
+			createdAt: time.Now(),
+			duration:  StartupDuration,
+		},
 	}
 
 	for i := range pieceCount {

@@ -76,6 +76,10 @@ type RenderOptions struct {
 	HideShadows bool
 }
 
+type StartUpOptions struct {
+	Counter int
+}
+
 type RenderInfo struct {
 	W, H   int
 	Mode   Mode
@@ -90,6 +94,7 @@ type RenderInfo struct {
 
 	TextData
 	RenderOptions
+	StartUpOptions
 }
 
 var syncPoolRenderInfo = &sync.Pool{
@@ -143,6 +148,14 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 	}
 
 	info.RenderOptions = f.RenderOptions
+
+	var startupCounter int
+	if d := now.Sub(f.startup.createdAt); d < 10*time.Second {
+		startupCounter = int((f.startup.duration-d)/time.Second) + 1
+	}
+	info.StartUpOptions = StartUpOptions{
+		Counter: startupCounter,
+	}
 
 	// process all blocks of the Field
 
