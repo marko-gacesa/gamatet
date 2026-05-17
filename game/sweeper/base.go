@@ -9,7 +9,7 @@ import (
 	"github.com/marko-gacesa/gamatet/game/field"
 )
 
-func newBase(f *field.Field) *base {
+func newBase(f field.Reader) *base {
 	s := &base{}
 	s.field = f
 	s.timer = time.NewTimer(time.Second)
@@ -18,7 +18,7 @@ func newBase(f *field.Field) *base {
 }
 
 type base struct {
-	field     *field.Field
+	field     field.Reader
 	timer     *time.Timer
 	startedAt time.Time     // When the timer was started
 	remaining time.Duration // Duration remaining if paused
@@ -27,18 +27,6 @@ type base struct {
 
 func (s *base) Timer() <-chan time.Time {
 	return s.timer.C
-}
-
-func (s *base) Start(*Analyzer) bool {
-	if s.active {
-		// timer is already active or nothing to do
-		return false
-	}
-
-	s.active = true
-	s.startedAt = time.Now()
-	s.timer.Reset(time.Microsecond)
-	return true
 }
 
 func (s *base) Pause() {
@@ -62,8 +50,14 @@ func (s *base) Unpause() {
 		return
 	}
 
-	s.startedAt = time.Now()
-	s.timer.Reset(s.remaining)
+	s.reschedule(s.remaining)
+}
+
+func (s *base) start() bool {
+	result := !s.active
+	s.active = true
+	s.reschedule(time.Microsecond)
+	return result
 }
 
 // endIteration should be called during Sweep to stop the current iteration.

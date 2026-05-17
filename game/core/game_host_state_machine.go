@@ -105,7 +105,6 @@ func (g *GameHost) _pauseField(fIdx int) {
 		return
 	}
 	g.fields[fIdx].Field.Pause()
-	g.fields[fIdx].GnawKeeper.StopTimer()
 	for _, s := range g.fields[fIdx].Sweepers {
 		s.Pause()
 	}
@@ -116,7 +115,6 @@ func (g *GameHost) _unpauseField(fIdx int) {
 		return
 	}
 	g.fields[fIdx].Field.Unpause()
-	g.fields[fIdx].GnawKeeper.StartTimer()
 	for _, s := range g.fields[fIdx].Sweepers {
 		s.Unpause()
 	}

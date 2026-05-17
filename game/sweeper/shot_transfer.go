@@ -12,7 +12,7 @@ import (
 
 var _ Sweeper = (*ShotTransfer)(nil)
 
-func NewShotTransfer(f *field.Field, others []FieldPunisher) *ShotTransfer {
+func NewShotTransfer(f *field.Field, others []FieldPusher) *ShotTransfer {
 	b := newBase(f)
 	return &ShotTransfer{
 		base:   *b,
@@ -22,18 +22,20 @@ func NewShotTransfer(f *field.Field, others []FieldPunisher) *ShotTransfer {
 
 type ShotTransfer struct {
 	base
-	others []FieldPunisher
+	others []FieldPusher
 	shots  []block.Type
 }
 
-func (s *ShotTransfer) Start(analyzer *Analyzer) bool {
-	if len(analyzer.shots) == 0 {
-		return false
+func (s *ShotTransfer) Analyze(events event.Reader) {
+	events.Range(func(e event.Event) {
+		if v, ok := e.(*op.PieceShoot); ok && v.Hit {
+			s.shots = append(s.shots, v.BlockType)
+		}
+	})
+
+	if len(s.shots) > 0 {
+		s.base.start()
 	}
-
-	s.shots = analyzer.shots
-
-	return s.base.Start(analyzer)
 }
 
 func (s *ShotTransfer) Sweep(event.Pusher) {
@@ -76,6 +78,8 @@ func (s *ShotTransfer) Sweep(event.Pusher) {
 			}
 		}
 	}
+
+	s.shots = s.shots[:0]
 
 	s.endIteration()
 }

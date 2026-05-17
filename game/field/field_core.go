@@ -99,7 +99,7 @@ const (
 	MaxHeight = 40
 )
 
-const StartupDuration = 3 * time.Second
+const StartupDuration = 5 * time.Second
 
 func Make(dimW, dimH, pieceCount int) (f *Field) {
 	if dimW < MinWidth {
@@ -144,15 +144,6 @@ func (f *Field) Seed(seed int) {
 func (f *Field) Random(seed uint64) *random.Random {
 	return random.New(seed, uint64(f.seed))
 }
-
-func (f *Field) Ctrls() int {
-	return len(f.pieces)
-}
-
-func (f *Field) Ctrl(idx byte) *piece.Ctrl {
-	return f.pieces[idx]
-}
-
 func (f *Field) GetDone() <-chan struct{} {
 	return f.doneCh
 }

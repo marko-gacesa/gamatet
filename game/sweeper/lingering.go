@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package sweeper
@@ -26,20 +26,24 @@ type Lingering struct {
 	counter uint64
 }
 
-func (s *Lingering) Start(analyzer *Analyzer) bool {
-	for _, delta := range analyzer.lingering {
-		if delta > 0 {
-			return s.base.Start(analyzer)
+func (s *Lingering) Analyze(events event.Reader) {
+	var has bool
+	events.Range(func(e event.Event) {
+		if v, ok := e.(*op.FieldLingering); ok && v.Delta > 0 {
+			has = true
 		}
-	}
+	})
 
-	return false
+	if has {
+		s.base.start()
+	}
 }
 
 func (s *Lingering) Sweep(p event.Pusher) {
 	effect, amount := s.field.LingeringEffect()
 	if effect == field.EffectNone || amount == 0 {
 		s.endIteration()
+		return
 	}
 
 	p.Push(op.NewFieldLingering(effect, -1))
@@ -60,11 +64,11 @@ func (s *Lingering) Sweep(p event.Pusher) {
 
 		b := s.field.GetXY(x, y)
 		fh := s.field.GetHeight()
-		heigth := fh - top.Y
+		height := fh - top.Y
 
-		p.Push(op.NewFieldExBlock(x, y, field.AnimFall, heigth, block.Acid))
+		p.Push(op.NewFieldExBlock(x, y, field.AnimFall, height, block.Acid))
 		if b.Hardness > 0 {
-			p.Push(op.NewFieldBlockHardness(x, y, -1, field.AnimSpin, heigth))
+			p.Push(op.NewFieldBlockHardness(x, y, -1, field.AnimSpin, height))
 		} else {
 			p.Push(op.NewFieldBlockSet(x, y, op.TypeClear, field.AnimPop, 0, b))
 		}

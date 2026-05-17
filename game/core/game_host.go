@@ -50,10 +50,9 @@ type HostOptions struct {
 }
 
 type hostFieldData struct {
-	Field      *field.Field
-	Sweepers   []sweeper.Sweeper
-	GnawKeeper *GnawKeeper
-	OutCh      chan<- []byte
+	Field    *field.Field
+	Sweepers []sweeper.Sweeper
+	OutCh    chan<- []byte
 
 	events     event.List
 	serializer Serializer
@@ -128,10 +127,9 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 		f.UpdateBlocksRemoved(0)
 
 		fields[i] = hostFieldData{
-			Field:      f,
-			Sweepers:   nil, // set below
-			GnawKeeper: NewGnawKeeper(f, uint(setup.Config.RandomSeed)),
-			OutCh:      setup.Fields[i].OutCh,
+			Field:    f,
+			Sweepers: nil, // set below
+			OutCh:    setup.Fields[i].OutCh,
 		}
 	}
 
@@ -144,13 +142,14 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 			sweeper.NewGameOver(f),
 			sweeper.NewSpeedUp(f),
 			sweeper.NewLingering(f),
+			sweeper.NewGnawKeeper(f),
 		)
 	}
 
 	if len(fields) > 1 {
 		for i := range fields {
 			f := fields[i].Field
-			others := getFieldPunishers(fields, i)
+			others := getFieldPushers(fields, i)
 
 			if setup.Config.Shooters {
 				fields[i].Sweepers = append(fields[i].Sweepers,
@@ -163,14 +162,6 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 				sweeper.NewBlizzard(f, others),
 				sweeper.NewMagic(f, others, setup.Config.RandomSeed, sweeper.MagicTypeAll),
 			)
-		}
-	}
-
-	if options.Init != nil {
-		for i := range fields {
-			f := fields[i].Field
-			p := &fields[i].events
-			options.Init(f, p)
 		}
 	}
 
@@ -245,38 +236,37 @@ func (g *GameHost) Perform(ctx context.Context) {
 		return ch
 	}())
 
-	gnawTimer := channel.JoinSlicePtr(g.doneCh, g.fields, func(p *hostFieldData) <-chan time.Time {
-		return p.GnawKeeper.Chan()
-	})
-
-	startDeley := time.Nanosecond
+	startDelay := time.Nanosecond
 	if g.options.StartPaused {
 		g.stateTransitionGetReady()
-		startDeley = field.StartupDuration
+		startDelay = field.StartupDuration
 	}
 
-	g.applyEvents()
+	g.applyEvents() // apply the state transition
 
-	getReadyTimer := time.NewTimer(startDeley)
+	getReadyTimer := time.NewTimer(startDelay)
 	defer getReadyTimer.Stop()
 
 	for {
-		for i := range g.fields {
-			g.fields[i].events.Clear()
-		}
-
 		select {
 		case <-ctx.Done():
 			return
 
 		case <-getReadyTimer.C:
+			if g.options.Init != nil {
+				for i := range g.fields {
+					f := g.fields[i].Field
+					p := &g.fields[i].events
+					g.options.Init(f, p)
+				}
+			}
 			g.stateTransitionPlay()
 			g.applyEvents()
 
 		case a := <-g.actionCh:
 			switch a {
 			case action.Abort:
-				if g.state == hostStateFinish || g.state == hostStatePause {
+				if g.state == hostStateFinish || g.state == hostStatePause || g.state == hostStateSuspended {
 					return
 				}
 				g.stateTransitionPauseToggle()
@@ -350,11 +340,6 @@ func (g *GameHost) Perform(ctx context.Context) {
 			sw.ID.sweeper.Sweep(sw.ID.pusher)
 			g.applyEvents()
 
-		case gn := <-gnawTimer:
-			f := &g.fields[gn.ID]
-			f.GnawKeeper.ProcessAll(&f.events)
-			g.applyEvents()
-
 		case rr := <-g.renderReqCh:
 			renderInfo := field.ObtainRenderInfo()
 			f := g.fields[rr.FieldIdx].Field
@@ -415,19 +400,18 @@ func (g *GameHost) applyEvents() {
 			continue
 		}
 
-		f := g.fields[fIdx].Field
-		analyzer := &sweeper.Analyzer{Field: f}
+		for _, s := range g.fields[fIdx].Sweepers {
+			s.Analyze(g.fields[fIdx].events)
+		}
 
+		f := g.fields[fIdx].Field
 		fd.events.Range(func(e event.Event) {
-			analyzer.Analyze(e)
 			e.Do(f)
 		})
 
 		fd.OutCh <- fd.serializer.Serialize(&fd.events)
 
-		for _, s := range g.fields[fIdx].Sweepers {
-			s.Start(analyzer)
-		}
+		g.fields[fIdx].events.Clear()
 	}
 }
 
@@ -466,17 +450,16 @@ func (g *GameHost) checkWinner(loserIdx int) {
 	}
 }
 
-func getFieldPunishers(fields []hostFieldData, exceptIdx int) []sweeper.FieldPunisher {
-	list := make([]sweeper.FieldPunisher, 0, len(fields)-1)
+func getFieldPushers(fields []hostFieldData, exceptIdx int) []sweeper.FieldPusher {
+	list := make([]sweeper.FieldPusher, 0, len(fields)-1)
 	for i := range fields {
 		if i == exceptIdx {
 			continue
 		}
 
-		list = append(list, sweeper.FieldPunisher{
-			Field:   fields[i].Field,
-			Pusher:  &fields[i].events,
-			GnawAdd: fields[i].GnawKeeper.AddSmall,
+		list = append(list, sweeper.FieldPusher{
+			Field:  fields[i].Field,
+			Pusher: &fields[i].events,
 		})
 	}
 

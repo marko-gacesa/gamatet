@@ -14,9 +14,8 @@ type Sweeper interface {
 	// Timer returns a channel. When a value is returned through the channel the Sweep method should be called.
 	Timer() <-chan time.Time
 
-	// Start starts the sweeper. The analyzer is used for conditional start.
-	// Returns true if the sweeper has just been started, or false if it was already active.
-	Start(analyzer *Analyzer) bool
+	// Analyze inspects a batch of events and conditionally starts the sweeper.
+	Analyze(events event.Reader)
 
 	// Pause pauses the internal timer of the sweeper.
 	Pause()
@@ -28,8 +27,7 @@ type Sweeper interface {
 	Sweep(p event.Pusher)
 }
 
-type FieldPunisher struct {
-	Field   *field.Field
-	Pusher  event.Pusher
-	GnawAdd func(x, y int)
+type FieldPusher struct {
+	Field  field.Reader
+	Pusher event.Pusher
 }

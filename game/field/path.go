@@ -82,7 +82,7 @@ func (f *Field) Neighbors8(pos block.XY, fnOk func(block.Type) bool) Neighbors8 
 	return result
 }
 
-func (n Neighbors8) ForEach(f *Field, pos block.XY, fn func(xyb block.XYB)) {
+func (n Neighbors8) ForEach(f Reader, pos block.XY, fn func(xyb block.XYB)) {
 	for idx, ok := range n {
 		if !ok {
 			continue
@@ -147,7 +147,7 @@ func (f *Field) Neighbors4(pos block.XY, fnOk func(block.Type) bool) Neighbors4 
 	return result
 }
 
-func (n Neighbors4) ForEach(f *Field, pos block.XY, fn func(xyb block.XYB)) {
+func (n Neighbors4) ForEach(f Reader, pos block.XY, fn func(xyb block.XYB)) {
 	for idx, ok := range n {
 		if !ok {
 			continue
@@ -259,7 +259,7 @@ func (f *Field) path(start, goal block.XY, diagonalMove bool, fnOk func(block.Ty
 		visited[current.xy] = struct{}{}
 
 		var neighbors interface {
-			ForEach(*Field, block.XY, func(xyb block.XYB))
+			ForEach(Reader, block.XY, func(xyb block.XYB))
 		}
 
 		if diagonalMove {

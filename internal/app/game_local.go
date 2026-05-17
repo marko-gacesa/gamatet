@@ -102,7 +102,7 @@ func (app *App) gameMultiPlayerLocal(ctx screen.Context) types.GameParams {
 	}
 
 	g := core.MakeHost(gameSetup, core.HostOptions{
-		StartPaused: true,
+		StartPaused: false,
 	})
 
 	// go-routine for processing events for the field

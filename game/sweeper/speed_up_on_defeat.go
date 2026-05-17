@@ -12,7 +12,7 @@ import (
 
 var _ Sweeper = (*SpeedUpOnDefeat)(nil)
 
-func NewSpeedUpOnDefeat(f *field.Field, others []FieldPunisher) *SpeedUpOnDefeat {
+func NewSpeedUpOnDefeat(f *field.Field, others []FieldPusher) *SpeedUpOnDefeat {
 	b := newBase(f)
 	return &SpeedUpOnDefeat{
 		base:   *b,
@@ -22,26 +22,35 @@ func NewSpeedUpOnDefeat(f *field.Field, others []FieldPunisher) *SpeedUpOnDefeat
 
 type SpeedUpOnDefeat struct {
 	base
-	others []FieldPunisher
+	others []FieldPusher
 }
 
-func (s *SpeedUpOnDefeat) Start(analyzer *Analyzer) bool {
-	if analyzer.endMode == nil || *analyzer.endMode != field.ModeDefeat {
-		return false
+func (s *SpeedUpOnDefeat) Analyze(events event.Reader) {
+	var endMode *field.Mode
+	events.Range(func(e event.Event) {
+		if v, ok := e.(*op.FieldMode); ok && (v.ModeNew == field.ModeGameOver || v.ModeNew == field.ModeVictory || v.ModeNew == field.ModeDefeat) {
+			endMode = &v.ModeNew
+		}
+	})
+	if endMode == nil {
+		return
 	}
 
-	return s.base.Start(analyzer)
+	if endMode == nil || *endMode != field.ModeDefeat {
+		return
+	}
+
+	s.base.start()
 }
 
 func (s *SpeedUpOnDefeat) Sweep(event.Pusher) {
 	for _, other := range s.others {
 		for ctrlIdx := range byte(other.Field.Ctrls()) {
-			ctrl := other.Field.Ctrl(ctrlIdx)
-			if ctrl.State.IsTerminal() {
+			if other.Field.CtrlStateIsTerminal(ctrlIdx) {
 				continue
 			}
 
-			level := ctrl.Level
+			level := other.Field.CtrlLevel(ctrlIdx)
 			if level <= 5 {
 				other.Pusher.Push(op.NewPieceSpeedUp(ctrlIdx, 2))
 			} else if level < piece.MaxLevel {

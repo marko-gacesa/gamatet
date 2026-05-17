@@ -12,7 +12,7 @@ import (
 
 var _ Sweeper = (*Blizzard)(nil)
 
-func NewBlizzard(f *field.Field, others []FieldPunisher) *Blizzard {
+func NewBlizzard(f *field.Field, others []FieldPusher) *Blizzard {
 	b := newBase(f)
 	return &Blizzard{
 		base:   *b,
@@ -22,21 +22,29 @@ func NewBlizzard(f *field.Field, others []FieldPunisher) *Blizzard {
 
 type Blizzard struct {
 	base
-	others    []FieldPunisher
+	others    []FieldPusher
 	intensity int
 }
 
-func (s *Blizzard) Start(analyzer *Analyzer) bool {
+func (s *Blizzard) Analyze(events event.Reader) {
 	w := s.field.GetWidth()
 
-	intensity := blockCount((analyzer.stats.removed + w>>1) / w)
+	var removed int
+
+	events.Range(func(e event.Event) {
+		if v, ok := e.(*op.FieldStat); ok {
+			removed += int(v.BlocksRemoved)
+		}
+	})
+
+	intensity := blockCount((removed + w>>1) / w)
 	if intensity < 1 {
-		return false
+		return
 	}
 
 	s.intensity = intensity
 
-	return s.base.Start(analyzer)
+	s.base.start()
 }
 
 func (s *Blizzard) Sweep(event.Pusher) {

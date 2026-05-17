@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package sweeper
@@ -12,9 +12,11 @@ import (
 
 var _ Sweeper = (*Row)(nil)
 
-func NewRow(f *field.Field) *Row {
+func NewRow(f field.Reader) *Row {
 	b := newBase(f)
-	return &Row{base: *b}
+	return &Row{
+		base: *b,
+	}
 }
 
 type Row struct {
@@ -23,15 +25,24 @@ type Row struct {
 	countSoftened int
 }
 
-func (s *Row) Start(analyzer *Analyzer) (started bool) {
-	if analyzer.blocks.added > 0 {
-		started = s.base.Start(analyzer)
-		if started {
+func (s *Row) Analyze(events event.Reader) {
+	var added bool
+	events.Range(func(e event.Event) {
+		if v, ok := e.(*op.FieldBlockSet); ok && v.Op == op.TypeSet {
+			added = true
+			return
+		}
+		if _, ok := e.(*op.FieldGnaw); ok {
+			added = true
+		}
+	})
+
+	if added {
+		if started := s.base.start(); started {
 			s.countRemoved = 0
 			s.countSoftened = 0
 		}
 	}
-	return
 }
 
 // Sweep removes blocks from the field. Removed blocks are from full rows.

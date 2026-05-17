@@ -22,6 +22,7 @@ const (
 	codeFieldBlockTransform
 	codeFieldBlockSwap
 	codeFieldColumnShift
+	codeFieldGnaw
 	codeFieldExBlock
 	codeFieldStat
 	codeFieldLingering
@@ -101,6 +102,8 @@ func instance(code event.Code) event.Event {
 		e = &FieldBlockSwap{}
 	case codeFieldColumnShift:
 		e = &FieldColumnShift{}
+	case codeFieldGnaw:
+		e = &FieldGnaw{}
 	case codeFieldExBlock:
 		e = &FieldExBlock{}
 	case codeFieldStat:

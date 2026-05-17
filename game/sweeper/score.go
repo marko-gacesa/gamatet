@@ -4,6 +4,7 @@
 package sweeper
 
 import (
+	"github.com/marko-gacesa/gamatet/game/block"
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/op"
@@ -11,7 +12,7 @@ import (
 
 var _ Sweeper = (*Score)(nil)
 
-func NewScore(f *field.Field) *Score {
+func NewScore(f field.Reader) *Score {
 	b := newBase(f)
 	return &Score{base: *b}
 }
@@ -21,11 +22,43 @@ type Score struct {
 	delta int
 }
 
-func (s *Score) Start(analyzer *Analyzer) bool {
-	n := analyzer.stats.removed + analyzer.stats.softened
-	g := len(analyzer.blocks.goalsRemoved) + len(analyzer.blocks.gnawsKilled)
+func (s *Score) Analyze(events event.Reader) {
+	var n, g int
+	events.Range(func(e event.Event) {
+		switch v := e.(type) {
+		case *op.FieldBlockSet:
+			if v.Op == op.TypeClear {
+				switch v.Block.Type {
+				case block.TypeGoal:
+					g++
+				case block.TypeGnaw:
+					g++
+				}
+			}
+		case *op.FieldDestroyRow:
+			for _, b := range v.Blocks {
+				switch b.Type {
+				case block.TypeGoal:
+					g++
+				case block.TypeGnaw:
+					g++
+				}
+			}
+		case *op.FieldDestroyColumn:
+			switch v.Block.Type {
+			case block.TypeGoal:
+				g++
+			case block.TypeGnaw:
+				g++
+			}
+		case *op.FieldStat:
+			n += int(v.BlocksRemoved)
+			n += int(v.BlocksSoftened)
+		}
+	})
+
 	if n == 0 && g == 0 {
-		return false
+		return
 	}
 
 	if n > 0 {
@@ -43,9 +76,9 @@ func (s *Score) Start(analyzer *Analyzer) bool {
 		multiplier := (n + w>>1) / w
 
 		if multiplier == 0 {
-			s.delta = 5 * n
+			s.delta += 5 * n
 		} else {
-			s.delta = 10 * multiplier * n
+			s.delta += 10 * multiplier * n
 		}
 	}
 
@@ -56,13 +89,12 @@ func (s *Score) Start(analyzer *Analyzer) bool {
 		s.delta += g * 1000
 	}
 
-	return s.base.Start(analyzer)
+	s.base.start()
 }
 
 func (s *Score) Sweep(p event.Pusher) {
 	for ctrlIdx := range s.field.Ctrls() {
-		ctrl := s.field.Ctrl(byte(ctrlIdx))
-		level := ctrl.Level
+		level := s.field.CtrlLevel(byte(ctrlIdx))
 		scoreDelta := s.delta * int(level)
 		p.Push(op.NewPieceScore(ctrlIdx, scoreDelta))
 	}

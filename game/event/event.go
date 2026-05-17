@@ -1,4 +1,4 @@
-// Copyright (c) 2020 by Marko Gaćeša
+// Copyright (c) 2020, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package event
@@ -22,4 +22,11 @@ type Event interface {
 
 type Pusher interface {
 	Push(Event)
+}
+
+type Reader interface {
+	Range(f func(e Event))
+	RangeReverse(f func(e Event))
+	Size() int
+	Get(idx int) Event
 }

@@ -49,7 +49,7 @@ func InitTriangle(f *field.Field, p event.Pusher) {
 	h := f.GetHeight()
 	c := piece.NewRandomColor(setup.ColorRGB[:], 0)
 	d := min(w, h)
-	for y := 0; y < d; y++ {
+	for y := range d {
 		for x := w - d + 1 + y; x < w; x++ {
 			idx := y*w + x
 			putBlock(p, x, y, block.Block{
@@ -65,7 +65,7 @@ func InitFunnel(f *field.Field, p event.Pusher) {
 	w := f.GetWidth()
 	h := f.GetHeight()
 	d := min((w-1)/2, h)
-	for y := 0; y < d; y++ {
+	for y := range d {
 		for x := 0; x < d-y; x++ {
 			putBlock(p, x, y, block.Wall)
 			putBlock(p, w-x-1, y, block.Wall)

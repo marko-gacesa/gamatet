@@ -614,6 +614,74 @@ func (e *FieldColumnShift) TypeID() event.Code {
 	return codeFieldColumnShift
 }
 
+func NewFieldGnaw(col, row int, hunger, delay uint16, color uint32) *FieldGnaw {
+	return &FieldGnaw{
+		Col:    byte(col),
+		Row:    byte(row),
+		Hunger: hunger,
+		Delay:  delay,
+		Color:  color,
+	}
+}
+
+type FieldGnaw struct {
+	Col, Row byte
+	Hunger   uint16
+	Delay    uint16
+	Color    uint32
+}
+
+var _ event.Event = (*FieldGnaw)(nil)
+
+func (e *FieldGnaw) Do(f *field.Field) {
+	b := block.Block{Type: block.TypeGnaw, Color: e.Color}
+	f.SetXY(int(e.Col), int(e.Row), field.AnimPop, 0, b)
+	updateAllPiecesShadow(f)
+}
+
+func (e *FieldGnaw) Undo(f *field.Field) {
+	_ = f.ClearXY(int(e.Col), int(e.Row), field.AnimNo, 0)
+	updateAllPiecesShadow(f)
+}
+
+func (e *FieldGnaw) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldGnaw)
+	return ok && e.Col == q.Col && e.Row == q.Row && e.Hunger == q.Hunger && e.Delay == q.Delay && e.Color == q.Color
+}
+
+func (e *FieldGnaw) Write(w io.Writer) error {
+	var buffer [10]byte
+
+	buffer[0] = e.Col
+	buffer[1] = e.Row
+	binary.LittleEndian.PutUint16(buffer[2:4], e.Hunger)
+	binary.LittleEndian.PutUint16(buffer[4:6], e.Delay)
+	binary.LittleEndian.PutUint32(buffer[6:10], e.Color)
+
+	if _, err := w.Write(buffer[:]); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *FieldGnaw) Read(r io.Reader) error {
+	var buffer [10]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.Col = buffer[0]
+	e.Row = buffer[1]
+	e.Hunger = binary.LittleEndian.Uint16(buffer[2:4])
+	e.Delay = binary.LittleEndian.Uint16(buffer[4:6])
+	e.Color = binary.LittleEndian.Uint32(buffer[6:10])
+
+	return nil
+}
+
+func (e *FieldGnaw) TypeID() event.Code { return codeFieldGnaw }
+
 func NewFieldExBlock(col, row int, animType, animParam int, b block.Block) *FieldExBlock {
 	return &FieldExBlock{
 		Col:       byte(col),

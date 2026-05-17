@@ -43,7 +43,7 @@ var (
 	magicEffectsOthers = []field.Effect{field.EffectLid, field.EffectBigO, field.EffectRaise, field.EffectGnaw}
 )
 
-func NewMagic(f *field.Field, others []FieldPunisher, seed int, types MagicType) *Magic {
+func NewMagic(f *field.Field, others []FieldPusher, seed int, types MagicType) *Magic {
 	b := newBase(f)
 
 	m := &Magic{
@@ -54,7 +54,7 @@ func NewMagic(f *field.Field, others []FieldPunisher, seed int, types MagicType)
 		types:  types,
 	}
 
-	m.base.Start(nil) // it's always active
+	m.base.start() // it's always active
 
 	return m
 }
@@ -63,7 +63,7 @@ func NewMagic(f *field.Field, others []FieldPunisher, seed int, types MagicType)
 // It creates it, monitors it and restores the original block when it expires.
 type Magic struct {
 	base
-	others []FieldPunisher
+	others []FieldPusher
 	seed   uint64
 	state  magicState
 	types  MagicType
@@ -72,19 +72,37 @@ type Magic struct {
 	oldBlock block.Block
 }
 
-func (s *Magic) Start(analyzer *Analyzer) bool {
-	if analyzer.endMode != nil && s.state != magicStateFinished {
+func (s *Magic) Analyze(events event.Reader) {
+	var endMode *field.Mode
+	var goalRemoved bool
+
+	events.Range(func(e event.Event) {
+		switch v := e.(type) {
+		case *op.FieldBlockSet:
+			goalRemoved = goalRemoved || (v.Op == op.TypeClear && v.Block.Type == block.TypeGoal)
+		case *op.FieldDestroyRow:
+			for _, b := range v.Blocks {
+				goalRemoved = goalRemoved || b.Type == block.TypeGoal
+			}
+		case *op.FieldDestroyColumn:
+			goalRemoved = goalRemoved || v.Block.Type == block.TypeGoal
+		case *op.FieldMode:
+			if v.ModeNew == field.ModeGameOver || v.ModeNew == field.ModeVictory || v.ModeNew == field.ModeDefeat {
+				endMode = &v.ModeNew
+			}
+		}
+	})
+
+	if endMode != nil && s.state != magicStateFinished {
 		s.state = magicStateFinished
 		s.base.reschedule(time.Nanosecond)
-		return false
+		return
 	}
 
-	if len(analyzer.blocks.goalsRemoved) > 0 {
+	if goalRemoved {
 		s.state = magicStateActivated
-		s.base.reschedule(time.Microsecond)
+		s.base.reschedule(time.Nanosecond)
 	}
-
-	return false
 }
 
 func (s *Magic) Sweep(p event.Pusher) {
@@ -242,9 +260,8 @@ func (s *Magic) effectBigO() {
 
 		ctrls := byte(f.Ctrls())
 		for ctrlIdx := range ctrls {
-			ctrl := f.Ctrl(ctrlIdx)
-			for pieceCount := ctrl.PieceCount; ; pieceCount++ {
-				if !ctrl.Feed.Overridden(pieceCount) {
+			for pieceCount := f.CtrlPieceCount(ctrlIdx); ; pieceCount++ {
+				if !f.CtrlPieceOverridden(ctrlIdx, pieceCount) {
 					o.Pusher.Push(op.NewPieceOverride(ctrlIdx, piece.NewO(block.Rock), pieceCount))
 					break
 				}
@@ -281,7 +298,7 @@ func (s *Magic) effectSpawnGnaw() {
 			continue
 		}
 
-		o.GnawAdd(xy.X, xy.Y)
+		o.Pusher.Push(op.NewFieldGnaw(xy.X, xy.Y, 10, 1000, 0))
 	}
 }
 
