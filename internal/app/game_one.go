@@ -69,7 +69,7 @@ func (app *App) gameSinglePlayer(ctx screen.Context) types.GameOneParams {
 	}
 
 	g := core.MakeHost(setup, core.HostOptions{
-		StartPaused: false,
+		Init: core.Init(s.Init),
 	})
 
 	// go-routine for processing events for the field

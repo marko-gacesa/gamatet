@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package app
@@ -10,6 +10,27 @@ import (
 	"github.com/marko-gacesa/gamatet/internal/config/key"
 	. "github.com/marko-gacesa/gamatet/internal/i18n"
 )
+
+func fieldInitStr(q setup.FieldInit) string {
+	switch q {
+	case setup.FieldInitEmpty:
+		return T(KeyFieldInitEmpty)
+	case setup.FieldInitLowSparseBlocks:
+		return T(KeyFieldInitLowSparseBlocks)
+	case setup.FieldInitLowDenseBlocks:
+		return T(KeyFieldInitLowDenseBlocks)
+	case setup.FieldInitHighSparseBlocks:
+		return T(KeyFieldInitHighSparseBlocks)
+	case setup.FieldInitHighDenseBlocks:
+		return T(KeyFieldInitHighDenseBlocks)
+	case setup.FieldInitFunnel:
+		return T(KeyFieldInitFunnel)
+	case setup.FieldInitTriangle:
+		return T(KeyFieldInitTriangle)
+	default:
+		return "?"
+	}
+}
 
 func pieceTypeStr(t setup.PieceType) string {
 	switch t {

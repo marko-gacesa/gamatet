@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/marko-gacesa/channel"
 	"github.com/marko-gacesa/gamatet/game/action"
@@ -227,8 +228,9 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 		Fields:   fields,
 		ActionCh: actionCh,
 	}, core.HostOptions{
-		Latencies:   latencies,
-		StartPaused: true,
+		Latencies:       latencies,
+		Init:            core.Init(s.Init),
+		StartUpDuration: 5 * time.Second,
 	})
 
 	// Go-routine for processing events for the field.

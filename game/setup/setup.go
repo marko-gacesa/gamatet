@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package setup
@@ -290,6 +290,7 @@ type FieldOptions struct {
 	WidthPerPlayer byte
 	Height         byte
 	Speed          byte
+	Init           FieldInit
 }
 
 func (o *FieldOptions) Write(w *bitdata.Writer) {
@@ -297,6 +298,7 @@ func (o *FieldOptions) Write(w *bitdata.Writer) {
 	w.Write8(o.WidthPerPlayer-MinFieldWidthPerPlayer, 3) // 4..10 -> 0..6 -> 3 bits
 	w.Write8(o.Height-MinFieldHeight, 6)                 // 4..40 -> 0..36 -> 6 bits
 	w.Write8(o.Speed, 4)                                 // 0..15 -> 4 bits
+	w.Write8(uint8(o.Init), 5)
 }
 
 func (o *FieldOptions) Read(r *bitdata.ReaderError) {
@@ -304,6 +306,7 @@ func (o *FieldOptions) Read(r *bitdata.ReaderError) {
 	o.WidthPerPlayer = r.Read8(3) + MinFieldWidthPerPlayer
 	o.Height = r.Read8(6) + MinFieldHeight
 	o.Speed = r.Read8(4)
+	o.Init = FieldInit(r.Read8(5))
 }
 
 func (o *FieldOptions) Sanitize() bool {
@@ -323,6 +326,9 @@ func (o *FieldOptions) Sanitize() bool {
 	if o.Speed > MaxSpeed {
 		o.Speed = DefaultSpeed
 		sanitized = true
+	}
+	if !slices.Contains(FieldInits, o.Init) {
+		o.Init = FieldInitEmpty
 	}
 	return sanitized
 }

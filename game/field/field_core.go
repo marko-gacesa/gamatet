@@ -99,8 +99,6 @@ const (
 	MaxHeight = 40
 )
 
-const StartupDuration = 5 * time.Second
-
 func Make(dimW, dimH, pieceCount int) (f *Field) {
 	if dimW < MinWidth {
 		panic("too narrow")
@@ -126,7 +124,7 @@ func Make(dimW, dimH, pieceCount int) (f *Field) {
 		doneCh: make(chan struct{}),
 		startup: startup{
 			createdAt: time.Now(),
-			duration:  StartupDuration,
+			duration:  0,
 		},
 	}
 
@@ -190,6 +188,10 @@ func (f *Field) Unpause() {
 		ctrl.PausedState = piece.StatePause
 		ctrl.RestartTimer(0)
 	}
+}
+
+func (f *Field) SetStartUpDuration(d time.Duration) {
+	f.startup.duration = d
 }
 
 func (f *Field) Anim(a anim.Anim) {
@@ -259,6 +261,15 @@ func (f *Field) UpdateEffect(effect Effect, effectSeconds byte) {
 
 func (f *Field) GetEffect() (Effect, byte) {
 	return f.stats.effect, f.stats.effectSeconds
+}
+
+func (f *Field) CtrlWidth() int {
+	if f.Ctrls() == 0 {
+		return f.GetWidth()
+	}
+
+	limits := f.Ctrl(0).ColumnLimit
+	return limits.Max - limits.Min + 1
 }
 
 func (f *Field) setXY(x, y int, b block.Block) *anim.List {

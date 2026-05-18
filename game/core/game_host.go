@@ -44,9 +44,9 @@ type GameHost struct {
 
 type HostOptions struct {
 	field.RenderOptions
-	Latencies   *latency.List
-	Init        func(f *field.Field, p event.Pusher)
-	StartPaused bool
+	Latencies       *latency.List
+	Init            func(f field.Reader, p event.Pusher)
+	StartUpDuration time.Duration
 }
 
 type hostFieldData struct {
@@ -86,6 +86,7 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 		f.Config = setup.Config.FieldConfig
 		f.Seed(setup.Config.RandomSeed)
 		f.RenderOptions = options.RenderOptions
+		f.SetStartUpDuration(options.StartUpDuration)
 
 		for j := range players {
 			ctrl := f.Ctrl(byte(j))
@@ -237,9 +238,9 @@ func (g *GameHost) Perform(ctx context.Context) {
 	}())
 
 	startDelay := time.Nanosecond
-	if g.options.StartPaused {
+	if g.options.StartUpDuration > 0 {
 		g.stateTransitionGetReady()
-		startDelay = field.StartupDuration
+		startDelay = g.options.StartUpDuration
 	}
 
 	g.applyEvents() // apply the state transition

@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package setup
@@ -36,6 +36,7 @@ func SinglePlayerPresetRotTetrominoes() Setup {
 			WidthPerPlayer: DefaultFieldWidth,
 			Height:         DefaultFieldHeight,
 			Speed:          DefaultSpeed,
+			Init:           FieldInitEmpty,
 		},
 		PieceOptions: PieceOptions{
 			PieceType:     PieceTypeRotatingPolyominoes,
@@ -64,6 +65,7 @@ func SinglePlayerPresetRotPentominoes() Setup {
 			WidthPerPlayer: DefaultFieldWidth,
 			Height:         DefaultFieldHeight,
 			Speed:          DefaultSpeed,
+			Init:           FieldInitEmpty,
 		},
 		PieceOptions: PieceOptions{
 			PieceType:     PieceTypeRotatingPolyominoes,
@@ -92,6 +94,7 @@ func SinglePlayerPresetRotMiniminoes() Setup {
 			WidthPerPlayer: MinFieldWidthPerPlayer,
 			Height:         MaxFieldHeight,
 			Speed:          10,
+			Init:           FieldInitEmpty,
 		},
 		PieceOptions: PieceOptions{
 			PieceType:     PieceTypeRotatingPolyominoes,
@@ -132,6 +135,7 @@ func MultiPlayerPresetCoop2() Setup {
 			WidthPerPlayer: DefaultFieldWidth - 2,
 			Height:         DefaultFieldHeight,
 			Speed:          DefaultSpeed,
+			Init:           FieldInitEmpty,
 		},
 		PieceOptions: PieceOptions{
 			PieceType:     PieceTypeRotatingPolyominoes,
@@ -160,6 +164,7 @@ func MultiPlayerPresetBattle1vs1() Setup {
 			WidthPerPlayer: DefaultFieldWidth,
 			Height:         DefaultFieldHeight,
 			Speed:          DefaultSpeed,
+			Init:           FieldInitEmpty,
 		},
 		PieceOptions: PieceOptions{
 			PieceType:     PieceTypeRotatingPolyominoes,
@@ -188,6 +193,7 @@ func MultiPlayerPresetBattle2vs2() Setup {
 			WidthPerPlayer: DefaultFieldWidth,
 			Height:         DefaultFieldHeight,
 			Speed:          DefaultSpeed,
+			Init:           FieldInitEmpty,
 		},
 		PieceOptions: PieceOptions{
 			PieceType:     PieceTypeRotatingPolyominoes,

@@ -149,6 +149,8 @@ setup_field_height                = Field height
 setup_field_height_desc           = Height of the playing field.
 setup_field_speed                 = Initial speed
 setup_field_speed_desc            = The speed level with which player pieces fall during a game.
+setup_field_init                  = Field initialization
+setup_field_init_desc             = Blocks that are placed on the field before the game starts.
 setup_show_piece_options          = Show piece options
 setup_show_piece_options_desc     = Show options for player pieces.
 setup_piece_type                  = Pieces type
@@ -225,6 +227,16 @@ menu_back_desc = Go back to the previous menu.
 
 error                           = Error
 error_too_many_players          = The preset defined too many players. Maximum is %d.
+
+# Field enumerations
+
+field_init_empty              = Empty field
+field_init_low_sparse_blocks  = Low sparse random blocks
+field_init_low_dense_blocks   = Low dense random blocks
+field_init_high_sparse_blocks = High sparse random blocks
+field_init_high_dense_blocks  = High dense random blocks
+field_init_funnel             = Funnel
+field_init_triangle           = Triangle
 
 # Piece enumerations
 

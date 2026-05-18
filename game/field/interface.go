@@ -23,6 +23,7 @@ type Reader interface {
 	CtrlPieceCount(idx byte) uint
 	CtrlPieceOverridden(ctrlIdx byte, pieceIdx uint) bool
 	CtrlStateIsTerminal(ctrlIdx byte) bool
+	CtrlWidth() int
 
 	CanMovePiece(dx, dy, pIdx int, liftAll bool) (success bool)
 	CanRotatePiece(pIdx int, liftAll bool) (success bool, inverted bool, dx, dy int, rotated piece.Piece)

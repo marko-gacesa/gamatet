@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package app
@@ -28,6 +28,11 @@ func setupSingle(s *setup.Setup, sections *setupSections) []menu.Item {
 			})),
 		menu.NewInteger(&s.FieldOptions.Speed, setup.MinSpeed, setup.MaxSpeed,
 			"\t"+T(KeySetupFieldSpeed), T(KeySetupFieldSpeedDesc),
+			menu.WithVisible(func() bool {
+				return sections.showField
+			})),
+		menu.NewEnum(&s.FieldOptions.Init, setup.FieldInits, fieldInitStr,
+			"\t"+T(KeySetupFieldInit), T(KeySetupFieldInitDesc),
 			menu.WithVisible(func() bool {
 				return sections.showField
 			})),

@@ -43,6 +43,7 @@ type InterpreterOptions struct {
 	SinceLastContactFn  func() time.Duration
 	Latencies           *latency.List
 	StartPaused         bool
+	StartUpDuration     time.Duration
 }
 
 type interpreterFieldData struct {
@@ -75,6 +76,7 @@ func MakeInterpreter(setup Setup, options InterpreterOptions) *GameInterpreter {
 		f.Idx = i
 		f.Config = setup.Config.FieldConfig
 		f.RenderOptions = options.RenderOptions
+		f.SetStartUpDuration(options.StartUpDuration)
 
 		for j := range players {
 			ctrl := f.Ctrl(byte(j))

@@ -154,6 +154,8 @@ const (
 	KeySetupFieldHeightDesc         = "setup_field_height_desc"
 	KeySetupFieldSpeed              = "setup_field_speed"
 	KeySetupFieldSpeedDesc          = "setup_field_speed_desc"
+	KeySetupFieldInit               = "setup_field_init"
+	KeySetupFieldInitDesc           = "setup_field_init_desc"
 	KeySetupShowPieceOptions        = "setup_show_piece_options"
 	KeySetupShowPieceOptionsDesc    = "setup_show_piece_options_desc"
 	KeySetupPieceType               = "setup_piece_type"
@@ -223,6 +225,14 @@ const (
 
 	KeyError               = "error"
 	KeyErrorTooManyPlayers = "error_too_many_players"
+
+	KeyFieldInitEmpty            = "field_init_empty"
+	KeyFieldInitLowSparseBlocks  = "field_init_low_sparse_blocks"
+	KeyFieldInitLowDenseBlocks   = "field_init_low_dense_blocks"
+	KeyFieldInitHighSparseBlocks = "field_init_high_sparse_blocks"
+	KeyFieldInitHighDenseBlocks  = "field_init_high_dense_blocks"
+	KeyFieldInitFunnel           = "field_init_funnel"
+	KeyFieldInitTriangle         = "field_init_triangle"
 
 	KeyPieceTypeRotatingPolyominoes   = "piece_type_rotating_polyominoes"
 	KeyPieceTypeHMirroringPolyominoes = "piece_type_h_mirroring_polyominoes"

@@ -20,55 +20,106 @@ func putBlock(p event.Pusher, x, y int, b block.Block) {
 	p.Push(op.NewFieldBlockSet(x, y, op.TypeSet, field.AnimNo, 0, b))
 }
 
-func InitRandomBlocks(f *field.Field, p event.Pusher) {
-	rnd := f.Random(0)
-	w := f.GetWidth()
-	n := w + w/2
-	m := make(map[block.XY]struct{})
-	c := piece.NewRandomColor(setup.ColorRGB[:], 0)
-	for len(m) < n {
-		xy := block.XY{
-			X: rnd.Int(w),
-			Y: rnd.Int(4),
-		}
-		if _, exists := m[xy]; exists {
-			continue
-		}
-
-		conjureBlock(p, xy.X, xy.Y, block.Block{
-			Type:     block.TypeRock,
-			Hardness: 0,
-			Color:    c.Color(uint(xy.Y*w+xy.X), 0),
-		})
-		m[xy] = struct{}{}
+func Init(q setup.FieldInit) func(f field.Reader, p event.Pusher) {
+	switch q {
+	default:
+		fallthrough
+	case setup.FieldInitEmpty:
+		return nil
+	case setup.FieldInitLowSparseBlocks:
+		return InitLowSparseBlocks
+	case setup.FieldInitLowDenseBlocks:
+		return InitLowDenseBlocks
+	case setup.FieldInitHighSparseBlocks:
+		return InitHighSparseBlocks
+	case setup.FieldInitHighDenseBlocks:
+		return InitHighDenseBlocks
+	case setup.FieldInitFunnel:
+		return InitFunnel
+	case setup.FieldInitTriangle:
+		return InitTriangle
 	}
 }
 
-func InitTriangle(f *field.Field, p event.Pusher) {
-	w := f.GetWidth()
-	h := f.GetHeight()
+func InitLowSparseBlocks(f field.Reader, p event.Pusher) {
+	initRandomBlocks(0.3, 0.2, f, p)
+}
+func InitLowDenseBlocks(f field.Reader, p event.Pusher) {
+	initRandomBlocks(0.7, 0.2, f, p)
+}
+func InitHighSparseBlocks(f field.Reader, p event.Pusher) {
+	initRandomBlocks(0.3, 0.45, f, p)
+}
+func InitHighDenseBlocks(f field.Reader, p event.Pusher) {
+	initRandomBlocks(0.7, 0.45, f, p)
+}
+
+func initRandomBlocks(fillPercent, heightPercent float32, f field.Reader, p event.Pusher) {
+	fullWidth := f.GetWidth()
+	playerWidth := f.CtrlWidth()
+	playerCount := f.Ctrls()
+
+	height := int(float32(f.GetHeight()) * heightPercent)
+	blockPerLine := int(float32(playerWidth) * fillPercent)
+
 	c := piece.NewRandomColor(setup.ColorRGB[:], 0)
-	d := min(w, h)
-	for y := range d {
-		for x := w - d + 1 + y; x < w; x++ {
-			idx := y*w + x
+	buffer := make([]uint, playerWidth)
+	rnd := f.Random(0)
+
+	for y := range height {
+		for i := range buffer {
+			buffer[i] = uint(i)
+		}
+		rnd.Perm(buffer)
+
+		line := buffer[:blockPerLine]
+
+		for i := range line {
+			for k := range playerCount {
+				x := k*playerWidth + int(line[i])
+				if x < fullWidth {
+					b := block.Block{Type: block.TypeRock, Color: c.Color(uint(y*playerWidth+x), byte(k))}
+					conjureBlock(p, x, y, b)
+				}
+			}
+		}
+	}
+}
+
+func InitTriangle(f field.Reader, p event.Pusher) {
+	playerWidth := f.CtrlWidth()
+	fullWidth := f.GetWidth()
+	height := f.GetHeight()
+
+	c := piece.NewRandomColor(setup.ColorRGB[:], 0)
+
+	for x := range fullWidth {
+		var m int
+		if playerWidth > height {
+			m = x%playerWidth - playerWidth + height
+		} else {
+			m = x % playerWidth
+		}
+		for y := 0; y < m; y++ {
+			idx := y*fullWidth + x
 			putBlock(p, x, y, block.Block{
-				Type:     block.TypeRock,
-				Hardness: 0,
-				Color:    c.Color(uint(idx), byte(idx%8)),
+				Type:  block.TypeRock,
+				Color: c.Color(uint(idx), byte(x/playerWidth)),
 			})
 		}
 	}
 }
 
-func InitFunnel(f *field.Field, p event.Pusher) {
-	w := f.GetWidth()
-	h := f.GetHeight()
-	d := min((w-1)/2, h)
-	for y := range d {
-		for x := 0; x < d-y; x++ {
-			putBlock(p, x, y, block.Wall)
-			putBlock(p, w-x-1, y, block.Wall)
+func InitFunnel(f field.Reader, p event.Pusher) {
+	playerWidth := f.CtrlWidth()
+	playerCount := f.Ctrls()
+
+	for k := range playerCount {
+		for x := range playerWidth / 2 {
+			for y := 0; y < playerWidth/2-x-1; y++ {
+				putBlock(p, k*playerWidth+x, y, block.Wall)
+				putBlock(p, (k+1)*playerWidth-x-1, y, block.Wall)
+			}
 		}
 	}
 }

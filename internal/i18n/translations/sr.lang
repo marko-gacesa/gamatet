@@ -149,6 +149,8 @@ setup_field_height                = Висина поља
 setup_field_height_desc           = Висина поља за игру.
 setup_field_speed                 = Почетна брзина
 setup_field_speed_desc            = Ниво брзине којим фигуре играча падају током игре.
+setup_field_init                  = Почетно стање поља
+setup_field_init_desc             = Блокови који се постављају на поље пре почетка игре.
 setup_show_piece_options          = Подешавања фигура
 setup_show_piece_options_desc     = Приказ подешавања фигура за играче.
 setup_piece_type                  = Врста фигура
@@ -225,6 +227,16 @@ menu_back_desc = Вратите се на претходни мени.
 
 error                           = Грешка
 error_too_many_players          = Поставка игре има превише играча. Дозвољено је највише %d.
+
+# Field enumerations
+
+field_init_empty              = Празно поље
+field_init_low_sparse_blocks  = Ниски ретки насумични блокови
+field_init_low_dense_blocks   = Ниски густи насумични блокови
+field_init_high_sparse_blocks = Високи ретки насумични блокови
+field_init_high_dense_blocks  = Високи густи насумични блокови
+field_init_funnel             = Левак
+field_init_triangle           = Троугао
 
 # Piece enumerations
 
