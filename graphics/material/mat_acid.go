@@ -44,5 +44,5 @@ void main() {
 	intensity *= intensity;
 	vec3 finalColor = objectColor.rbg * mix(color1, color2, intensity) + diffuse * 0.2;
 
-    outputColor = vec4(finalColor, 1.0);
+	outputColor = vec4(finalColor, 1.0);
 }` + z

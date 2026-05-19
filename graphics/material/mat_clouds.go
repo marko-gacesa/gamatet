@@ -85,12 +85,12 @@ float hash(vec2 p) {
 float noise(vec2 p) {
 	vec2 i = floor(p);
 	vec2 f = fract(p);
-	
+
 	float a = hash(i);
 	float b = hash(i + vec2(1.0, 0.0));
 	float c = hash(i + vec2(0.0, 1.0));
 	float d = hash(i + vec2(1.0, 1.0));
-	
+
 	vec2 u = f * f * (3.0 - 2.0 * f);
 	return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
 }
@@ -110,10 +110,10 @@ float fbm(vec2 frequency, int octaves) {
 void main() {
 	vec2 uv = gl_FragCoord.xy / resolution.xy;
 	uv.x *= resolution.x / resolution.y; // keep aspect ratio correct
-	
+
 	// slow cloud movement
 	vec2 motion = vec2(time * 0.3, time * 0.04); // hardcoded cloud movement vector (0.3, 0.04)
-	
+
 	// generate cloud field, several layers
 	float n = 0.0;
 	n += 1.0 * fbm(uv * 8.0 + motion, 4); // small blurry patches
@@ -121,7 +121,7 @@ void main() {
 	n += 0.5 * fbm(uv * 5.0 + motion, 8); // medium detail clouds
 	n /= 1.7; // normalize
 	float clouds = smoothstep(0.45, 0.75, n);
-	
+
 	vec3 backColor = mix(backColorGrad0, backColorGrad1, uv.y);
 	vec3 color = mix(backColor, cloudColor, clouds);
 
