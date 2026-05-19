@@ -17,68 +17,49 @@ func setupSingle(s *setup.Setup, sections *setupSections) []menu.Item {
 			T(KeySetupShowFieldOptions), T(KeySetupShowFieldOptionsDesc)),
 		menu.NewInteger(&s.FieldOptions.WidthSingle, setup.MinFieldWidthPerPlayer, setup.MaxFieldWidthSingle,
 			"\t"+T(KeySetupFieldWidth), T(KeySetupFieldWidthDesc),
-			menu.WithVisible(func() bool {
-				return sections.showField
-			}),
+			menu.WithVisible(sections.showFieldSect),
 		),
 		menu.NewInteger(&s.FieldOptions.Height, setup.MinFieldHeight, setup.MaxFieldHeight,
 			"\t"+T(KeySetupFieldHeight), T(KeySetupFieldHeightDesc),
-			menu.WithVisible(func() bool {
-				return sections.showField
-			})),
+			menu.WithVisible(sections.showFieldSect)),
 		menu.NewInteger(&s.FieldOptions.Speed, setup.MinSpeed, setup.MaxSpeed,
 			"\t"+T(KeySetupFieldSpeed), T(KeySetupFieldSpeedDesc),
-			menu.WithVisible(func() bool {
-				return sections.showField
-			})),
+			menu.WithVisible(sections.showFieldSect)),
 		menu.NewEnum(&s.FieldOptions.Init, setup.FieldInits, fieldInitStr,
 			"\t"+T(KeySetupFieldInit), T(KeySetupFieldInitDesc),
-			menu.WithVisible(func() bool {
-				return sections.showField
-			})),
+			menu.WithVisible(sections.showFieldSect)),
 
 		menu.NewEnum(&sections.showPiece, []bool{false, true}, sections.showPieceStr,
 			T(KeySetupShowPieceOptions), T(KeySetupShowPieceOptionsDesc)),
 		menu.NewEnum(&s.PieceOptions.PieceType, setup.PieceTypeAll, pieceTypeStr,
 			"\t"+T(KeySetupPieceType), T(KeySetupPieceTypeDesc),
-			menu.WithVisible(func() bool {
-				return sections.showPiece
-			})),
+			menu.WithVisible(sections.showPieceSect)),
 		menu.NewEnum(&s.PieceOptions.PieceSize, setup.PieceSizeAll, pieceSizeStr,
 			"\t"+T(KeySetupPieceSize), T(KeySetupPieceSizeDesc),
-			menu.WithVisible(func() bool {
-				return sections.showPiece
-			})),
+			menu.WithVisible(sections.showPieceSect)),
 		menu.NewBool(&s.PieceOptions.SpecialBlocks,
 			"\t"+T(KeySetupPieceSpecialBlocks), T(KeySetupPieceSpecialBlocksDesc),
-			menu.WithVisible(func() bool {
-				return sections.showPiece
-			}),
+			menu.WithVisible(sections.showPieceSect),
 			withBoolStr()),
 		menu.NewBool(&s.PieceOptions.Shooters,
 			"\t"+T(KeySetupPieceShooters), T(KeySetupPieceShootersDesc),
-			menu.WithVisible(func() bool {
-				return sections.showPiece
-			}),
+			menu.WithVisible(sections.showPieceSect),
 			withBoolStr()),
 		menu.NewInteger(&s.PieceOptions.BagSize, 1, setup.BagSizeMax,
 			"\t"+T(KeySetupBagSize), T(KeySetupBagSizeDesc),
-			menu.WithVisible(func() bool {
-				return sections.showPiece
-			})),
+			menu.WithVisible(sections.showPieceSect)),
 
 		menu.NewEnum(&sections.showMisc, []bool{false, true}, sections.showMiscStr,
-			T(KeySetupShowMiscOptions), T(KeySetupShowMiscOptionsDesc)),
+			T(KeySetupShowMiscOptions), T(KeySetupShowMiscOptionsDesc),
+			menu.WithVisible(sections.showMiscSectToggle)),
 		menu.NewBool(&s.MiscOptions.CustomSeed,
 			"\t"+T(KeySetupCustomRandomSeed), T(KeySetupCustomRandomSeedDesc),
-			menu.WithVisible(func() bool {
-				return sections.showMisc
-			}),
+			menu.WithVisible(sections.showMiscSect),
 			withBoolStr()),
 		menu.NewNumber(&s.MiscOptions.Seed, math.MinInt64, math.MaxInt64,
 			"\t"+T(KeySetupRandomSeed), T(KeySetupRandomSeedDesc),
 			menu.WithVisible(func() bool {
-				return sections.showMisc && s.MiscOptions.CustomSeed
+				return sections.showMiscSect() && s.MiscOptions.CustomSeed
 			})),
 	}
 }

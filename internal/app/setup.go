@@ -67,6 +67,7 @@ func rotationDirCWStr(dir bool) string {
 }
 
 type setupSections struct {
+	advMiscSect  bool
 	showField    bool
 	showPiece    bool
 	showMisc     bool
@@ -75,8 +76,9 @@ type setupSections struct {
 	showMiscMap  map[bool]string
 }
 
-func newSetupSections() *setupSections {
+func newSetupSections(advMiscSect bool) *setupSections {
 	return &setupSections{
+		advMiscSect:  advMiscSect,
 		showField:    false,
 		showPiece:    false,
 		showMisc:     false,
@@ -98,6 +100,12 @@ func (sections *setupSections) refresh(s *setup.Setup) {
 func (sections *setupSections) showFieldsStr(b bool) string { return sections.showFieldMap[b] }
 func (sections *setupSections) showPieceStr(b bool) string  { return sections.showPieceMap[b] }
 func (sections *setupSections) showMiscStr(b bool) string   { return sections.showMiscMap[b] }
+
+func (sections *setupSections) showFieldSect() bool { return sections.showField }
+func (sections *setupSections) showPieceSect() bool { return sections.showPiece }
+func (sections *setupSections) showMiscSect() bool  { return sections.showMisc && sections.advMiscSect }
+
+func (sections *setupSections) showMiscSectToggle() bool { return sections.advMiscSect }
 
 type setupKeySection struct {
 	showKeys    bool

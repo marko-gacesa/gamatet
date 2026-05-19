@@ -1,4 +1,4 @@
-// Copyright (c) 2024, 2025 by Marko Gaćeša
+// Copyright (c) 2024-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package app
@@ -82,7 +82,7 @@ func (app *App) menuSinglePlayerSetup(ctx screen.Context, presetIdx int, nextRou
 		s.MiscOptions.Seed = rand.Int64()
 	}
 
-	sections := newSetupSections()
+	sections := newSetupSections(app.cfg.Advanced.ShowGameSetupMisc)
 	sections.refresh(&s)
 
 	items := make([]menu.Item, 0, 32)

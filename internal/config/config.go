@@ -1,4 +1,4 @@
-// Copyright (c) 2024, 2025 by Marko Gaćeša
+// Copyright (c) 2024-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package config
@@ -9,6 +9,7 @@ type Config struct {
 	Network      Network      `json:"network"`
 	Video        Video        `json:"video"`
 	Presets      Presets      `json:"presets"`
+	Advanced     Advanced     `json:"advanced"`
 }
 
 func (cfg *Config) Sanitize() {
