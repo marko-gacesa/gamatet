@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 by Marko Gaćeša
+// Copyright (c) 2020-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package main
@@ -37,6 +37,7 @@ func main() {
 
 	globalCtx := appctx.Context
 	appCtx, appCtxStop := context.WithCancel(globalCtx)
+	defer appCtxStop()
 
 	app := app.NewApp(appCtx, logger, cfg, cfgPath)
 	app.Log().Info("Config", "path", cfgPath)
@@ -45,8 +46,4 @@ func main() {
 	if err != nil {
 		app.Log().Error("Stopped", "error", err)
 	}
-
-	appCtxStop()
-
-	app.WaitDone()
 }

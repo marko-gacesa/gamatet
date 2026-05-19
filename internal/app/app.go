@@ -93,12 +93,7 @@ func NewApp(ctx context.Context, logger *slog.Logger, cfg config.Config, cfgPath
 		udpService:      udpService,
 		gameServer:      gameServer,
 		logger:          logger,
-		wg:              wg,
 	}
-}
-
-func (app *App) WaitDone() {
-	app.wg.Wait()
 }
 
 func (app *App) SetScreener(screener screen.Screener) {
