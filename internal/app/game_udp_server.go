@@ -180,14 +180,14 @@ func (app *App) _gameUDPServer(ctx screen.Context, session *server.Session, clie
 
 	var (
 		zones          = s.GameOptions.PlayerZones
+		teamSize       = s.GameOptions.TeamSize
 		pieceCollision = s.GameOptions.PieceCollision
 		fieldW         = s.FieldOptions.WidthSingle
 		fieldH         = s.FieldOptions.Height
 		speed          = s.FieldOptions.Speed
 		seed           = int(s.MiscOptions.Seed)
 	)
-
-	if playerCount := s.PlayerCount(); playerCount > 1 {
+	if teamSize > 1 {
 		fieldW = s.WidthPerPlayer
 	}
 

@@ -173,26 +173,18 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 
 	var (
 		zones          = s.GameOptions.PlayerZones
+		teamSize       = s.GameOptions.TeamSize
 		pieceCollision = s.GameOptions.PieceCollision
 		fieldW         = s.FieldOptions.WidthSingle
 		fieldH         = s.FieldOptions.Height
 		speed          = s.FieldOptions.Speed
 		seed           = int(s.MiscOptions.Seed)
 	)
-
-	if playerCount := s.PlayerCount(); playerCount > 1 {
+	if teamSize > 1 {
 		fieldW = s.WidthPerPlayer
 	}
 
 	actionCh := make(chan action.Action)
-
-	var localPlayerCh chan<- []byte
-	for i := range playerInChs {
-		if playerInChs[i] != nil {
-			localPlayerCh = playerInChs[i]
-			break
-		}
-	}
 
 	playerNames := func() []string {
 		names := make([]string, 0)
@@ -209,6 +201,14 @@ func (app *App) _gameUDPClient(ctx screen.Context, session *client.Session, serv
 	}, func(l []udpstar.LatencyActor) string {
 		return latenciesToString(l, playerNames)
 	})
+
+	var localPlayerCh chan<- []byte
+	for i := range playerInChs {
+		if playerInChs[i] != nil {
+			localPlayerCh = playerInChs[i]
+			break
+		}
+	}
 
 	gameInterpreter := core.MakeInterpreter(core.Setup{
 		Name: session.Name,
