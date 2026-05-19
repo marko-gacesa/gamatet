@@ -1,9 +1,9 @@
 .vscode
 .idea
+.zed
 .DS_Store
 *.exe
 debug
 debug.test
 gamatet
 gmt
-tet
