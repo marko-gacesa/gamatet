@@ -28,3 +28,16 @@ func (f *Field) CtrlPieceOverridden(ctrlIdx byte, pieceIdx uint) bool {
 func (f *Field) CtrlStateIsTerminal(ctrlIdx byte) bool {
 	return f.Ctrl(ctrlIdx).State.IsTerminal()
 }
+
+func (f *Field) CtrlWidth() int {
+	if f.Ctrls() == 0 {
+		return f.GetWidth()
+	}
+
+	limits := f.Ctrl(0).ColumnLimit
+	return limits.Max - limits.Min + 1
+}
+
+func (f *Field) CtrlPlayerIndex(idx byte) byte {
+	return f.Ctrl(idx).PlayerIndex
+}

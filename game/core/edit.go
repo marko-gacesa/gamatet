@@ -78,7 +78,8 @@ func initRandomBlocks(fillPercent, heightPercent float32, f field.Reader, p even
 			for k := range playerCount {
 				x := k*playerWidth + int(line[i])
 				if x < fullWidth {
-					b := block.Block{Type: block.TypeRock, Color: c.Color(uint(y*playerWidth+x), byte(k))}
+					playerIdx := f.CtrlPlayerIndex(byte(k))
+					b := block.Block{Type: block.TypeRock, Color: c.Color(uint(y*playerWidth+x), playerIdx)}
 					conjureBlock(p, x, y, b)
 				}
 			}

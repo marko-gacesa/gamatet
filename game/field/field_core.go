@@ -263,15 +263,6 @@ func (f *Field) GetEffect() (Effect, byte) {
 	return f.stats.effect, f.stats.effectSeconds
 }
 
-func (f *Field) CtrlWidth() int {
-	if f.Ctrls() == 0 {
-		return f.GetWidth()
-	}
-
-	limits := f.Ctrl(0).ColumnLimit
-	return limits.Max - limits.Min + 1
-}
-
 func (f *Field) setXY(x, y int, b block.Block) *anim.List {
 	idx := y*f.w + x
 	f.blocks[idx].Block = b
