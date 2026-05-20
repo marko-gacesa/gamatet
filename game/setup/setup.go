@@ -40,7 +40,7 @@ const (
 )
 
 type Setup struct {
-	Name string
+	Name string `json:"name"`
 	GameOptions
 	FieldOptions
 	PieceOptions
@@ -286,11 +286,11 @@ func (o *GameOptions) String() string {
 }
 
 type FieldOptions struct {
-	WidthSingle    byte
-	WidthPerPlayer byte
-	Height         byte
-	Speed          byte
-	Init           FieldInit
+	WidthSingle    byte      `json:"width_single"`
+	WidthPerPlayer byte      `json:"width_per_player"`
+	Height         byte      `json:"height"`
+	Speed          byte      `json:"speed"`
+	Init           FieldInit `json:"init"`
 }
 
 func (o *FieldOptions) Write(w *bitdata.Writer) {
@@ -354,11 +354,11 @@ func (o *FieldOptions) String(teamSize byte) string {
 }
 
 type PieceOptions struct {
-	PieceType     PieceType
-	PieceSize     byte
-	SpecialBlocks bool
-	Shooters      bool
-	BagSize       byte
+	PieceType     PieceType `json:"piece_type"`
+	PieceSize     byte      `json:"piece_size"`
+	SpecialBlocks bool      `json:"special_blocks"`
+	Shooters      bool      `json:"shooters"`
+	BagSize       byte      `json:"bag_size"`
 }
 
 func (o *PieceOptions) Write(w *bitdata.Writer) {
@@ -426,8 +426,8 @@ func (o *PieceOptions) String() string {
 }
 
 type MiscOptions struct {
-	CustomSeed bool
-	Seed       int64
+	CustomSeed bool  `json:"custom_seed"`
+	Seed       int64 `json:"seed"`
 }
 
 func (o *MiscOptions) Write(w *bitdata.Writer) {
