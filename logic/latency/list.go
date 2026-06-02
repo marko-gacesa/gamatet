@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package latency
@@ -26,8 +26,14 @@ func NewList(fn func() []udpstar.LatencyActor, strFn func(l []udpstar.LatencyAct
 			sb := strings.Builder{}
 			sb.WriteString("Latency:\n")
 			for i, v := range l {
-				sb.WriteString(fmt.Sprintf("%d. %s [%s] %dms\n",
-					i+1, v.Name, clientState(v.State), v.Latency.Milliseconds()))
+				switch v.State {
+				case udpstar.ClientStateNew, udpstar.ClientStateLocal, udpstar.ClientStateLost:
+					sb.WriteString(fmt.Sprintf("%d. %s [%s]\n",
+						i+1, v.Name, clientState(v.State)))
+				default:
+					sb.WriteString(fmt.Sprintf("%d. %s [%s] %dms\n",
+						i+1, v.Name, clientState(v.State), v.Latency.Milliseconds()))
+				}
 			}
 			return sb.String()
 		}

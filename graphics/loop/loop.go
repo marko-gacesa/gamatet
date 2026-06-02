@@ -160,7 +160,7 @@ func Loop(globalCtx context.Context, app *app.App) error {
 					"goroutines", runtime.NumGoroutine())
 			}()
 
-			scr.UpdateViewSize(window.GetFramebufferSize())
+			scr.UpdateViewSize(window.GetSize())
 
 			for isActive(done) {
 				scr.Prepare(time.Now())

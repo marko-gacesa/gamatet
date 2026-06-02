@@ -431,8 +431,14 @@ func latenciesToString(l []udpstar.LatencyActor, names []string) string {
 	sb.WriteString(i18n.T(i18n.KeyFieldLatency))
 	sb.WriteString(":\n")
 	for i, v := range l {
-		sb.WriteString(fmt.Sprintf("%d. %s [%s] %dms\n",
-			i+1, names[i], latencyState(v.State), v.Latency.Milliseconds()))
+		switch v.State {
+		case udpstar.ClientStateNew, udpstar.ClientStateLocal, udpstar.ClientStateLost:
+			sb.WriteString(fmt.Sprintf("%d. %s [%s]\n",
+				i+1, names[i], latencyState(v.State)))
+		default:
+			sb.WriteString(fmt.Sprintf("%d. %s [%s] %dms\n",
+				i+1, names[i], latencyState(v.State), v.Latency.Milliseconds()))
+		}
 	}
 	return sb.String()
 }
