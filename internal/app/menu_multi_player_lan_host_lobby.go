@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package app
@@ -99,7 +99,11 @@ func (app *App) menuMultiPlayerLANHostLobby(ctx screen.Context) *menu.Menu {
 			go func() {
 				var err error
 
-				app.resultServerSession, app.resultClientMap, err = app.gameServer.FinishLobby(ctx, lobbyToken)
+				app.resultServerSession, app.resultClientMap, err = app.gameServer.FinishLobby(
+					ctx,
+					lobbyToken,
+					udpstar.LobbyStateStarting,
+				)
 				if err != nil && !errors.Is(err, context.Canceled) {
 					app.logger.Error("failed to finish lobby", "err", err)
 				}

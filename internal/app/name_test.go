@@ -25,7 +25,7 @@ func TestName(t *testing.T) {
 		"عالم123":    "123",      // remove arabic
 		"\xFBAB\xF0": "AB",       // remove invalid
 
-		"0123456789-too-long-string-превише": "0123456789-too-long-string-преви",
+		"0123456789-too-long-string-превише": "0123456789-too-long-string-пре",
 	}
 
 	lang.DefineFallback(map[string]string{

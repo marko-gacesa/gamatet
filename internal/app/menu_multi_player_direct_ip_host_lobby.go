@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package app
@@ -12,6 +12,7 @@ import (
 	. "github.com/marko-gacesa/gamatet/internal/i18n"
 	"github.com/marko-gacesa/gamatet/logic/menu"
 	"github.com/marko-gacesa/gamatet/logic/screen"
+	"github.com/marko-gacesa/udpstar/udpstar"
 	"github.com/marko-gacesa/udpstar/udpstar/message"
 	"github.com/marko-gacesa/udpstar/udpstar/server"
 )
@@ -98,7 +99,11 @@ func (app *App) menuMultiPlayerDirectIPHostLobby(ctx screen.Context) *menu.Menu 
 		if start == 1 {
 			start++
 			go func() {
-				app.resultServerSession, app.resultClientMap, err = app.gameServer.FinishLobby(ctx, lobbyToken)
+				app.resultServerSession, app.resultClientMap, err = app.gameServer.FinishLobby(
+					ctx,
+					lobbyToken,
+					udpstar.LobbyStateStarting,
+				)
 				if err != nil && !errors.Is(err, context.Canceled) {
 					app.logger.Error("failed to finish lobby", "err", err)
 				}
