@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2024, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package rendercache
@@ -22,22 +22,30 @@ var ModelColorPool = modelColorPool{
 	pool: sync.Pool{
 		New: func() any {
 			list := make([]modelColor, 0, 256)
-			return ModelColorList(list)
+			return (*ModelColorList)(&list)
 		},
 	},
 }
 
-func (b *modelColorPool) Get() ModelColorList {
-	list := b.pool.Get().(ModelColorList)
-	list = list[:0]
+func (b *modelColorPool) Get() *ModelColorList {
+	list := b.pool.Get().(*ModelColorList)
+	*list = (*list)[:0]
 	return list
 }
 
-func (b *modelColorPool) Put(list ModelColorList) {
+func (b *modelColorPool) Put(list *ModelColorList) {
 	b.pool.Put(list)
 }
 
 type ModelColorList []modelColor
+
+func (p *ModelColorList) Len() int {
+	return len(*p)
+}
+
+func (p *ModelColorList) Get(i int) modelColor {
+	return (*p)[i]
+}
 
 func (p *ModelColorList) Add(model mgl32.Mat4, color mgl32.Vec4) {
 	*p = append(*p, modelColor{

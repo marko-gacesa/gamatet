@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package rendercache
@@ -29,23 +29,31 @@ func newModelColorValuePool[T cmp.Ordered]() modelColorValuePool[T] {
 		pool: sync.Pool{
 			New: func() any {
 				list := make([]modelColorValue[T], 0, 256)
-				return ModelColorValueList[T](list)
+				return (*ModelColorValueList[T])(&list)
 			},
 		},
 	}
 }
 
-func (b *modelColorValuePool[T]) Get() ModelColorValueList[T] {
-	list := b.pool.Get().(ModelColorValueList[T])
-	list = list[:0]
+func (b *modelColorValuePool[T]) Get() *ModelColorValueList[T] {
+	list := b.pool.Get().(*ModelColorValueList[T])
+	*list = (*list)[:0]
 	return list
 }
 
-func (b *modelColorValuePool[T]) Put(list ModelColorValueList[T]) {
+func (b *modelColorValuePool[T]) Put(list *ModelColorValueList[T]) {
 	b.pool.Put(list)
 }
 
 type ModelColorValueList[T cmp.Ordered] []modelColorValue[T]
+
+func (p *ModelColorValueList[T]) Len() int {
+	return len(*p)
+}
+
+func (p *ModelColorValueList[T]) Get(i int) modelColorValue[T] {
+	return (*p)[i]
+}
 
 func (p *ModelColorValueList[T]) Add(model mgl32.Mat4, color mgl32.Vec4, value T) {
 	*p = append(*p, modelColorValue[T]{

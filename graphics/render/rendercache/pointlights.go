@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2024, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package rendercache
@@ -19,22 +19,30 @@ var PointLightPool = PointLightsPool{
 	pool: sync.Pool{
 		New: func() any {
 			list := make([]material.PointLight, 0, 16)
-			return PointLights(list)
+			return (*PointLights)(&list)
 		},
 	},
 }
 
-func (b *PointLightsPool) Get() PointLights {
-	list := b.pool.Get().(PointLights)
-	list = list[:0]
+func (b *PointLightsPool) Get() *PointLights {
+	list := b.pool.Get().(*PointLights)
+	*list = (*list)[:0]
 	return list
 }
 
-func (b *PointLightsPool) Put(list PointLights) {
+func (b *PointLightsPool) Put(list *PointLights) {
 	b.pool.Put(list)
 }
 
 type PointLights []material.PointLight
+
+func (p *PointLights) Len() int {
+	return len(*p)
+}
+
+func (p *PointLights) Get(i int) material.PointLight {
+	return (*p)[i]
+}
 
 func (p *PointLights) Add(position mgl32.Vec3, color mgl32.Vec3, intensity float32) {
 	*p = append(*p, material.PointLight{
