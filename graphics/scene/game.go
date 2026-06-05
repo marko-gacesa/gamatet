@@ -18,6 +18,7 @@ import (
 	"github.com/marko-gacesa/gamatet/internal/config"
 	"github.com/marko-gacesa/gamatet/internal/types"
 	"github.com/marko-gacesa/gamatet/logic/gamepad"
+	"github.com/marko-gacesa/gamatet/logic/profiling"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
@@ -53,6 +54,7 @@ func NewGame(
 	if params.Latencies != nil {
 		huds.Add(params.Latencies, hud.PosLatencies)
 	}
+	huds.Add(profiling.NewMallocs(), hud.PosProfiling)
 
 	str := fieldStrings()
 

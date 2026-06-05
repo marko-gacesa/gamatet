@@ -17,6 +17,7 @@ import (
 	"github.com/marko-gacesa/gamatet/internal/config"
 	"github.com/marko-gacesa/gamatet/internal/types"
 	"github.com/marko-gacesa/gamatet/logic/gamepad"
+	"github.com/marko-gacesa/gamatet/logic/profiling"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
@@ -49,6 +50,7 @@ func NewGameOne(
 	text := render.MakeText(tex, render.Font)
 	huds := hud.NewHUDs(tex)
 	huds.Add(render.NewFPS(), hud.PosFPS)
+	huds.Add(profiling.NewMallocs(), hud.PosProfiling)
 
 	str := fieldStrings()
 

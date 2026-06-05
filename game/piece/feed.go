@@ -61,10 +61,16 @@ func NewGenericFeed(bagSize int, seed int, shapeCount int, fn func(idx, shapeIdx
 		fn:            fn,
 		pool: &sync.Pool{
 			New: func() any {
-				return make([]uint, pieceBagCount)
+				return &genericFeedPayload{
+					content: make([]uint, pieceBagCount),
+				}
 			},
 		},
 	}
+}
+
+type genericFeedPayload struct {
+	content []uint
 }
 
 func (f GenericFeed) Get(idx uint, playerIdx byte) Piece {
@@ -73,9 +79,9 @@ func (f GenericFeed) Get(idx uint, playerIdx byte) Piece {
 
 	r := random.New(uint64(f.seed+857*bagIdx+13), uint64(f.seed+328*bagIdx+17))
 
-	m := f.pool.Get().([]uint)
-	r.Perm(m)
-	shapeIdx := m[offs] % f.shapeCount
+	m := f.pool.Get().(*genericFeedPayload)
+	r.Perm(m.content)
+	shapeIdx := m.content[offs] % f.shapeCount
 	f.pool.Put(m)
 
 	return f.fn(idx, shapeIdx, playerIdx)

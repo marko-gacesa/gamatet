@@ -106,6 +106,7 @@ var syncPoolRenderInfo = &sync.Pool{
 			for j := range piece.NextBlockCount {
 				info.Pieces[i].NextPieces[j].Blocks = make([]block.XYB, 0, 8)
 			}
+			info.Pieces[i].Shadow.Blocks = make([]block.XYB, 0, 8)
 		}
 		return info
 	},

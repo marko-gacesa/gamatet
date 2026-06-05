@@ -112,7 +112,6 @@ type Field struct {
 	renderRequester         core.RenderRequester
 	preferredSide           PreferredSide
 
-	renderInfo   *field.RenderInfo
 	renderInfoWG sync.WaitGroup
 
 	t          float64 // time
@@ -174,7 +173,8 @@ func (f *Field) Prepare(now time.Time) {
 
 		f.preRender(renderInfo, now)
 		f.prepareModels(renderInfo)
-		field.ReturnRenderInfo(f.renderInfo)
+
+		field.ReturnRenderInfo(renderInfo)
 	}()
 }
 
