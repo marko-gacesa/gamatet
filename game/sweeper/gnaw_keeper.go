@@ -27,9 +27,8 @@ func NewGnawKeeper(f *field.Field) *GnawKeeper {
 
 type GnawKeeper struct {
 	base
-	aliveMap    map[uint32]*gnawData
-	toRemoveMap map[uint32]*gnawData
-	killed      int
+	aliveMap map[uint32]*gnawData
+	killed   int
 }
 
 type gnawData struct {
@@ -65,7 +64,7 @@ func (s *GnawKeeper) Analyze(events event.Reader) {
 			for col, b := range v.Blocks {
 				if b.Type == block.TypeGnaw {
 					removed = append(removed, block.XYB{
-						XY:    block.XY{X: int(col), Y: int(v.Row)},
+						XY:    block.XY{X: col, Y: int(v.Row)},
 						Block: b,
 					})
 				}

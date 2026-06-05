@@ -29,8 +29,6 @@ type App struct {
 	cfg     config.Config
 	cfgPath string
 
-	multicastAddress *net.UDPAddr
-
 	actorTokens [setup.MaxLocalPlayers]message.Token
 	clientToken message.Token
 
@@ -51,7 +49,6 @@ type App struct {
 	gameServer *server.Server
 
 	logger *slog.Logger
-	wg     *sync.WaitGroup
 }
 
 func NewApp(ctx context.Context, logger *slog.Logger, cfg config.Config, cfgPath string) *App {

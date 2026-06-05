@@ -48,7 +48,7 @@ func playerName(name string, fieldIdx, fieldPlayerIdx, playerIdx int) string {
 	name = strings.TrimSpace(name)
 
 	for strings.Contains(name, "  ") {
-		name = strings.Replace(name, "  ", " ", -1)
+		name = strings.ReplaceAll(name, "  ", " ")
 	}
 
 	if name == "" {

@@ -10,7 +10,6 @@ import (
 	"github.com/marko-gacesa/gamatet/game/event"
 	"github.com/marko-gacesa/gamatet/game/field"
 	"github.com/marko-gacesa/gamatet/game/op"
-	"github.com/marko-gacesa/gamatet/game/piece"
 )
 
 var _ Sweeper = (*GameOver)(nil)
@@ -33,7 +32,6 @@ const (
 
 type GameOver struct {
 	base
-	state  *piece.State
 	method gameOverMethod
 }
 

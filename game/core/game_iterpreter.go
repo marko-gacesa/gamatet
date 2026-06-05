@@ -4,7 +4,6 @@
 package core
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"log"
@@ -49,9 +48,6 @@ type InterpreterOptions struct {
 type interpreterFieldData struct {
 	Field *field.Field
 	InCh  <-chan []byte
-
-	// internal caches
-	buffer bytes.Buffer
 }
 
 type interpreterPlayerData struct {
