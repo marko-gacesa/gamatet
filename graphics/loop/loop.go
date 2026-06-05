@@ -17,6 +17,7 @@ import (
 	"github.com/marko-gacesa/gamatet/graphics/scene"
 	"github.com/marko-gacesa/gamatet/internal/app"
 	"github.com/marko-gacesa/gamatet/internal/values"
+	"github.com/marko-gacesa/gamatet/logic/profiling"
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
@@ -111,6 +112,7 @@ func Loop(globalCtx context.Context, app *app.App) error {
 	keyArbiter := keypress.NewArbiter()
 
 	window.SetKeyCallback(func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+		profile(key, action, mods)
 		keyArbiter.Process(key, scancode, action, mods)
 	})
 
@@ -212,6 +214,22 @@ func windowFullscreen(title string, monitor *glfw.Monitor) (*glfw.Window, error)
 	}
 
 	return window, nil
+}
+
+func profile(key glfw.Key, action glfw.Action, mods glfw.ModifierKey) {
+	if action != glfw.Press || mods&glfw.ModControl == 0 {
+		return
+	}
+	switch key {
+	case glfw.KeyF5:
+		runtime.GC()
+	case glfw.KeyF6:
+		profiling.RuntimeInfo()
+	case glfw.KeyF7:
+		profiling.RuntimeStats()
+	case glfw.KeyF8:
+		profiling.DumpStack()
+	}
 }
 
 func isActive(ch <-chan struct{}) bool {
