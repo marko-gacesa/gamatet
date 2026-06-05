@@ -1,4 +1,4 @@
-// Copyright (c) 2024, 2025 by Marko Gaćeša
+// Copyright (c) 2024-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package render
@@ -92,7 +92,7 @@ func (t *Text) Rune(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, ch rune) {
 	modelChar := model.Mul4(mgl32.Scale3D(w2h, 1, 1))
 
 	gl.DepthMask(false) // disable writing to depth buffer
-	r.Render(&modelChar)
+	r.Render(modelChar)
 	gl.DepthMask(true) // enable writing to depth buffer
 }
 
@@ -138,7 +138,7 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 					modelSpace := modelText.
 						Mul4(mgl32.Translate3D(spaceAdvance/2, 0, 0)).
 						Mul4(mgl32.Scale3D(spaceAdvance, 1, 1))
-					r.Render(&modelSpace)
+					r.Render(modelSpace)
 				}
 
 				modelText = modelText.Mul4(mgl32.Translate3D(spaceAdvance, 0, 0))
@@ -156,7 +156,7 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 					modelTab := modelText.
 						Mul4(mgl32.Translate3D(tabAdv/2, 0, 0)).
 						Mul4(mgl32.Scale3D(tabAdv, 1, 1))
-					r.Render(&modelTab)
+					r.Render(modelTab)
 				}
 
 				modelText = modelText.Mul4(mgl32.Translate3D(tabAdv, 0, 0))
@@ -183,7 +183,7 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 		if cursor {
 			modelChar := modelText.Mul4(mgl32.Scale3D(w2h, 1, 1))
 			mat.Color(color.Mul(0.8))
-			r.Render(&modelChar)
+			r.Render(modelChar)
 			mat.Color(color)
 			continue
 		}
@@ -191,7 +191,7 @@ func (t *Text) String(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, s string)
 		w2h2 := w2h / 2
 		modelText = modelText.Mul4(mgl32.Translate3D(w2h2+k2h, 0, 0))
 		modelChar := modelText.Mul4(mgl32.Scale3D(w2h, 1, 1))
-		r.Render(&modelChar)
+		r.Render(modelChar)
 		modelText = modelText.Mul4(mgl32.Translate3D(w2h2, 0, 0))
 
 		chPrev = ch

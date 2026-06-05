@@ -45,13 +45,11 @@ func (m *Background) Render() {
 	gl.DepthMask(false)
 	gl.Disable(gl.DEPTH_TEST)
 
-	ident := mgl32.Ident4()
-
 	r := m.Renderer()
 	r.Orthogonal2D(1, 1) // x and y: -0.5..0.5
 	r.Material(m.matBack)
 	r.Geometry(m.geomSquarePlain)
-	r.Render(&ident)
+	r.Render(mgl32.Ident4())
 
 	gl.DepthMask(true)
 	gl.Enable(gl.DEPTH_TEST)

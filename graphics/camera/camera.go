@@ -1,4 +1,4 @@
-// Copyright (c) 2020, 2025 by Marko Gaćeša
+// Copyright (c) 2020, 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package camera
@@ -42,14 +42,6 @@ func (c *Camera) Perspective(fovy, aspect, near, far float32) {
 	c.view = c.projection.Mul4(c.lookAt)
 }
 
-func (c *Camera) GetView() *mgl32.Mat4 {
-	return &c.view
-}
-
-func (c *Camera) GetLookAt() *mgl32.Mat4 {
-	return &c.lookAt
-}
-
-func (c *Camera) GetProjection() *mgl32.Mat4 {
-	return &c.projection
-}
+func (c *Camera) GetView() mgl32.Mat4       { return c.view }
+func (c *Camera) GetLookAt() mgl32.Mat4     { return c.lookAt }
+func (c *Camera) GetProjection() mgl32.Mat4 { return c.projection }

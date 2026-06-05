@@ -771,7 +771,7 @@ func (f *Field) renderAll(r *Renderer) {
 	f.resources.MatWall.Lights(f.lights)
 	for i := range f.listWallD {
 		f.resources.MatWall.Dim(f.listWallD[i].Dim)
-		r.Render(&f.listWallD[i].Model)
+		r.Render(f.listWallD[i].Model)
 	}
 
 	r.Geometry(f.resources.GeomCube)
@@ -779,7 +779,7 @@ func (f *Field) renderAll(r *Renderer) {
 	f.resources.MatRock.Lights(f.lights)
 	f.resources.MatRock.Color(colorWall)
 	for i := range f.listWall {
-		r.Render(&f.listWall[i])
+		r.Render(f.listWall[i])
 	}
 
 	r.Geometry(f.resources.GeomSquareBack)
@@ -791,7 +791,7 @@ func (f *Field) renderAll(r *Renderer) {
 		}
 		f.resources.MatRock.Color(f.colorsBack[i])
 		for j := range f.listsBack[i] {
-			r.Render(&f.listsBack[i][j])
+			r.Render(f.listsBack[i][j])
 		}
 	}
 
@@ -815,7 +815,7 @@ func (f *Field) renderAll(r *Renderer) {
 			}
 
 			f.resources.MatRock.Color(f.listRock[i].Color)
-			r.Render(&f.listRock[i].Model)
+			r.Render(f.listRock[i].Model)
 		}
 		if oldValue != 0 {
 			f.resources.MatRock.ClearChain()
@@ -842,7 +842,7 @@ func (f *Field) renderAll(r *Renderer) {
 			}
 
 			f.resources.MatRock.Color(f.listRuby[i].Color)
-			r.Render(&f.listRuby[i].Model)
+			r.Render(f.listRuby[i].Model)
 		}
 		if oldValue != 0 {
 			f.resources.MatRock.ClearChain()
@@ -853,7 +853,7 @@ func (f *Field) renderAll(r *Renderer) {
 		r.Geometry(f.resources.GeomFrame)
 		f.resources.MatRock.Color(colorFrame)
 		for i := range f.listFrame {
-			r.Render(&f.listFrame[i])
+			r.Render(f.listFrame[i])
 		}
 	}
 
@@ -861,7 +861,7 @@ func (f *Field) renderAll(r *Renderer) {
 		r.Geometry(f.resources.GeomFrameThin)
 		for i := range f.listShad {
 			f.resources.MatRock.Color(f.listShad[i].Color)
-			r.Render(&f.listShad[i].Model)
+			r.Render(f.listShad[i].Model)
 		}
 	}
 
@@ -870,7 +870,7 @@ func (f *Field) renderAll(r *Renderer) {
 		r.Material(f.resources.MatIron)
 		f.resources.MatIron.Lights(f.lights)
 		for i := range f.listIron {
-			r.Render(&f.listIron[i])
+			r.Render(f.listIron[i])
 		}
 	}
 
@@ -879,7 +879,7 @@ func (f *Field) renderAll(r *Renderer) {
 		r.Material(f.resources.MatLava)
 		for i := range f.listLava {
 			f.resources.MatLava.Color(f.listLava[i].Color)
-			r.Render(&f.listLava[i].Model)
+			r.Render(f.listLava[i].Model)
 		}
 	}
 
@@ -888,7 +888,7 @@ func (f *Field) renderAll(r *Renderer) {
 		r.Material(f.resources.MatAcid)
 		for i := range f.listAcid {
 			f.resources.MatAcid.Color(f.listAcid[i].Color)
-			r.Render(&f.listAcid[i].Model)
+			r.Render(f.listAcid[i].Model)
 		}
 	}
 
@@ -897,7 +897,7 @@ func (f *Field) renderAll(r *Renderer) {
 		r.Material(f.resources.MatWave)
 		for i := range f.listWave {
 			f.resources.MatWave.Color(f.listWave[i].Color)
-			r.Render(&f.listWave[i].Model)
+			r.Render(f.listWave[i].Model)
 		}
 	}
 
@@ -910,7 +910,7 @@ func (f *Field) renderAll(r *Renderer) {
 				Mul4(mgl32.HomogRotate3DX(float32(5.1*f.t + 0.7)))
 		for i := range f.listBomb {
 			modelBomb := f.listBomb[i].Mul4(transform)
-			r.Render(&modelBomb)
+			r.Render(modelBomb)
 		}
 	}
 
@@ -919,7 +919,7 @@ func (f *Field) renderAll(r *Renderer) {
 		r.Material(f.resources.MatRock)
 		f.resources.MatRock.Color(colorGnaw)
 		for _, modelGnaw := range f.listGnaw {
-			r.Render(&modelGnaw)
+			r.Render(modelGnaw)
 		}
 	}
 
@@ -928,7 +928,7 @@ func (f *Field) renderAll(r *Renderer) {
 		r.Material(f.resources.MatColor)
 		for i := range f.listGoal {
 			f.resources.MatColor.Color(f.listGoal[i].Color)
-			r.Render(&f.listGoal[i].Model)
+			r.Render(f.listGoal[i].Model)
 		}
 	}
 

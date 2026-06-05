@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package hud
@@ -18,6 +18,7 @@ const (
 	PosFPS       = render.HUDUpperRight
 	PosLatencies = render.HUDUpperLeft
 	PosAuthor    = render.HUDLowerRight
+	PosProfiling = render.HUDLowerLeft
 )
 
 type HUDs struct {

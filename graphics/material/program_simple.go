@@ -1,4 +1,4 @@
-// Copyright (c) 2024, 2025 by Marko Gaćeša
+// Copyright (c) 2024-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package material
@@ -40,7 +40,7 @@ type programSimple struct {
 }
 
 func (p *programSimple) Camera(cam *camera.Camera) { uniformMat4(p.uniView, cam.GetView()) }
-func (p *programSimple) Model(model *mgl32.Mat4)   { uniformModel(p.uniModel, p.uniNorm, model) }
+func (p *programSimple) Model(model mgl32.Mat4)    { uniformModel(p.uniModel, p.uniNorm, model) }
 
 func (p *programSimple) Geometry(g geometry.Geometry) {
 	g.Bind()

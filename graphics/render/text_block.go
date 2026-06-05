@@ -1,4 +1,4 @@
-// Copyright (c) 2024, 2025 by Marko Gaćeša
+// Copyright (c) 2024-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package render
@@ -79,5 +79,5 @@ func (t *TextBlock) Rune(r *Renderer, model mgl32.Mat4, color mgl32.Vec4, ch run
 	w2h := runeRect.WidthToHeight()
 	modelChar := model.Mul4(mgl32.Scale3D(w2h, 1, 1))
 
-	r.Render(&modelChar)
+	r.Render(modelChar)
 }

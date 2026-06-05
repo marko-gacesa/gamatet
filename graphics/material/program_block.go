@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2024, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package material
@@ -53,7 +53,7 @@ func newProgramBlock(vertexShaderSource, fragmentShaderSource string, tex uint32
 }
 
 func (p *programBlock) Camera(cam *camera.Camera) { uniformMat4(p.uniView, cam.GetView()) }
-func (p *programBlock) Model(model *mgl32.Mat4)   { uniformModel(p.uniModel, p.uniNorm, model) }
+func (p *programBlock) Model(model mgl32.Mat4)    { uniformModel(p.uniModel, p.uniNorm, model) }
 
 func (p *programBlock) Use() {
 	p.program.Use()

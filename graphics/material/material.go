@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 by Marko Gaćeša
+// Copyright (c) 2020-2024, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package material
@@ -17,7 +17,7 @@ type Material interface {
 	Delete()
 
 	Camera(cam *camera.Camera)
-	Model(model *mgl32.Mat4)
+	Model(model mgl32.Mat4)
 	Geometry(geo geometry.Geometry)
 
 	Render()

@@ -1,4 +1,4 @@
-// Copyright (c) 2024 by Marko Gaćeša
+// Copyright (c) 2024, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package material
@@ -44,7 +44,7 @@ type Color struct {
 }
 
 func (p *Color) Camera(cam *camera.Camera) { uniformMat4(p.uniView, cam.GetView()) }
-func (p *Color) Model(model *mgl32.Mat4)   { uniformModel(p.uniModel, p.uniNorm, model) }
+func (p *Color) Model(model mgl32.Mat4)    { uniformModel(p.uniModel, p.uniNorm, model) }
 
 func (p *Color) Use() {
 	p.program.Use()

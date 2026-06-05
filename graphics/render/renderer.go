@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2025 by Marko Gaćeša
+// Copyright (c) 2023-2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package render
@@ -86,7 +86,7 @@ func (r *Renderer) Geometry(geo geometry.Geometry) {
 	}
 }
 
-func (r *Renderer) Render(model *mgl32.Mat4) {
+func (r *Renderer) Render(model mgl32.Mat4) {
 	r.mat.Model(model)
 	r.mat.Render()
 }
