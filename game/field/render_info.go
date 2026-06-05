@@ -222,10 +222,16 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 		info.Pieces[i].IsLimited = false
 		info.Pieces[i].PieceEmpty = true
 		info.Pieces[i].PlayerIndex = 0
+
 		for j := range piece.NextBlockCount {
 			info.Pieces[i].NextPieces[j].Type = piece.TypeNone
 			info.Pieces[i].NextPieces[j].Blocks = info.Pieces[i].NextPieces[j].Blocks[:0]
 		}
+
+		info.Pieces[i].Blocks = info.Pieces[i].Blocks[:0]
+
+		info.Pieces[i].DrawShadow = false
+		info.Pieces[i].Shadow.Blocks = info.Pieces[i].Shadow.Blocks[:0]
 	}
 
 	for pIdx := range pieceCount {
@@ -247,10 +253,20 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 		pinfo.IsLimited = ctrl.IsColumnLimited
 		pinfo.Limits = ctrl.ColumnLimit
 
+		pinfo.Type = piece.TypeNone
 		pinfo.Blocks = pinfo.Blocks[:0]
+
 		pinfo.DrawShadow = false
 		pinfo.Shadow.Blocks = pinfo.Shadow.Blocks[:0]
+		pinfo.Shadow.ColL = 0
+		pinfo.Shadow.ColR = 0
+
 		pinfo.DirectionCW = ctrl.Config.RotationDirectionCW
+
+		for i := range piece.NextBlockCount {
+			pinfo.NextPieces[i].Type = piece.TypeNone
+			pinfo.NextPieces[i].Blocks = pinfo.NextPieces[i].Blocks[:0]
+		}
 
 		if !showBlocks || ctrl.State.IsTerminal() {
 			continue
