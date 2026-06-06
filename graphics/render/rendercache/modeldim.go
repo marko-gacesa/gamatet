@@ -43,10 +43,6 @@ func (p *ModelDimList) Len() int {
 	return len(*p)
 }
 
-func (p *ModelDimList) Get(i int) modelDim {
-	return (*p)[i]
-}
-
 func (p *ModelDimList) Add(model mgl32.Mat4, dim mgl32.Vec2) {
 	*p = append(*p, modelDim{
 		Model: model,

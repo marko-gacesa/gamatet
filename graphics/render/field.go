@@ -769,8 +769,7 @@ func (f *Field) renderAll(r *Renderer) {
 	r.Material(f.resources.MatWall)
 	f.resources.MatWall.Color(colorWall)
 	f.resources.MatWall.Lights(*f.lights)
-	for i := range *f.listWallD {
-		modelDim := f.listWallD.Get(i)
+	for _, modelDim := range *f.listWallD {
 		f.resources.MatWall.Dim(modelDim.Dim)
 		r.Render(modelDim.Model)
 	}
@@ -800,9 +799,8 @@ func (f *Field) renderAll(r *Renderer) {
 		r.Geometry(f.resources.GeomRoundedCube)
 
 		oldValue := -1
-		for i := range *f.listRock {
-			mcv := f.listRock.Get(i)
-			if value := mcv.Value; value != oldValue {
+		for _, m := range *f.listRock {
+			if value := m.Value; value != oldValue {
 				switch value {
 				case 0:
 					f.resources.MatRock.ClearChain()
@@ -816,8 +814,8 @@ func (f *Field) renderAll(r *Renderer) {
 				oldValue = value
 			}
 
-			f.resources.MatRock.Color(mcv.Color)
-			r.Render(mcv.Model)
+			f.resources.MatRock.Color(m.Color)
+			r.Render(m.Model)
 		}
 		if oldValue != 0 {
 			f.resources.MatRock.ClearChain()
@@ -828,9 +826,8 @@ func (f *Field) renderAll(r *Renderer) {
 		r.Geometry(f.resources.GeomGem)
 
 		oldValue := -1
-		for i := range *f.listRuby {
-			mcv := f.listRuby.Get(i)
-			if value := mcv.Value; value != oldValue {
+		for _, m := range *f.listRuby {
+			if value := m.Value; value != oldValue {
 				switch value {
 				case 0:
 					f.resources.MatRock.ClearChain()
@@ -844,8 +841,8 @@ func (f *Field) renderAll(r *Renderer) {
 				oldValue = value
 			}
 
-			f.resources.MatRock.Color(mcv.Color)
-			r.Render(mcv.Model)
+			f.resources.MatRock.Color(m.Color)
+			r.Render(m.Model)
 		}
 		if oldValue != 0 {
 			f.resources.MatRock.ClearChain()
@@ -862,10 +859,9 @@ func (f *Field) renderAll(r *Renderer) {
 
 	if f.listShad.Len() > 0 {
 		r.Geometry(f.resources.GeomFrameThin)
-		for i := range *f.listShad {
-			modelColor := f.listShad.Get(i)
-			f.resources.MatRock.Color(modelColor.Color)
-			r.Render(modelColor.Model)
+		for _, m := range *f.listShad {
+			f.resources.MatRock.Color(m.Color)
+			r.Render(m.Model)
 		}
 	}
 
@@ -881,30 +877,27 @@ func (f *Field) renderAll(r *Renderer) {
 	if f.listLava.Len() > 0 {
 		r.Geometry(f.resources.GeomRoundedCube)
 		r.Material(f.resources.MatLava)
-		for i := range *f.listLava {
-			modelColor := f.listLava.Get(i)
-			f.resources.MatLava.Color(modelColor.Color)
-			r.Render(modelColor.Model)
+		for _, m := range *f.listLava {
+			f.resources.MatLava.Color(m.Color)
+			r.Render(m.Model)
 		}
 	}
 
 	if f.listAcid.Len() > 0 {
 		r.Geometry(f.resources.GeomRoundedCube)
 		r.Material(f.resources.MatAcid)
-		for i := range *f.listAcid {
-			modelColor := f.listAcid.Get(i)
-			f.resources.MatAcid.Color(modelColor.Color)
-			r.Render(modelColor.Model)
+		for _, m := range *f.listAcid {
+			f.resources.MatAcid.Color(m.Color)
+			r.Render(m.Model)
 		}
 	}
 
 	if f.listWave.Len() > 0 {
 		r.Geometry(f.resources.GeomDie)
 		r.Material(f.resources.MatWave)
-		for i := range *f.listWave {
-			modelColor := f.listLava.Get(i)
-			f.resources.MatWave.Color(modelColor.Color)
-			r.Render(modelColor.Model)
+		for _, m := range *f.listWave {
+			f.resources.MatWave.Color(m.Color)
+			r.Render(m.Model)
 		}
 	}
 
@@ -932,23 +925,20 @@ func (f *Field) renderAll(r *Renderer) {
 	if f.listGoal.Len() > 0 {
 		r.Geometry(f.resources.GeomStar8)
 		r.Material(f.resources.MatColor)
-		for i := range *f.listGoal {
-			modelColor := f.listGoal.Get(i)
-			f.resources.MatColor.Color(modelColor.Color)
-			r.Render(modelColor.Model)
+		for _, m := range *f.listGoal {
+			f.resources.MatColor.Color(m.Color)
+			r.Render(m.Model)
 		}
 	}
 
-	for i := range *f.listAmmo {
-		mcv := f.listAmmo.Get(i)
-		f.text.Rune(r, mcv.Model, mcv.Color, '0'+rune(mcv.Value))
+	for _, m := range *f.listAmmo {
+		f.text.Rune(r, m.Model, m.Color, '0'+rune(m.Value))
 	}
 
 	gl.Disable(gl.DEPTH_TEST)
 
-	for i := range *f.listStr {
-		mcv := f.listStr.Get(i)
-		f.text.String(r, mcv.Model, mcv.Color, mcv.Value)
+	for _, m := range *f.listStr {
+		f.text.String(r, m.Model, m.Color, m.Value)
 	}
 
 	gl.Enable(gl.DEPTH_TEST)

@@ -40,10 +40,6 @@ func (p *PointLights) Len() int {
 	return len(*p)
 }
 
-func (p *PointLights) Get(i int) material.PointLight {
-	return (*p)[i]
-}
-
 func (p *PointLights) Add(position mgl32.Vec3, color mgl32.Vec3, intensity float32) {
 	*p = append(*p, material.PointLight{
 		Position:  position,

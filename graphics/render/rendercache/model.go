@@ -38,10 +38,6 @@ func (p *Models) Len() int {
 	return len(*p)
 }
 
-func (p *Models) Get(i int) mgl32.Mat4 {
-	return (*p)[i]
-}
-
 func (p *Models) Add(model mgl32.Mat4) {
 	*p = append(*p, model)
 }

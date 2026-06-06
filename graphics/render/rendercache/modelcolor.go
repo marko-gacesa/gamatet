@@ -43,10 +43,6 @@ func (p *ModelColorList) Len() int {
 	return len(*p)
 }
 
-func (p *ModelColorList) Get(i int) modelColor {
-	return (*p)[i]
-}
-
 func (p *ModelColorList) Add(model mgl32.Mat4, color mgl32.Vec4) {
 	*p = append(*p, modelColor{
 		Model: model,
