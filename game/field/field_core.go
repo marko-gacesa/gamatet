@@ -162,6 +162,10 @@ func (f *Field) StopTimers() {
 	}
 }
 
+func (f *Field) GetIdx() int {
+	return f.Idx
+}
+
 func (f *Field) GetMode() Mode {
 	return f.mode
 }

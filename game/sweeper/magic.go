@@ -25,7 +25,8 @@ const (
 type magicState byte
 
 const (
-	magicStateRunning magicState = iota
+	magicStateNew magicState = iota
+	magicStateRunning
 	magicStateActivated
 	magicStateFinished
 )
@@ -50,7 +51,7 @@ func NewMagic(f *field.Field, others []FieldPusher, seed int, types MagicType) *
 		base:   *b,
 		others: others,
 		seed:   uint64(seed),
-		state:  magicStateRunning,
+		state:  magicStateNew,
 		types:  types,
 	}
 
@@ -107,6 +108,13 @@ func (s *Magic) Analyze(events event.Reader) {
 
 func (s *Magic) Sweep(p event.Pusher) {
 	effect, seconds := s.field.GetEffect()
+
+	if s.state == magicStateNew {
+		s.state = magicStateRunning
+		p.Push(op.NewFieldEffect(effect, field.EffectNone, 0, magicWaitSeconds))
+		s.base.reschedule(time.Second)
+		return
+	}
 
 	if s.state == magicStateFinished {
 		if effect != field.EffectNone {
