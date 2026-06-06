@@ -50,7 +50,7 @@ func NewGameOne(
 	text := render.MakeText(tex, render.Font)
 	huds := hud.NewHUDs(tex)
 	huds.Add(render.NewFPS(), hud.PosFPS)
-	huds.Add(profiling.NewMallocs(), hud.PosProfiling)
+	huds.Add(profiling.NewRuntime(), hud.PosProfiling)
 
 	str := fieldStrings()
 

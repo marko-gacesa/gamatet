@@ -54,7 +54,7 @@ func NewGame(
 	if params.Latencies != nil {
 		huds.Add(params.Latencies, hud.PosLatencies)
 	}
-	huds.Add(profiling.NewMallocs(), hud.PosProfiling)
+	huds.Add(profiling.NewRuntime(), hud.PosProfiling)
 
 	str := fieldStrings()
 

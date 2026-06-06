@@ -6,6 +6,7 @@ package main
 import (
 	"context"
 	"flag"
+	"runtime"
 
 	"github.com/marko-gacesa/gamatet/graphics/loop"
 	"github.com/marko-gacesa/gamatet/internal/app"
@@ -26,6 +27,11 @@ func main() {
 		"version", values.VersionTag,
 		"commit", values.GitSHA,
 		"built", values.BuildTime)
+	logger.Info("Runtime",
+		"version", runtime.Version(),
+		"GOMAXPROCS", runtime.GOMAXPROCS(0),
+		"GOOS", runtime.GOOS,
+		"GOARCH", runtime.GOARCH)
 
 	i18n.ParseEmbeddedLanguages(logger)
 	lang.DefineFallbackFromExisting("en")
