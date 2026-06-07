@@ -22,7 +22,8 @@ type Field struct {
 	pieces   []*piece.Ctrl
 	firstEx  *exElem
 	animList anim.List
-	mode     Mode
+	state    State
+	outcome  Outcome
 	doneCh   chan struct{}
 	seed     int
 	Config
@@ -33,37 +34,54 @@ type Field struct {
 
 const MaxPieces = 4
 
-type Mode byte
+type State byte
 
 const (
-	ModeNormal Mode = iota
-	ModeGameOver
-	ModeVictory
-	ModeDefeat
-	ModePause
-	ModeSuspended
-	ModeServerLost
-	ModeGetReady
+	StateNormal State = iota
+	StateEnd
+	StatePause
+	StateSuspended
+	StateServerLost
+	StateGetReady
 )
 
-func (m Mode) String() string {
-	switch m {
-	case ModeNormal:
+func (s State) String() string {
+	switch s {
+	case StateNormal:
 		return "Normal"
-	case ModeGameOver:
-		return "GameOver"
-	case ModeVictory:
-		return "Victory"
-	case ModeDefeat:
-		return "Defeat"
-	case ModePause:
+	case StateEnd:
+		return "End"
+	case StatePause:
 		return "Pause"
-	case ModeSuspended:
+	case StateSuspended:
 		return "Suspended"
-	case ModeServerLost:
+	case StateServerLost:
 		return "ServerLost"
-	case ModeGetReady:
+	case StateGetReady:
 		return "GetReady"
+	}
+	return "Unknown"
+}
+
+type Outcome byte
+
+const (
+	OutcomeNone Outcome = iota
+	OutcomeGameOver
+	OutcomeVictory
+	OutcomeDefeat
+)
+
+func (o Outcome) String() string {
+	switch o {
+	case OutcomeNone:
+		return "None"
+	case OutcomeGameOver:
+		return "GameOver"
+	case OutcomeVictory:
+		return "Victory"
+	case OutcomeDefeat:
+		return "Defeat"
 	}
 	return "Unknown"
 }
@@ -166,16 +184,24 @@ func (f *Field) GetIdx() int {
 	return f.Idx
 }
 
-func (f *Field) GetMode() Mode {
-	return f.mode
+func (f *Field) GetState() State {
+	return f.state
 }
 
-func (f *Field) SetMode(m Mode) {
-	f.mode = m
+func (f *Field) SetState(m State) {
+	f.state = m
+}
+
+func (f *Field) GetOutcome() Outcome {
+	return f.outcome
+}
+
+func (f *Field) SetOutcome(o Outcome) {
+	f.outcome = o
 }
 
 func (f *Field) IsFinished() bool {
-	return len(f.pieces) == 0 || f.mode == ModeGameOver || f.mode == ModeVictory || f.mode == ModeDefeat
+	return len(f.pieces) == 0 || f.state == StateEnd
 }
 
 func (f *Field) Pause() {

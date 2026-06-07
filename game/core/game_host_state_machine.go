@@ -27,7 +27,7 @@ func (g *GameHost) stateTransitionGetReady() {
 	case hostStateNormal:
 		g.state = hostStateGetReady
 		g._pauseAllFields()
-		g._publishNewMode(field.ModeGetReady)
+		g._publishNewState(field.StateGetReady)
 	case hostStateGetReady, hostStatePause, hostStateSuspended, hostStateFinish:
 	}
 }
@@ -37,7 +37,7 @@ func (g *GameHost) stateTransitionPlay() {
 	case hostStateGetReady:
 		g.state = hostStateNormal
 		g._unpauseAllFields()
-		g._publishNewMode(field.ModeNormal)
+		g._publishNewState(field.StateNormal)
 	case hostStateNormal, hostStatePause, hostStateSuspended, hostStateFinish:
 	}
 }
@@ -47,10 +47,10 @@ func (g *GameHost) stateTransitionSuspend() {
 	case hostStateGetReady, hostStateNormal:
 		g.state = hostStateSuspended
 		g._pauseAllFields()
-		g._publishNewMode(field.ModeSuspended)
+		g._publishNewState(field.StateSuspended)
 	case hostStatePause:
 		g.state = hostStateSuspended
-		g._publishNewMode(field.ModeSuspended)
+		g._publishNewState(field.StateSuspended)
 	case hostStateSuspended, hostStateFinish:
 	}
 }
@@ -60,7 +60,7 @@ func (g *GameHost) stateTransitionUnsuspend() {
 	case hostStateGetReady, hostStateNormal, hostStatePause, hostStateFinish:
 	case hostStateSuspended:
 		g.state = hostStatePause
-		g._publishNewMode(field.ModePause)
+		g._publishNewState(field.StatePause)
 	}
 }
 
@@ -68,23 +68,23 @@ func (g *GameHost) stateTransitionPauseToggle() {
 	switch g.state {
 	case hostStateGetReady:
 		g.state = hostStatePause
-		g._publishNewMode(field.ModePause)
+		g._publishNewState(field.StatePause)
 	case hostStateNormal:
 		g.state = hostStatePause
 		g._pauseAllFields()
-		g._publishNewMode(field.ModePause)
+		g._publishNewState(field.StatePause)
 	case hostStatePause:
 		g.state = hostStateNormal
 		g._unpauseAllFields()
-		g._publishNewMode(field.ModeNormal)
+		g._publishNewState(field.StateNormal)
 	case hostStateSuspended, hostStateFinish:
 	}
 }
 
-func (g *GameHost) _publishNewMode(newMode field.Mode) {
+func (g *GameHost) _publishNewState(newMode field.State) {
 	for fIdx := range g.fields {
 		f := g.fields[fIdx].Field
-		g.fields[fIdx].events.Push(op.NewFieldMode(f, newMode, false))
+		g.fields[fIdx].events.Push(op.NewFieldState(f, newMode))
 	}
 }
 

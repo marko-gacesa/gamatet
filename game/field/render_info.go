@@ -81,9 +81,10 @@ type StartUpOptions struct {
 }
 
 type RenderInfo struct {
-	W, H   int
-	Mode   Mode
-	Blocks []BlockRenderInfo
+	W, H    int
+	State   State
+	Outcome Outcome
+	Blocks  []BlockRenderInfo
 
 	Pieces     [MaxPieces]PieceRenderInfo
 	PieceCount int
@@ -129,8 +130,8 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 	w := f.w
 	h := f.h
 
-	showNextPieces := f.mode == ModeNormal
-	showBlocks := f.mode != ModePause && f.mode != ModeSuspended && f.mode != ModeServerLost
+	showNextPieces := f.state == StateNormal
+	showBlocks := f.state != StatePause && f.state != StateSuspended && f.state != StateServerLost
 
 	pieceCount := f.Ctrls()
 
@@ -138,7 +139,8 @@ func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {
 
 	info.W = w
 	info.H = h
-	info.Mode = f.mode
+	info.State = f.state
+	info.Outcome = f.outcome
 	info.Blocks = info.Blocks[:0] // empty it, but keep the memory
 	info.PieceCount = pieceCount
 	info.Effect = EffectInfo{Effect: f.effect, EffectCount: f.effectSeconds, EffectStr: f.effectStr}

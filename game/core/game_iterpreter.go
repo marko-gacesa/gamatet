@@ -129,7 +129,7 @@ func MakeInterpreter(setup Setup, options InterpreterOptions) *GameInterpreter {
 	}
 }
 
-func (g *GameInterpreter) Perform(ctx context.Context) {
+func (g *GameInterpreter) Perform(ctx context.Context) (result []PlayerResult) {
 	fieldEventCh := channel.Context(ctx, channel.JoinSlicePtr(g.doneCh, g.fields, func(fd *interpreterFieldData) <-chan []byte {
 		return fd.InCh
 	}))
@@ -140,11 +140,30 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 
 	if g.options.StartPaused {
 		for _, f := range g.fields {
-			f.Field.SetMode(field.ModeGetReady)
+			f.Field.SetState(field.StateGetReady)
 		}
 	}
 
 	defer close(g.doneCh)
+
+	defer func() {
+		for fieldIdx := range g.fields {
+			f := g.fields[fieldIdx].Field
+			for ctrlIdx := range byte(f.Ctrls()) {
+				ctrl := f.Ctrl(ctrlIdx)
+				result = append(result, PlayerResult{
+					FieldIdx:      byte(fieldIdx),
+					CtrlIdx:       ctrlIdx,
+					PlayerIndex:   ctrl.PlayerIndex,
+					Outcome:       f.GetOutcome(),
+					BlocksRemoved: f.GetBlocksRemoved(),
+					Score:         ctrl.Score,
+					PieceCount:    ctrl.PieceCount,
+					Level:         ctrl.Level,
+				})
+			}
+		}
+	}()
 
 	var s Serializer
 
@@ -164,7 +183,7 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 				if g.options.SinceLastContactFn != nil && g.options.SinceLastContactFn() > serverLostDuration {
 					return
 				}
-				if m := g.fields[0].Field.GetMode(); m != field.ModeNormal {
+				if m := g.fields[0].Field.GetState(); m != field.StateNormal {
 					return
 				}
 				if g.options.LocalPlayerActionCh != nil {
@@ -194,7 +213,7 @@ func (g *GameInterpreter) Perform(ctx context.Context) {
 			f := g.fields[rr.FieldIdx].Field
 			f.FillRenderInfo(renderInfo, rr.Time)
 			if g.options.SinceLastContactFn != nil && g.options.SinceLastContactFn() > serverLostDuration {
-				renderInfo.Mode = field.ModeServerLost
+				renderInfo.State = field.StateServerLost
 			}
 			if g.options.Latencies != nil {
 				renderInfo.TextData.Latencies = g.options.Latencies.String()

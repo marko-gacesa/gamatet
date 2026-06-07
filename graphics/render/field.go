@@ -309,21 +309,24 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 
 	var message string
 
-	switch renderInfo.Mode {
-	case field.ModeNormal:
-	case field.ModeGameOver:
-		message = f.str.Message.GameOver
-	case field.ModeVictory:
-		message = f.str.Message.Victory
-	case field.ModeDefeat:
-		message = f.str.Message.Defeat
-	case field.ModePause:
+	switch renderInfo.State {
+	case field.StateNormal:
+	case field.StateEnd:
+		switch renderInfo.Outcome {
+		case field.OutcomeGameOver:
+			message = f.str.Message.GameOver
+		case field.OutcomeVictory:
+			message = f.str.Message.Victory
+		case field.OutcomeDefeat:
+			message = f.str.Message.Defeat
+		}
+	case field.StatePause:
 		message = f.str.Message.Pause
-	case field.ModeSuspended:
+	case field.StateSuspended:
 		message = f.str.Message.Suspended
-	case field.ModeServerLost:
+	case field.StateServerLost:
 		message = f.str.Message.ServerLost
-	case field.ModeGetReady:
+	case field.StateGetReady:
 	}
 
 	if message != "" {
@@ -334,7 +337,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		f.listStr.Add(modelMessage, mgl32.Vec4{1, 1, 1, 1}, message)
 	}
 
-	if renderInfo.Mode == field.ModeGetReady && renderInfo.StartUpOptions.Counter > 0 {
+	if renderInfo.State == field.StateGetReady && renderInfo.StartUpOptions.Counter > 0 {
 		message = numbers[renderInfo.StartUpOptions.Counter]
 		w, _ := f.text.Dim(message)
 		const scale = 2.5
@@ -344,7 +347,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		f.listStr.Add(modelMessage, mgl32.Vec4{1, 1, 1, 1}, message)
 	}
 
-	if (renderInfo.Mode == field.ModePause || renderInfo.Mode == field.ModeSuspended || renderInfo.Mode == field.ModeGetReady) && renderInfo.TextData.Latencies != "" {
+	if (renderInfo.State == field.StatePause || renderInfo.State == field.StateSuspended || renderInfo.State == field.StateGetReady) && renderInfo.TextData.Latencies != "" {
 		const scale = 0.5
 		_, h := f.text.Dim(renderInfo.TextData.Latencies)
 		modelLatencies := modelField.
@@ -579,7 +582,7 @@ func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
 		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, scaleLabel, scaleText, f.str.SidePanel.Piece, p.PieceTextData.PieceNum, hDir)
 		f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, scaleLabel, scaleText, f.str.SidePanel.Level, p.PieceTextData.Level, hDir)
 
-		if renderInfo.Mode == field.ModePause || renderInfo.Mode == field.ModeGetReady {
+		if renderInfo.State == field.StatePause || renderInfo.State == field.StateGetReady {
 			f.printLabelAndValue(&modelInfo, colorLabel, colorPlayerText, scaleLabel, scaleControls, f.str.SidePanel.Controls, p.PieceTextData.Controls, hDir)
 		}
 

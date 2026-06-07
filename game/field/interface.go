@@ -11,7 +11,8 @@ import (
 
 type Reader interface {
 	GetIdx() int
-	GetMode() Mode
+	GetState() State
+	GetOutcome() Outcome
 	IsFinished() bool
 
 	GetWidth() int

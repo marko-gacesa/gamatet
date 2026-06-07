@@ -36,22 +36,22 @@ type GameOver struct {
 }
 
 func (s *GameOver) Analyze(events event.Reader) {
-	var endMode *field.Mode
+	var outcome *field.Outcome
 	events.Range(func(e event.Event) {
-		if v, ok := e.(*op.FieldMode); ok && (v.ModeNew == field.ModeGameOver || v.ModeNew == field.ModeVictory || v.ModeNew == field.ModeDefeat) {
-			endMode = &v.ModeNew
+		if v, ok := e.(*op.FieldOutcome); ok {
+			outcome = &v.Outcome
 		}
 	})
-	if endMode == nil {
+	if outcome == nil {
 		return
 	}
 
-	switch *endMode {
-	case field.ModeGameOver:
+	switch *outcome {
+	case field.OutcomeGameOver:
 		s.method = gameOverMethodCurtain
-	case field.ModeVictory:
+	case field.OutcomeVictory:
 		s.method = gameOverMethodBurn
-	case field.ModeDefeat:
+	case field.OutcomeDefeat:
 		s.method = gameOverMethodFall
 	default:
 		return

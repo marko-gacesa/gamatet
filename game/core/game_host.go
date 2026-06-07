@@ -180,7 +180,7 @@ func MakeHost(setup Setup, options HostOptions) *GameHost {
 	}
 }
 
-func (g *GameHost) Perform(ctx context.Context) {
+func (g *GameHost) Perform(ctx context.Context) (result []PlayerResult) {
 	for _, f := range g.fields {
 		f.Field.StartTimers()
 	}
@@ -247,6 +247,25 @@ func (g *GameHost) Perform(ctx context.Context) {
 
 	getReadyTimer := time.NewTimer(startDelay)
 	defer getReadyTimer.Stop()
+
+	defer func() {
+		for fieldIdx := range g.fields {
+			f := g.fields[fieldIdx].Field
+			for ctrlIdx := range byte(f.Ctrls()) {
+				ctrl := f.Ctrl(ctrlIdx)
+				result = append(result, PlayerResult{
+					FieldIdx:      byte(fieldIdx),
+					CtrlIdx:       ctrlIdx,
+					PlayerIndex:   ctrl.PlayerIndex,
+					Outcome:       f.GetOutcome(),
+					BlocksRemoved: f.GetBlocksRemoved(),
+					Score:         ctrl.Score,
+					PieceCount:    ctrl.PieceCount,
+					Level:         ctrl.Level,
+				})
+			}
+		}
+	}()
 
 	for {
 		select {
@@ -424,7 +443,8 @@ func (g *GameHost) checkWinner(loserIdx int) {
 
 	if len(g.fields) == 1 {
 		g.stateTransitionFinish()
-		g.fields[0].events.Push(op.NewFieldMode(g.fields[0].Field, field.ModeGameOver, true))
+		g.fields[0].events.Push(op.NewFieldState(g.fields[0].Field, field.StateEnd))
+		g.fields[0].events.Push(op.NewFieldOutcome(g.fields[0].Field, field.OutcomeGameOver))
 		return
 	}
 
@@ -433,7 +453,8 @@ func (g *GameHost) checkWinner(loserIdx int) {
 		f := g.fields[fIdx].Field
 
 		if fIdx == loserIdx {
-			g.fields[loserIdx].events.Push(op.NewFieldMode(f, field.ModeDefeat, true))
+			g.fields[loserIdx].events.Push(op.NewFieldState(f, field.StateEnd))
+			g.fields[loserIdx].events.Push(op.NewFieldOutcome(g.fields[0].Field, field.OutcomeDefeat))
 			continue
 		}
 
@@ -447,7 +468,8 @@ func (g *GameHost) checkWinner(loserIdx int) {
 	if playingCount == 1 {
 		g.stateTransitionFinish()
 		f := g.fields[playingLastIdx].Field
-		g.fields[playingLastIdx].events.Push(op.NewFieldMode(f, field.ModeVictory, true))
+		g.fields[playingLastIdx].events.Push(op.NewFieldState(f, field.StateEnd))
+		g.fields[playingLastIdx].events.Push(op.NewFieldOutcome(g.fields[0].Field, field.OutcomeVictory))
 	}
 }
 

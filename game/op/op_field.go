@@ -35,7 +35,56 @@ func (e FieldStop) Write(io.Writer) error { return nil }
 
 func (e FieldStop) TypeID() event.Code { return codeFieldStop }
 
-func NewFieldMode(f *field.Field, modeNew field.Mode, stopPieces bool) *FieldMode {
+func NewFieldState(f *field.Field, stateNew field.State) *FieldState {
+	return &FieldState{
+		New: stateNew,
+		Old: f.GetState(),
+	}
+}
+
+type FieldState struct {
+	New field.State
+	Old field.State
+}
+
+var _ event.Event = (*FieldState)(nil)
+
+func (e *FieldState) Do(f *field.Field) {
+	f.SetState(e.New)
+}
+
+func (e *FieldState) Undo(f *field.Field) {
+	f.SetState(e.Old)
+}
+
+func (e *FieldState) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldState)
+	return ok && q.New == e.New && q.Old == e.Old
+}
+
+func (e *FieldState) Read(r io.Reader) error {
+	var buffer [2]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
+		return err
+	}
+
+	e.New = field.State(buffer[0])
+	e.Old = field.State(buffer[1])
+
+	return nil
+}
+
+func (e *FieldState) Write(w io.Writer) error {
+	if _, err := w.Write([]byte{byte(e.New), byte(e.Old)}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *FieldState) TypeID() event.Code { return codeFieldState }
+
+func NewFieldOutcome(f *field.Field, outcome field.Outcome) *FieldOutcome {
 	n := byte(f.Ctrls())
 	ctrlStates := make([]byte, 2*n)
 	for i := range n {
@@ -44,28 +93,21 @@ func NewFieldMode(f *field.Field, modeNew field.Mode, stopPieces bool) *FieldMod
 		ctrlStates[i*2+1] = byte(state)
 	}
 
-	return &FieldMode{
-		ModeNew:    modeNew,
-		ModeOld:    f.GetMode(),
+	return &FieldOutcome{
+		Outcome:    outcome,
 		CtrlStates: ctrlStates,
-		StopPieces: stopPieces,
 	}
 }
 
-type FieldMode struct {
-	ModeNew    field.Mode
-	ModeOld    field.Mode
+type FieldOutcome struct {
+	Outcome    field.Outcome
 	CtrlStates []byte
-	StopPieces bool
 }
 
-var _ event.Event = (*FieldMode)(nil)
+var _ event.Event = (*FieldState)(nil)
 
-func (e *FieldMode) Do(f *field.Field) {
-	f.SetMode(e.ModeNew)
-	if !e.StopPieces {
-		return
-	}
+func (e *FieldOutcome) Do(f *field.Field) {
+	f.SetOutcome(e.Outcome)
 	for i := 0; i < len(e.CtrlStates); i += 2 {
 		ctrlIdx := e.CtrlStates[i]
 		ctrl := f.Ctrl(ctrlIdx)
@@ -74,11 +116,8 @@ func (e *FieldMode) Do(f *field.Field) {
 	}
 }
 
-func (e *FieldMode) Undo(f *field.Field) {
-	f.SetMode(e.ModeOld)
-	if !e.StopPieces {
-		return
-	}
+func (e *FieldOutcome) Undo(f *field.Field) {
+	f.SetOutcome(field.OutcomeNone)
 	for i := 0; i < len(e.CtrlStates); i += 2 {
 		ctrlIdx := e.CtrlStates[i]
 		ctrlState := e.CtrlStates[i+1]
@@ -88,43 +127,30 @@ func (e *FieldMode) Undo(f *field.Field) {
 	}
 }
 
-func (e *FieldMode) Equals(ev event.Event) bool {
-	q, ok := ev.(*FieldMode)
-	return ok && q.ModeNew == e.ModeNew && q.ModeOld == e.ModeOld &&
-		bytes.Equal(q.CtrlStates, e.CtrlStates) && q.StopPieces == e.StopPieces
+func (e *FieldOutcome) Equals(ev event.Event) bool {
+	q, ok := ev.(*FieldOutcome)
+	return ok && q.Outcome == e.Outcome && bytes.Equal(q.CtrlStates, e.CtrlStates)
 }
 
-func (e *FieldMode) Read(r io.Reader) error {
-	var bufferMode [2]byte
-	if _, err := io.ReadFull(r, bufferMode[:]); err != nil {
+func (e *FieldOutcome) Read(r io.Reader) error {
+	var buffer [2]byte
+	if _, err := io.ReadFull(r, buffer[:]); err != nil {
 		return err
 	}
 
-	e.ModeNew = field.Mode(bufferMode[0])
-	e.ModeOld = field.Mode(bufferMode[1])
+	e.Outcome = field.Outcome(buffer[0])
+	l := field.State(buffer[1])
 
-	var bufferStates [1]byte
-	if _, err := io.ReadFull(r, bufferStates[:]); err != nil {
-		return err
-	}
-
-	e.CtrlStates = make([]byte, bufferStates[0])
+	e.CtrlStates = make([]byte, l)
 	if _, err := io.ReadFull(r, e.CtrlStates); err != nil {
 		return err
 	}
 
-	var bufferStateNew [1]byte
-	if _, err := io.ReadFull(r, bufferStateNew[:]); err != nil {
-		return err
-	}
-
-	e.StopPieces = bufferStateNew[0] != 0
-
 	return nil
 }
 
-func (e *FieldMode) Write(w io.Writer) error {
-	if _, err := w.Write([]byte{byte(e.ModeNew), byte(e.ModeOld)}); err != nil {
+func (e *FieldOutcome) Write(w io.Writer) error {
+	if _, err := w.Write([]byte{byte(e.Outcome)}); err != nil {
 		return err
 	}
 
@@ -135,19 +161,10 @@ func (e *FieldMode) Write(w io.Writer) error {
 		return err
 	}
 
-	var stopPieces byte
-	if e.StopPieces {
-		stopPieces = 1
-	}
-
-	if _, err := w.Write([]byte{stopPieces}); err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func (e *FieldMode) TypeID() event.Code { return codeFieldMode }
+func (e *FieldOutcome) TypeID() event.Code { return codeFieldOutcome }
 
 func NewFieldDestroyRow(row int, blocks []block.Block) *FieldDestroyRow {
 	return &FieldDestroyRow{

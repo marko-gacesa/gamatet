@@ -14,7 +14,7 @@ import (
 )
 
 type Performer interface {
-	Perform(ctx context.Context)
+	Perform(ctx context.Context) []PlayerResult
 }
 
 type RenderRequester interface {
@@ -75,4 +75,15 @@ type PlayerSetup struct {
 type PiecePlace struct {
 	FieldIdx byte
 	CtrlIdx  byte
+}
+
+type PlayerResult struct {
+	FieldIdx      byte
+	CtrlIdx       byte
+	PlayerIndex   byte
+	Outcome       field.Outcome
+	BlocksRemoved int
+	Score         uint
+	PieceCount    uint
+	Level         uint
 }

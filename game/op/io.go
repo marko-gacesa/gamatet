@@ -14,7 +14,8 @@ import (
 const (
 	// field events
 	codeFieldStop event.Code = iota
-	codeFieldMode
+	codeFieldState
+	codeFieldOutcome
 	codeFieldDestroyRow
 	codeFieldDestroyColumn
 	codeFieldBlockSet
@@ -86,8 +87,10 @@ func instance(code event.Code) event.Event {
 	case codeFieldStop:
 		e = FieldStop{}
 
-	case codeFieldMode:
-		e = &FieldMode{}
+	case codeFieldState:
+		e = &FieldState{}
+	case codeFieldOutcome:
+		e = &FieldOutcome{}
 	case codeFieldDestroyRow:
 		e = &FieldDestroyRow{}
 	case codeFieldDestroyColumn:

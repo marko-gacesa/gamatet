@@ -26,17 +26,17 @@ type SpeedUpOnDefeat struct {
 }
 
 func (s *SpeedUpOnDefeat) Analyze(events event.Reader) {
-	var endMode *field.Mode
+	var outcome *field.Outcome
 	events.Range(func(e event.Event) {
-		if v, ok := e.(*op.FieldMode); ok && (v.ModeNew == field.ModeGameOver || v.ModeNew == field.ModeVictory || v.ModeNew == field.ModeDefeat) {
-			endMode = &v.ModeNew
+		if v, ok := e.(*op.FieldOutcome); ok {
+			outcome = &v.Outcome
 		}
 	})
-	if endMode == nil {
+	if outcome == nil {
 		return
 	}
 
-	if endMode == nil || *endMode != field.ModeDefeat {
+	if outcome == nil || *outcome != field.OutcomeDefeat {
 		return
 	}
 

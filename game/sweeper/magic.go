@@ -74,7 +74,7 @@ type Magic struct {
 }
 
 func (s *Magic) Analyze(events event.Reader) {
-	var endMode *field.Mode
+	var outcome *field.Outcome
 	var goalRemoved bool
 
 	events.Range(func(e event.Event) {
@@ -87,14 +87,12 @@ func (s *Magic) Analyze(events event.Reader) {
 			}
 		case *op.FieldDestroyColumn:
 			goalRemoved = goalRemoved || v.Block.Type == block.TypeGoal
-		case *op.FieldMode:
-			if v.ModeNew == field.ModeGameOver || v.ModeNew == field.ModeVictory || v.ModeNew == field.ModeDefeat {
-				endMode = &v.ModeNew
-			}
+		case *op.FieldOutcome:
+			outcome = &v.Outcome
 		}
 	})
 
-	if endMode != nil && s.state != magicStateFinished {
+	if outcome != nil && s.state != magicStateFinished {
 		s.state = magicStateFinished
 		s.base.reschedule(time.Nanosecond)
 		return
