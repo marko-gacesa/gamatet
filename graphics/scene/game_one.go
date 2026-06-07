@@ -76,7 +76,7 @@ func NewGameOne(
 		waitDoneCh: params.Done,
 	}
 
-	g.fieldRender = render.NewField(g.model, &g.res, &g.text, str, 0, g.game, preferredSide)
+	g.fieldRender = render.NewField(params.Done, g.model, &g.res, &g.text, str, 0, g.game, preferredSide)
 
 	return g
 }

@@ -4,7 +4,6 @@
 package field
 
 import (
-	"sync"
 	"time"
 
 	"github.com/marko-gacesa/gamatet/game/block"
@@ -15,7 +14,8 @@ import (
 type RenderRequest struct {
 	FieldIdx   int
 	Time       time.Time
-	RenderInfo chan<- *RenderInfo
+	RenderInfo *RenderInfo
+	Done       chan<- bool
 }
 
 type BlockRenderInfo struct {
@@ -98,32 +98,17 @@ type RenderInfo struct {
 	StartUpOptions
 }
 
-var syncPoolRenderInfo = &sync.Pool{
-	New: func() any {
-		info := &RenderInfo{}
-		info.Blocks = make([]BlockRenderInfo, 0, 256)
-		for i := range len(info.Pieces) {
-			info.Pieces[i].Blocks = make([]block.XYB, 0, 8)
-			for j := range piece.NextBlockCount {
-				info.Pieces[i].NextPieces[j].Blocks = make([]block.XYB, 0, 8)
-			}
-			info.Pieces[i].Shadow.Blocks = make([]block.XYB, 0, 8)
+func InitRenderInfo() RenderInfo {
+	info := RenderInfo{}
+	info.Blocks = make([]BlockRenderInfo, 0, 256)
+	for i := range len(info.Pieces) {
+		info.Pieces[i].Blocks = make([]block.XYB, 0, 8)
+		for j := range piece.NextBlockCount {
+			info.Pieces[i].NextPieces[j].Blocks = make([]block.XYB, 0, 8)
 		}
-		return info
-	},
-}
-
-func ObtainRenderInfo() *RenderInfo {
-	info := syncPoolRenderInfo.Get().(*RenderInfo)
-	return info
-}
-
-func ReturnRenderInfo(info *RenderInfo) {
-	if info == nil {
-		return
+		info.Pieces[i].Shadow.Blocks = make([]block.XYB, 0, 8)
 	}
-
-	syncPoolRenderInfo.Put(info)
+	return info
 }
 
 func (f *Field) FillRenderInfo(info *RenderInfo, now time.Time) {

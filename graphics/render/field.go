@@ -6,7 +6,6 @@ package render
 import (
 	"math"
 	"slices"
-	"sync"
 	"time"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
@@ -42,8 +41,8 @@ var (
 
 func init() {
 	for i := range setup.MaxPlayers {
-		colorPlayer[i] = mgl32.Vec3(setup.ColorRGB[i][:]).Vec4(1.0)
-		colorPlayerBack[i] = mgl32.Vec3(setup.ColorBackRGB[i][:]).Vec4(1.0)
+		colorPlayer[i] = mgl32.Vec3(setup.ColorRGB[i]).Vec4(1.0)
+		colorPlayerBack[i] = mgl32.Vec3(setup.ColorBackRGB[i]).Vec4(1.0)
 	}
 }
 
@@ -101,6 +100,7 @@ type FieldStrings struct {
 }
 
 type Field struct {
+	done      <-chan struct{}
 	model     mgl32.Mat4
 	resources *FieldResources
 	text      *Text
@@ -112,7 +112,10 @@ type Field struct {
 	renderRequester         core.RenderRequester
 	preferredSide           PreferredSide
 
-	renderInfoWG sync.WaitGroup
+	renderInfoPrepareCh chan time.Time
+	renderInfoDone      chan bool
+	renderInfoSync      chan bool
+	renderInfo          field.RenderInfo
 
 	t          float64 // time
 	w          int     // field width
@@ -138,6 +141,7 @@ type Field struct {
 }
 
 func NewField(
+	done <-chan struct{},
 	model mgl32.Mat4,
 	resources *FieldResources,
 	text *Text,
@@ -147,7 +151,9 @@ func NewField(
 	preferredSide PreferredSide,
 ) *Field {
 	_, dimH1 := text.Dim("A")
-	return &Field{
+
+	f := &Field{
+		done:                    done,
 		model:                   model,
 		resources:               resources,
 		text:                    text,
@@ -156,46 +162,56 @@ func NewField(
 		renderRequesterFieldIdx: renderRequesterFieldIdx,
 		renderRequester:         renderRequester,
 		preferredSide:           preferredSide,
+		renderInfoPrepareCh:     make(chan time.Time),
+		renderInfoDone:          make(chan bool, 1),
+		renderInfoSync:          make(chan bool),
+		renderInfo:              field.InitRenderInfo(),
 	}
+
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			case now := <-f.renderInfoPrepareCh:
+				f.renderRequester.RenderRequest(f.renderRequesterFieldIdx, now, &f.renderInfo, f.renderInfoDone)
+				haveData := <-f.renderInfoDone
+
+				if haveData {
+					f.preRender(now)
+					f.prepareModels()
+				}
+
+				f.renderInfoSync <- haveData
+			}
+		}
+	}()
+
+	return f
 }
 
 func (f *Field) Prepare(now time.Time) {
-	renderInfoCh := make(chan *field.RenderInfo)
-	f.renderRequester.RenderRequest(f.renderRequesterFieldIdx, now, renderInfoCh)
-	f.renderInfoWG.Add(1)
-	go func() {
-		defer f.renderInfoWG.Done()
-
-		renderInfo := <-renderInfoCh
-		if renderInfo == nil {
-			return
-		}
-
-		f.preRender(renderInfo, now)
-		f.prepareModels(renderInfo)
-
-		field.ReturnRenderInfo(renderInfo)
-	}()
+	select {
+	case <-f.done:
+	case f.renderInfoPrepareCh <- now:
+	}
 }
 
 func (f *Field) Render(r *Renderer) {
-	f.renderInfoWG.Wait()
-	f.renderAll(r)
-	f.postRender()
+	if haveData := <-f.renderInfoSync; haveData {
+		f.renderAll(r)
+		f.postRender()
+	}
 }
 
 func (f *Field) AddAnim(anim anim.Anim) {
 	f.renderRequester.AddAnim(anim)
 }
 
-func (f *Field) preRender(renderInfo *field.RenderInfo, now time.Time) {
-	if renderInfo == nil {
-		return
-	}
-
+func (f *Field) preRender(now time.Time) {
 	f.t = now.Sub(t0).Seconds()
 
-	w := renderInfo.W
+	w := f.renderInfo.W
 	for i := range w {
 		f.listsBack[i] = rendercache.ModelPool.Get()
 	}
@@ -241,9 +257,31 @@ func (f *Field) postRender() {
 	rendercache.ModelColorIntPool.Put(f.listAmmo)
 	rendercache.PointLightPool.Put(f.lights)
 	rendercache.ModelColorStringPool.Put(f.listStr)
+
+	for i := range w {
+		f.listsBack[i] = nil
+	}
+	f.listWallD = nil
+	f.listWall = nil
+	f.listIron = nil
+	f.listFrame = nil
+	f.listBomb = nil
+	f.listGnaw = nil
+	f.listRock = nil
+	f.listRuby = nil
+	f.listLava = nil
+	f.listAcid = nil
+	f.listWave = nil
+	f.listGoal = nil
+	f.listShad = nil
+	f.listAmmo = nil
+	f.lights = nil
+	f.listStr = nil
 }
 
-func (f *Field) prepareModels(renderInfo *field.RenderInfo) {
+func (f *Field) prepareModels() {
+	renderInfo := &f.renderInfo
+
 	// light intensities
 	const (
 		lightIntLava    = 1.2

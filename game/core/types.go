@@ -18,9 +18,8 @@ type Performer interface {
 }
 
 type RenderRequester interface {
-	// RenderRequest is a method for requesting render info for a field. Once ready, it will be placed on the channel.
-	// When rendering is completed the RenderInfo should be returned with a call to field.ReturnRenderInfo(renderInfo).
-	RenderRequest(fieldIdx int, t time.Time, ch chan<- *field.RenderInfo)
+	// RenderRequest is a method for requesting render info for a field.
+	RenderRequest(fieldIdx int, t time.Time, info *field.RenderInfo, chDone chan<- bool)
 
 	// GetSize return size of the field and number of players.
 	GetSize(idx int) (int, int, int)

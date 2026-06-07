@@ -1,4 +1,4 @@
-// Copyright (c) 2025 by Marko Gaćeša
+// Copyright (c) 2025, 2026 by Marko Gaćeša
 // Licensed under the GNU GPL v3 or later. See the LICENSE file for details.
 
 package scene
@@ -71,7 +71,7 @@ func NewDemo(
 		waitDoneCh: params.Done,
 	}
 
-	g.fieldRender = render.NewField(g.model, &g.res, &g.text, str, 0, g.demo, render.PreferredSideTopL2R)
+	g.fieldRender = render.NewField(params.Done, g.model, &g.res, &g.text, str, 0, g.demo, render.PreferredSideTopL2R)
 
 	return g
 }

@@ -361,13 +361,13 @@ func (g *GameHost) Perform(ctx context.Context) (result []PlayerResult) {
 			g.applyEvents()
 
 		case rr := <-g.renderReqCh:
-			renderInfo := field.ObtainRenderInfo()
+			renderInfo := rr.RenderInfo
 			f := g.fields[rr.FieldIdx].Field
 			f.FillRenderInfo(renderInfo, rr.Time)
 			if g.options.Latencies != nil {
 				renderInfo.TextData.Latencies = g.options.Latencies.String()
 			}
-			rr.RenderInfo <- renderInfo
+			rr.Done <- true
 		}
 	}
 }
@@ -386,11 +386,11 @@ func (g *GameHost) Resume() {
 	}
 }
 
-func (g *GameHost) RenderRequest(fieldIdx int, t time.Time, ch chan<- *field.RenderInfo) {
+func (g *GameHost) RenderRequest(fieldIdx int, t time.Time, info *field.RenderInfo, chDone chan<- bool) {
 	select {
 	case <-g.doneCh:
-		close(ch)
-	case g.renderReqCh <- field.RenderRequest{FieldIdx: fieldIdx, Time: t, RenderInfo: ch}:
+		chDone <- false
+	case g.renderReqCh <- field.RenderRequest{FieldIdx: fieldIdx, Time: t, RenderInfo: info, Done: chDone}:
 	}
 }
 
