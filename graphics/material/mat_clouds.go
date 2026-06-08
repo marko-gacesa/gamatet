@@ -4,7 +4,6 @@
 package material
 
 import (
-	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -51,7 +50,7 @@ func (p *Clouds) Use() {
 	p.program.Use()
 
 	var viewport [4]int32
-	gl.GetIntegerv(gl.VIEWPORT, &viewport[0])
+	getViewport(&viewport)
 
 	width := viewport[2]
 	height := viewport[3]

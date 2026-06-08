@@ -52,10 +52,10 @@ func NewRuntime() Runtime {
 			func(data runtimeData) string {
 				return fmt.Sprintf(""+
 					"Goroutines=%d Mem=%dK NumGC=%d\n"+
-					"HeapObjects=%d\tHeapInUse=%dK\n"+
+					"Heap: InUse=%dK\tObjects=%d\n"+
 					"MallocDelta=%d\n",
 					data.NumGoroutine, data.Sys/1024, data.NumGC,
-					data.HeapObjects, data.HeapAlloc/1024,
+					data.HeapAlloc/1024, data.HeapObjects,
 					data.MallocDelta,
 				)
 			},

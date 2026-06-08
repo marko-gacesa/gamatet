@@ -8,10 +8,11 @@ import (
 	"github.com/marko-gacesa/gamatet/logic/screen"
 )
 
-func processKeyboard(scr screen.Screen, keyArbiter keypress.Arbiter) {
-	var buffer [8]keypress.KeyEvent
+var keyboardBuffer = make([]keypress.KeyEvent, 0, 16)
 
-	keyEvents := keyArbiter.Events(buffer[:0])
+func processKeyboard(scr screen.Screen, keyArbiter keypress.Arbiter) {
+	keyboardBuffer = keyboardBuffer[:0]
+	keyEvents := keyArbiter.Events(keyboardBuffer)
 	for _, keyEvent := range keyEvents {
 		scr.InputKeyPress(int(keyEvent.Key), keypress.ConvertAction(keyEvent.Action))
 	}

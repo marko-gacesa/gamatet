@@ -198,9 +198,13 @@ func (f *Field) Prepare(now time.Time) {
 }
 
 func (f *Field) Render(r *Renderer) {
-	if haveData := <-f.renderInfoSync; haveData {
-		f.renderAll(r)
-		f.postRender()
+	select {
+	case <-f.done:
+	case haveData := <-f.renderInfoSync:
+		if haveData {
+			f.renderAll(r)
+			f.postRender()
+		}
 	}
 }
 

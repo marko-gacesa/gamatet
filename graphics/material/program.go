@@ -68,6 +68,8 @@ func uniform1f(uni int32, v float32) { gl.Uniform1f(uni, v) }
 // It's enabled when the code is compiled with `-race` flag. The original functions should be in this case.
 
 /*
+func getViewport(viewport *[4]int32) { gl.GetIntegerv(gl.VIEWPORT, (*int32)(unsafe.Pointer(viewport))) }
+
 func uniformVec2(uni int32, v mgl32.Vec2)  { gl.Uniform2fv(uni, 1, &v[0]) }
 func uniformVec3(uni int32, v mgl32.Vec3)  { gl.Uniform3fv(uni, 1, &v[0]) }
 func uniformVec4(uni int32, v mgl32.Vec4)  { gl.Uniform4fv(uni, 1, &v[0]) }
@@ -76,6 +78,10 @@ func uniformMat4(uni int32, v mgl32.Mat4)  { gl.UniformMatrix4fv(uni, 1, false, 
 func uniformMat3T(uni int32, v mgl32.Mat3) { gl.UniformMatrix3fv(uni, 1, true, &v[0]) }
 func uniformMat4T(uni int32, v mgl32.Mat4) { gl.UniformMatrix4fv(uni, 1, true, &v[0]) }
 */
+
+func getViewport(viewport *[4]int32) {
+	gl.GetIntegerv(gl.VIEWPORT, noescape[[4]int32, int32](viewport))
+}
 
 func uniformVec2(uni int32, v mgl32.Vec2)  { gl.Uniform2fv(uni, 1, noescapef(&v)) }
 func uniformVec3(uni int32, v mgl32.Vec3)  { gl.Uniform3fv(uni, 1, noescapef(&v)) }

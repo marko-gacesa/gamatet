@@ -11,7 +11,7 @@ import (
 
 type Screens []Screen
 
-var _ Screen = (*Screens)(nil)
+var _ Screen = (Screens)(nil)
 
 func (screens Screens) UpdateViewSize(w, h int) {
 	for _, s := range screens {
