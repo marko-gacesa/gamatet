@@ -12,14 +12,6 @@ import (
 	"github.com/marko-gacesa/gamatet/game/setup"
 )
 
-func conjureBlock(p event.Pusher, x, y int, b block.Block) {
-	p.Push(op.NewFieldBlockSet(x, y, op.TypeSet, field.AnimPop, 0, b))
-}
-
-func putBlock(p event.Pusher, x, y int, b block.Block) {
-	p.Push(op.NewFieldBlockSet(x, y, op.TypeSet, field.AnimNo, 0, b))
-}
-
 func Init(q setup.FieldInit) func(f field.Reader, p event.Pusher) {
 	switch q {
 	default:
@@ -123,4 +115,12 @@ func InitFunnel(f field.Reader, p event.Pusher) {
 			}
 		}
 	}
+}
+
+func conjureBlock(p event.Pusher, x, y int, b block.Block) {
+	p.Push(op.NewFieldBlockSet(x, y, op.TypeSet, field.AnimPop, 0, b))
+}
+
+func putBlock(p event.Pusher, x, y int, b block.Block) {
+	p.Push(op.NewFieldBlockSet(x, y, op.TypeSet, field.AnimNo, 0, b))
 }
