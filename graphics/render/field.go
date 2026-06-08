@@ -293,8 +293,8 @@ func (f *Field) prepareModels() {
 	)
 
 	defer func() {
-		f.listRock.OrderByValue()
-		f.listRuby.OrderByValue()
+		rendercache.OrderByIntValue(*f.listRock)
+		rendercache.OrderByIntValue(*f.listRuby)
 	}()
 
 	showFrame := !renderInfo.RenderOptions.HideFrame

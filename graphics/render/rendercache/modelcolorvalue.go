@@ -4,27 +4,26 @@
 package rendercache
 
 import (
-	"cmp"
-	"sort"
+	"slices"
 	"sync"
 
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-type modelColorValue[T cmp.Ordered] struct {
+type modelColorValue[T any] struct {
 	Model mgl32.Mat4
 	Color mgl32.Vec4
 	Value T
 }
 
-type modelColorValuePool[T cmp.Ordered] struct {
+type modelColorValuePool[T any] struct {
 	pool sync.Pool
 }
 
 var ModelColorIntPool = newModelColorValuePool[int]()
 var ModelColorStringPool = newModelColorValuePool[string]()
 
-func newModelColorValuePool[T cmp.Ordered]() modelColorValuePool[T] {
+func newModelColorValuePool[T any]() modelColorValuePool[T] {
 	return modelColorValuePool[T]{
 		pool: sync.Pool{
 			New: func() any {
@@ -45,7 +44,7 @@ func (b *modelColorValuePool[T]) Put(list *ModelColorValueList[T]) {
 	b.pool.Put(list)
 }
 
-type ModelColorValueList[T cmp.Ordered] []modelColorValue[T]
+type ModelColorValueList[T any] []modelColorValue[T]
 
 func (p *ModelColorValueList[T]) Len() int {
 	return len(*p)
@@ -59,8 +58,8 @@ func (p *ModelColorValueList[T]) Add(model mgl32.Mat4, color mgl32.Vec4, value T
 	})
 }
 
-func (p *ModelColorValueList[T]) OrderByValue() {
-	sort.Slice(*p, func(i, j int) bool {
-		return (*p)[i].Value < (*p)[j].Value
+func OrderByIntValue(p []modelColorValue[int]) {
+	slices.SortFunc(p, func(u, v modelColorValue[int]) int {
+		return u.Value - v.Value
 	})
 }
