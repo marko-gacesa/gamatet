@@ -14,6 +14,8 @@ import (
 
 var _ Sweeper = (*GnawKeeper)(nil)
 
+const GnawMaxHunger = 0xFFFF
+
 func NewGnawKeeper(f *field.Field) *GnawKeeper {
 	b := newBase(f)
 
@@ -165,7 +167,9 @@ func (s *GnawKeeper) process(gnaw *gnawData, p event.Pusher) (processed bool) {
 			p.Push(op.NewFieldBlockSet(moveTo.X, moveTo.Y, op.TypeClear, field.AnimDestroy, 0, b))
 			p.Push(op.NewFieldBlockSwap(xy.X, xy.Y, moveTo.X, moveTo.Y, field.AnimSlide, 0))
 			gnaw.lastPos = moveTo
-			gnaw.hunger--
+			if gnaw.hunger < GnawMaxHunger {
+				gnaw.hunger--
+			}
 		} else {
 			// reduce the block's hardness
 			p.Push(op.NewFieldBlockHardness(moveTo.X, moveTo.Y, -1, field.AnimSpin, 0))
