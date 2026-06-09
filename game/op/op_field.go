@@ -515,10 +515,12 @@ var _ event.Event = (*FieldBlockSwap)(nil)
 
 func (e *FieldBlockSwap) Do(f *field.Field) {
 	f.SwapXY(int(e.ColSrc), int(e.RowSrc), int(e.ColDst), int(e.RowDst), int(e.AnimType), int(e.AnimParam))
+	updateAllPiecesShadow(f)
 }
 
 func (e *FieldBlockSwap) Undo(f *field.Field) {
 	f.SwapXY(int(e.ColSrc), int(e.RowSrc), int(e.ColDst), int(e.RowDst), field.AnimNo, 0)
+	updateAllPiecesShadow(f)
 }
 
 func (e *FieldBlockSwap) Equals(ev event.Event) bool {

@@ -28,11 +28,12 @@ type Row struct {
 func (s *Row) Analyze(events event.Reader) {
 	var added bool
 	events.Range(func(e event.Event) {
-		if v, ok := e.(*op.FieldBlockSet); ok && v.Op == op.TypeSet {
+		switch v := e.(type) {
+		case *op.FieldBlockSet:
+			added = added || v.Op == op.TypeSet
+		case *op.FieldBlockSwap:
 			added = true
-			return
-		}
-		if _, ok := e.(*op.FieldGnaw); ok {
+		case *op.FieldGnaw:
 			added = true
 		}
 	})
